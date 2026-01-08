@@ -1,0 +1,27 @@
+package com.github.mayconr.juoserver.game.core.session.player;
+
+import com.github.mayconr.juoserver.game.core.gameloop.IntervalGameTask;
+
+public class PlayerVitalsTask extends IntervalGameTask {
+    private final PlayerSession session;
+
+    public PlayerVitalsTask(PlayerSession session) {
+        super(20);
+        this.session = session;
+    }
+
+    @Override
+    public boolean isDone() {
+        return !session.isActive();
+    }
+
+    @Override
+    public void execute() {
+        // TODO recalculate vitals
+    }
+
+    @Override
+    public String toString() {
+        return "PlayerVitals " + session.getPlayer().getName();
+    }
+}

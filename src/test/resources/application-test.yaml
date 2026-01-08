@@ -1,0 +1,8 @@
+spring:
+  main:
+    banner-mode: "off"
+logging:
+  level:
+    com.github.mayconr.juoserver.game.core: DEBUG
+    com.github.mayconr.juoserver.game.server: DEBUG
+    com.github.mayconr.juoserver.game.core.gump: DEBUG

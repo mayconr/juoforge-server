@@ -1,0 +1,7 @@
+logging:
+  level:
+    org.springframework: INFO
+    com.github.mayconr.juoserver: INFO
+    com.github.mayconr.juoserver.game.core: INFO
+    com.github.mayconr.juoserver.game.server: INFO
+    com.github.mayconr.juoserver.game.core.gump: DEBUG
