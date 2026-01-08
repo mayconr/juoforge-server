@@ -1,0 +1,89 @@
+- name: happyBox
+  displayName: Happiness Box
+  type: CONTAINER
+  modelId: 0x0E40
+  movable: false
+  hue: 0
+
+- name: backpack
+  displayName: Backpack
+  type: CONTAINER
+  modelId: 0x0E75
+  movable: false
+  hue: 0
+  container:
+    gumpId: 0x003C
+
+- name: shoes
+  displayName: Shoes
+  type: CLOTHING
+  modelId: 0x170F
+  movable: true
+  hue: 0
+
+- name: hat
+  displayName: Hat
+  type: CLOTHING
+  modelId: 0x1717
+  movable: true
+  hue: 0
+
+- name: robe
+  displayName: Robe
+  type: CLOTHING
+  modelId: 0x1F03
+  movable: true
+  hue: 0x6b7
+
+- name: shirt
+  displayName: Shirt
+  type: CLOTHING
+  modelId: 0x1538
+  movable: true
+  hue: 0x482
+
+- name: pants
+  displayName: Pants
+  type: CLOTHING
+  modelId: 0x152E
+  movable: true
+  hue: 0x482
+
+- name: robe2
+  displayName: Robe 2
+  type: CLOTHING
+  modelId: 0x1EFF
+  movable: true
+  hue: 0x550
+
+- name: vault
+  displayName: Vault
+  type: CONTAINER
+  modelId: 0x09A8
+  movable: false
+  hidden: true
+  container:
+    gumpId: 0x4A
+
+- name: spear
+  displayName: Spear
+  type: WEAPON
+  modelId: 0x0F63
+  movable: true
+  hidden: false
+
+- name: llama
+  displayName: Llama
+  type: MOUNT
+  modelId: 0x3EA6
+  movable: true
+  hidden: false
+
+- name: horse
+  displayName: Horse
+  type: MOUNT
+  modelId: 0x3EA0
+  movable: true
+  hidden: false
+  mount:
+    npc: horse
