@@ -3,32 +3,35 @@ package com.github.mayconr.juoserver.game.packet;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import com.github.mayconr.juoserver.game.core.model.AccountLoginMobile;
 import com.github.mayconr.juoserver.game.core.model.CharacterListFlag;
 import com.github.mayconr.juoserver.game.core.model.UOCity;
-import com.github.mayconr.juoserver.game.core.model.UOPlayer;
 import com.github.mayconr.juoserver.game.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
+import lombok.Getter;
 
+@Getter
 public class CharacterList extends AbstractPacket {
     public static final int CODE = (byte) 0xA9;
 
-    private final List<UOPlayer> characters;
+    private final List<AccountLoginMobile> mobiles;
     private final List<UOCity> cities;
     private final CharacterListFlag[] flags;
 
-    public CharacterList(List<UOPlayer> players, List<UOCity> cities, CharacterListFlag... flags) {
-        super(CODE, calculateLength(players, cities));
-        this.characters = players;
+    public CharacterList(
+            List<AccountLoginMobile> mobiles, List<UOCity> cities, CharacterListFlag... flags) {
+        super(CODE, calculateLength(mobiles, cities));
+        this.mobiles = mobiles;
         this.cities = cities;
         this.flags = flags;
     }
 
-    private static int calculateLength(List<UOPlayer> players, List<UOCity> cities) {
+    private static int calculateLength(List<AccountLoginMobile> mobiles, List<UOCity> cities) {
         return 1
                 + 2
                 + +1
-                + players.size() * (30 + 30)
+                + mobiles.size() * (30 + 30)
                 + 1
                 + cities.size() * (1 + 32 + 32 + 6 * 4)
                 + 4;
@@ -38,10 +41,10 @@ public class CharacterList extends AbstractPacket {
     public void writesTo(ByteBuf buf) {
         buf.writeByte(CODE);
         buf.writeShort(getLength());
-        buf.writeByte(characters.size());
-        for (UOPlayer player : characters) {
-            buf.writeBytes(padString(player.getName(), 30, StandardCharsets.UTF_8));
-            buf.writeBytes(padString(player.getPassword(), 30, StandardCharsets.UTF_8));
+        buf.writeByte(mobiles.size());
+        for (AccountLoginMobile mobile : mobiles) {
+            buf.writeBytes(padString(mobile.name(), 30, StandardCharsets.UTF_8));
+            buf.writeBytes(padString("password", 30, StandardCharsets.UTF_8));
         }
         buf.writeByte(cities.size());
 
@@ -62,13 +65,5 @@ public class CharacterList extends AbstractPacket {
             flagValue |= flag.getCode();
         }
         buf.writeInt(flagValue);
-    }
-
-    public List<UOPlayer> getCharacters() {
-        return characters;
-    }
-
-    public List<UOCity> getCities() {
-        return cities;
     }
 }

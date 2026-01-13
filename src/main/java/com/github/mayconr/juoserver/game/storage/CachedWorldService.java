@@ -1,39 +1,52 @@
-package com.github.mayconr.juoserver.game.core.database;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+package com.github.mayconr.juoserver.game.storage;
 
 import com.github.mayconr.juoserver.game.core.model.*;
 import com.github.mayconr.juoserver.game.core.prototype.ItemPrototype;
 import com.github.mayconr.juoserver.game.core.prototype.PrototypeManager;
+import com.github.mayconr.juoserver.game.storage.item.ItemStorage;
+import com.github.mayconr.juoserver.game.storage.mobile.MobileStorage;
+import lombok.extern.slf4j.Slf4j;
 
-public class HardcodedDatabase implements Database {
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+@Slf4j
+public class CachedWorldService implements WorldService {
 
     private static final int MOBILES_MAX_SERIAL_ID = 0x3FFFFFFF;
 
     public static final int OBJECTS_MIN_SERIAL_ID = MOBILES_MAX_SERIAL_ID + 1;
     private static final int OBJECTS_MAX_SERIAL_ID = 0x7FFFFFFF;
-    private static final List<UOAccount> ACCOUNTS = new ArrayList<>();
     private static final List<UOMobile> MOBILES = new ArrayList<>();
     private static final List<UOItem> OBJECTS = new CopyOnWriteArrayList<>();
     private static final AtomicInteger MOBILE_COUNTER = new AtomicInteger(1);
     private static final AtomicInteger OBJECT_COUNTER = new AtomicInteger(OBJECTS_MIN_SERIAL_ID);
     private static final Map<Long, List<UOItem>> GROUNDED_ITEMS = new ConcurrentHashMap<>();
 
-    private final PrototypeManager prototypeManager;
+    private final Map<Integer, UOMobile> mobilesCached = new ConcurrentHashMap<>();
+    private final ItemCache itemCache = new ItemCache();
 
-    public HardcodedDatabase(PrototypeManager prototypeManager) {
+    private final PrototypeManager prototypeManager;
+    private final MobileStorage mobileStorage;
+    private final ItemStorage itemStorage;
+
+    public CachedWorldService(
+            PrototypeManager prototypeManager,
+            MobileStorage mobileStorage,
+            ItemStorage itemStorage) {
         this.prototypeManager = prototypeManager;
+        this.mobileStorage = mobileStorage;
+        this.itemStorage = itemStorage;
         createData();
     }
 
     private void createData() {
-        final var admin = new UOAccount(UUID.randomUUID().toString(), "admin", "admin");
-        ACCOUNTS.add(admin);
+        final var admin = new UOAccount(UUID.randomUUID(), "admin", "admin");
 
         final var elrond =
                 new UOPlayer(
@@ -47,7 +60,7 @@ public class HardcodedDatabase implements Database {
                         0x83EA,
                         CharacterStatus.NORMAL,
                         Notoriety.CRIMINAL,
-                        admin.getId(),
+                        admin.getId().toString(),
                         "admin");
         final var elrondBackpack =
                 new UOContainer(
@@ -59,8 +72,7 @@ public class HardcodedDatabase implements Database {
         OBJECTS.add(elrondBackpack);
         MOBILES.add(elrond);
 
-        final var user = new UOAccount(UUID.randomUUID().toString(), "user", "user");
-        ACCOUNTS.add(user);
+        final var user = new UOAccount(UUID.randomUUID(), "user", "user");
 
         final var legolaz =
                 new UOPlayer(
@@ -74,7 +86,7 @@ public class HardcodedDatabase implements Database {
                         0x83EA,
                         CharacterStatus.NORMAL,
                         Notoriety.CRIMINAL,
-                        user.getId(),
+                        user.getId().toString(),
                         "admin");
         legolaz.setStrength(10);
         legolaz.setDexterity(20);
@@ -92,6 +104,64 @@ public class HardcodedDatabase implements Database {
         MOBILES.add(legolaz);
     }
 
+    @Override
+    public CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId) {
+        var cached = mobilesCached.get(serialId);
+        if (cached != null) {
+            log.info("Mobile [{}] recovered from cache", serialId);
+            return CompletableFuture.completedFuture(Optional.of(cached));
+        }
+
+        return mobileStorage.findMobileBySerialId(serialId)
+                .thenCompose(mobOpt -> mobOpt
+                        .map(this::loadAndCacheMobile)
+                        .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()))
+                );
+    }
+
+    private CompletableFuture<Optional<UOMobile>> loadAndCacheMobile(UOMobile mobile) {
+        return itemStorage.loadEquippedItems(mobile)
+                .thenApply(itemCache::putAll)
+                .thenApply(items -> {
+                    items.forEach(mobile::equipItem);
+                    mobilesCached.put(mobile.getSerialId(), mobile);
+                    return Optional.of(mobile);
+                });
+    }
+
+    @Override
+    public CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId) {
+        UOItem cached = itemCache.get(serialId);
+        if (cached != null) {
+            return CompletableFuture.completedFuture(Optional.of(cached));
+        }
+
+        return itemStorage.findItemBySerialId(serialId)
+                .thenApply(opt -> opt.map(itemCache::put))
+                .whenComplete((opt, thowable)->{
+                    opt.ifPresent(item->{
+                        log.info("Item [{}={}] loaded from database", item.getSerialId(), item.getName());
+                    });
+                });
+    }
+
+    @Override
+    public CompletableFuture<Optional<Container>> findContainerBySerialId(int serialId) {
+        return findMobileBySerialId(serialId)
+                .thenCompose(mobileOpt -> mobileOpt.map(mobile -> CompletableFuture.completedFuture(Optional.of((Container) mobile)))
+                .orElseGet(() -> findItemBySerialId(serialId)
+                    .thenApply(itemOpt ->
+                            itemOpt.map(item -> (Container) item)
+                    )))
+                .exceptionally(new Function<Throwable, Optional<Container>>() {
+                    @Override
+                    public Optional<Container> apply(Throwable throwable) {
+                        log.error("Unable do process container by serialId {}", serialId, throwable);
+                        return Optional.empty();
+                    }
+                });
+    }
+
     private void equipItem(UOMobile mobile, Layer layer, String name) {
         final var item =
                 new UOItem(
@@ -100,52 +170,6 @@ public class HardcodedDatabase implements Database {
                         new PointInTheWorld(0, 0, 0));
         OBJECTS.add(item);
         mobile.equipItem(layer, item);
-    }
-
-    @Override
-    public Optional<UOAccount> getAccount(String username, String password) {
-        return ACCOUNTS.stream()
-                .filter(
-                        acct ->
-                                acct.getUsername().equals(username)
-                                        && acct.getPassword().equals(password))
-                .findFirst();
-    }
-
-    @Override
-    public Optional<UOAccount> getAccount(String accountId) {
-        return ACCOUNTS.stream().filter(acct -> acct.getId().equals(accountId)).findFirst();
-    }
-
-    @Override
-    public List<UOPlayer> getPlayersByAccount(UOAccount uoAccount) {
-        return MOBILES.stream()
-                .filter(UOPlayer.class::isInstance)
-                .map(UOPlayer.class::cast)
-                .filter(character -> character.getAccountId().equals(uoAccount.getId()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Optional<UOMobile> getMobileSerialId(int serialId) {
-        return MOBILES.stream()
-                .filter(character -> character.getSerialId() == serialId)
-                .findFirst();
-    }
-
-    @Override
-    public Optional<UOItem> getItemBySerialId(int serialId) {
-        return OBJECTS.stream().filter(item -> item.getSerialId() == serialId).findFirst();
-    }
-
-    @Override
-    public Optional<Container> getContainerById(int serialId) {
-        if (isMobile(serialId)) {
-            return getMobileSerialId(serialId).map(mobile -> mobile);
-        }
-        return getItemBySerialId(serialId)
-                .filter(item -> ItemType.CONTAINER.equals(item.getType()))
-                .map(item -> (Container) item);
     }
 
     @Override
@@ -187,7 +211,7 @@ public class HardcodedDatabase implements Database {
                         0x83EA,
                         CharacterStatus.NORMAL,
                         Notoriety.INNOCENT,
-                        details.account().getId(),
+                        details.account().getId().toString(),
                         "temp");
         MOBILES.add(mobile);
         return mobile;

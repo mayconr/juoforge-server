@@ -1,24 +1,19 @@
-package com.github.mayconr.juoserver.game.core.database;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+package com.github.mayconr.juoserver.game.storage;
 
 import com.github.mayconr.juoserver.game.core.model.*;
 
-public interface Database {
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
-    Optional<UOAccount> getAccount(String username, String password);
+public interface WorldService {
 
-    Optional<UOAccount> getAccount(String accountId);
+    CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId);
 
-    List<UOPlayer> getPlayersByAccount(UOAccount UOAccount);
+    CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId);
 
-    Optional<UOMobile> getMobileSerialId(int serialId);
-
-    Optional<UOItem> getItemBySerialId(int serialId);
-
-    Optional<Container> getContainerById(int serialId);
+    CompletableFuture<Optional<Container>> findContainerBySerialId(int serialId);
 
     List<UOCity> getCities();
 

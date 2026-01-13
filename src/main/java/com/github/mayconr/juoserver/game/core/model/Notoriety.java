@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.core.model;
 
+import lombok.Getter;
+
+@Getter
 public enum Notoriety {
     INNOCENT(0x1),
     FRIEND(0x2),
@@ -15,16 +18,12 @@ public enum Notoriety {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
-
     public static Notoriety fromCode(int code) {
         for (Notoriety status : values()) {
             if (status.code == code) {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown code: " + code);
+        return Notoriety.INNOCENT;
     }
 }

@@ -1,29 +1,20 @@
 package com.github.mayconr.juoserver.game.core.model;
 
+import java.util.UUID;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class UOAccount {
-    private final String id;
+    private final UUID id;
     private final String username;
     private String password;
 
-    public UOAccount(String id, String username, String password) {
+    public UOAccount(UUID id, String username, String password) {
         this.id = id;
         this.username = username;
-        this.password = password;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
         this.password = password;
     }
 

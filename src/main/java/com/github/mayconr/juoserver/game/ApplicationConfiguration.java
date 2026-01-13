@@ -15,8 +15,6 @@ import com.github.mayconr.juoserver.game.core.ai.ollama.OllamaClientChatImpl;
 import com.github.mayconr.juoserver.game.core.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.game.core.combat.CombatSystem;
 import com.github.mayconr.juoserver.game.core.combat.DefaultCombatSystem;
-import com.github.mayconr.juoserver.game.core.database.Database;
-import com.github.mayconr.juoserver.game.core.database.DatabaseConfiguration;
 import com.github.mayconr.juoserver.game.core.event.DefaultEventBus;
 import com.github.mayconr.juoserver.game.core.event.EventBus;
 import com.github.mayconr.juoserver.game.core.gameloop.DefaultGameLoop;
@@ -35,6 +33,10 @@ import com.github.mayconr.juoserver.game.packet.handler.*;
 import com.github.mayconr.juoserver.game.server.ClientConnectedHandlerAdapter;
 import com.github.mayconr.juoserver.game.server.ServerStartup;
 import com.github.mayconr.juoserver.game.server.UOChannelInitializer;
+import com.github.mayconr.juoserver.game.storage.DatabaseConfiguration;
+import com.github.mayconr.juoserver.game.storage.WorldService;
+import com.github.mayconr.juoserver.game.storage.account.AccountStorage;
+import com.github.mayconr.juoserver.game.storage.mobile.MobileStorage;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
@@ -86,23 +88,24 @@ public class ApplicationConfiguration {
     public PlayerSessionFactory playerSessionFactory(
             ChannelGroup channelGroup,
             EventBus eventBus,
-            Database database,
+            WorldService worldService,
             GameLoop gameLoop,
             CombatSystem combatSystem) {
-        return new PlayerSessionFactory(channelGroup, eventBus, database, gameLoop, combatSystem);
+        return new PlayerSessionFactory(
+                channelGroup, eventBus, worldService, gameLoop, combatSystem);
     }
 
     @Bean
     public GameSession gameSession(
-            Database database,
+            WorldService worldService,
             ChannelGroup channelGroup,
             PlayerSessionFactory playerSessionFactory,
             NpcSessionFactory npcSessionFactory,
             EventBus eventBus) {
         final var messageService = new MessageService(channelGroup);
-        final var itemService = new ItemService(database, channelGroup, eventBus);
+        final var itemService = new ItemService(worldService, channelGroup, eventBus);
         return new DefaultGameSession(
-                database,
+                worldService,
                 channelGroup,
                 eventBus,
                 playerSessionFactory,
@@ -115,13 +118,17 @@ public class ApplicationConfiguration {
 
     @Bean
     public List<SimpleChannelInboundHandler<?>> packetHandlers(
-            Database database, GameSession gameSession, GumpSystemCallback gumpSystemCallback) {
+            AccountStorage accountStorage,
+            MobileStorage mobileStorage,
+            WorldService worldService,
+            GameSession gameSession,
+            GumpSystemCallback gumpSystemCallback) {
         return List.of(
-                new GameServerLoginHandler(database),
+                new GameServerLoginHandler(accountStorage, mobileStorage, worldService),
                 new PingPongHandler(),
-                new LoginCharacterHandler(gameSession),
-                new DeleteCharacterHandler(database),
-                new CreateCharacterHandler(database),
+                new LoginCharacterHandler(gameSession, worldService),
+                new DeleteCharacterHandler(worldService),
+                new CreateCharacterHandler(worldService),
                 new ClientVersionHandler(gameSession),
                 new MoveRequestHandler(),
                 new DoubleClickHandler(),
@@ -196,9 +203,9 @@ public class ApplicationConfiguration {
 
     @Bean
     public NpcAiRegistry npcAiRegistry(
-            Database database, OllanaClient ollanaClient, EventBus eventBus) {
+            WorldService worldService, OllanaClient ollanaClient, EventBus eventBus) {
         final var registry = new DefaultNpcAiRegistry();
-        registry.registerAI("BANKER", () -> new BankerAI(database, ollanaClient, eventBus));
+        registry.registerAI("BANKER", () -> new BankerAI(worldService, ollanaClient, eventBus));
         return registry;
     }
 

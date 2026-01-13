@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.packet.handler;
 
-import com.github.mayconr.juoserver.game.core.database.Database;
 import com.github.mayconr.juoserver.game.packet.DeleteCharacter;
 import com.github.mayconr.juoserver.game.packet.LoginReject;
+import com.github.mayconr.juoserver.game.storage.WorldService;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,10 +11,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 @ChannelHandler.Sharable
 public class DeleteCharacterHandler extends SimpleChannelInboundHandler<DeleteCharacter> {
 
-    private final Database database;
+    private final WorldService worldService;
 
-    public DeleteCharacterHandler(Database database) {
-        this.database = database;
+    public DeleteCharacterHandler(WorldService worldService) {
+        this.worldService = worldService;
     }
 
     @Override
@@ -25,7 +25,7 @@ public class DeleteCharacterHandler extends SimpleChannelInboundHandler<DeleteCh
             ctx.writeAndFlush(new LoginReject(LoginReject.Reason.SYNCHRONIZATION_ERROR));
             return;
         }
-        database.deleteMobile(character);
+        // database.deleteMobile(character);
         ctx.writeAndFlush(new LoginReject(LoginReject.Reason.CHAR_DOES_NOT_EXIST));
     }
 }

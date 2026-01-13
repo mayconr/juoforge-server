@@ -1,6 +1,5 @@
 package com.github.mayconr.juoserver.game.core.session.player;
 
-import com.github.mayconr.juoserver.game.core.database.Database;
 import com.github.mayconr.juoserver.game.core.model.Layer;
 import com.github.mayconr.juoserver.game.core.model.UONpc;
 import com.github.mayconr.juoserver.game.core.model.UOPlayer;
@@ -8,6 +7,7 @@ import com.github.mayconr.juoserver.game.packet.DeleteObject;
 import com.github.mayconr.juoserver.game.packet.DrawGamePlayer;
 import com.github.mayconr.juoserver.game.packet.DrawMobile;
 import com.github.mayconr.juoserver.game.packet.EquipItem;
+import com.github.mayconr.juoserver.game.storage.WorldService;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
@@ -19,12 +19,12 @@ public class MountService {
     private final UOPlayer player;
     private final ChannelHandlerContext ctx;
     private final ChannelGroup channelGroup;
-    private final Database database;
+    private final WorldService worldService;
 
     public void handleMount(UONpc npc) {
         handleMount(npc.getMount());
 
-        database.deleteMobile(npc);
+        worldService.deleteMobile(npc);
         player.setLocation(npc);
         player.setDirection(npc.getDirection());
 
@@ -36,7 +36,7 @@ public class MountService {
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
             throw new IllegalStateException("Player " + player.getName() + " already mounted");
         }
-        final var item = database.createItem(mount, player);
+        final var item = worldService.createItem(mount, player);
         player.equipItem(Layer.MOUNT, item);
         channelGroup.writeAndFlush(
                 new EquipItem(player, Layer.MOUNT, item)); // TODO filter by channels in range
@@ -46,8 +46,8 @@ public class MountService {
         final var mount = player.getEquippedItems().get(Layer.MOUNT);
 
         if (mount != null) {
-            database.deleteItem(mount);
-            final var npc = database.createNpcAtLocation(mount.getMountNpc(), player);
+            worldService.deleteItem(mount);
+            final var npc = worldService.createNpcAtLocation(mount.getMountNpc(), player);
             npc.setDirection(player.getDirection());
             player.unequipItem(mount);
 

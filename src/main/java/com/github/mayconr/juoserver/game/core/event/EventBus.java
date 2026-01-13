@@ -10,7 +10,5 @@ public interface EventBus {
     <T extends GameEvent> void register(
             Class<T> type, EventHandler<T> listener, Predicate<T> predicate);
 
-
-
     <T extends GameEvent> HandlerResult publish(T event);
 }

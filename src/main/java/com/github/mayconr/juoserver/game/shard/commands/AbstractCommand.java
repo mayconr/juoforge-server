@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.shard.commands;
 
+import java.util.function.Predicate;
+
 import com.github.mayconr.juoserver.game.core.event.EventRegistry;
 import com.github.mayconr.juoserver.game.core.event.Prompt;
-
-import java.util.function.Predicate;
 
 public abstract class AbstractCommand implements EventRegistry<Prompt> {
 

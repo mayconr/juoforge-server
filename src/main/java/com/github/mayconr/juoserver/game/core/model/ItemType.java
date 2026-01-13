@@ -4,5 +4,6 @@ public enum ItemType {
     WEAPON,
     CONTAINER,
     CLOTHING,
-    MOUNT;
+    MOUNT,
+    OTHER;
 }

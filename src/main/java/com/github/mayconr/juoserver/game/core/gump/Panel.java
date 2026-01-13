@@ -11,7 +11,7 @@ public class Panel implements UIElement {
     private int x, y;
 
     public Panel(int width, int height, UIElement content) {
-        this(null , width, height, true, content);
+        this(null, width, height, true, content);
     }
 
     // Panel COM background

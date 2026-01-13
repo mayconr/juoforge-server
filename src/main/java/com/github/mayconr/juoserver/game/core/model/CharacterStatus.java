@@ -16,4 +16,13 @@ public enum CharacterStatus {
     WAR_MODE(0x40);
 
     private final int code;
+
+    public static CharacterStatus fromCode(int code) {
+        for (CharacterStatus d : values()) {
+            if (d.code == code) {
+                return d;
+            }
+        }
+        return NORMAL;
+    }
 }

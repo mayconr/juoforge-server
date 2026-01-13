@@ -1,6 +1,5 @@
 package com.github.mayconr.juoserver.game.core.session.game;
 
-import com.github.mayconr.juoserver.game.core.database.Database;
 import com.github.mayconr.juoserver.game.core.event.EventBus;
 import com.github.mayconr.juoserver.game.core.event.ItemCreated;
 import com.github.mayconr.juoserver.game.core.event.ItemDeleted;
@@ -10,6 +9,7 @@ import com.github.mayconr.juoserver.game.core.model.UOItem;
 import com.github.mayconr.juoserver.game.packet.DeleteObject;
 import com.github.mayconr.juoserver.game.packet.ObjectInfo;
 import com.github.mayconr.juoserver.game.packet.ObjectRevision;
+import com.github.mayconr.juoserver.game.storage.WorldService;
 
 import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ItemService {
 
-    private final Database database;
+    private final WorldService worldService;
     private final ChannelGroup channelGroup;
     private final EventBus eventBus;
 
     public UOItem handleCreateItemAtLocation(String name, Location location) {
-        final var item = database.createItemOnTheGround(name, location);
+        final var item = worldService.createItemOnTheGround(name, location);
         updateItem(item, location);
         return item;
     }
@@ -45,7 +45,7 @@ public class ItemService {
     }
 
     public void handleDeleteItem(UOItem item) {
-        database.deleteItem(item);
+        worldService.deleteItem(item);
         channelGroup.writeAndFlush(new DeleteObject(item)); // TODO filter by range
         eventBus.publish(new ItemDeleted(item));
     }

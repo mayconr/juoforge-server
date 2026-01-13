@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.game.core.gump;
 public class HtmlGump implements UIElement, Sized {
 
     private String value;
-    private int x,y, width, height;
+    private int x, y, width, height;
     private boolean background, scrollbar;
 
     public HtmlGump(String value, int width, int height) {

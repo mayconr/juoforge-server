@@ -2,16 +2,17 @@ package com.github.mayconr.juoserver.game.shard;
 
 import static com.github.mayconr.juoserver.game.core.gump.DeclarativeGumpUI.*;
 
-import com.github.mayconr.juoserver.game.core.gump.TextField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mayconr.juoserver.game.core.event.*;
 import com.github.mayconr.juoserver.game.core.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.core.gump.GumpSystem;
+import com.github.mayconr.juoserver.game.core.gump.TextField;
 import com.github.mayconr.juoserver.game.core.model.CursorType;
 import com.github.mayconr.juoserver.game.core.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.core.session.game.GameSession;
+import com.github.mayconr.juoserver.game.storage.account.AccountStorage;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +24,18 @@ public class Test {
     @Autowired private EventBus eventBus;
     @Autowired private GameSession gameSession;
     @Autowired private GumpSystem gumpSystem;
+    @Autowired private AccountStorage accountStorage;
 
     @PostConstruct
     public void setUp() {
+
+        accountStorage
+                .findByUsername("admin")
+                .thenAccept(
+                        acct -> {
+                            System.out.println(acct.get());
+                        });
+
         // eventBus.register(MobileMove.class, this::onMove);
         eventBus.register(MobileSpeech.class, this::speech);
         eventBus.register(
@@ -37,7 +47,7 @@ public class Test {
                 this::createItem,
                 prompt -> prompt.name().equalsIgnoreCase("createitem"));
         /*eventBus.register(
-                Prompt.class, this::move, prompt -> prompt.name().equalsIgnoreCase("goto"));*/
+        Prompt.class, this::move, prompt -> prompt.name().equalsIgnoreCase("goto"));*/
         eventBus.register(
                 Prompt.class, this::where, prompt -> prompt.name().equalsIgnoreCase("where"));
         eventBus.register(
@@ -80,21 +90,24 @@ public class Test {
             ))
         );*/
 
-        //final var gump = new DeclarativeGumpUI(Page(1, Image(5599), Image(5593)));
+        // final var gump = new DeclarativeGumpUI(Page(1, Image(5599), Image(5593)));
 
-        //final var gump = new DeclarativeGumpUI(Page(1, TextArea(2, 100, 50)));
+        // final var gump = new DeclarativeGumpUI(Page(1, TextArea(2, 100, 50)));
 
-        final var gump = new DeclarativeGumpUI(
-            Page(1,
-                Panel(300,300, 3000,
-                    Row(12,
-                        Label("Teste"),
-                        Label("maycon"),
-                        InlineField(Label("Name"), TextField(1, 50)),
-                        Button(2450,2451, 2)
-                    )
-                )
-            ));
+        final var gump =
+                new DeclarativeGumpUI(
+                        Page(
+                                1,
+                                Panel(
+                                        300,
+                                        300,
+                                        3000,
+                                        Row(
+                                                12,
+                                                Label("Teste"),
+                                                Label("maycon"),
+                                                InlineField(Label("Name"), TextField(1, 50)),
+                                                Button(2450, 2451, 2)))));
 
         gumpSystem.send(
                 prompt.mobile(),

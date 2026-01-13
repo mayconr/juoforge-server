@@ -2,9 +2,9 @@ package com.github.mayconr.juoserver.game.core.ai;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.github.mayconr.juoserver.game.core.ai.ollama.OllanaClient;
-import com.github.mayconr.juoserver.game.core.database.Database;
 import com.github.mayconr.juoserver.game.core.event.EventBus;
 import com.github.mayconr.juoserver.game.core.event.HandlerResult;
 import com.github.mayconr.juoserver.game.core.event.MobileSpeech;
@@ -15,6 +15,7 @@ import com.github.mayconr.juoserver.game.core.model.UOPlayer;
 import com.github.mayconr.juoserver.game.core.session.game.GameSession;
 import com.github.mayconr.juoserver.game.core.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.core.session.player.PlayerSession;
+import com.github.mayconr.juoserver.game.storage.WorldService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BankerAI extends IntervalGameTask implements NpcAI {
 
     private static final String VAULT_ATTRIBUTE = "VAULT";
-    private final Database database;
+    private final WorldService worldService;
     private final OllanaClient ollanaClient;
     private final EventBus eventBus;
     private GameSession gameSession;
@@ -51,9 +52,9 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
                             "system",
                             "Always respond with a maximum of 6 tokens. The answer must be short and objective."));
 
-    public BankerAI(Database database, OllanaClient ollanaClient, EventBus eventBus) {
+    public BankerAI(WorldService worldService, OllanaClient ollanaClient, EventBus eventBus) {
         super(10);
-        this.database = database;
+        this.worldService = worldService;
         this.ollanaClient = ollanaClient;
         this.eventBus = eventBus;
     }
@@ -131,19 +132,30 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         } else {
             // Vault já existe
             final var serialId = mobile.getAttribute(VAULT_ATTRIBUTE, -1);
-            database.getContainerById(serialId)
-                    .filter(container -> container instanceof UOContainer)
-                    .map(UOContainer.class::cast)
-                    .ifPresent(
-                            container -> {
-                                gameSession.moveItem(container, mobile);
-                                playerSession.openContainerInRange(container);
-                            });
+            worldService.findContainerBySerialId(serialId)
+                .exceptionally(throwable -> {
+                    log.error("Unable to load container serial [{}]", serialId, throwable);
+                    return Optional.empty();
+                }).thenAccept(conOpt->{
+                    conOpt.filter(container -> container instanceof UOContainer)
+                        .map(UOContainer.class::cast)
+                        .ifPresent(container -> {
+                            gameSession.moveItem(container, mobile);
+                            playerSession.openContainerInRange(container);
+                        });
+                });
         }
     }
 
     private void handleCloseVault(UOPlayer player) {
         final int vaultSerial = player.getAttribute(VAULT_ATTRIBUTE, -1);
-        database.getItemBySerialId(vaultSerial).ifPresent(gameSession::deleteItem);
+        worldService.findItemBySerialId(vaultSerial)
+            .exceptionally(throwable -> {
+                log.error("Unable to load item serial [{}]", vaultSerial, throwable);
+                return Optional.empty();
+            })
+            .whenComplete((itemOpt, throwable)->{
+                itemOpt.ifPresent(gameSession::deleteItem);
+            });
     }
 }

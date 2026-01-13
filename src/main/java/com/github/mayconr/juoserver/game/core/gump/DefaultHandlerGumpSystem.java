@@ -65,9 +65,7 @@ public class DefaultHandlerGumpSystem implements GumpSystem, GumpSystemCallback 
         while (ids.containsKey(gumpId)) {
             gumpId = random.nextInt();
         }
-        ids.put(
-                gumpId,
-                new GumpContext(gumpId, player, System.currentTimeMillis(), handler));
+        ids.put(gumpId, new GumpContext(gumpId, player, System.currentTimeMillis(), handler));
         attribute.set(ids);
         return gumpId;
     }

@@ -5,7 +5,11 @@ import java.nio.charset.StandardCharsets;
 import com.github.mayconr.juoserver.game.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import lombok.ToString;
 
+@ToString
+@Getter
 public class GameServerLogin extends AbstractPacket {
 
     public static final int CODE = (byte) 0x91;
@@ -19,17 +23,5 @@ public class GameServerLogin extends AbstractPacket {
         this.key = buf.readInt();
         this.username = readStringTrailingZeros(buf, 30, StandardCharsets.UTF_8);
         this.password = readStringTrailingZeros(buf, 30, StandardCharsets.UTF_8);
-    }
-
-    public int getKey() {
-        return key;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
     }
 }

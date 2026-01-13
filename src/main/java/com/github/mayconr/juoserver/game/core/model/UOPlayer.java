@@ -1,14 +1,21 @@
 package com.github.mayconr.juoserver.game.core.model;
 
+import java.util.UUID;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class UOPlayer extends UOMobile {
-    private final String accountId;
+    private final UUID accountId;
     private String password;
     private boolean connected;
+
+    public UOPlayer(UOMobile mobile, UUID accountId) {
+        super(mobile);
+        this.accountId = accountId;
+    }
 
     public UOPlayer(
             int serialId,
@@ -36,7 +43,7 @@ public class UOPlayer extends UOMobile {
                 notoriety,
                 Race.HUMAN,
                 Gender.MALE);
-        this.accountId = accountId;
+        this.accountId = UUID.fromString(accountId);
         this.password = password;
     }
 }

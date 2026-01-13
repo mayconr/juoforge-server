@@ -67,7 +67,8 @@ public class DeclarativeGumpUI {
         return new Panel(gumPicId, width, height, false, content);
     }
 
-    public static Panel Panel(int gumPicId, int width, int height, boolean resizable, UIElement content) {
+    public static Panel Panel(
+            int gumPicId, int width, int height, boolean resizable, UIElement content) {
         return new Panel(gumPicId, width, height, resizable, content);
     }
 
@@ -107,8 +108,7 @@ public class DeclarativeGumpUI {
         return new Checkbox(uncheckedId, checkedId, switchId, false);
     }
 
-    public static Checkbox Checkbox(
-            int uncheckedId, int checkedId, int switchId, boolean checked) {
+    public static Checkbox Checkbox(int uncheckedId, int checkedId, int switchId, boolean checked) {
         return new Checkbox(uncheckedId, checkedId, switchId, checked);
     }
 
@@ -124,7 +124,8 @@ public class DeclarativeGumpUI {
         return new HtmlGump(value, width, height);
     }
 
-    public static HtmlGump HtmlGump(String value, int width, int height, boolean background, boolean scrollbar) {
+    public static HtmlGump HtmlGump(
+            String value, int width, int height, boolean background, boolean scrollbar) {
         return new HtmlGump(value, width, height, background, scrollbar);
     }
 }

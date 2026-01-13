@@ -1,27 +1,47 @@
 package com.github.mayconr.juoserver.game.core.session.player;
 
-import java.util.List;
-
-import com.github.mayconr.juoserver.game.core.database.Database;
 import com.github.mayconr.juoserver.game.core.model.UOMobile;
 import com.github.mayconr.juoserver.game.packet.MegaCliloc;
-
+import com.github.mayconr.juoserver.game.storage.WorldService;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+import java.util.Optional;
+
+@Slf4j
 @RequiredArgsConstructor
 class MegaClilocService {
 
     private final UOMobile mobile;
     private final ChannelHandlerContext ctx;
-    private final Database database;
+    private final WorldService worldService;
 
     public void handleMegaCliloc(List<Integer> serialList) {
         for (int serialId : serialList) {
-            if (database.isMobile(serialId)) {
-                database.getMobileSerialId(serialId).map(MegaCliloc::new).ifPresent(ctx::write);
+            if (worldService.isMobile(serialId)) {
+                worldService
+                    .findMobileBySerialId(serialId)
+                    .whenComplete((opt, throwable) -> {
+                        if (throwable != null) {
+                            log.error("Unable to load mobile [{}]", serialId, throwable);
+                        }
+                    })
+                    .thenAccept(opt -> {
+                        opt.map(MegaCliloc::new).ifPresent(ctx::write);
+                    });
             } else {
-                database.getItemBySerialId(serialId).map(MegaCliloc::new).ifPresent(ctx::write);
+                worldService.findItemBySerialId(serialId)
+                    .whenComplete((opt, throwable) -> {
+                        if (throwable != null) {
+                            log.error("Unable to load item [{}]", serialId, throwable);
+                        }
+                    })
+                    .thenAccept(opt ->
+                            opt.map(MegaCliloc::new)
+                                    .ifPresent(ctx::write)
+                    );
             }
         }
         ctx.flush();

@@ -19,6 +19,11 @@ public class UOContainer extends UOItem implements Container {
         this.containerGumpId = prototype.getContainer().getGumpId();
     }
 
+    public UOContainer(UOItem item, int containerGumpId) {
+        super(item);
+        this.containerGumpId = containerGumpId;
+    }
+
     @Override
     public void addItemToContainer(UOItem item) {
         item.setContainer(this);

@@ -3,7 +3,6 @@ package com.github.mayconr.juoserver.game.core.session.game;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.mayconr.juoserver.game.core.database.Database;
 import com.github.mayconr.juoserver.game.core.event.EventBus;
 import com.github.mayconr.juoserver.game.core.event.NpcSessionCreated;
 import com.github.mayconr.juoserver.game.core.event.PlayerSessionClosed;
@@ -15,6 +14,7 @@ import com.github.mayconr.juoserver.game.core.session.player.DefaultPlayerSessio
 import com.github.mayconr.juoserver.game.core.session.player.PlayerSession;
 import com.github.mayconr.juoserver.game.core.session.player.PlayerSessionFactory;
 import com.github.mayconr.juoserver.game.packet.DrawMobile;
+import com.github.mayconr.juoserver.game.storage.WorldService;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DefaultGameSession implements GameSession {
 
-    private final Database database;
+    private final WorldService worldService;
     private final ChannelGroup channelGroup;
     private final EventBus eventBus;
     private final PlayerSessionFactory playerSessionFactory;
@@ -52,7 +52,7 @@ public class DefaultGameSession implements GameSession {
 
     @Override
     public NpcSession createNpcSession(String name, Location location) {
-        final var npc = database.createNpcAtLocation(name, location);
+        final var npc = worldService.createNpcAtLocation(name, location);
         try {
             final var session =
                     npcNpcSessionMap.putIfAbsent(npc, npcSessionFactory.create(this, npc));

@@ -16,6 +16,11 @@ public class UONpc extends UOMobile {
     private String ai;
     private String mount;
 
+    public UONpc(UOMobile mobile) {
+        super(mobile);
+        this.type = NpcType.MONSTER;
+    }
+
     public UONpc(int serialId, NpcPrototype prototype, Location location) {
         super(
                 serialId,

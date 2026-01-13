@@ -75,12 +75,12 @@ public enum Layer {
 
     private final int code;
 
-    public static Layer byCode(int code) {
+    public static Layer fromCode(int code) {
         for (Layer layer : values()) {
             if (layer.code == code) {
                 return layer;
             }
         }
-        throw new IllegalArgumentException("Layer not found " + code);
+        return Layer.INVALID;
     }
 }

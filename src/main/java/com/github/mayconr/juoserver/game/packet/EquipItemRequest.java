@@ -18,7 +18,7 @@ public class EquipItemRequest extends AbstractPacket {
         super(CODE, 10);
         buf.readByte(); // CODE
         this.itemSerialId = buf.readInt();
-        this.layer = Layer.byCode(buf.readByte());
+        this.layer = Layer.fromCode(buf.readByte());
         this.playerSerialId = buf.readInt();
     }
 }
