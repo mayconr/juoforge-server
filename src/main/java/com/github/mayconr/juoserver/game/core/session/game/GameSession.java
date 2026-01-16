@@ -7,6 +7,7 @@ import com.github.mayconr.juoserver.game.core.model.UOPlayer;
 import com.github.mayconr.juoserver.game.core.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.core.session.player.PlayerSession;
 
+import com.github.mayconr.juoserver.game.core.session.SessionOutbound;
 import io.netty.channel.ChannelHandlerContext;
 
 public interface GameSession {
@@ -17,7 +18,7 @@ public interface GameSession {
 
     NpcSession createNpcSession(String name, Location location);
 
-    PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx);
+    PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx, SessionOutbound outbound);
 
     UOItem createItemAtLocation(String name, Location location);
 

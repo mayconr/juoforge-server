@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.game.core.model.*;
 import com.github.mayconr.juoserver.game.core.prototype.ItemPrototype;
 import com.github.mayconr.juoserver.game.core.prototype.PrototypeManager;
 import com.github.mayconr.juoserver.game.storage.item.ItemStorage;
+import com.github.mayconr.juoserver.game.storage.mobile.MobileFactory;
 import com.github.mayconr.juoserver.game.storage.mobile.MobileStorage;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,8 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 @Slf4j
 public class CachedWorldService implements WorldService {
@@ -28,12 +27,15 @@ public class CachedWorldService implements WorldService {
     private static final AtomicInteger OBJECT_COUNTER = new AtomicInteger(OBJECTS_MIN_SERIAL_ID);
     private static final Map<Long, List<UOItem>> GROUNDED_ITEMS = new ConcurrentHashMap<>();
 
-    private final Map<Integer, UOMobile> mobilesCached = new ConcurrentHashMap<>();
-    private final ItemCache itemCache = new ItemCache();
-
     private final PrototypeManager prototypeManager;
     private final MobileStorage mobileStorage;
     private final ItemStorage itemStorage;
+
+    private final MobileCache mobileCache = new MobileCache();
+    private final WorldMobileIndex worldMobileIndex = new WorldMobileIndex();
+
+    private final ItemCache itemCache = new ItemCache();
+    private final WorldItemIndex worldItemIndex = new WorldItemIndex();
 
     public CachedWorldService(
             PrototypeManager prototypeManager,
@@ -42,71 +44,11 @@ public class CachedWorldService implements WorldService {
         this.prototypeManager = prototypeManager;
         this.mobileStorage = mobileStorage;
         this.itemStorage = itemStorage;
-        createData();
-    }
-
-    private void createData() {
-        final var admin = new UOAccount(UUID.randomUUID(), "admin", "admin");
-
-        final var elrond =
-                new UOPlayer(
-                        MOBILE_COUNTER.getAndIncrement(),
-                        0x190,
-                        2514,
-                        550,
-                        0,
-                        "Elrond",
-                        Direction.NORTH,
-                        0x83EA,
-                        CharacterStatus.NORMAL,
-                        Notoriety.CRIMINAL,
-                        admin.getId().toString(),
-                        "admin");
-        final var elrondBackpack =
-                new UOContainer(
-                        OBJECT_COUNTER.getAndIncrement(),
-                        prototypeManager.getItemByName("backpack").orElseThrow(),
-                        new PointInTheWorld(0, 0, 0));
-        elrond.setBackpack(elrondBackpack);
-        equipItem(elrond, Layer.OUTER_TORSO, "robe2");
-        OBJECTS.add(elrondBackpack);
-        MOBILES.add(elrond);
-
-        final var user = new UOAccount(UUID.randomUUID(), "user", "user");
-
-        final var legolaz =
-                new UOPlayer(
-                        MOBILE_COUNTER.getAndIncrement(),
-                        0x190,
-                        2514,
-                        550,
-                        0,
-                        "Legolaz",
-                        Direction.NORTH,
-                        0x83EA,
-                        CharacterStatus.NORMAL,
-                        Notoriety.CRIMINAL,
-                        user.getId().toString(),
-                        "admin");
-        legolaz.setStrength(10);
-        legolaz.setDexterity(20);
-        legolaz.setMana(11);
-        legolaz.setStamina(100);
-        legolaz.setMaxStamina(120);
-        final var backpack =
-                new UOContainer(
-                        OBJECT_COUNTER.getAndIncrement(),
-                        prototypeManager.getItemByName("backpack").orElseThrow(),
-                        new PointInTheWorld(0, 0, 0));
-        legolaz.setBackpack(backpack);
-        equipItem(legolaz, Layer.OUTER_TORSO, "robe");
-        OBJECTS.add(backpack);
-        MOBILES.add(legolaz);
     }
 
     @Override
     public CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId) {
-        var cached = mobilesCached.get(serialId);
+        var cached = mobileCache.get(serialId);
         if (cached != null) {
             log.info("Mobile [{}] recovered from cache", serialId);
             return CompletableFuture.completedFuture(Optional.of(cached));
@@ -124,7 +66,7 @@ public class CachedWorldService implements WorldService {
                 .thenApply(itemCache::putAll)
                 .thenApply(items -> {
                     items.forEach(mobile::equipItem);
-                    mobilesCached.put(mobile.getSerialId(), mobile);
+                    mobileCache.put(mobile);
                     return Optional.of(mobile);
                 });
     }
@@ -138,7 +80,7 @@ public class CachedWorldService implements WorldService {
 
         return itemStorage.findItemBySerialId(serialId)
                 .thenApply(opt -> opt.map(itemCache::put))
-                .whenComplete((opt, thowable)->{
+                .whenComplete((opt, throwable)->{
                     opt.ifPresent(item->{
                         log.info("Item [{}={}] loaded from database", item.getSerialId(), item.getName());
                     });
@@ -153,23 +95,10 @@ public class CachedWorldService implements WorldService {
                     .thenApply(itemOpt ->
                             itemOpt.map(item -> (Container) item)
                     )))
-                .exceptionally(new Function<Throwable, Optional<Container>>() {
-                    @Override
-                    public Optional<Container> apply(Throwable throwable) {
-                        log.error("Unable do process container by serialId {}", serialId, throwable);
-                        return Optional.empty();
-                    }
+                .exceptionally(throwable -> {
+                    log.error("Unable do process container by serialId {}", serialId, throwable);
+                    return Optional.empty();
                 });
-    }
-
-    private void equipItem(UOMobile mobile, Layer layer, String name) {
-        final var item =
-                new UOItem(
-                        OBJECT_COUNTER.getAndIncrement(),
-                        prototypeManager.getItemByName(name).orElseThrow(),
-                        new PointInTheWorld(0, 0, 0));
-        OBJECTS.add(item);
-        mobile.equipItem(layer, item);
     }
 
     @Override
@@ -180,16 +109,26 @@ public class CachedWorldService implements WorldService {
     }
 
     @Override
-    public Stream<UOMobile> getMobilesInRange(Location location, MobileFilter filter) {
-        return MOBILES.stream()
-                .filter(
-                        mobile ->
-                                switch (filter) {
-                                    case ALL -> true;
-                                    case ALL_VISIBLE -> (mobile instanceof UOPlayer player
-                                                    && player.isConnected())
-                                            || mobile instanceof UONpc;
-                                });
+    public CompletableFuture<List<UOMobile>> getMobilesInRange(Location location) {
+        List<Integer> serials =
+                worldMobileIndex.getSerialsInRange(location);
+
+        List<UOMobile> result = new ArrayList<>(serials.size());
+
+        for (Integer serial : serials) {
+            UOMobile mobile = mobileCache.get(serial);
+            if (mobile != null) {
+                result.add(mobile);
+            }
+        }
+
+        return CompletableFuture.completedFuture(result);
+    }
+
+    @Override
+    public void moveMobile(UOMobile mobile) {
+        worldMobileIndex.remove(mobile);
+        worldMobileIndex.add(mobile);
     }
 
     @Override
@@ -198,23 +137,20 @@ public class CachedWorldService implements WorldService {
     }
 
     @Override
-    public UOPlayer createPlayer(PlayerDetails details) {
-        final var mobile =
-                new UOPlayer(
-                        MOBILE_COUNTER.getAndIncrement(),
-                        0x190,
-                        2514,
-                        550,
-                        0,
-                        details.name(),
-                        Direction.NORTH,
-                        0x83EA,
-                        CharacterStatus.NORMAL,
-                        Notoriety.INNOCENT,
-                        details.account().getId().toString(),
-                        "temp");
-        MOBILES.add(mobile);
-        return mobile;
+    public CompletableFuture<UOPlayer> createPlayer(PlayerDetails details) {
+        return mobileStorage.saveMobileFull(MobileFactory.createNewPlayer(details))
+                .thenApply(mobile->{
+                    mobileCache.put(mobile);
+                    worldMobileIndex.add(mobile);
+
+                    log.info("Player [{}-{}] created!", mobile.getSerialId(), mobile.getName());
+                    return (UOPlayer) mobile;
+                })
+                .whenComplete((mobile, throwable)->{
+                    if (throwable != null) {
+                        log.error("Unable to create new player", throwable);
+                    }
+                });
     }
 
     @Override
@@ -280,15 +216,8 @@ public class CachedWorldService implements WorldService {
 
     @Override
     public void dropItemOnTheGround(UOItem item) {
-        int blockX = item.getX() / 24;
-        int blockY = item.getY() / 24;
-        long key = regionKey(blockX, blockY);
-        List<UOItem> items =
-                GROUNDED_ITEMS.computeIfAbsent(
-                        key, aLong -> Collections.synchronizedList(new ArrayList<>(10)));
-        synchronized (items) {
-            items.add(item);
-        }
+        itemCache.put(item);
+        worldItemIndex.add(item);
     }
 
     @Override
@@ -305,20 +234,20 @@ public class CachedWorldService implements WorldService {
     }
 
     @Override
-    public List<UOItem> getItemsInRange(Location location) {
-        final int blockX = location.getX() / 24;
-        final int blockY = location.getY() / 24;
-        final List<UOItem> items = new ArrayList<>(90);
-        for (int x = -1; x <= 1; x++) {
-            for (int y = -1; y <= 1; y++) {
-                final long key = regionKey(blockX + x, blockY + y);
-                final var partialItems = GROUNDED_ITEMS.get(key);
-                if (partialItems != null && !partialItems.isEmpty()) {
-                    items.addAll(partialItems);
-                }
+    public CompletableFuture<List<UOItem>> getItemsInRange(Location location) {
+        List<Integer> serials =
+                worldItemIndex.getSerialsInRange(location);
+
+        List<UOItem> result = new ArrayList<>(serials.size());
+
+        for (Integer serial : serials) {
+            UOItem item = itemCache.get(serial);
+            if (item != null) {
+                result.add(item);
             }
         }
-        return items;
+
+        return CompletableFuture.completedFuture(result);
     }
 
     private long regionKey(int x, int y) {
@@ -333,5 +262,53 @@ public class CachedWorldService implements WorldService {
     @Override
     public void deleteItem(UOItem item) {
         OBJECTS.remove(item);
+    }
+
+    @Override
+    public CompletableFuture<Collection<UOMobile>> saveMobileRuntime() {
+        return mobileStorage.saveRuntime(mobileCache.getMobiles())
+                .whenComplete((mobiles, throwable)->{
+                    if (throwable != null) {
+                        log.error("Unable to save mobiles runtime", throwable);
+                        return;
+                    }
+                    log.info("Mobiles runtime saved!");
+                });
+    }
+
+    @Override
+    public CompletableFuture<Collection<UOMobile>> saveMobileVitals() {
+        return mobileStorage.saveVitals(mobileCache.getMobiles())
+                .whenComplete((mobiles, throwable)->{
+                    if (throwable != null) {
+                        log.error("Unable to save mobiles vitals", throwable);
+                        return;
+                    }
+                    log.info("Mobiles vitals saved!");
+                });
+    }
+
+    @Override
+    public CompletableFuture<Collection<UOMobile>> saveMobileAttributes() {
+        return mobileStorage.saveAttributes(mobileCache.getMobiles())
+                .whenComplete((mobiles, throwable)->{
+                    if (throwable != null) {
+                        log.error("Unable to save mobiles attributes", throwable);
+                        return;
+                    }
+                    log.info("Mobiles attributes saved!");
+                });
+    }
+
+    @Override
+    public CompletableFuture<Collection<UOMobile>> saveMobiles() {
+        return mobileStorage.saveMobiles(mobileCache.getMobiles())
+                .whenComplete((mobiles, throwable)->{
+                    if (throwable != null) {
+                        log.error("Unable to save mobiles", throwable);
+                        return;
+                    }
+                    log.info("Mobiles saved!");
+                });
     }
 }

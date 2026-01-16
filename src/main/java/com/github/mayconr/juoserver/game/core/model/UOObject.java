@@ -13,7 +13,7 @@ import lombok.ToString;
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UOObject implements Location, AttributeSupport {
-    @EqualsAndHashCode.Include @ToString.Include private final int serialId;
+    @EqualsAndHashCode.Include @ToString.Include private int serialId;
     private int modelId;
     private int x;
     private int y;

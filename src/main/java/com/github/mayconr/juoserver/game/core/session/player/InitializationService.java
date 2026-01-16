@@ -3,15 +3,17 @@ package com.github.mayconr.juoserver.game.core.session.player;
 import com.github.mayconr.juoserver.game.core.event.EventBus;
 import com.github.mayconr.juoserver.game.core.event.PlayerSessionStarted;
 import com.github.mayconr.juoserver.game.core.model.Season;
+import com.github.mayconr.juoserver.game.core.model.UOItem;
 import com.github.mayconr.juoserver.game.core.model.UOMobile;
+import com.github.mayconr.juoserver.game.core.session.SessionFanout;
+import com.github.mayconr.juoserver.game.core.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.packet.*;
-import com.github.mayconr.juoserver.game.storage.MobileFilter;
+import com.github.mayconr.juoserver.game.server.Future;
 import com.github.mayconr.juoserver.game.storage.WorldService;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,26 +21,44 @@ class InitializationService {
 
     private final UOMobile mobile;
     private final EventBus eventBus;
-    private final ChannelGroup channelGroup;
-    private final ChannelHandlerContext ctx;
     private final WorldService worldService;
+    private final SessionOutbound outbound;
+    private final SessionFanout fanout;
 
     public void initialize(PlayerSession session, String clientVersion) {
-        ctx.write(new LoginConfirm(mobile, 7168, 4096));
-        ctx.write(new SeasonalInformation(Season.Summer, true));
-        worldService
-                .getMobilesInRange(mobile, MobileFilter.ALL_VISIBLE)
-                .filter(someone -> !someone.equals(mobile)) // avoid unnecessary packet
-                .forEach(someone -> ctx.write(new DrawMobile(someone)));
-        worldService.getItemsInRange(mobile).forEach(item -> ctx.write(new ObjectInfo(item)));
-        ctx.write(new DrawGamePlayer(mobile));
-        ctx.write(new DrawMobile(mobile));
-        ctx.write(new StatusBarInfo(mobile));
-        ctx.write(new LoginComplete());
-        ctx.flush();
+        outbound.write(new LoginConfirm(mobile, 7168, 4096));
+        outbound.write(new SeasonalInformation(Season.Summer, true));
 
-        channelGroup.writeAndFlush(
-                new DrawMobile(mobile), channel -> !channel.equals(ctx.channel()));
+        Future.fire(worldService.getMobilesInRange(mobile)
+            .thenAccept(mobiles->{
+                drawMobiles(mobiles);
+                Future.fire(worldService.getItemsInRange(mobile)
+                    .thenAccept(items->{
+                        drawItems(items);
+                        finalizeLogin(session);
+                    }));
+            })
+        );
+    }
+
+    private void drawMobiles(List<UOMobile> mobiles) {
+        mobiles.stream()
+                .filter(someone -> !someone.equals(mobile))
+                .forEach(someone -> outbound.write(new DrawMobile(someone)));
+    }
+
+    private void drawItems(List<UOItem> items) {
+        items.forEach(item -> outbound.write(new ObjectInfo(item)));
+    }
+
+    private void finalizeLogin(PlayerSession session) {
+        outbound.write(new DrawGamePlayer(mobile));
+        outbound.write(new DrawMobile(mobile));
+        outbound.write(new StatusBarInfo(mobile));
+        outbound.write(new LoginComplete());
+        outbound.flush();
+
+        fanout.writeAndFlush(new DrawMobile(mobile));
 
         log.info("Session initialized for {}", mobile);
 

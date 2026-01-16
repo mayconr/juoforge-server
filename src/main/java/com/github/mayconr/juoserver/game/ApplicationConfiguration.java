@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver.game;
 
 import java.util.List;
 
+import com.github.mayconr.juoserver.game.core.session.ChannelGroupSessionFanout;
+import com.github.mayconr.juoserver.game.core.session.SessionFanout;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -99,6 +101,7 @@ public class ApplicationConfiguration {
     public GameSession gameSession(
             WorldService worldService,
             ChannelGroup channelGroup,
+            SessionFanout fanout,
             PlayerSessionFactory playerSessionFactory,
             NpcSessionFactory npcSessionFactory,
             EventBus eventBus) {
@@ -107,6 +110,7 @@ public class ApplicationConfiguration {
         return new DefaultGameSession(
                 worldService,
                 channelGroup,
+                fanout,
                 eventBus,
                 playerSessionFactory,
                 npcSessionFactory,
@@ -128,7 +132,7 @@ public class ApplicationConfiguration {
                 new PingPongHandler(),
                 new LoginCharacterHandler(gameSession, worldService),
                 new DeleteCharacterHandler(worldService),
-                new CreateCharacterHandler(worldService),
+                new CreateCharacterHandler(worldService, gameSession, mobileStorage),
                 new ClientVersionHandler(gameSession),
                 new MoveRequestHandler(),
                 new DoubleClickHandler(),
@@ -151,6 +155,11 @@ public class ApplicationConfiguration {
     @Bean
     public ChannelGroup channelGroup() {
         return new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    }
+
+    @Bean
+    public SessionFanout sessionFanout(ChannelGroup channelGroup) {
+        return new ChannelGroupSessionFanout(channelGroup);
     }
 
     @Qualifier("parent")

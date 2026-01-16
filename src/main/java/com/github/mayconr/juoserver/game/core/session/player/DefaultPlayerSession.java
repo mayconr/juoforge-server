@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.mayconr.juoserver.game.core.model.*;
 import com.github.mayconr.juoserver.game.core.session.game.GameSession;
+import com.github.mayconr.juoserver.game.core.session.player.speech.SpeechService;
 import com.github.mayconr.juoserver.game.packet.*;
 
 import lombok.RequiredArgsConstructor;

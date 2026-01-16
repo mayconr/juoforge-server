@@ -1,14 +1,13 @@
 package com.github.mayconr.juoserver.game.shard.commands;
 
-import static com.github.mayconr.juoserver.game.core.gump.DeclarativeGumpUI.*;
-
 import com.github.mayconr.juoserver.game.core.event.HandlerResult;
 import com.github.mayconr.juoserver.game.core.event.Prompt;
 import com.github.mayconr.juoserver.game.core.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.core.gump.GumpSystem;
-import com.github.mayconr.juoserver.game.core.gump.Page;
 import com.github.mayconr.juoserver.game.core.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.core.session.game.GameSession;
+
+import static com.github.mayconr.juoserver.game.core.gump.DeclarativeGumpUI.*;
 
 public class Goto extends AbstractCommand {
 

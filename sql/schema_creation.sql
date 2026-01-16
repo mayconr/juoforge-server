@@ -1,3 +1,10 @@
+CREATE SEQUENCE mobile_serial_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 1073741823
+    NO CYCLE;
+
 CREATE TABLE accounts (
   id UUID PRIMARY KEY,
   username   VARCHAR(32) NOT NULL UNIQUE,
@@ -37,6 +44,15 @@ CREATE TABLE mobiles (
 );
 CREATE INDEX idx_mobiles_serial ON mobiles(serial_id);
 CREATE INDEX idx_mobiles_account ON mobiles(account_id);
+CREATE UNIQUE INDEX idx_mobiles_name ON mobiles (LOWER(name));
+
+ALTER TABLE mobiles
+    ALTER COLUMN serial_id
+        SET DEFAULT nextval('mobile_serial_seq');
+
+ALTER TABLE mobiles
+    ADD CONSTRAINT chk_mobile_serial_range
+        CHECK (serial_id BETWEEN 1 AND 1073741823);
 
 CREATE TABLE mobile_attributes (
    mobile_id UUID PRIMARY KEY,

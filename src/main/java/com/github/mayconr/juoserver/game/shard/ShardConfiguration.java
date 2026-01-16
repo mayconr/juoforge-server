@@ -6,6 +6,8 @@ import java.util.concurrent.Executors;
 import javax.sql.DataSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mayconr.juoserver.game.shard.commands.Save;
+import com.github.mayconr.juoserver.game.storage.WorldService;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +50,7 @@ public class ShardConfiguration {
 
         config.setMaximumPoolSize(20);
         config.setMinimumIdle(5);
-        config.setAutoCommit(false);
+        config.setAutoCommit(true);
 
         return new HikariDataSource(config);
     }
@@ -70,9 +72,10 @@ public class ShardConfiguration {
 
     @Bean
     public ApplicationRunner configure(
-            EventBus bus, GumpSystem gumpSystem, GameSession gameSession) {
+            EventBus bus, GumpSystem gumpSystem, GameSession gameSession, WorldService worldService) {
         return args -> {
             bus.register(new Goto(gumpSystem, gameSession));
+            bus.register(new Save(worldService));
         };
     }
 }

@@ -8,12 +8,14 @@ import com.github.mayconr.juoserver.game.core.event.NpcSessionCreated;
 import com.github.mayconr.juoserver.game.core.event.PlayerSessionClosed;
 import com.github.mayconr.juoserver.game.core.event.PlayerSessionCreated;
 import com.github.mayconr.juoserver.game.core.model.*;
+import com.github.mayconr.juoserver.game.core.session.SessionFanout;
 import com.github.mayconr.juoserver.game.core.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.core.session.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.core.session.player.DefaultPlayerSession;
 import com.github.mayconr.juoserver.game.core.session.player.PlayerSession;
 import com.github.mayconr.juoserver.game.core.session.player.PlayerSessionFactory;
 import com.github.mayconr.juoserver.game.packet.DrawMobile;
+import com.github.mayconr.juoserver.game.core.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.storage.WorldService;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -27,6 +29,7 @@ public class DefaultGameSession implements GameSession {
 
     private final WorldService worldService;
     private final ChannelGroup channelGroup;
+    private final SessionFanout fanout;
     private final EventBus eventBus;
     private final PlayerSessionFactory playerSessionFactory;
     private final NpcSessionFactory npcSessionFactory;
@@ -65,31 +68,24 @@ public class DefaultGameSession implements GameSession {
     }
 
     @Override
-    public PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx) {
-        return playerSessionMap.computeIfAbsent(
-                player,
-                pl -> {
-                    final var session =
-                            (DefaultPlayerSession)
-                                    playerSessionFactory.createPlayerSession(pl, ctx);
-                    ctx.channel()
-                            .closeFuture()
-                            .addListener(
-                                    future -> {
-                                        session.setActive(false);
-                                        playerSessionMap.remove(pl);
-                                        eventBus.publish(new PlayerSessionClosed(session));
-                                        log.info(
-                                                "Session closed for mobile [{}-{}]",
-                                                pl.getSerialId(),
-                                                pl.getName());
-                                    });
-                    session.setActive(true);
+    public PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx, SessionOutbound outbound) {
+        return playerSessionMap.computeIfAbsent(player, pl -> {
+            final var session = (DefaultPlayerSession) playerSessionFactory.createPlayerSession(pl, ctx, outbound, fanout);
 
-                    eventBus.publish(new PlayerSessionCreated(session));
+            outbound.onChannelClosed(()->{
+                session.setActive(false);
+                playerSessionMap.remove(pl);
+                eventBus.publish(new PlayerSessionClosed(session));
+                log.info(
+                        "Session closed for mobile [{}-{}]",
+                        pl.getSerialId(),
+                        pl.getName());
+            });
+            session.setActive(true);
+            eventBus.publish(new PlayerSessionCreated(session));
 
-                    return session;
-                });
+            return session;
+        });
     }
 
     @Override

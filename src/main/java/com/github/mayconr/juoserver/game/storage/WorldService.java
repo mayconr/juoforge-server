@@ -2,10 +2,10 @@ package com.github.mayconr.juoserver.game.storage;
 
 import com.github.mayconr.juoserver.game.core.model.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 public interface WorldService {
 
@@ -17,11 +17,13 @@ public interface WorldService {
 
     List<UOCity> getCities();
 
-    Stream<UOMobile> getMobilesInRange(Location location, MobileFilter filter);
+    CompletableFuture<List<UOMobile>> getMobilesInRange(Location location);
+
+    void moveMobile(UOMobile mobile);
 
     void deleteMobile(UOMobile mobile);
 
-    UOPlayer createPlayer(PlayerDetails details);
+    CompletableFuture<UOPlayer> createPlayer(PlayerDetails details);
 
     UONpc createNpcAtLocation(String name, Location location);
 
@@ -56,9 +58,17 @@ public interface WorldService {
 
     void removeItemFromTheGround(UOItem item);
 
-    List<UOItem> getItemsInRange(Location location);
+    CompletableFuture<List<UOItem>> getItemsInRange(Location location);
 
     void deleteItem(UOItem item);
 
     boolean isMobile(int serialId);
+
+    CompletableFuture<Collection<UOMobile>> saveMobileRuntime();
+
+    CompletableFuture<Collection<UOMobile>> saveMobileVitals();
+
+    CompletableFuture<Collection<UOMobile>> saveMobileAttributes();
+
+    CompletableFuture<Collection<UOMobile>> saveMobiles();
 }

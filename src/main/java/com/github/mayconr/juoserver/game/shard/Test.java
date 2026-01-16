@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import com.github.mayconr.juoserver.game.core.event.*;
 import com.github.mayconr.juoserver.game.core.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.core.gump.GumpSystem;
-import com.github.mayconr.juoserver.game.core.gump.TextField;
 import com.github.mayconr.juoserver.game.core.model.CursorType;
 import com.github.mayconr.juoserver.game.core.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.core.session.game.GameSession;
@@ -37,7 +36,7 @@ public class Test {
                         });
 
         // eventBus.register(MobileMove.class, this::onMove);
-        eventBus.register(MobileSpeech.class, this::speech);
+        eventBus.register(MobileSpoke.class, this::speech);
         eventBus.register(
                 Prompt.class,
                 this::createNpc,
@@ -128,7 +127,7 @@ public class Test {
         return HandlerResult.CONTINUE;
     }
 
-    public HandlerResult speech(MobileSpeech spoke) {
+    public HandlerResult speech(MobileSpoke spoke) {
         System.out.println("falou " + spoke.message());
         return HandlerResult.CONTINUE;
     }

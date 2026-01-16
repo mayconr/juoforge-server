@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.github.mayconr.juoserver.game.core.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.game.core.event.EventBus;
 import com.github.mayconr.juoserver.game.core.event.HandlerResult;
-import com.github.mayconr.juoserver.game.core.event.MobileSpeech;
+import com.github.mayconr.juoserver.game.core.event.MobileSpoke;
 import com.github.mayconr.juoserver.game.core.gameloop.IntervalGameTask;
 import com.github.mayconr.juoserver.game.core.model.Container;
 import com.github.mayconr.juoserver.game.core.model.UOContainer;
@@ -73,7 +73,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         // this.npcSession.move(Direction.NORTH);
     }
 
-    public HandlerResult onMobileSpeech(MobileSpeech speech) {
+    public HandlerResult onMobileSpeech(MobileSpoke speech) {
         final var mobile = speech.mobile();
 
         // speaker must be a player
