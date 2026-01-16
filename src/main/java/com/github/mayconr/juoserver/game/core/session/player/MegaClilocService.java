@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.core.session.player;
 
 import com.github.mayconr.juoserver.game.core.model.UOMobile;
+import com.github.mayconr.juoserver.game.core.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.packet.MegaCliloc;
 import com.github.mayconr.juoserver.game.storage.WorldService;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,7 +16,7 @@ import java.util.Optional;
 class MegaClilocService {
 
     private final UOMobile mobile;
-    private final ChannelHandlerContext ctx;
+    private final SessionOutbound outbound;
     private final WorldService worldService;
 
     public void handleMegaCliloc(List<Integer> serialList) {
@@ -29,7 +30,7 @@ class MegaClilocService {
                         }
                     })
                     .thenAccept(opt -> {
-                        opt.map(MegaCliloc::new).ifPresent(ctx::write);
+                        opt.map(MegaCliloc::new).ifPresent(outbound::writeAndFlush);
                     });
             } else {
                 worldService.findItemBySerialId(serialId)
@@ -40,10 +41,9 @@ class MegaClilocService {
                     })
                     .thenAccept(opt ->
                             opt.map(MegaCliloc::new)
-                                    .ifPresent(ctx::write)
+                                    .ifPresent(outbound::writeAndFlush)
                     );
             }
         }
-        ctx.flush();
     }
 }

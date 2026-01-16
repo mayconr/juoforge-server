@@ -13,6 +13,7 @@ import com.github.mayconr.juoserver.game.storage.WorldService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -26,32 +27,30 @@ class InitializationService {
     private final SessionFanout fanout;
 
     public void initialize(PlayerSession session, String clientVersion) {
+        worldService.getMobilesInRange(mobile)
+            .thenCombine(worldService.getItemsInRange(mobile), (mobiles, items)->{
+                finalizeLogin(mobiles, items, session);
+                return null;
+            }).exceptionally(throwable -> {
+                log.info("Erro to init session", throwable);
+                return null;
+            });
+    }
+
+    private void finalizeLogin(Collection<UOMobile> mobiles, Collection<UOItem> items, PlayerSession session) {
         outbound.write(new LoginConfirm(mobile, 7168, 4096));
         outbound.write(new SeasonalInformation(Season.Summer, true));
 
-        Future.fire(worldService.getMobilesInRange(mobile)
-            .thenAccept(mobiles->{
-                drawMobiles(mobiles);
-                Future.fire(worldService.getItemsInRange(mobile)
-                    .thenAccept(items->{
-                        drawItems(items);
-                        finalizeLogin(session);
-                    }));
-            })
-        );
-    }
+        for (UOMobile someone : mobiles) {
+            if (!someone.equals(mobile)) {
+                outbound.write(new DrawMobile(someone));
+            }
+        }
 
-    private void drawMobiles(List<UOMobile> mobiles) {
-        mobiles.stream()
-                .filter(someone -> !someone.equals(mobile))
-                .forEach(someone -> outbound.write(new DrawMobile(someone)));
-    }
+        for (UOItem item : items) {
+            outbound.write(new ObjectInfo(item));
+        }
 
-    private void drawItems(List<UOItem> items) {
-        items.forEach(item -> outbound.write(new ObjectInfo(item)));
-    }
-
-    private void finalizeLogin(PlayerSession session) {
         outbound.write(new DrawGamePlayer(mobile));
         outbound.write(new DrawMobile(mobile));
         outbound.write(new StatusBarInfo(mobile));

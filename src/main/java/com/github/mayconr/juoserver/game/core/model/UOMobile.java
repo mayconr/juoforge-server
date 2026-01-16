@@ -299,8 +299,6 @@ public class UOMobile extends UOObject implements Container {
         this.fasterCastRecovery = fasterCastRecovery;
         this.fasterCasting = fasterCasting;
         this.lowerManaCost = lowerManaCost;
-
-        this.backpack = backpack;
     }
 
     public UOMobile(
@@ -378,9 +376,16 @@ public class UOMobile extends UOObject implements Container {
         return backpack.getContainerGumpId();
     }
 
+    @Deprecated
     public void move(Direction direction) {
         this.direction = direction;
         setLocation(getX() + direction.getDx(), getY() + direction.getDy());
+    }
+
+    public void applyMovement(MovementResult result) {
+        this.direction = result.direction();
+        this.running = result.running();
+        setLocation(result.to());
     }
 
     public boolean isWarMode() {

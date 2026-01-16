@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.game.storage;
 import com.github.mayconr.juoserver.game.core.model.*;
 import com.github.mayconr.juoserver.game.core.prototype.ItemPrototype;
 import com.github.mayconr.juoserver.game.core.prototype.PrototypeManager;
+import com.github.mayconr.juoserver.game.packet.MoveRequest;
 import com.github.mayconr.juoserver.game.storage.item.ItemStorage;
 import com.github.mayconr.juoserver.game.storage.mobile.MobileFactory;
 import com.github.mayconr.juoserver.game.storage.mobile.MobileStorage;
@@ -126,9 +127,26 @@ public class CachedWorldService implements WorldService {
     }
 
     @Override
-    public void moveMobile(UOMobile mobile) {
-        worldMobileIndex.remove(mobile);
-        worldMobileIndex.add(mobile);
+    public MovementResult tryMove(UOMobile mobile, MoveRequest request) {
+        final var direction = request.getDirection();
+        Location to;
+        if (mobile.getDirection().equals(direction)) {
+            to = new PointInTheWorld(mobile.getX() + direction.getDx(), mobile.getY() + direction.getDy(), mobile.getZ());
+        } else {
+            to = mobile;
+        }
+        return MovementResult.success(mobile, direction, to, request.isRunning());
+    }
+
+    @Override
+    public void applyMove(UOMobile mobile, MovementResult result) {
+        synchronized (this) {
+            worldMobileIndex.remove(mobile);
+            mobile.setDirection(result.direction());
+            mobile.setRunning(result.running());
+            mobile.setLocation(result.to());
+            worldMobileIndex.add(mobile);
+        }
     }
 
     @Override

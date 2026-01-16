@@ -1,10 +1,10 @@
 package com.github.mayconr.juoserver.game.core.session.player;
 
 import com.github.mayconr.juoserver.game.core.model.*;
+import com.github.mayconr.juoserver.game.core.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.packet.*;
 import com.github.mayconr.juoserver.game.storage.WorldService;
 
-import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +14,7 @@ class DoubleClickService {
 
     private final UOPlayer player;
     private final WorldService worldService;
-    private final ChannelHandlerContext ctx;
+    private final SessionOutbound outbound;
     private final MountService mountService;
 
     public void handleDoubleClick(DoubleClick doubleClick) {
@@ -77,7 +77,7 @@ class DoubleClickService {
 
                         final var mobile = mobOpt.get();
 
-                        ctx.writeAndFlush(new OpenPaperdoll(mobile, OpenPaperdoll.Flag.NORMAL));
+                        outbound.writeAndFlush(new OpenPaperdoll(mobile, OpenPaperdoll.Flag.NORMAL));
                     });
     }
 
@@ -103,20 +103,20 @@ class DoubleClickService {
     }
 
     private void openContainer(Container container) {
-        ctx.write(new DrawContainer(container));
+        outbound.write(new DrawContainer(container));
         if (!container.getItemsInContainer().isEmpty()) {
-            ctx.write(new AddMultipleItemsToContainer(
+            outbound.write(new AddMultipleItemsToContainer(
                     container,
                     container.getItemsInContainer()
             ));
         }
-        ctx.flush();
+        outbound.flush();
     }
 
     private void moveItemToPlayer(UOItem item) {
         player.addItemToContainer(item);
 
-        ctx.writeAndFlush(new AddItemToContainer(player, item));
+        outbound.writeAndFlush(new AddItemToContainer(player, item));
 
         log.info(
                 "Item [{}-{}] added to container [{}-{}]",

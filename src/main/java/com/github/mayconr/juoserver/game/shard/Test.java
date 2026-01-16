@@ -122,7 +122,7 @@ public class Test {
         return HandlerResult.CONTINUE;
     }
 
-    public HandlerResult onMove(MobileMove event) {
+    public HandlerResult onMove(MobileMoved event) {
         System.out.println(event.mobile() + " andou");
         return HandlerResult.CONTINUE;
     }

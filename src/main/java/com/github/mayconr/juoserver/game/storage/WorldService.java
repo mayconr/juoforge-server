@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.storage;
 
 import com.github.mayconr.juoserver.game.core.model.*;
+import com.github.mayconr.juoserver.game.packet.MoveRequest;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +20,9 @@ public interface WorldService {
 
     CompletableFuture<List<UOMobile>> getMobilesInRange(Location location);
 
-    void moveMobile(UOMobile mobile);
+    MovementResult tryMove(UOMobile mobile, MoveRequest request);
+
+    void applyMove(UOMobile mobile, MovementResult result);
 
     void deleteMobile(UOMobile mobile);
 

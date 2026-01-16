@@ -9,8 +9,8 @@ public class MovementAck extends AbstractPacket {
 
     public static final int CODE = (byte) 0x22;
 
-    private int sequence;
-    private Notoriety notoriety;
+    private final int sequence;
+    private final Notoriety notoriety;
 
     public MovementAck(int sequence, Notoriety notoriety) {
         super(CODE, 3);

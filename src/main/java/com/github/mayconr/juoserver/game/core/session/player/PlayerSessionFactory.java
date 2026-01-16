@@ -24,13 +24,13 @@ public class PlayerSessionFactory {
     public PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx, SessionOutbound outbound, SessionFanout fanout) {
         final var initializationService = new InitializationService(player, eventBus, worldService, outbound, fanout);
         final var speechService = new SpeechService(player, eventBus, fanout);
-        final var movementService = new MovementService(player, eventBus, channelGroup, ctx, worldService);
+        final var movementService = new MovementService(player, eventBus, outbound, fanout, worldService);
         final var itemIterationService = new ItemInteractionService(player, channelGroup, ctx, worldService);
-        final var megaClilocService = new MegaClilocService(player, ctx, worldService);
-        final var targetService = new TargetService(player, ctx, eventBus);
+        final var megaClilocService = new MegaClilocService(player, outbound, worldService);
+        final var targetService = new TargetService(player, outbound, eventBus);
         final var combatService = new CombatService(player, channelGroup, ctx, combatSystem);
-        final var mountService = new MountService(player, ctx, channelGroup, worldService);
-        final var clickService = new DoubleClickService(player, worldService, ctx, mountService);
+        final var mountService = new MountService(player, outbound, fanout, worldService);
+        final var clickService = new DoubleClickService(player, worldService, outbound, mountService);
         final var session =
                 new DefaultPlayerSession(
                         player,

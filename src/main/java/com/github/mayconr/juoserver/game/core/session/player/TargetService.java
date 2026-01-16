@@ -9,9 +9,9 @@ import com.github.mayconr.juoserver.game.core.event.SelectedStatics;
 import com.github.mayconr.juoserver.game.core.model.CursorTarget;
 import com.github.mayconr.juoserver.game.core.model.CursorType;
 import com.github.mayconr.juoserver.game.core.model.UOMobile;
+import com.github.mayconr.juoserver.game.core.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.packet.Target;
 
-import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,14 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 public class TargetService {
 
     private final UOMobile mobile;
-    private final ChannelHandlerContext ctx;
+    private final SessionOutbound outbound;
     private final EventBus eventBus;
     private final AtomicInteger cursorId = new AtomicInteger();
     private final Random random = new Random();
 
     public void handleSendTarget(CursorType type) {
         cursorId.set(random.nextInt());
-        ctx.writeAndFlush(new Target(cursorId.get(), CursorTarget.LOCATION, type));
+        outbound.writeAndFlush(new Target(cursorId.get(), CursorTarget.LOCATION, type));
         log.info("Target [{}] sent to client", 1);
     }
 

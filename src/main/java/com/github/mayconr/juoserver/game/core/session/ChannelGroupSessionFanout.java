@@ -14,11 +14,31 @@ public class ChannelGroupSessionFanout implements SessionFanout {
             if (!channel.isActive()) {
                 continue;
             }
-
             channel.eventLoop().execute(() -> {
                 channel.writeAndFlush(message);
             });
         }
     }
 
+    @Override
+    public void write(Object message) {
+        for (var channel : channelGroup) {
+            if (!channel.isActive()) {
+                continue;
+            }
+            channel.eventLoop().execute(() -> {
+                channel.write(message);
+            });
+        }
+    }
+
+    @Override
+    public void flush() {
+        for (var channel : channelGroup) {
+            if (!channel.isActive()) {
+                continue;
+            }
+            channel.eventLoop().execute(channel::flush);
+        }
+    }
 }

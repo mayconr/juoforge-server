@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
 import lombok.RequiredArgsConstructor;
 
+import java.util.concurrent.Executor;
+
 @RequiredArgsConstructor
 public final class SessionOutbound {
 
@@ -35,6 +37,10 @@ public final class SessionOutbound {
 
     public void onChannelClosed(Runnable task) {
         channel.closeFuture().addListener(future -> run(task));
+    }
+
+    public Executor getExecutor() {
+        return executor;
     }
 
     private void run(Runnable task) {
