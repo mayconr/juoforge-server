@@ -1,0 +1,27 @@
+package com.github.mayconr.juoserver.network.packet;
+
+import com.github.mayconr.juoserver.game.model.Notoriety;
+import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
+
+import io.netty.buffer.ByteBuf;
+
+public class MovementAck extends AbstractPacket {
+
+    public static final int CODE = (byte) 0x22;
+
+    private final int sequence;
+    private final Notoriety notoriety;
+
+    public MovementAck(int sequence, Notoriety notoriety) {
+        super(CODE, 3);
+        this.sequence = sequence;
+        this.notoriety = notoriety;
+    }
+
+    @Override
+    public void writesTo(ByteBuf buf) {
+        buf.writeByte(CODE);
+        buf.writeByte(sequence);
+        buf.writeByte(notoriety.getCode());
+    }
+}

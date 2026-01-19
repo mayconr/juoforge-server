@@ -3,8 +3,7 @@ package com.github.mayconr.juoserver.game.core.prototype;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.mayconr.juoserver.game.core.model.*;
-
+import com.github.mayconr.juoserver.game.model.*;
 import lombok.Data;
 
 @Data

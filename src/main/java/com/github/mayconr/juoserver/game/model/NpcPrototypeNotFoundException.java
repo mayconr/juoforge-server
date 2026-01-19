@@ -1,0 +1,7 @@
+package com.github.mayconr.juoserver.game.model;
+
+public class NpcPrototypeNotFoundException extends RuntimeException {
+    public NpcPrototypeNotFoundException(String name) {
+        super("Prototype not found for name [" + name + "]");
+    }
+}

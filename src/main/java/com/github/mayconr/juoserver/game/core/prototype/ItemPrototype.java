@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.core.prototype;
 
-import com.github.mayconr.juoserver.game.core.model.ItemType;
+import com.github.mayconr.juoserver.game.model.ItemType;
 
 import lombok.Data;
 
