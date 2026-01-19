@@ -4,11 +4,11 @@ import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
 
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import io.netty.channel.ChannelHandlerContext;
+import java.util.concurrent.CompletableFuture;
 
 public interface GameSession {
 
@@ -16,13 +16,15 @@ public interface GameSession {
 
     PlayerSession getPlayerSession(UOMobile mobile);
 
-    NpcSession createNpcSession(String name, Location location);
+    CompletableFuture<NpcSession> createNpcSession(String name, Location location);
 
-    PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx, SessionOutbound outbound);
+    PlayerSession createPlayerSession(UOPlayer player, SessionOutbound outbound);
 
-    UOItem createItemAtLocation(String name, Location location);
+    CompletableFuture<UOItem> createItemAtLocation(String name, Location location);
 
     void deleteItem(UOItem item);
 
     void moveItem(UOItem item, Location location);
+
+    void initialize();
 }

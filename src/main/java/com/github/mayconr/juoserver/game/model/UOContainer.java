@@ -1,27 +1,33 @@
 package com.github.mayconr.juoserver.game.model;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.github.mayconr.juoserver.game.core.prototype.ItemPrototype;
-
 import lombok.Getter;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public class UOContainer extends UOItem implements Container {
 
-    private final Map<Integer, UOItem> itensInContainer = new HashMap<>();
+    private final Map<Integer, UOItem> itensInContainer = new ConcurrentHashMap<>();
     private int containerGumpId;
 
-    public UOContainer(int serialId, ItemPrototype prototype, Location location) {
+    /*public UOContainer(int serialId, ItemPrototype prototype, Location location) {
         super(serialId, prototype, location);
         this.containerGumpId = prototype.getContainer().getGumpId();
-    }
+    }*/
 
     public UOContainer(UOItem item, int containerGumpId) {
         super(item);
         this.containerGumpId = containerGumpId;
+    }
+
+    @Override
+    public void addItemsToContainer(List<UOItem> items) {
+        for (UOItem item : items) {
+            this.addItemToContainer(item);
+        }
     }
 
     @Override
@@ -40,4 +46,5 @@ public class UOContainer extends UOItem implements Container {
         item.setContainer(null);
         itensInContainer.remove(item.getSerialId());
     }
+
 }

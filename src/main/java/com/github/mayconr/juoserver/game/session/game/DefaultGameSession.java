@@ -1,27 +1,26 @@
 package com.github.mayconr.juoserver.game.session.game;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.github.mayconr.juoserver.common.event.EventBus;
 import com.github.mayconr.juoserver.common.event.NpcSessionCreated;
 import com.github.mayconr.juoserver.common.event.PlayerSessionClosed;
 import com.github.mayconr.juoserver.common.event.PlayerSessionCreated;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
+import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.session.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.session.player.DefaultPlayerSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.network.packet.DrawMobile;
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.world.WorldService;
-
-import io.netty.channel.ChannelHandlerContext;
+import com.github.mayconr.juoserver.network.packet.DrawMobile;
 import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,6 +40,11 @@ public class DefaultGameSession implements GameSession {
     private final ItemService itemService;
 
     @Override
+    public void initialize() {
+        itemService.initialize();
+    }
+
+    @Override
     public void sendBroadcastMessage(String message) {
         messageService.handleSendBreadcastMessage(message);
     }
@@ -54,23 +58,25 @@ public class DefaultGameSession implements GameSession {
     }
 
     @Override
-    public NpcSession createNpcSession(String name, Location location) {
-        final var npc = worldService.createNpcAtLocation(name, location);
-        try {
-            final var session =
-                    npcNpcSessionMap.putIfAbsent(npc, npcSessionFactory.create(this, npc));
-            channelGroup.writeAndFlush(new DrawMobile(npc));
-            eventBus.publish(new NpcSessionCreated(session));
-            return session;
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to create AI for [" + npc.getAi() + "]", e);
-        }
+    public CompletableFuture<NpcSession> createNpcSession(String name, Location location) {
+        return worldService.createNpcAtLocation(name, location)
+            .thenApply(npc -> {
+                final var session = npcNpcSessionMap.putIfAbsent(npc, npcSessionFactory.create(this, npc));
+                channelGroup.writeAndFlush(new DrawMobile(npc));
+                eventBus.publish(new NpcSessionCreated(session));
+                return session;
+            })
+            .whenComplete(((npcSession, throwable) -> {
+                if (throwable != null) {
+                    log.error("Unable to create session for [{}]",name, throwable);
+                }
+            }));
     }
 
     @Override
-    public PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx, SessionOutbound outbound) {
+    public PlayerSession createPlayerSession(UOPlayer player, SessionOutbound outbound) {
         return playerSessionMap.computeIfAbsent(player, pl -> {
-            final var session = (DefaultPlayerSession) playerSessionFactory.createPlayerSession(pl, ctx, outbound, fanout);
+            final var session = (DefaultPlayerSession) playerSessionFactory.createPlayerSession(pl, outbound, fanout);
 
             outbound.onChannelClosed(()->{
                 session.setActive(false);
@@ -89,7 +95,7 @@ public class DefaultGameSession implements GameSession {
     }
 
     @Override
-    public UOItem createItemAtLocation(String name, Location location) {
+    public CompletableFuture<UOItem> createItemAtLocation(String name, Location location) {
         return itemService.handleCreateItemAtLocation(name, location);
     }
 

@@ -255,6 +255,17 @@ CREATE INDEX idx_item_state_equipped_mobile
     ON item_state (owner_mobile_id)
     WHERE equipped = true;
 
+CREATE SEQUENCE item_serial_seq
+    START WITH 1073741824
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER TABLE items
+    ALTER COLUMN serial_id
+        SET DEFAULT nextval('item_serial_seq');
+
 CREATE VIEW v_item_full AS
 SELECT i.id AS item_id,
        i.serial_id,

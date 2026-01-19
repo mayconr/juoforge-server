@@ -21,27 +21,27 @@ class DoubleClickService {
         final var serialId = doubleClick.getSerialId();
 
         if (doubleClick.isPaperdool() || worldService.isMobile(serialId)) {
-            handleMobileDoubleClick(serialId);
+            mobileClicked(serialId);
         } else {
-            handleItemDoubleClick(serialId);
+            itemClicked(serialId);
         }
     }
 
-    private void handleMobileDoubleClick(int serialId) {
+    private void mobileClicked(int serialId) {
         if (serialId == player.getSerialId()) {
             handleSelfDoubleClick(serialId);
             return;
         }
 
         worldService.findMobileBySerialId(serialId)
+            .thenAccept(mobileOpt ->
+                    mobileOpt.ifPresent(this::handleOtherMobileDoubleClick)
+            )
             .whenComplete((mobileOpt, throwable) -> {
                 if (throwable != null) {
                     log.error("Unable to load mobile [{}]", serialId, throwable);
                 }
-            })
-            .thenAccept(mobileOpt ->
-                    mobileOpt.ifPresent(this::handleOtherMobileDoubleClick)
-            );
+            });
     }
 
     private void handleSelfDoubleClick(int serialId) {
@@ -81,16 +81,16 @@ class DoubleClickService {
                     });
     }
 
-    private void handleItemDoubleClick(int serialId) {
+    private void itemClicked(int serialId) {
         worldService.findItemBySerialId(serialId)
+            .thenAccept(itemOpt ->
+                    itemOpt.ifPresent(this::handleItemInteraction)
+            )
             .whenComplete((itemOpt, throwable) -> {
                 if (throwable != null) {
                     log.error("Unable to load item [{}]", serialId, throwable);
                 }
-            })
-            .thenAccept(itemOpt ->
-                    itemOpt.ifPresent(this::handleItemInteraction)
-            );
+            });
     }
 
     private void handleItemInteraction(UOItem item) {
@@ -103,14 +103,19 @@ class DoubleClickService {
     }
 
     private void openContainer(Container container) {
-        outbound.write(new DrawContainer(container));
-        if (!container.getItemsInContainer().isEmpty()) {
-            outbound.write(new AddMultipleItemsToContainer(
-                    container,
-                    container.getItemsInContainer()
-            ));
-        }
-        outbound.flush();
+        worldService.loadContainerItems(container)
+            .thenApply(items->{
+                container.addItemsToContainer(items);
+                return container;
+            })
+            .thenAccept(con->{
+                outbound.write(new DrawContainer(con));
+                if (!con.getItemsInContainer().isEmpty()) {
+                    outbound.write(new AddMultipleItemsToContainer(con, con.getItemsInContainer()));
+                }
+                outbound.flush();
+            });
+
     }
 
     private void moveItemToPlayer(UOItem item) {

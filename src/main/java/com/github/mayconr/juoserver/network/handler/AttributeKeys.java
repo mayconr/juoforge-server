@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.network.handler;
 
 import java.util.Map;
 
+import com.github.mayconr.juoserver.game.gump.GumpContext;
 import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
 import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.session.SessionAttributes;
@@ -26,4 +27,9 @@ public class AttributeKeys {
     public static final SessionAttributes.Key<Map<Integer, AccountLoginMobile>> CHARACTERS_SLOT_KEY = new SessionAttributes.Key<>("CHARACTERS_SLOT_KEY");
     public static final SessionAttributes.Key<PlayerSession> PLAYER_SESSION_KEY = new SessionAttributes.Key<>("PLAYER_SESSION_KEY");
     public static final AttributeKey<SessionOutbound> SESSION_OUTBOUND_KEY = AttributeKey.valueOf("SESSION_OUTBOUND");
+
+    // GUMPS
+    // Reference to gump ids sent to the client
+    public static final SessionAttributes.Key<Map<Integer, GumpContext>> GUMP_IDS = new SessionAttributes.Key<>(Map.class.getName());
+    public static final SessionAttributes.Key<Long> LAST_GUMP_RESPONSE = new SessionAttributes.Key<>(Long.class.getName());
 }

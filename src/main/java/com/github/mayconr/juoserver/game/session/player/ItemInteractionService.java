@@ -3,10 +3,10 @@ package com.github.mayconr.juoserver.game.session.player;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.session.SessionFanout;
+import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.world.WorldService;
 import com.github.mayconr.juoserver.network.packet.*;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,8 +18,8 @@ class ItemInteractionService {
     public static final String ATTR_KEY_CAN_MOVE_ITEM = "canMoveItem";
 
     private final UOMobile mobile;
-    private final ChannelGroup channelGroup;
-    private final ChannelHandlerContext ctx;
+    private final SessionFanout fanout;
+    private final SessionOutbound outbound;
     private final WorldService worldService;
 
     public void handlePickUpItem(PickUpItem pickedUpItem) {
@@ -32,7 +32,7 @@ class ItemInteractionService {
                 }
                 if (mobile.isItemEquipped(item)) {
                     mobile.unequipItem(item);
-                    channelGroup.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
+                    fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
                 }
             }
         });
@@ -42,10 +42,14 @@ class ItemInteractionService {
         doWithItem(droppedItem.getSerialId(), item -> {
             if (isItemMovable(item)) {
                 item.setLocation(droppedItem);
+                final var container = item.getContainer();
+                if (container != null) {
+                    container.removeItemFromContainer(item);
+                }
+                item.setOwner(null);
                 worldService.dropItemOnTheGround(item);
             }
-            channelGroup.write(new ObjectInfo(item)); // TODO filter by range
-            channelGroup.flush();
+            fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
         });
     }
 
@@ -53,29 +57,25 @@ class ItemInteractionService {
         doWithItem(dropItem.getSerialId(), droppedItem->{
             if (isItemMovable(droppedItem)) {
                 doWithContainer(dropItem.getContainerSerialId(), container->{
-                    droppedItem.setLocation(
-                            dropItem.getX(), dropItem.getY(), dropItem.getContainerGridIndex());
-                    container.addItemToContainer(droppedItem);
+                    droppedItem.setLocation(dropItem.getX(), dropItem.getY(), dropItem.getContainerGridIndex());
 
-                    channelGroup.writeAndFlush(new DeleteObject(droppedItem),
-                            channel -> !channel.equals(ctx.channel())); // TODO filter by range
+                    // Link item to container
+                    container.addItemToContainer(droppedItem);
+                    droppedItem.setOwner(null);
+
+                    fanout.writeAndFlush(new DeleteObject(droppedItem), out->!out.equals(outbound)); // TODO filter by range
                     if (mobile.equals(container) || mobile.getBackpack().equals(container)) {
-                        ctx.writeAndFlush(new AddItemToContainer(mobile.getBackpack(), droppedItem));
+                        outbound.writeAndFlush(new AddItemToContainer(mobile.getBackpack(), droppedItem));
                     } else {
                         if (container instanceof UOMobile otherMobile) {
-                            channelGroup.writeAndFlush(
-                                    new AddItemToContainer(
-                                            otherMobile.getBackpack(),
-                                            droppedItem)); // TODO filter by mobile container
+                            fanout.writeAndFlush(new AddItemToContainer(otherMobile.getBackpack(), droppedItem)); // TODO filter by mobile container
                         } else {
-                            channelGroup.writeAndFlush(
-                                    new AddItemToContainer(container, droppedItem)); // TODO filter by range
+                            fanout.writeAndFlush(new AddItemToContainer(container, droppedItem)); // TODO filter by range
                         }
                     }
                 });
             } else {
-                channelGroup.write(new ObjectInfo(droppedItem)); // TODO filter by range
-                channelGroup.flush();
+                fanout.writeAndFlush(new ObjectInfo(droppedItem)); // TODO filter by range
             }
         });
     }
@@ -97,17 +97,17 @@ class ItemInteractionService {
             if (log.isDebugEnabled())
                 log.debug("Item [{}] equipped on layer [{}]", item.getSerialId(), equipItem.getLayer());
 
-            channelGroup.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
+            fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
         });
     }
 
     public void handleOpenContainer(Container container) {
         // TODO check if container is close enough
-        ctx.write(new DrawContainer(container));
+        outbound.write(new DrawContainer(container));
         if (!container.getItemsInContainer().isEmpty()) {
-            ctx.write(new AddMultipleItemsToContainer(container, container.getItemsInContainer()));
+            outbound.write(new AddMultipleItemsToContainer(container, container.getItemsInContainer()));
         }
-        ctx.flush();
+        outbound.flush();
     }
 
     private void doWithItem(int serialId, Consumer<UOItem> itemConsumer) {

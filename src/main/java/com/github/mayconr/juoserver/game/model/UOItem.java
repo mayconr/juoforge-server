@@ -1,18 +1,17 @@
 package com.github.mayconr.juoserver.game.model;
 
-import java.util.Optional;
-
-import com.github.mayconr.juoserver.game.core.prototype.ItemPrototype;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.UUID;
 
 @Getter
 @Setter
 @ToString(callSuper = true)
 public class UOItem extends UOObject {
 
+    private UUID id;
     private ItemType type;
     private Layer layer;
     private int amount;
@@ -21,11 +20,13 @@ public class UOItem extends UOObject {
     private boolean hidden;
     private Direction direction;
     private Container container;
+    private UOMobile owner;
 
     /** Npc created after a player unmount. Only for mountType: MOUNT */
     private String mountNpc;
 
     public UOItem(
+            UUID id,
             int serialId,
             int modelId,
             int x,
@@ -42,6 +43,7 @@ public class UOItem extends UOObject {
             Container container,
             String mountNpc) {
         super(serialId, modelId, x, y, z, name);
+        this.id = id;
         this.type = type;
         this.layer = layer;
         this.amount = amount;
@@ -62,7 +64,7 @@ public class UOItem extends UOObject {
                 other.getZ(),
                 other.getName()
         );
-
+        this.id = other.id;
         this.type = other.type;
         this.layer = other.layer;
         this.amount = other.amount;
@@ -74,21 +76,4 @@ public class UOItem extends UOObject {
         this.mountNpc = other.mountNpc;
     }
 
-    public UOItem(int serialId, ItemPrototype prototype, Location location) {
-        super(
-                serialId,
-                prototype.getModelId(),
-                location.getX(),
-                location.getY(),
-                location.getZ(),
-                prototype.getDisplayName());
-        this.type = prototype.getType();
-        this.movable = prototype.isMovable();
-        this.hue = prototype.getHue();
-        this.hidden = prototype.isHidden();
-        this.mountNpc =
-                Optional.ofNullable(prototype.getMount())
-                        .map(ItemPrototype.MountTypePrototype::getNpc)
-                        .orElse(null);
-    }
 }

@@ -3,13 +3,14 @@ package com.github.mayconr.juoserver.game.session;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
-import java.util.concurrent.Executor;
-
+@EqualsAndHashCode
 @RequiredArgsConstructor
 public final class SessionOutbound {
 
+    @EqualsAndHashCode.Include
     private final ChannelHandlerContext ctx;
     private final Channel channel;
     private final EventExecutor executor;
@@ -37,10 +38,6 @@ public final class SessionOutbound {
 
     public void onChannelClosed(Runnable task) {
         channel.closeFuture().addListener(future -> run(task));
-    }
-
-    public Executor getExecutor() {
-        return executor;
     }
 
     private void run(Runnable task) {

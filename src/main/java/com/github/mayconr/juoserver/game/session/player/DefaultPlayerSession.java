@@ -47,7 +47,7 @@ public class DefaultPlayerSession implements PlayerSession {
     public void initialize(GameSession gameSession, String clientVersion) {
         this.gameSession = gameSession;
         this.clientVersion = clientVersion;
-        initializationService.initialize(this, clientVersion);
+        this.initializationService.initialize(this, clientVersion);
     }
 
     @Override

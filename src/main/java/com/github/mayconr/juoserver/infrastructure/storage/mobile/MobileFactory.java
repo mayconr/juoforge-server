@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.storage.mobile;
 
+import com.github.mayconr.juoserver.common.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 
 import java.util.UUID;
@@ -69,4 +70,68 @@ public class MobileFactory {
         ), details.account().getId());
     }
 
+    public static UONpc createFromTemplate(NpcTemplate template, Location location) {
+        final var npc = new UONpc(new UOMobile(
+                UUID.randomUUID(),
+                -1,
+                template.modelId(),
+                location.getX(),
+                location.getY(),
+                location.getZ(),
+                template.name(),
+                Direction.NORTH,
+                template.hue(),
+                CharacterStatus.NORMAL,
+                template.notoriety(),
+                false,
+                Race.HUMAN,
+                Gender.MALE,
+                80,
+                100,
+                50,
+                50,
+                100,
+                50,
+                100,
+                50,
+                100,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+        ), template.type(), template.ai());
+        npc.setMount((String) template.attrMap().get("mount"));
+        return npc;
+    }
 }

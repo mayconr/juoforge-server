@@ -125,10 +125,12 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
 
         if (!mobile.hasAttribute(VAULT_ATTRIBUTE)) {
             // Cria vault se não existir
-            final var vault = gameSession.createItemAtLocation("Vault", player);
-            vault.addAttribute(VAULT_ATTRIBUTE, true); // TODO: impedir abrir com double click
-            mobile.addAttribute(VAULT_ATTRIBUTE, vault.getSerialId());
-            playerSession.openContainerInRange((Container) vault);
+            gameSession.createItemAtLocation("Vault", player)
+                .thenAccept(vault->{
+                    vault.addAttribute(VAULT_ATTRIBUTE, true); // TODO: impedir abrir com double click
+                    mobile.addAttribute(VAULT_ATTRIBUTE, vault.getSerialId());
+                    playerSession.openContainerInRange((Container) vault);
+                });
         } else {
             // Vault já existe
             final var serialId = mobile.getAttribute(VAULT_ATTRIBUTE, -1);

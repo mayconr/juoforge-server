@@ -3,11 +3,11 @@ package com.github.mayconr.juoserver.network.handler;
 import com.github.mayconr.juoserver.game.model.PlayerDetails;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.game.GameSession;
+import com.github.mayconr.juoserver.game.world.WorldService;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
 import com.github.mayconr.juoserver.network.packet.ClientVersion;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
-import com.github.mayconr.juoserver.game.world.WorldService;
-import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
 import io.netty.channel.ChannelHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class CreateCharacterHandler extends SessionChannelInboundHandler<CreateC
     private void handlePlayerCreation(PlayerDetails details, SessionOutbound outbound) {
         worldService.createPlayer(details)
             .thenAccept(player -> {
-                final var session = gameSession.createPlayerSession(player, outbound.getCtx(), outbound);
+                final var session = gameSession.createPlayerSession(player, outbound);
                 outbound.attr().set(AttributeKeys.PLAYER_SESSION_KEY, session);
                 outbound.writeAndFlush(new ClientVersion());
             })

@@ -1,9 +1,5 @@
 package com.github.mayconr.juoserver.game.model;
 
-import java.util.Optional;
-
-import com.github.mayconr.juoserver.game.core.prototype.NpcPrototype;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,32 +12,10 @@ public class UONpc extends UOMobile {
     private String ai;
     private String mount;
 
-    public UONpc(UOMobile mobile) {
+    public UONpc(UOMobile mobile, NpcType type, String ai) {
         super(mobile);
-        this.type = NpcType.MONSTER;
+        this.type = type;
+        this.ai = ai;
     }
 
-    public UONpc(int serialId, NpcPrototype prototype, Location location) {
-        super(
-                serialId,
-                prototype.getModelId(),
-                location.getX(),
-                location.getY(),
-                location.getZ(),
-                prototype.getDisplayName(),
-                Direction.NORTH,
-                prototype.getHue(),
-                CharacterStatus.NORMAL,
-                prototype.getNotoriety(),
-                prototype.getRace(),
-                prototype.getGender());
-        this.type = prototype.getType();
-        this.speechHue = prototype.getSpeechHue();
-        this.speechFont = prototype.getSpeechFont();
-        this.ai = prototype.getAi();
-        this.mount =
-                Optional.ofNullable(prototype.getMount())
-                        .map(NpcPrototype.MountTypePrototype::getName)
-                        .orElse(null);
-    }
 }

@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOItem;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +13,12 @@ import java.util.concurrent.ConcurrentMap;
 public class WorldItemIndex {
     private final ConcurrentMap<Long, Set<Integer>> itemsByRegion =
             new ConcurrentHashMap<>();
+
+    public void addAll(Collection<UOItem> items) {
+        for (UOItem item : items) {
+            add(item);
+        }
+    }
 
     public void add(UOItem item) {
         long key = regionKey(item.getX() / 24, item.getY() / 24);

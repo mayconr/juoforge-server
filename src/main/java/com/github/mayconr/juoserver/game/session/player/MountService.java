@@ -12,7 +12,9 @@ import com.github.mayconr.juoserver.network.packet.EquipItem;
 import com.github.mayconr.juoserver.game.world.WorldService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class MountService {
 
@@ -36,10 +38,16 @@ public class MountService {
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
             throw new IllegalStateException("Player " + player.getName() + " already mounted");
         }
-        final var item = worldService.createItem(mount, player);
-        player.equipItem(Layer.MOUNT, item);
-        fanout.writeAndFlush(
-                new EquipItem(player, Layer.MOUNT, item)); // TODO filter by channels in range
+        worldService.createItemAtLocation(mount, player)
+            .thenAccept(item->{
+                player.equipItem(Layer.MOUNT, item);
+                fanout.writeAndFlush(new EquipItem(player, Layer.MOUNT, item)); // TODO filter by channels in range
+            })
+            .whenComplete(((unused, throwable) -> {
+                if (throwable != null) {
+                    log.error("Unable to equip item", throwable);
+                }
+            }));
     }
 
     public void handleUnmount() {
@@ -47,12 +55,19 @@ public class MountService {
 
         if (mount != null) {
             worldService.deleteItem(mount);
-            final var npc = worldService.createNpcAtLocation(mount.getMountNpc(), player);
-            npc.setDirection(player.getDirection());
-            player.unequipItem(mount);
+            worldService.createNpcAtLocation(mount.getMountNpc(), player)
+                .thenAccept(npc -> {
+                    npc.setDirection(player.getDirection());
+                    player.unequipItem(mount);
 
-            fanout.write(new DrawMobile(npc));
-            fanout.writeAndFlush(new DeleteObject(mount)); // TODO filter by channels in range
+                    fanout.write(new DrawMobile(npc));
+                    fanout.writeAndFlush(new DeleteObject(mount)); // TODO filter by channels in range
+                }).whenComplete(((unused, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Unable to create unmount npc", throwable);
+                    }
+                }));
+
         }
     }
 }

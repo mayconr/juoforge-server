@@ -1,16 +1,11 @@
 package com.github.mayconr.juoserver;
 
-import java.util.List;
-
-import com.github.mayconr.juoserver.game.session.ChannelGroupSessionFanout;
-import com.github.mayconr.juoserver.game.session.SessionFanout;
-import com.github.mayconr.juoserver.network.handler.*;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Import;
-
+import com.github.mayconr.juoserver.common.event.DefaultEventBus;
+import com.github.mayconr.juoserver.common.event.EventBus;
+import com.github.mayconr.juoserver.common.template.HardcodedItemRegistry;
+import com.github.mayconr.juoserver.common.template.HardcodedNpcTemplateLoader;
+import com.github.mayconr.juoserver.common.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.common.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.ai.BankerAI;
 import com.github.mayconr.juoserver.game.ai.DefaultNpcAiRegistry;
 import com.github.mayconr.juoserver.game.ai.NpcAiRegistry;
@@ -18,28 +13,28 @@ import com.github.mayconr.juoserver.game.ai.ollama.OllamaClientChatImpl;
 import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.game.combat.CombatSystem;
 import com.github.mayconr.juoserver.game.combat.DefaultCombatSystem;
-import com.github.mayconr.juoserver.common.event.DefaultEventBus;
-import com.github.mayconr.juoserver.common.event.EventBus;
 import com.github.mayconr.juoserver.game.gameloop.DefaultGameLoop;
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
-import com.github.mayconr.juoserver.game.gump.DefaultHandlerGumpSystem;
+import com.github.mayconr.juoserver.game.gump.DefaultGumpSystem;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.gump.GumpSystemCallback;
-import com.github.mayconr.juoserver.game.core.prototype.PrototypeConfiguration;
+import com.github.mayconr.juoserver.game.session.DefaultSessionFanout;
+import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.game.DefaultGameSession;
 import com.github.mayconr.juoserver.game.session.game.GameSession;
 import com.github.mayconr.juoserver.game.session.game.ItemService;
 import com.github.mayconr.juoserver.game.session.game.MessageService;
 import com.github.mayconr.juoserver.game.session.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.session.player.PlayerSessionFactory;
+import com.github.mayconr.juoserver.game.world.CachedWorldService;
+import com.github.mayconr.juoserver.game.world.WorldService;
 import com.github.mayconr.juoserver.infrastructure.server.ClientConnectedHandlerAdapter;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
 import com.github.mayconr.juoserver.infrastructure.server.UOChannelInitializer;
-import com.github.mayconr.juoserver.infrastructure.storage.DatabaseConfiguration;
-import com.github.mayconr.juoserver.game.world.WorldService;
 import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
-
+import com.github.mayconr.juoserver.network.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -48,9 +43,14 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+
+import java.util.List;
 
 @Configuration
-@Import({DatabaseConfiguration.class, PrototypeConfiguration.class})
 public class ApplicationConfiguration {
 
     // ========= Independents =========
@@ -80,8 +80,8 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public GumpSystem gumpSystem(ChannelGroup channelGroup) {
-        return new DefaultHandlerGumpSystem(channelGroup);
+    public GumpSystem gumpSystem(SessionFanout fanout) {
+        return new DefaultGumpSystem(fanout);
     }
 
     // ========= Session Factory / Core Game Session =========
@@ -93,8 +93,7 @@ public class ApplicationConfiguration {
             WorldService worldService,
             GameLoop gameLoop,
             CombatSystem combatSystem) {
-        return new PlayerSessionFactory(
-                channelGroup, eventBus, worldService, gameLoop, combatSystem);
+        return new PlayerSessionFactory(eventBus, worldService, gameLoop, combatSystem);
     }
 
     @Bean
@@ -106,8 +105,8 @@ public class ApplicationConfiguration {
             NpcSessionFactory npcSessionFactory,
             EventBus eventBus) {
         final var messageService = new MessageService(channelGroup);
-        final var itemService = new ItemService(worldService, channelGroup, eventBus);
-        return new DefaultGameSession(
+        final var itemService = new ItemService(worldService, fanout, eventBus);
+        final var gameSession = new DefaultGameSession(
                 worldService,
                 channelGroup,
                 fanout,
@@ -116,6 +115,8 @@ public class ApplicationConfiguration {
                 npcSessionFactory,
                 messageService,
                 itemService);
+        gameSession.initialize();
+        return gameSession;
     }
 
     // ========= Packet Handlers =========
@@ -159,7 +160,7 @@ public class ApplicationConfiguration {
 
     @Bean
     public SessionFanout sessionFanout(ChannelGroup channelGroup) {
-        return new ChannelGroupSessionFanout(channelGroup);
+        return new DefaultSessionFanout(channelGroup);
     }
 
     @Qualifier("parent")
@@ -225,5 +226,26 @@ public class ApplicationConfiguration {
             GameLoop gameLoop,
             NpcAiRegistry aiRegistry) {
         return new NpcSessionFactory(eventBus, channelGroup, gameLoop, aiRegistry);
+    }
+
+    // Template
+    @Bean
+    public NpcTemplateRegistry npcTemplateRegistry() {
+        return new HardcodedNpcTemplateLoader();
+    }
+
+    @Bean
+    public ItemTemplateRegistry itemTemplateRegistry() {
+        return new HardcodedItemRegistry();
+    }
+
+    // WorldService
+    @Bean
+    public WorldService worldService(
+            MobileStorage mobileStorage,
+            ItemStorage itemStorage,
+            NpcTemplateRegistry npcTemplateRegistry,
+            ItemTemplateRegistry itemTemplateRegistry) {
+        return new CachedWorldService(npcTemplateRegistry, itemTemplateRegistry, mobileStorage, itemStorage);
     }
 }

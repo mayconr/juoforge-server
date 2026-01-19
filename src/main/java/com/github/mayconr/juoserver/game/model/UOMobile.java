@@ -1,12 +1,11 @@
 package com.github.mayconr.juoserver.game.model;
 
-import java.util.*;
-
-import com.github.mayconr.juoserver.game.core.prototype.NpcPrototype;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
@@ -78,7 +77,7 @@ public class UOMobile extends UOObject implements Container {
 
     // Items
     private UOContainer backpack;
-    private Map<Layer, UOItem> equippedItems = new HashMap<>();
+    private Map<Layer, UOItem> equippedItems = new ConcurrentHashMap<>();
 
     public UOMobile(
             int serialId,
@@ -301,33 +300,16 @@ public class UOMobile extends UOObject implements Container {
         this.lowerManaCost = lowerManaCost;
     }
 
-    public UOMobile(
-            int serialId,
-            Location location,
-            Direction direction,
-            CharacterStatus status,
-            NpcPrototype prototype) {
-        super(serialId, prototype.getModelId(), location, prototype.getName());
-        this.direction = direction;
-        this.hue = prototype.getHue();
-        this.status = status;
-        this.notoriety = prototype.getNotoriety();
-        this.race = prototype.getRace();
-        this.gender = prototype.getGender();
-        this.maxHitpoints = prototype.getMaxHitpoints();
-        this.maxStamina = prototype.getMaxStamina();
-        this.maxMana = prototype.getMaxMana();
-    }
-
-    public void equipItem(Layer layer, UOItem item) {
-        equippedItems.put(layer, item);
-    }
-
     public void equipItem(UOItem item) {
         if (Layer.BACKPACK.equals(item.getLayer())) {
             this.backpack = (UOContainer) item;
         }
-        equippedItems.put(item.getLayer(), item);
+        equipItem(item.getLayer(), item);
+    }
+
+    public void equipItem(Layer layer, UOItem item) {
+        equippedItems.put(layer, item);
+        item.setOwner(this);
     }
 
     public boolean isItemEquipped(UOItem item) {
@@ -349,6 +331,13 @@ public class UOMobile extends UOObject implements Container {
     public void setBackpack(UOContainer backpack) {
         this.backpack = backpack;
         equippedItems.put(Layer.BACKPACK, backpack);
+    }
+
+    @Override
+    public void addItemsToContainer(List<UOItem> items) {
+        for (UOItem item : items) {
+            addItemToContainer(item);
+        }
     }
 
     @Override
@@ -380,12 +369,6 @@ public class UOMobile extends UOObject implements Container {
     public void move(Direction direction) {
         this.direction = direction;
         setLocation(getX() + direction.getDx(), getY() + direction.getDy());
-    }
-
-    public void applyMovement(MovementResult result) {
-        this.direction = result.direction();
-        this.running = result.running();
-        setLocation(result.to());
     }
 
     public boolean isWarMode() {

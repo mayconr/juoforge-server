@@ -18,6 +18,7 @@ public class Save extends AbstractCommand {
         worldService.saveMobileAttributes();
         worldService.saveMobileVitals();
         worldService.saveMobiles();
+        worldService.saveItemStates();
         return HandlerResult.CONTINUE;
     }
 }

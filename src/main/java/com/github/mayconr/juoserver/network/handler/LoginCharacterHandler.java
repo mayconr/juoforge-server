@@ -38,7 +38,7 @@ public class LoginCharacterHandler extends SessionChannelInboundHandler<LoginCha
 
                     final var mobile = opt.get();
                     if (mobile instanceof UOPlayer player) {
-                        outbound.attr().set(AttributeKeys.PLAYER_SESSION_KEY, gameSession.createPlayerSession(player, outbound.getCtx(), outbound));
+                        outbound.attr().set(AttributeKeys.PLAYER_SESSION_KEY, gameSession.createPlayerSession(player, outbound));
                         outbound.writeAndFlush(new ClientVersion());
                         System.out.println("enviado version");
                     } else {

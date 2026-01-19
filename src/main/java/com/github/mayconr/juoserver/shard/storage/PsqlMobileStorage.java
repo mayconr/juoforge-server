@@ -181,7 +181,7 @@ public class PsqlMobileStorage extends AbstractStorage implements MobileStorage 
     private UOMobile mapMobileData(ResultSet rs) throws SQLException {
         final var accountId = rs.getObject("account_id", UUID.class);
         if (accountId == null) {
-            return new UONpc(MobileMapper.map(rs));
+            return new UONpc(MobileMapper.map(rs), NpcType.MOUNT,"BANKER"); // TODO recovery from database
         }
         return new UOPlayer(MobileMapper.map(rs), accountId);
     }

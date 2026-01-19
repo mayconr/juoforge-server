@@ -1,34 +1,31 @@
 package com.github.mayconr.juoserver.game.session.player;
 
-import com.github.mayconr.juoserver.game.combat.CombatSystem;
 import com.github.mayconr.juoserver.common.event.EventBus;
+import com.github.mayconr.juoserver.game.combat.CombatSystem;
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.player.speech.SpeechService;
 import com.github.mayconr.juoserver.game.world.WorldService;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class PlayerSessionFactory {
 
-    private final ChannelGroup channelGroup;
     private final EventBus eventBus;
     private final WorldService worldService;
     private final GameLoop gameLoop;
     private final CombatSystem combatSystem;
 
-    public PlayerSession createPlayerSession(UOPlayer player, ChannelHandlerContext ctx, SessionOutbound outbound, SessionFanout fanout) {
+    public PlayerSession createPlayerSession(UOPlayer player, SessionOutbound outbound, SessionFanout fanout) {
         final var initializationService = new InitializationService(player, eventBus, worldService, outbound, fanout);
         final var speechService = new SpeechService(player, eventBus, fanout);
         final var movementService = new MovementService(player, eventBus, outbound, fanout, worldService);
-        final var itemIterationService = new ItemInteractionService(player, channelGroup, ctx, worldService);
+        final var itemIterationService = new ItemInteractionService(player, fanout, outbound, worldService);
         final var megaClilocService = new MegaClilocService(player, outbound, worldService);
         final var targetService = new TargetService(player, outbound, eventBus);
-        final var combatService = new CombatService(player, channelGroup, ctx, combatSystem);
+        final var combatService = new CombatService(player, fanout, outbound, combatSystem);
         final var mountService = new MountService(player, outbound, fanout, worldService);
         final var clickService = new DoubleClickService(player, worldService, outbound, mountService);
         final var session =
