@@ -136,7 +136,7 @@ public class Pathfinder {
 
         int dx = current.location.getX() - current.parent.location.getX();
         int dy = current.location.getY() - current.parent.location.getY();
-        return Direction.fromDelta(dx, dy);
+        return Optional.of(Direction.fromDelta(dx, dy));
     }
 
     private double heuristic(Location a, Location b) {

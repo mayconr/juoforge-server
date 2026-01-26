@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.network.packet.DeleteCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
-import com.github.mayconr.juoserver.game.world.WorldService;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,10 +11,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 @ChannelHandler.Sharable
 public class DeleteCharacterHandler extends SimpleChannelInboundHandler<DeleteCharacter> {
 
-    private final WorldService worldService;
+    private final RealmStorage realmStorage;
 
-    public DeleteCharacterHandler(WorldService worldService) {
-        this.worldService = worldService;
+    public DeleteCharacterHandler(RealmStorage realmStorage) {
+        this.realmStorage = realmStorage;
     }
 
     @Override

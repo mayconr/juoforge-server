@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -33,6 +34,8 @@ public class UOItem extends UOObject {
             int y,
             int z,
             String name,
+            String displayName,
+            Map<String, Object> attr,
             ItemType type,
             Layer layer,
             int amount,
@@ -42,11 +45,11 @@ public class UOItem extends UOObject {
             Direction direction,
             Container container,
             String mountNpc) {
-        super(serialId, modelId, x, y, z, name);
+        super(serialId, modelId, x, y, z, name, displayName, attr);
         this.id = id;
         this.type = type;
         this.layer = layer;
-        this.amount = amount;
+        this.amount = Math.max(1, amount);
         this.hue = hue;
         this.movable = movable;
         this.hidden = hidden;
@@ -62,7 +65,9 @@ public class UOItem extends UOObject {
                 other.getX(),
                 other.getY(),
                 other.getZ(),
-                other.getName()
+                other.getName(),
+                other.getDisplayName(),
+                other.getAttrMap()
         );
         this.id = other.id;
         this.type = other.type;
@@ -72,7 +77,8 @@ public class UOItem extends UOObject {
         this.movable = other.movable;
         this.hidden = other.hidden;
         this.direction = other.direction;
-        this.container = other.container;   // cópia por referência (ver observação abaixo)
+        this.container = other.container;
+        this.owner = other.getOwner();
         this.mountNpc = other.mountNpc;
     }
 

@@ -1,9 +1,14 @@
 package com.github.mayconr.juoserver.shard.storage;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.game.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 class MobileMapper {
@@ -13,6 +18,14 @@ class MobileMapper {
         int serialId = rs.getInt("serial_id");
         int modelId = rs.getInt("model_id");
         String name = rs.getString("name");
+        String displayName = rs.getString("display_name");
+
+        Map<String, Object> attr;
+        try {
+            attr = new ObjectMapper().readValue(rs.getString("attr"), new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            attr = Collections.emptyMap();
+        }
 
         int x = rs.getInt("x");
         int y = rs.getInt("y");
@@ -103,6 +116,8 @@ class MobileMapper {
                 y,
                 z,
                 name,
+                displayName,
+                attr,
                 direction,
                 hue,
                 status,

@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.common.event.DefaultEventBus;
 import com.github.mayconr.juoserver.common.event.EventBus;
+import com.github.mayconr.juoserver.common.policy.ActionPolicyRegistry;
+import com.github.mayconr.juoserver.common.policy.ActionPolicyService;
 import com.github.mayconr.juoserver.common.template.HardcodedItemRegistry;
 import com.github.mayconr.juoserver.common.template.HardcodedNpcTemplateLoader;
 import com.github.mayconr.juoserver.common.template.ItemTemplateRegistry;
@@ -20,20 +22,20 @@ import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.gump.GumpSystemCallback;
 import com.github.mayconr.juoserver.game.session.DefaultSessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
-import com.github.mayconr.juoserver.game.session.game.DefaultGameSession;
-import com.github.mayconr.juoserver.game.session.game.GameSession;
-import com.github.mayconr.juoserver.game.session.game.ItemService;
-import com.github.mayconr.juoserver.game.session.game.MessageService;
 import com.github.mayconr.juoserver.game.session.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.session.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.game.world.CachedWorldService;
-import com.github.mayconr.juoserver.game.world.WorldService;
+import com.github.mayconr.juoserver.game.session.world.*;
+import com.github.mayconr.juoserver.game.session.world.item.ItemService;
+import com.github.mayconr.juoserver.game.session.world.player.PlayerMobileService;
+import com.github.mayconr.juoserver.game.session.world.player.PlayerSessionService;
 import com.github.mayconr.juoserver.infrastructure.server.ClientConnectedHandlerAdapter;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
 import com.github.mayconr.juoserver.infrastructure.server.UOChannelInitializer;
-import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.CachedRealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import com.github.mayconr.juoserver.network.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
@@ -52,6 +54,17 @@ import java.util.List;
 
 @Configuration
 public class ApplicationConfiguration {
+    // ==== Policy ===
+
+    @Bean
+    public ActionPolicyRegistry actionPolicyRegistry() {
+        return new ActionPolicyRegistry();
+    }
+
+    @Bean
+    public ActionPolicyService actionPolicyService(ActionPolicyRegistry registry) {
+        return new ActionPolicyService(registry);
+    }
 
     // ========= Independents =========
 
@@ -88,33 +101,41 @@ public class ApplicationConfiguration {
 
     @Bean
     public PlayerSessionFactory playerSessionFactory(
-            ChannelGroup channelGroup,
             EventBus eventBus,
-            WorldService worldService,
             GameLoop gameLoop,
-            CombatSystem combatSystem) {
-        return new PlayerSessionFactory(eventBus, worldService, gameLoop, combatSystem);
+            CombatSystem combatSystem,
+            ActionPolicyService policyService) {
+        return new PlayerSessionFactory(eventBus, gameLoop, combatSystem, policyService);
     }
 
     @Bean
-    public GameSession gameSession(
-            WorldService worldService,
+    public WorldSession gameSession(
+            RealmStorage storage,
             ChannelGroup channelGroup,
             SessionFanout fanout,
             PlayerSessionFactory playerSessionFactory,
             NpcSessionFactory npcSessionFactory,
-            EventBus eventBus) {
+            EventBus eventBus,
+            ItemTemplateRegistry itemTemplateRegistry,
+            NpcTemplateRegistry npcTemplateRegistry) {
+        final var serialGenerator = new SerialGenerator(storage);
         final var messageService = new MessageService(channelGroup);
-        final var itemService = new ItemService(worldService, fanout, eventBus);
-        final var gameSession = new DefaultGameSession(
-                worldService,
-                channelGroup,
+        final var itemService = new ItemService(serialGenerator, itemTemplateRegistry, storage, fanout, eventBus);
+        final var playerMobileService = new PlayerMobileService(serialGenerator, storage, itemTemplateRegistry);
+        final var playerSessionService = new PlayerSessionService(playerSessionFactory, eventBus, fanout);
+
+        final var gameSession = new DefaultWorldSession(
+                serialGenerator,
+                storage,
                 fanout,
                 eventBus,
                 playerSessionFactory,
                 npcSessionFactory,
+                npcTemplateRegistry,
                 messageService,
-                itemService);
+                itemService,
+                playerMobileService,
+                playerSessionService);
         gameSession.initialize();
         return gameSession;
     }
@@ -125,16 +146,16 @@ public class ApplicationConfiguration {
     public List<SimpleChannelInboundHandler<?>> packetHandlers(
             AccountStorage accountStorage,
             MobileStorage mobileStorage,
-            WorldService worldService,
-            GameSession gameSession,
+            RealmStorage worldStorage,
+            WorldSession worldSession,
             GumpSystemCallback gumpSystemCallback) {
         return List.of(
-                new GameServerLoginHandler(accountStorage, mobileStorage, worldService),
+                new GameServerLoginHandler(accountStorage, mobileStorage, worldStorage),
                 new PingPongHandler(),
-                new LoginCharacterHandler(gameSession, worldService),
-                new DeleteCharacterHandler(worldService),
-                new CreateCharacterHandler(worldService, gameSession, mobileStorage),
-                new ClientVersionHandler(gameSession),
+                new LoginCharacterHandler(worldSession, worldStorage),
+                new DeleteCharacterHandler(worldStorage),
+                new CreateCharacterHandler(worldStorage, worldSession, mobileStorage),
+                new ClientVersionHandler(worldSession),
                 new MoveRequestHandler(),
                 new DoubleClickHandler(),
                 new UnicodeSpeachRequestHandler(),
@@ -213,9 +234,9 @@ public class ApplicationConfiguration {
 
     @Bean
     public NpcAiRegistry npcAiRegistry(
-            WorldService worldService, OllanaClient ollanaClient, EventBus eventBus) {
+            RealmStorage worldStorage, OllanaClient ollanaClient, EventBus eventBus) {
         final var registry = new DefaultNpcAiRegistry();
-        registry.registerAI("BANKER", () -> new BankerAI(worldService, ollanaClient, eventBus));
+        registry.registerAI("BANKER", () -> new BankerAI(worldStorage, ollanaClient, eventBus));
         return registry;
     }
 
@@ -239,13 +260,9 @@ public class ApplicationConfiguration {
         return new HardcodedItemRegistry();
     }
 
-    // WorldService
+    // Realm Storage
     @Bean
-    public WorldService worldService(
-            MobileStorage mobileStorage,
-            ItemStorage itemStorage,
-            NpcTemplateRegistry npcTemplateRegistry,
-            ItemTemplateRegistry itemTemplateRegistry) {
-        return new CachedWorldService(npcTemplateRegistry, itemTemplateRegistry, mobileStorage, itemStorage);
+    public RealmStorage realmStorage(MobileStorage mobileStorage, ItemStorage itemStorage) {
+        return new CachedRealmStorage(mobileStorage, itemStorage);
     }
 }

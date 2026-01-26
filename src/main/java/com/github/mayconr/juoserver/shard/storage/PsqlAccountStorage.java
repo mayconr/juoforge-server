@@ -10,7 +10,7 @@ import java.util.concurrent.Executor;
 import javax.sql.DataSource;
 
 import com.github.mayconr.juoserver.game.model.UOAccount;
-import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
 
 import lombok.extern.slf4j.Slf4j;
 

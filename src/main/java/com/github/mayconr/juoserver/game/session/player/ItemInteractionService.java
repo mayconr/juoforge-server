@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.world.WorldService;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ class ItemInteractionService {
     private final UOMobile mobile;
     private final SessionFanout fanout;
     private final SessionOutbound outbound;
-    private final WorldService worldService;
+    private final WorldSession worldSession;
 
     public void handlePickUpItem(PickUpItem pickedUpItem) {
         doWithItem(pickedUpItem.getSerialId(), item->{
@@ -47,7 +47,7 @@ class ItemInteractionService {
                     container.removeItemFromContainer(item);
                 }
                 item.setOwner(null);
-                worldService.dropItemOnTheGround(item);
+                worldSession.dropItemOnTheGround(item);
             }
             fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
         });
@@ -89,7 +89,7 @@ class ItemInteractionService {
             if (item.getContainer() != null) {
                 mobile.removeItemFromContainer(item);
             } else {
-                worldService.removeItemFromTheGround(item);
+                worldSession.removeItemFromTheGround(item);
             }
 
             mobile.equipItem(equipItem.getLayer(), item);
@@ -111,13 +111,13 @@ class ItemInteractionService {
     }
 
     private void doWithItem(int serialId, Consumer<UOItem> itemConsumer) {
-        worldService.findItemBySerialId(serialId)
+        worldSession.findItemBySerialId(serialId)
                 .thenAccept(opt->opt.ifPresent(itemConsumer))
                 .whenComplete(((unused, throwable) -> logging(serialId, throwable)));
     }
 
     private void doWithContainer(int serialId, Consumer<Container> containerConsumer) {
-        worldService.findContainerBySerialId(serialId)
+        worldSession.findContainerBySerialId(serialId)
                 .thenAccept(opt->opt.ifPresent(containerConsumer))
                 .whenComplete(((unused, throwable) -> logging(serialId, throwable)));
     }

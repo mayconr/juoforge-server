@@ -1,9 +1,12 @@
-CREATE SEQUENCE mobile_serial_seq
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    MAXVALUE 1073741823
-    NO CYCLE;
+CREATE TABLE serial_counters (
+ entity_type VARCHAR(32) PRIMARY KEY,
+ next_serial  INT NOT NULL,
+ updated_at   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO serial_counters (entity_type, next_serial) VALUES
+   ('MOBILE', 1),
+   ('ITEM',   0x40000000);
 
 CREATE TABLE accounts (
   id UUID PRIMARY KEY,
@@ -13,42 +16,44 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE mobiles (
- id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY,
 
- serial_id INT NOT NULL,
+    serial_id INT NOT NULL,
 
- account_id UUID,
+    account_id UUID,
 
- name VARCHAR(32) NOT NULL,
+    name VARCHAR(32) NOT NULL,
+    display_name VARCHAR(64),
 
- model_id INT NOT NULL,
- hue INT NOT NULL,
+    model_id INT NOT NULL,
+    hue INT NOT NULL,
 
- race SMALLINT NOT NULL,
- gender SMALLINT NOT NULL,
- notoriety SMALLINT,
- status SMALLINT,
+    race SMALLINT NOT NULL,
+    gender SMALLINT NOT NULL,
+    notoriety SMALLINT,
+    status SMALLINT,
 
- created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    mount_item_name VARCHAR(64),
 
- CONSTRAINT fk_mobiles_account
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_mobiles_account
      FOREIGN KEY (account_id)
          REFERENCES accounts(id)
          ON DELETE CASCADE,
 
- CONSTRAINT uk_character_name
-     UNIQUE (name),
-
- CONSTRAINT uk_character_serial
+    CONSTRAINT uk_character_serial
      UNIQUE (serial_id)
 );
-CREATE INDEX idx_mobiles_serial ON mobiles(serial_id);
-CREATE INDEX idx_mobiles_account ON mobiles(account_id);
-CREATE UNIQUE INDEX idx_mobiles_name ON mobiles (LOWER(name));
+CREATE UNIQUE INDEX idx_mobiles_serial
+    ON mobiles(serial_id);
 
-ALTER TABLE mobiles
-    ALTER COLUMN serial_id
-        SET DEFAULT nextval('mobile_serial_seq');
+CREATE INDEX idx_mobiles_account
+    ON mobiles(account_id);
+
+CREATE UNIQUE INDEX idx_players_unique_name
+    ON mobiles (LOWER(name))
+    WHERE account_id IS NOT NULL;
 
 ALTER TABLE mobiles
     ADD CONSTRAINT chk_mobile_serial_range
@@ -121,6 +126,8 @@ CREATE TABLE mobile_runtime (
     stamina   INT NOT NULL,
     mana      INT NOT NULL,
 
+    attr JSONB NOT NULL DEFAULT '{}',
+
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_mobile_runtime_mobile
@@ -151,12 +158,14 @@ SELECT
     m.serial_id,
     m.account_id,
     m.name,
+    m.display_name,
     m.model_id,
     m.hue,
     m.race,
     m.gender,
     m.notoriety,
     m.status,
+    m.mount_item_name,
     m.created_at,
 
     r.x,
@@ -167,6 +176,7 @@ SELECT
     r.hitpoints,
     r.stamina,
     r.mana,
+    r.attr,
     r.updated_at,
 
     a.strength,
@@ -190,27 +200,20 @@ FROM mobiles m
  JOIN mobile_vitals v
       ON v.mobile_id = m.id;
 
-CREATE VIEW v_account_mobiles_login AS
-SELECT
-    m.id     AS mobile_id,
-    m.account_id,
-    m.name         AS mobile_name,
-FROM mobiles m;
-
 CREATE TABLE items (
    id UUID PRIMARY KEY,
    serial_id INT NOT NULL,
 
    name VARCHAR(64) NOT NULL,
+   display_name VARCHAR(64) NOT NULL,
 
+   type INT NOT NULL,
    model_id INT NOT NULL,
    hue INT NOT NULL,
    layer SMALLINT,
 
    unit_weight INT NOT NULL,
    amount INT NOT NULL DEFAULT 1,
-
-   properties JSONB NOT NULL DEFAULT '{}',
 
    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
@@ -225,13 +228,11 @@ CREATE TABLE item_state (
     owner_mobile_id UUID,
     parent_item_id UUID,
 
-
     x INT,
     y INT,
     z INT,
-    map SMALLINT,
 
-    equipped BOOLEAN NOT NULL DEFAULT FALSE,
+    attr JSONB NOT NULL DEFAULT '{}',
 
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
@@ -252,37 +253,25 @@ CREATE TABLE item_state (
 );
 
 CREATE INDEX idx_item_state_equipped_mobile
-    ON item_state (owner_mobile_id)
-    WHERE equipped = true;
-
-CREATE SEQUENCE item_serial_seq
-    START WITH 1073741824
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER TABLE items
-    ALTER COLUMN serial_id
-        SET DEFAULT nextval('item_serial_seq');
+    ON item_state (owner_mobile_id);
 
 CREATE VIEW v_item_full AS
 SELECT i.id AS item_id,
        i.serial_id,
        i.name,
+       i.display_name,
+       i.type,
        i.model_id,
        i.hue,
        i.layer,
        i.unit_weight,
        i.amount,
-       i.properties,
        s.owner_mobile_id,
        s.parent_item_id,
-       s.equipped,
        s.x,
        s.y,
        s.z,
-       s.map,
+       s.attr,
        s.updated_at
 FROM item_state s
          JOIN items i ON i.id = s.item_id;

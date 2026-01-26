@@ -39,7 +39,7 @@ public class MegaCliloc extends AbstractPacket {
     }
 
     private static int computeLength(UOObject object) {
-        return 25 + object.getName().length() * 2;
+        return 25 + object.getDisplayName().length() * 2;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MegaCliloc extends AbstractPacket {
 
         buf.writeInt(Clilocs.PREFIX_NAME_SUFFIX.getCode());
 
-        final String text = object.getName();
+        final String text = object.getDisplayName();
         buf.writeShort(text.length() * 2);
         if (text.length() > 0) {
             for (int i = 0; i < text.length(); i++) {

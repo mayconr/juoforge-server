@@ -1,9 +1,11 @@
 package com.github.mayconr.juoserver.game.session.player;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.session.game.GameSession;
+import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.network.packet.*;
 
 public interface PlayerSession {
@@ -12,7 +14,7 @@ public interface PlayerSession {
 
     boolean isActive();
 
-    void initialize(GameSession gameSession, String clientVersion);
+    void initialize(WorldSession worldSession, String clientVersion);
 
     void speech(UnicodeSpeachRequest request);
 
@@ -34,7 +36,7 @@ public interface PlayerSession {
 
     void openContainerInRange(Container container);
 
-    void sendTarget(CursorType type);
+    void sendTarget(CursorType type, Consumer<TargetResult> consumer);
 
     void handleTarget(Target target);
 

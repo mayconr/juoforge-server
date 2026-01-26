@@ -6,10 +6,12 @@ import com.github.mayconr.juoserver.game.model.NpcType;
 import java.util.Map;
 
 public record NpcTemplate(String name,
+                          String displayName,
                           NpcType type,
                           int modelId,
                           String ai,
                           Notoriety notoriety,
                           int hue,
-                          Map<String, Object> attrMap) {
+                          String mountItemName,
+                          Map<String, Object> attr) {
 }

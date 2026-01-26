@@ -79,28 +79,6 @@ public class UOMobile extends UOObject implements Container {
     private UOContainer backpack;
     private Map<Layer, UOItem> equippedItems = new ConcurrentHashMap<>();
 
-    public UOMobile(
-            int serialId,
-            int modelId,
-            int x,
-            int y,
-            int z,
-            String name,
-            Direction direction,
-            int hue,
-            CharacterStatus status,
-            Notoriety notoriety,
-            Race race,
-            Gender gender) {
-        super(serialId, modelId, x, y, z, name);
-        this.direction = direction;
-        this.hue = hue;
-        this.status = status;
-        this.notoriety = notoriety;
-        this.race = race;
-        this.gender = gender;
-    }
-
     public UOMobile(UOMobile other) {
         super(
                 other.getSerialId(),
@@ -108,7 +86,9 @@ public class UOMobile extends UOObject implements Container {
                 other.getX(),
                 other.getY(),
                 other.getZ(),
-                other.getName());
+                other.getName(),
+                other.getDisplayName(),
+                other.getAttrMap());
         this.id = other.id;
         this.direction = other.getDirection();
         this.hue = other.getHue();
@@ -184,6 +164,8 @@ public class UOMobile extends UOObject implements Container {
             int y,
             int z,
             String name,
+            String displayName,
+            Map<String, Object> attrMap,
             Direction direction,
             int hue,
             CharacterStatus status,
@@ -235,7 +217,7 @@ public class UOMobile extends UOObject implements Container {
             int fasterCastRecovery,
             int fasterCasting,
             int lowerManaCost) {
-        super(serialId, modelId, x, y, z, name);
+        super(serialId, modelId, x, y, z, name, displayName, attrMap);
         this.id = id;
         this.direction = direction;
         this.hue = hue;

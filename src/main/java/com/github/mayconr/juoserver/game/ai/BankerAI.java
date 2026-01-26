@@ -12,10 +12,10 @@ import com.github.mayconr.juoserver.game.gameloop.IntervalGameTask;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.game.GameSession;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.game.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
-import com.github.mayconr.juoserver.game.world.WorldService;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,10 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 public class BankerAI extends IntervalGameTask implements NpcAI {
 
     private static final String VAULT_ATTRIBUTE = "VAULT";
-    private final WorldService worldService;
+    private final RealmStorage realmStorage;
     private final OllanaClient ollanaClient;
     private final EventBus eventBus;
-    private GameSession gameSession;
+    private WorldSession worldSession;
     private NpcSession npcSession;
 
     private static final List<OllanaClient.Message> OLLAMA_CONTEXT =
@@ -52,16 +52,16 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
                             "system",
                             "Always respond with a maximum of 6 tokens. The answer must be short and objective."));
 
-    public BankerAI(WorldService worldService, OllanaClient ollanaClient, EventBus eventBus) {
+    public BankerAI(RealmStorage realmStorage, OllanaClient ollanaClient, EventBus eventBus) {
         super(10);
-        this.worldService = worldService;
+        this.realmStorage = realmStorage;
         this.ollanaClient = ollanaClient;
         this.eventBus = eventBus;
     }
 
     @Override
-    public void initialize(GameSession gameSession, NpcSession session) {
-        this.gameSession = gameSession;
+    public void initialize(WorldSession worldSession, NpcSession session) {
+        this.worldSession = worldSession;
         this.npcSession = session;
         // eventBus.register(MobileSpeech.class, this::onMobileSpeech);
         log.info("AI initialized for NPC " + session.getNpc().getName());
@@ -82,7 +82,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         }
 
         final var npc = npcSession.getNpc();
-        final var playerSession = gameSession.getPlayerSession(player);
+        final var playerSession = worldSession.getPlayerSession(player);
         final var speechText = speech.message();
 
         if (speechText.startsWith("move")) {
@@ -125,7 +125,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
 
         if (!mobile.hasAttribute(VAULT_ATTRIBUTE)) {
             // Cria vault se não existir
-            gameSession.createItemAtLocation("Vault", player)
+            worldSession.createItemAtLocation("Vault", player)
                 .thenAccept(vault->{
                     vault.addAttribute(VAULT_ATTRIBUTE, true); // TODO: impedir abrir com double click
                     mobile.addAttribute(VAULT_ATTRIBUTE, vault.getSerialId());
@@ -134,7 +134,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         } else {
             // Vault já existe
             final var serialId = mobile.getAttribute(VAULT_ATTRIBUTE, -1);
-            worldService.findContainerBySerialId(serialId)
+            realmStorage.findContainerBySerialId(serialId)
                 .exceptionally(throwable -> {
                     log.error("Unable to load container serial [{}]", serialId, throwable);
                     return Optional.empty();
@@ -142,7 +142,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
                     conOpt.filter(container -> container instanceof UOContainer)
                         .map(UOContainer.class::cast)
                         .ifPresent(container -> {
-                            gameSession.moveItem(container, mobile);
+                            worldSession.moveItem(container, mobile);
                             playerSession.openContainerInRange(container);
                         });
                 });
@@ -151,13 +151,13 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
 
     private void handleCloseVault(UOPlayer player) {
         final int vaultSerial = player.getAttribute(VAULT_ATTRIBUTE, -1);
-        worldService.findItemBySerialId(vaultSerial)
+        realmStorage.findItemBySerialId(vaultSerial)
             .exceptionally(throwable -> {
                 log.error("Unable to load item serial [{}]", vaultSerial, throwable);
                 return Optional.empty();
             })
             .whenComplete((itemOpt, throwable)->{
-                itemOpt.ifPresent(gameSession::deleteItem);
+                itemOpt.ifPresent(worldSession::deleteItem);
             });
     }
 }

@@ -1,33 +1,37 @@
 package com.github.mayconr.juoserver.shard;
 
-import static com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI.*;
-
 import com.github.mayconr.juoserver.common.event.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+import com.github.mayconr.juoserver.common.policy.ActionPolicyRegistry;
+import com.github.mayconr.juoserver.common.policy.PolicyActions;
+import com.github.mayconr.juoserver.common.policy.PolicyResult;
 import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
-import com.github.mayconr.juoserver.game.session.game.GameSession;
-import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
-
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import static com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI.*;
 
 @Component
 @Slf4j
 public class Test {
 
     @Autowired private EventBus eventBus;
-    @Autowired private GameSession gameSession;
+    @Autowired private WorldSession worldSession;
     @Autowired private GumpSystem gumpSystem;
     @Autowired private AccountStorage accountStorage;
+    @Autowired private ActionPolicyRegistry policyRegistry;
 
     @PostConstruct
     public void setUp() {
-
+        policyRegistry.register(PolicyActions.DOUBLE_CLICK, (action, context)->{
+            return PolicyResult.deny("erros");
+        });
         accountStorage
                 .findByUsername("admin")
                 .thenAccept(
@@ -37,14 +41,6 @@ public class Test {
 
         // eventBus.register(MobileMove.class, this::onMove);
         eventBus.register(MobileSpoke.class, this::speech);
-        eventBus.register(
-                Prompt.class,
-                this::createNpc,
-                prompt -> prompt.name().equalsIgnoreCase("createnpc"));
-        eventBus.register(
-                Prompt.class,
-                this::createItem,
-                prompt -> prompt.name().equalsIgnoreCase("createitem"));
         /*eventBus.register(
         Prompt.class, this::move, prompt -> prompt.name().equalsIgnoreCase("goto"));*/
         eventBus.register(
@@ -52,14 +48,14 @@ public class Test {
         eventBus.register(
                 Prompt.class, this::select, prompt -> prompt.name().equalsIgnoreCase("target"));
         eventBus.register(
-                Prompt.class, this::mount, prompt -> prompt.name().equalsIgnoreCase("mount"));
+                Prompt.class, this::mount, prompt -> prompt.name().equalsIgnoreCase("mountItemName"));
         eventBus.register(
                 Prompt.class, this::unmound, prompt -> prompt.name().equalsIgnoreCase("unmount"));
         eventBus.register(
                 Prompt.class, this::sendGump, prompt -> prompt.name().equalsIgnoreCase("gump"));
-        eventBus.register(SelectedObject.class, this::objectSelected);
-        eventBus.register(SelectedStatics.class, this::staticSelected);
     }
+
+
 
     public HandlerResult sendGump(Prompt prompt) {
         // new DeclarativeGumpUI(Page(1));
@@ -117,11 +113,6 @@ public class Test {
         return HandlerResult.CONTINUE;
     }
 
-    public HandlerResult createItem(Prompt prompt) {
-        gameSession.createItemAtLocation(prompt.arguments()[0], prompt.mobile());
-        return HandlerResult.CONTINUE;
-    }
-
     public HandlerResult onMove(MobileMoved event) {
         System.out.println(event.mobile() + " andou");
         return HandlerResult.CONTINUE;
@@ -132,13 +123,8 @@ public class Test {
         return HandlerResult.CONTINUE;
     }
 
-    public HandlerResult createNpc(Prompt prompt) {
-        gameSession.createNpcSession(prompt.arguments()[0], prompt.mobile());
-        return HandlerResult.CONTINUE;
-    }
-
     public HandlerResult move(Prompt prompt) {
-        gameSession.getPlayerSession(prompt.mobile()).move(new PointInTheWorld(2516, 555, 0));
+        worldSession.getPlayerSession(prompt.mobile()).move(new PointInTheWorld(2516, 555, 0));
         return HandlerResult.CONTINUE;
     }
 
@@ -152,30 +138,20 @@ public class Test {
     }
 
     public HandlerResult select(Prompt prompt) {
-        final var session = gameSession.getPlayerSession(prompt.mobile());
-        session.sendTarget(CursorType.HELPFUL);
-        return HandlerResult.CONTINUE;
-    }
-
-    public HandlerResult objectSelected(SelectedObject selectedObject) {
-        System.out.println("Selecinou " + selectedObject);
-        return HandlerResult.CONTINUE;
-    }
-
-    public HandlerResult staticSelected(SelectedStatics statics) {
-        System.out.println("Selecinou statics " + statics);
+        final var session = worldSession.getPlayerSession(prompt.mobile());
+        session.sendTarget(CursorType.HELPFUL, t->{});
         return HandlerResult.CONTINUE;
     }
 
     public void updateStatus(Prompt prompt) {}
 
     public HandlerResult mount(Prompt prompt) {
-        gameSession.getPlayerSession(prompt.mobile()).mount(prompt.arguments()[0]);
+        worldSession.getPlayerSession(prompt.mobile()).mount(prompt.arguments()[0]);
         return HandlerResult.CONTINUE;
     }
 
     public HandlerResult unmound(Prompt prompt) {
-        gameSession.getPlayerSession(prompt.mobile()).unmount();
+        worldSession.getPlayerSession(prompt.mobile()).unmount();
         return HandlerResult.CONTINUE;
     }
 }

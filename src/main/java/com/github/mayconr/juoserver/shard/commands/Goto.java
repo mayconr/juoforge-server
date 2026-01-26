@@ -5,19 +5,19 @@ import com.github.mayconr.juoserver.common.event.Prompt;
 import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
-import com.github.mayconr.juoserver.game.session.game.GameSession;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 
 import static com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI.*;
 
 public class Goto extends AbstractCommand {
 
     private final GumpSystem gumpSystem;
-    private final GameSession gameSession;
+    private final WorldSession worldSession;
 
-    public Goto(GumpSystem gumpSystem, GameSession gameSession) {
+    public Goto(GumpSystem gumpSystem, WorldSession worldSession) {
         super("goto");
         this.gumpSystem = gumpSystem;
-        this.gameSession = gameSession;
+        this.worldSession = worldSession;
     }
 
     @Override
@@ -40,10 +40,10 @@ public class Goto extends AbstractCommand {
                 gump,
                 (c, e) -> {
                     switch (e.getButtonId()) {
-                        case 100 -> gameSession
+                        case 100 -> worldSession
                                 .getPlayerSession(c.player())
                                 .move(new PointInTheWorld(1466, 1715, 0));
-                        case 101 -> gameSession
+                        case 101 -> worldSession
                                 .getPlayerSession(c.player())
                                 .move(new PointInTheWorld(2516, 531, 0));
                     }

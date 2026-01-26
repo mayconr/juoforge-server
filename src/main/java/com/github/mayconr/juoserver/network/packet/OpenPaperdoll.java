@@ -26,7 +26,7 @@ public class OpenPaperdoll extends AbstractPacket {
     public void writesTo(ByteBuf buf) {
         buf.writeByte(CODE);
         buf.writeInt(mobile.getSerialId());
-        buf.writeBytes(padString(mobile.getName(), 60, StandardCharsets.UTF_8));
+        buf.writeBytes(padString(mobile.getDisplayName(), 60, StandardCharsets.UTF_8));
         buf.writeByte(flag.getCode());
     }
 

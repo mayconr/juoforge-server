@@ -13,11 +13,6 @@ public class UOContainer extends UOItem implements Container {
     private final Map<Integer, UOItem> itensInContainer = new ConcurrentHashMap<>();
     private int containerGumpId;
 
-    /*public UOContainer(int serialId, ItemPrototype prototype, Location location) {
-        super(serialId, prototype, location);
-        this.containerGumpId = prototype.getContainer().getGumpId();
-    }*/
-
     public UOContainer(UOItem item, int containerGumpId) {
         super(item);
         this.containerGumpId = containerGumpId;

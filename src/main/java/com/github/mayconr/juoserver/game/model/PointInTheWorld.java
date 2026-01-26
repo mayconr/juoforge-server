@@ -16,7 +16,11 @@ public class PointInTheWorld implements Location {
         this.y = y;
         this.z = z;
     }
-
+    public PointInTheWorld(Location location) {
+        this.x = location.getX();
+        this.y = location.getY();
+        this.z = location.getZ();
+    }
     @Override
     public int getX() {
         return x;

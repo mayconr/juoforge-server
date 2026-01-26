@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
 public class UpdatePlayer extends AbstractPacket {
 
     public static final int CODE = 0x77;
-    private UOPlayer player;
+    private final UOPlayer player;
 
     public UpdatePlayer(UOPlayer player) {
         super(CODE, 17);

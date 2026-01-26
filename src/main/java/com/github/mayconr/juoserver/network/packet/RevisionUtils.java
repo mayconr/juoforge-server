@@ -15,7 +15,7 @@ public class RevisionUtils {
 
     static int mobileRevisionHashCode(UOMobile mobile) {
         int hash = addHashTo(0, Clilocs.PREFIX_NAME_SUFFIX.getCode());
-        return addHashTo(hash, mobile.getName().hashCode());
+        return addHashTo(hash, mobile.getDisplayName().hashCode());
     }
 
     static int itemRevisionHashCode(UOItem item) {

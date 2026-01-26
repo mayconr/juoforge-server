@@ -1,12 +1,12 @@
 package com.github.mayconr.juoserver.game.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -19,24 +19,18 @@ public class UOObject implements Location, AttributeSupport {
     private int y;
     private int z;
     @ToString.Include private String name;
+    private String displayName;
     private final Map<String, Object> attrMap = new HashMap<>();
 
-    public UOObject(int serialId, int modelId, int x, int y, int z, String name) {
+    public UOObject(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> attrMap) {
         this.serialId = serialId;
         this.modelId = modelId;
         this.x = x;
         this.y = y;
         this.z = z;
         this.name = name;
-    }
-
-    public UOObject(int serialId, int modelId, Location location, String name) {
-        this.serialId = serialId;
-        this.modelId = modelId;
-        this.x = location.getX();
-        this.y = location.getY();
-        this.z = location.getZ();
-        this.name = name;
+        this.displayName = displayName;
+        this.attrMap.putAll(attrMap);
     }
 
     public void setLocation(int x, int y) {

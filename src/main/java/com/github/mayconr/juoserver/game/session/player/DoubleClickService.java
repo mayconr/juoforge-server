@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.session.player;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.world.WorldService;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
@@ -13,27 +13,29 @@ import lombok.extern.slf4j.Slf4j;
 class DoubleClickService {
 
     private final UOPlayer player;
-    private final WorldService worldService;
+    private final WorldSession worldSession;
     private final SessionOutbound outbound;
     private final MountService mountService;
 
     public void handleDoubleClick(DoubleClick doubleClick) {
         final var serialId = doubleClick.getSerialId();
 
-        if (doubleClick.isPaperdool() || worldService.isMobile(serialId)) {
-            mobileClicked(serialId);
+        if (doubleClick.isPaperdool() || worldSession.isMobile(serialId)) {
+            mobileClicked(doubleClick);
         } else {
             itemClicked(serialId);
         }
     }
 
-    private void mobileClicked(int serialId) {
+    private void mobileClicked(DoubleClick doubleClick) {
+        final var serialId = doubleClick.getSerialId();
+
         if (serialId == player.getSerialId()) {
-            handleSelfDoubleClick(serialId);
+            handleSelfDoubleClick(doubleClick);
             return;
         }
 
-        worldService.findMobileBySerialId(serialId)
+        worldSession.findMobileBySerialId(serialId)
             .thenAccept(mobileOpt ->
                     mobileOpt.ifPresent(this::handleOtherMobileDoubleClick)
             )
@@ -44,13 +46,15 @@ class DoubleClickService {
             });
     }
 
-    private void handleSelfDoubleClick(int serialId) {
-        if (!player.isWarMode() && player.getEquippedItems().containsKey(Layer.MOUNT)) {
-            mountService.handleUnmount();
+    private void handleSelfDoubleClick(DoubleClick doubleClick) {
+        if (doubleClick.isPaperdool()) {
+            openPaperdoll(doubleClick.getSerialId());
             return;
         }
 
-        openPaperdoll(serialId);
+        if (!player.isWarMode() && player.getEquippedItems().containsKey(Layer.MOUNT)) {
+            mountService.handleUnmount();
+        }
     }
 
     private void handleOtherMobileDoubleClick(UOMobile mobile) {
@@ -62,7 +66,7 @@ class DoubleClickService {
     }
 
     private void openPaperdoll(int serialId) {
-        worldService
+        worldSession
             .findMobileBySerialId(serialId)
             .whenComplete(
                     (mobOpt, ex) -> {
@@ -82,10 +86,8 @@ class DoubleClickService {
     }
 
     private void itemClicked(int serialId) {
-        worldService.findItemBySerialId(serialId)
-            .thenAccept(itemOpt ->
-                    itemOpt.ifPresent(this::handleItemInteraction)
-            )
+        worldSession.findItemBySerialId(serialId)
+            .thenAccept(itemOpt -> itemOpt.ifPresent(this::handleItemInteraction))
             .whenComplete((itemOpt, throwable) -> {
                 if (throwable != null) {
                     log.error("Unable to load item [{}]", serialId, throwable);
@@ -103,7 +105,7 @@ class DoubleClickService {
     }
 
     private void openContainer(Container container) {
-        worldService.loadContainerItems(container)
+        worldSession.loadContainerItems(container)
             .thenApply(items->{
                 container.addItemsToContainer(items);
                 return container;
@@ -114,7 +116,12 @@ class DoubleClickService {
                     outbound.write(new AddMultipleItemsToContainer(con, con.getItemsInContainer()));
                 }
                 outbound.flush();
-            });
+            })
+            .whenComplete(((unused, throwable) -> {
+                if (throwable != null) {
+                    log.error("Unable to open container [{}]", container.getId(), throwable);
+                }
+            }));
 
     }
 

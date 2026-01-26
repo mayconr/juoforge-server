@@ -46,7 +46,7 @@ public class SendSpeech extends AbstractPacket {
                 npc.getSerialId(),
                 0,
                 npc.getSpeechFont(),
-                npc.getName(),
+                npc.getDisplayName(),
                 message);
     }
 
@@ -57,7 +57,7 @@ public class SendSpeech extends AbstractPacket {
                 mobile.getSerialId(),
                 mobile.getModelId(),
                 request.getFont(),
-                mobile.getName(),
+                mobile.getDisplayName(),
                 request.getText());
     }
 

@@ -8,9 +8,9 @@ import com.github.mayconr.juoserver.network.packet.CharacterList;
 import com.github.mayconr.juoserver.network.packet.GameServerLogin;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
 import com.github.mayconr.juoserver.infrastructure.server.Future;
-import com.github.mayconr.juoserver.game.world.WorldService;
-import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -27,7 +27,7 @@ public class GameServerLoginHandler extends SimpleChannelInboundHandler<GameServ
 
     private final AccountStorage accountStorage;
     private final MobileStorage mobileStorage;
-    private final WorldService worldService;
+    private final RealmStorage realmStorage;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, GameServerLogin msg) throws Exception {
@@ -65,7 +65,7 @@ public class GameServerLoginHandler extends SimpleChannelInboundHandler<GameServ
         outbound.attr().set(AttributeKeys.CHARACTERS_SLOT_KEY, slots);
         outbound.writeAndFlush(new CharacterList(
                 mobiles,
-                worldService.getCities(),
+                realmStorage.getCities(),
                 CharacterListFlag.ENABLE_AOS_COMMON,
                 CharacterListFlag.SAMURAI_NINJA_CLASSES,
                 CharacterListFlag.ENABLE_NPC_POPUP,

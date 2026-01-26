@@ -10,12 +10,13 @@ public class UONpc extends UOMobile {
     private int speechHue;
     private int speechFont;
     private String ai;
-    private String mount;
+    private String mountItemName;
 
-    public UONpc(UOMobile mobile, NpcType type, String ai) {
+    public UONpc(UOMobile mobile, NpcType type, String ai, String mountItemName) {
         super(mobile);
         this.type = type;
         this.ai = ai;
+        this.mountItemName = mountItemName;
     }
 
 }

@@ -6,7 +6,9 @@ import java.nio.charset.StandardCharsets;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
+import lombok.Getter;
 
+@Getter
 public class LoginCharacter extends AbstractPacket {
 
     public static final int CODE = (byte) 0x5D;
@@ -29,19 +31,4 @@ public class LoginCharacter extends AbstractPacket {
         this.clientIp = readInetAddress(buf);
     }
 
-    public String getCharacterName() {
-        return characterName;
-    }
-
-    public Integer getLoginCount() {
-        return loginCount;
-    }
-
-    public Integer getSelectedSlot() {
-        return selectedSlot;
-    }
-
-    public InetAddress getClientIp() {
-        return clientIp;
-    }
 }

@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.model;
 
-import java.util.Optional;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
 
 @Getter
 @RequiredArgsConstructor
@@ -25,13 +25,16 @@ public enum Direction {
         return ordinal();
     }
 
-    public static Optional<Direction> fromDelta(int dx, int dy) {
+    public static Direction fromDelta(int dx, int dy) {
+        int ndx = Integer.signum(dx);
+        int ndy = Integer.signum(dy);
+
         for (Direction dir : values()) {
-            if (dir.dx == dx && dir.dy == dy) {
-                return Optional.of(dir);
+            if (dir.getDx() == ndx && dir.getDy() == ndy) {
+                return dir;
             }
         }
-        return Optional.empty();
+        throw new IllegalArgumentException("Invalid Direction");
     }
 
     public static Direction fromCode(int code) {
@@ -42,4 +45,5 @@ public enum Direction {
         }
         return SOUTH;
     }
+
 }

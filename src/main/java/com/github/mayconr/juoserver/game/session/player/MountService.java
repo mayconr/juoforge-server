@@ -5,11 +5,11 @@ import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.network.packet.DeleteObject;
 import com.github.mayconr.juoserver.network.packet.DrawGamePlayer;
 import com.github.mayconr.juoserver.network.packet.DrawMobile;
 import com.github.mayconr.juoserver.network.packet.EquipItem;
-import com.github.mayconr.juoserver.game.world.WorldService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +21,12 @@ public class MountService {
     private final UOPlayer player;
     private final SessionOutbound outbound;
     private final SessionFanout fanout;
-    private final WorldService worldService;
+    private final WorldSession worldSession;
 
     public void handleMount(UONpc npc) {
-        handleMount(npc.getMount());
+        handleMount(npc.getMountItemName());
 
-        worldService.deleteMobile(npc);
+        worldSession.deleteMobile(npc);
         player.setLocation(npc);
         player.setDirection(npc.getDirection());
 
@@ -38,7 +38,7 @@ public class MountService {
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
             throw new IllegalStateException("Player " + player.getName() + " already mounted");
         }
-        worldService.createItemAtLocation(mount, player)
+        worldSession.createItemAtLocation(mount, player)
             .thenAccept(item->{
                 player.equipItem(Layer.MOUNT, item);
                 fanout.writeAndFlush(new EquipItem(player, Layer.MOUNT, item)); // TODO filter by channels in range
@@ -51,17 +51,18 @@ public class MountService {
     }
 
     public void handleUnmount() {
-        final var mount = player.getEquippedItems().get(Layer.MOUNT);
+        final var mountItem = player.getEquippedItems().get(Layer.MOUNT);
 
-        if (mount != null) {
-            worldService.deleteItem(mount);
-            worldService.createNpcAtLocation(mount.getMountNpc(), player)
+        if (mountItem != null) {
+            worldSession.createNpcAtLocation(mountItem.getMountNpc(), player)
                 .thenAccept(npc -> {
                     npc.setDirection(player.getDirection());
-                    player.unequipItem(mount);
+                    player.unequipItem(mountItem);
+
+                    worldSession.deleteItem(mountItem);
 
                     fanout.write(new DrawMobile(npc));
-                    fanout.writeAndFlush(new DeleteObject(mount)); // TODO filter by channels in range
+                    fanout.writeAndFlush(new DeleteObject(mountItem)); // TODO filter by channels in range
                 }).whenComplete(((unused, throwable) -> {
                     if (throwable != null) {
                         log.error("Unable to create unmount npc", throwable);

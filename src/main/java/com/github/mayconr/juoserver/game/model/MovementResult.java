@@ -11,14 +11,13 @@ public record MovementResult(
 
     public static MovementResult denied(
             UOMobile mobile,
-            Direction direction,
             MovementFailureReason reason
     ) {
         return new MovementResult(
                 false,
-                direction,
-                mobile,
-                mobile,
+                mobile.getDirection(),
+                new PointInTheWorld(mobile),
+                new PointInTheWorld(mobile),
                 mobile.isRunning(),
                 reason
         );
@@ -33,7 +32,7 @@ public record MovementResult(
         return new MovementResult(
                 true,
                 direction,
-                mobile,
+                new PointInTheWorld(mobile),
                 to,
                 running,
                 null

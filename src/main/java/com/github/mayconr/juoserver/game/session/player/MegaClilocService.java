@@ -2,8 +2,8 @@ package com.github.mayconr.juoserver.game.session.player;
 
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.network.packet.MegaCliloc;
-import com.github.mayconr.juoserver.game.world.WorldService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,12 +15,12 @@ class MegaClilocService {
 
     private final UOMobile mobile;
     private final SessionOutbound outbound;
-    private final WorldService worldService;
+    private final WorldSession worldSession;
 
     public void handleMegaCliloc(List<Integer> serialList) {
         for (int serialId : serialList) {
-            if (worldService.isMobile(serialId)) {
-                worldService
+            if (worldSession.isMobile(serialId)) {
+                worldSession
                     .findMobileBySerialId(serialId)
                     .whenComplete((opt, throwable) -> {
                         if (throwable != null) {
@@ -31,7 +31,7 @@ class MegaClilocService {
                         opt.map(MegaCliloc::new).ifPresent(outbound::writeAndFlush);
                     });
             } else {
-                worldService.findItemBySerialId(serialId)
+                worldSession.findItemBySerialId(serialId)
                     .whenComplete((opt, throwable) -> {
                         if (throwable != null) {
                             log.error("Unable to load item [{}]", serialId, throwable);

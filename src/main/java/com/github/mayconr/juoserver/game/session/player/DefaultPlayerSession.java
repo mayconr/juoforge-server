@@ -1,14 +1,21 @@
 package com.github.mayconr.juoserver.game.session.player;
 
-import java.util.List;
-
+import com.github.mayconr.juoserver.common.policy.ActionPolicyService;
+import com.github.mayconr.juoserver.common.policy.DefaultActionContext;
+import com.github.mayconr.juoserver.common.policy.PolicyActions;
+import com.github.mayconr.juoserver.common.policy.PolicyResult;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.session.game.GameSession;
 import com.github.mayconr.juoserver.game.session.player.speech.SpeechService;
-
+import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
+import com.github.mayconr.juoserver.game.session.player.target.TargetService;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.Clock;
+import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -16,6 +23,7 @@ public class DefaultPlayerSession implements PlayerSession {
 
     private final UOPlayer player;
     private final InitializationService initializationService;
+    private final ActionPolicyService policyService;
     private final SpeechService speechService;
     private final MovementService movementService;
     private final ItemInteractionService itemInteractionService;
@@ -25,7 +33,8 @@ public class DefaultPlayerSession implements PlayerSession {
     private final CombatService combatService;
     private final MountService mountService;
 
-    private GameSession gameSession;
+
+    private WorldSession worldSession;
     private String clientVersion;
     private boolean active;
 
@@ -44,8 +53,8 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void initialize(GameSession gameSession, String clientVersion) {
-        this.gameSession = gameSession;
+    public void initialize(WorldSession worldSession, String clientVersion) {
+        this.worldSession = worldSession;
         this.clientVersion = clientVersion;
         this.initializationService.initialize(this, clientVersion);
     }
@@ -87,6 +96,11 @@ public class DefaultPlayerSession implements PlayerSession {
 
     @Override
     public void doubleClick(DoubleClick doubleClick) {
+        final PolicyResult result = policyService.evaluate(PolicyActions.DOUBLE_CLICK, new DefaultActionContext(player, worldSession, Clock.systemDefaultZone()));
+        if (!result.allowed()) {
+            log.info("Double click handler blocked by policy. Reason: {}", result.reason());
+            return;
+        }
         doubleClickService.handleDoubleClick(doubleClick);
     }
 
@@ -101,8 +115,8 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void sendTarget(CursorType type) {
-        targetService.handleSendTarget(type);
+    public void sendTarget(CursorType type, Consumer<TargetResult> consumer) {
+        targetService.handleSendTarget(type, consumer);
     }
 
     @Override
