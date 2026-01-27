@@ -21,9 +21,9 @@ public interface ItemStorage {
 
     CompletableFuture<List<UOItem>> loadContainerItems(Container container);
 
-    CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId);
+    CompletableFuture<UOItem> findItemBySerialId(int serialId);
 
-    CompletableFuture<Optional<UOItem>> findItemByName(String name);
+    CompletableFuture<UOItem> findItemByName(String name);
 
     CompletableFuture<UOItem> saveItemFull(UOItem item);
 

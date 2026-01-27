@@ -9,19 +9,19 @@ public abstract class IntervalGameTask implements GameTask {
             throw new IllegalArgumentException("Interval must be > 0");
         }
         this.intervalTicks = intervalTicks;
-        this.counter = intervalTicks; // inicia com intervalo cheio
+        this.counter = intervalTicks;
     }
 
     @Override
-    public void execute(long currentTick) {
+    public void execute(long currentTick, double delta) {
         counter--;
         if (counter <= 0) {
-            execute();
-            counter = intervalTicks; // reinicia o contador
+            execute(delta);
+            counter = intervalTicks;
         }
     }
 
-    public abstract void execute();
+    public abstract void execute(double delta);
 
     @Override
     public boolean isDone() {

@@ -20,28 +20,20 @@ class MegaClilocService {
     public void handleMegaCliloc(List<Integer> serialList) {
         for (int serialId : serialList) {
             if (worldSession.isMobile(serialId)) {
-                worldSession
-                    .findMobileBySerialId(serialId)
-                    .whenComplete((opt, throwable) -> {
-                        if (throwable != null) {
-                            log.error("Unable to load mobile [{}]", serialId, throwable);
-                        }
-                    })
-                    .thenAccept(opt -> {
-                        opt.map(MegaCliloc::new).ifPresent(outbound::writeAndFlush);
-                    });
+                worldSession.findMobileBySerialId(serialId)
+                    .thenAccept(mobile -> outbound.write(new MegaCliloc(mobile)))
+                    .whenComplete((unused, throwable) ->this.logging(throwable, serialId));
             } else {
                 worldSession.findItemBySerialId(serialId)
-                    .whenComplete((opt, throwable) -> {
-                        if (throwable != null) {
-                            log.error("Unable to load item [{}]", serialId, throwable);
-                        }
-                    })
-                    .thenAccept(opt ->
-                            opt.map(MegaCliloc::new)
-                                    .ifPresent(outbound::writeAndFlush)
-                    );
+                    .thenAccept(item -> outbound.write(new MegaCliloc(item)))
+                    .whenComplete((unused, throwable) -> this.logging(throwable, serialId));
             }
+        }
+    }
+
+    private void logging(Throwable throwable, int serialId) {
+        if (throwable != null) {
+            log.error("Unable to load item [{}]", serialId, throwable);
         }
     }
 }

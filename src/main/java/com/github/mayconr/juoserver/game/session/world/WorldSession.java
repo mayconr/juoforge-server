@@ -8,7 +8,6 @@ import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface WorldSession {
@@ -23,7 +22,7 @@ public interface WorldSession {
     /*
         MOBILE METHODS
      */
-    CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId);
+    CompletableFuture<UOMobile> findMobileBySerialId(int serialId);
 
     CompletableFuture<PlayerSession> createAndLoginPlayer(UOAccount account, CreateCharacter character, SessionOutbound outbound);
 
@@ -52,7 +51,7 @@ public interface WorldSession {
     /*
         ITEM METHODS
      */
-    CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId);
+    CompletableFuture<UOItem> findItemBySerialId(int serialId);
 
     CompletableFuture<UOItem> createItemAtLocation(String name, Location location);
 
@@ -66,7 +65,7 @@ public interface WorldSession {
 
     CompletableFuture<List<UOItem>> getItemsInRange(Location location);
 
-    CompletableFuture<Optional<Container>> findContainerBySerialId(int serialId);
+    CompletableFuture<Container> findContainerBySerialId(int serialId);
 
     boolean isItem(int serialId);
 

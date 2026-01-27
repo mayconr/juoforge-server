@@ -5,8 +5,9 @@ import com.github.mayconr.juoserver.game.session.world.WorldSession;
 
 import java.time.Clock;
 
-public interface ActionContext {
+public interface ActionContext<T extends ActionPolicy> {
     UOMobile mobile();
     WorldSession world();
     Clock clock();
+    T action();
 }

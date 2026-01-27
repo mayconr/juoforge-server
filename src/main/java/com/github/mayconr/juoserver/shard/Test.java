@@ -1,9 +1,10 @@
 package com.github.mayconr.juoserver.shard;
 
 import com.github.mayconr.juoserver.common.event.*;
-import com.github.mayconr.juoserver.common.policy.ActionPolicyRegistry;
-import com.github.mayconr.juoserver.common.policy.PolicyActions;
+import com.github.mayconr.juoserver.common.policy.actions.DoubleClickPolicy;
+import com.github.mayconr.juoserver.common.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.common.policy.PolicyResult;
+import com.github.mayconr.juoserver.common.policy.actions.DropItemGroundPolicy;
 import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.CursorType;
@@ -25,12 +26,16 @@ public class Test {
     @Autowired private WorldSession worldSession;
     @Autowired private GumpSystem gumpSystem;
     @Autowired private AccountStorage accountStorage;
-    @Autowired private ActionPolicyRegistry policyRegistry;
+    @Autowired private PolicyRegistry policyRegistry;
 
     @PostConstruct
     public void setUp() {
-        policyRegistry.register(PolicyActions.DOUBLE_CLICK, (action, context)->{
-            return PolicyResult.deny("erros");
+        policyRegistry.register(DoubleClickPolicy.class, (action)->{
+            return PolicyResult.allow();
+        });
+        policyRegistry.register(DropItemGroundPolicy.class, policy->{
+            System.out.println("jogou "+policy.item());
+            return PolicyResult.allow();
         });
         accountStorage
                 .findByUsername("admin")

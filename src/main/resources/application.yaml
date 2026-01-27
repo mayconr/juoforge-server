@@ -5,3 +5,8 @@ logging:
     com.github.mayconr.juoserver.game.core: INFO
     com.github.mayconr.juoserver.infrastructure.server: INFO
     com.github.mayconr.juoserver.network: DEBUG
+    com.github.mayconr.juoserver.game.session.player.vitals: INFO
+
+server:
+  vitals:
+    saturationFactor: 100

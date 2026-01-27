@@ -66,9 +66,6 @@ public class MobileFactory {
                 0,
                 0,
                 0,
-                0,
-                0,
-                0,
                 0
         ), details.account().getId());
         for (UOItem item : details.equipedItems()) {
@@ -104,9 +101,6 @@ public class MobileFactory {
                 100,
                 50,
                 100,
-                0,
-                0,
-                0,
                 0,
                 0,
                 0,

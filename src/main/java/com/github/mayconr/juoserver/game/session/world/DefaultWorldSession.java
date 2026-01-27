@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -64,7 +63,7 @@ public class DefaultWorldSession implements WorldSession {
      */
 
     @Override
-    public CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId) {
+    public CompletableFuture<UOMobile> findMobileBySerialId(int serialId) {
         return storage.findMobileBySerialId(serialId);
     }
 
@@ -160,16 +159,14 @@ public class DefaultWorldSession implements WorldSession {
             throw new IllegalArgumentException("Serial ["+serialId+"] is not a mobile");
         }
         storage.findMobileBySerialId(serialId)
-            .whenComplete((opt, throwable) -> {
+            .whenComplete((mobile, throwable) -> {
                 if (throwable != null) {
                     log.error("Unable to remove mobile [{}]", serialId);
                     return;
                 }
 
-                opt.ifPresent(mobile->{
-                    storage.deleteMobile(mobile);
-                    fanout.writeAndFlush(new DeleteObject(mobile));
-                });
+                storage.deleteMobile(mobile);
+                fanout.writeAndFlush(new DeleteObject(mobile));
             });
     }
 
@@ -210,7 +207,7 @@ public class DefaultWorldSession implements WorldSession {
         ITEM METHODS
      */
     @Override
-    public CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId) {
+    public CompletableFuture<UOItem> findItemBySerialId(int serialId) {
         return storage.findItemBySerialId(serialId);
     }
 
@@ -222,7 +219,7 @@ public class DefaultWorldSession implements WorldSession {
     @Override
     public void deleteItem(int serial) {
         storage.findItemBySerialId(serial)
-            .thenAccept(opt->opt.ifPresent(this::deleteItem));
+            .thenAccept(this::deleteItem);
     }
 
     @Override
@@ -246,7 +243,7 @@ public class DefaultWorldSession implements WorldSession {
     }
 
     @Override
-    public CompletableFuture<Optional<Container>> findContainerBySerialId(int serialId) {
+    public CompletableFuture<Container> findContainerBySerialId(int serialId) {
         return storage.findContainerBySerialId(serialId);
     }
 

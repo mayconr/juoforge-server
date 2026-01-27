@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.infrastructure.storage.DataNotFoundException;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,13 +96,15 @@ public class PsqlItemStorage extends AbstractStorage implements ItemStorage {
     }
 
     @Override
-    public CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId) {
-        return CompletableFuture.supplyAsync(()-> findOne(SELECT_ITEM_BY_SERIAL, ps -> ps.setInt(1, serialId), this::mapItem));
+    public CompletableFuture<UOItem> findItemBySerialId(int serialId) {
+        return CompletableFuture.supplyAsync(()-> findOne(SELECT_ITEM_BY_SERIAL, ps -> ps.setInt(1, serialId), this::mapItem)
+                .orElseThrow(DataNotFoundException::new), executor);
     }
 
     @Override
-    public CompletableFuture<Optional<UOItem>> findItemByName(String name) {
-        return CompletableFuture.supplyAsync(()->findOne(SELECT_ITEM_BY_NAME, ps -> ps.setString(1, name), this::mapItem),executor);
+    public CompletableFuture<UOItem> findItemByName(String name) {
+        return CompletableFuture.supplyAsync(()->findOne(SELECT_ITEM_BY_NAME, ps -> ps.setString(1, name), this::mapItem)
+                .orElseThrow(DataNotFoundException::new), executor);
     }
 
     private UOItem mapItem(ResultSet rs) throws SQLException {

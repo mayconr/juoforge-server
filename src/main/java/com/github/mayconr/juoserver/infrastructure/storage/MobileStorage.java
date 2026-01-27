@@ -18,9 +18,9 @@ public interface MobileStorage {
 
     CompletableFuture<List<AccountLoginMobile>> findPlayersByAccount(UOAccount uoAccount);
 
-    CompletableFuture<Optional<UOMobile>> findMobileById(UUID id);
+    CompletableFuture<UOMobile> findMobileById(UUID id);
 
-    CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId);
+    CompletableFuture<UOMobile> findMobileBySerialId(int serialId);
 
     CompletableFuture<Boolean> mobileExists(String name);
 

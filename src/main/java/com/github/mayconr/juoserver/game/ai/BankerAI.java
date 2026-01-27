@@ -1,23 +1,21 @@
 package com.github.mayconr.juoserver.game.ai;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.common.event.EventBus;
 import com.github.mayconr.juoserver.common.event.HandlerResult;
 import com.github.mayconr.juoserver.common.event.MobileSpoke;
+import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.game.gameloop.IntervalGameTask;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.game.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
+import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
-
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class BankerAI extends IntervalGameTask implements NpcAI {
@@ -69,7 +67,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
     }
 
     @Override
-    public void execute() {
+    public void execute(double delta) {
         // this.npcSession.move(Direction.NORTH);
     }
 
@@ -137,14 +135,12 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
             realmStorage.findContainerBySerialId(serialId)
                 .exceptionally(throwable -> {
                     log.error("Unable to load container serial [{}]", serialId, throwable);
-                    return Optional.empty();
-                }).thenAccept(conOpt->{
-                    conOpt.filter(container -> container instanceof UOContainer)
-                        .map(UOContainer.class::cast)
-                        .ifPresent(container -> {
-                            worldSession.moveItem(container, mobile);
-                            playerSession.openContainerInRange(container);
-                        });
+                    return null;
+                }).thenAccept(container->{
+                    if (container instanceof UOContainer cont) {
+                        worldSession.moveItem(cont, mobile);
+                        playerSession.openContainerInRange(container);
+                    }
                 });
         }
     }
@@ -154,10 +150,12 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         realmStorage.findItemBySerialId(vaultSerial)
             .exceptionally(throwable -> {
                 log.error("Unable to load item serial [{}]", vaultSerial, throwable);
-                return Optional.empty();
+                return null;
             })
             .whenComplete((itemOpt, throwable)->{
-                itemOpt.ifPresent(worldSession::deleteItem);
+                if (throwable != null) {
+                    worldSession.deleteItem(itemOpt);
+                }
             });
     }
 }

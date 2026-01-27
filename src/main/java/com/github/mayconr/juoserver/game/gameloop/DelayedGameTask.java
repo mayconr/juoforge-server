@@ -9,7 +9,7 @@ public class DelayedGameTask implements GameTask {
     private final Runnable action;
 
     @Override
-    public void execute(long currentTick) {
+    public void execute(long currentTick, double delta) {
         if (remainingTicks > 0) {
             remainingTicks--;
         }

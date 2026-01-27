@@ -66,9 +66,6 @@ public class UOMobile extends UOObject implements Container {
     private int weaponDamageIncrease;
     private int lowerReagentCost;
     private int spellDamageIncrease;
-    private int hpRegen;
-    private int staminaRegen;
-    private int manaRegen;
     private int reflectPhysicalDamage;
     private int enhancePotions;
     private int fasterCastRecovery;
@@ -143,9 +140,6 @@ public class UOMobile extends UOObject implements Container {
         this.weaponDamageIncrease = other.getWeaponDamageIncrease();
         this.lowerReagentCost = other.getLowerReagentCost();
         this.spellDamageIncrease = other.getSpellDamageIncrease();
-        this.hpRegen = other.getHpRegen();
-        this.staminaRegen = other.getStaminaRegen();
-        this.manaRegen = other.getManaRegen();
         this.reflectPhysicalDamage = other.getReflectPhysicalDamage();
         this.enhancePotions = other.getEnhancePotions();
         this.fasterCastRecovery = other.getFasterCastRecovery();
@@ -209,9 +203,6 @@ public class UOMobile extends UOObject implements Container {
             int weaponDamageIncrease,
             int lowerReagentCost,
             int spellDamageIncrease,
-            int hpRegen,
-            int staminaRegen,
-            int manaRegen,
             int reflectPhysicalDamage,
             int enhancePotions,
             int fasterCastRecovery,
@@ -272,9 +263,6 @@ public class UOMobile extends UOObject implements Container {
         this.weaponDamageIncrease = weaponDamageIncrease;
         this.lowerReagentCost = lowerReagentCost;
         this.spellDamageIncrease = spellDamageIncrease;
-        this.hpRegen = hpRegen;
-        this.staminaRegen = staminaRegen;
-        this.manaRegen = manaRegen;
         this.reflectPhysicalDamage = reflectPhysicalDamage;
         this.enhancePotions = enhancePotions;
         this.fasterCastRecovery = fasterCastRecovery;

@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.session.player;
+package com.github.mayconr.juoserver.game.session.player.movement;
 
 import com.github.mayconr.juoserver.common.event.EventBus;
 import com.github.mayconr.juoserver.common.event.MobileMoved;
@@ -14,7 +14,7 @@ import java.util.Collection;
 
 @Slf4j
 @RequiredArgsConstructor
-class MovementService {
+public class MovementService {
 
     private record WorldView(Collection<UOMobile> mobiles, Collection<UOItem> items) { }
     private final UOPlayer player;

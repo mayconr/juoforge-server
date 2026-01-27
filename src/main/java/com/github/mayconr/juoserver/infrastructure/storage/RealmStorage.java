@@ -16,13 +16,13 @@ public interface RealmStorage {
 
     CompletableFuture<Integer> getNextMobileSerial();
 
-    CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId);
+    CompletableFuture<UOMobile> findMobileBySerialId(int serialId);
 
-    CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId);
+    CompletableFuture<UOItem> findItemBySerialId(int serialId);
 
-    CompletableFuture<Optional<UOItem>> findItemByName(String name);
+    CompletableFuture<UOItem> findItemByName(String name);
 
-    CompletableFuture<Optional<Container>> findContainerBySerialId(int serialId);
+    CompletableFuture<Container> findContainerBySerialId(int serialId);
 
     List<UOCity> getCities();
 

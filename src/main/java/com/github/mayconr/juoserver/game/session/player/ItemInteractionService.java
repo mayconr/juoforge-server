@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.session.player;
 
+import com.github.mayconr.juoserver.common.policy.PolicyService;
+import com.github.mayconr.juoserver.common.policy.actions.DropItemGroundPolicy;
 import com.github.mayconr.juoserver.game.model.Container;
+import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
@@ -21,6 +24,7 @@ class ItemInteractionService {
     private final SessionFanout fanout;
     private final SessionOutbound outbound;
     private final WorldSession worldSession;
+    private final PolicyService policyService;
 
     public void handlePickUpItem(PickUpItem pickedUpItem) {
         doWithItem(pickedUpItem.getSerialId(), item->{
@@ -41,13 +45,17 @@ class ItemInteractionService {
     public void handleDropItemOnTheGround(DropItem droppedItem) {
         doWithItem(droppedItem.getSerialId(), item -> {
             if (isItemMovable(item)) {
-                item.setLocation(droppedItem);
-                final var container = item.getContainer();
-                if (container != null) {
-                    container.removeItemFromContainer(item);
+                final var result = policyService.evaluate(DropItemGroundPolicy.class, new DropItemGroundPolicy(mobile, item));
+                // Check policies for drop item
+                if (result.allowed()) {
+                    item.setLocation(droppedItem);
+                    final var container = item.getContainer();
+                    if (container != null) {
+                        container.removeItemFromContainer(item);
+                    }
+                    item.setOwner(null);
+                    worldSession.dropItemOnTheGround(item);
                 }
-                item.setOwner(null);
-                worldSession.dropItemOnTheGround(item);
             }
             fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
         });
@@ -84,21 +92,19 @@ class ItemInteractionService {
         return Boolean.TRUE.equals(item.getAndSetAttribute(ATTR_KEY_CAN_MOVE_ITEM, null));
     }
 
-    public void handleEquipItem(EquipItemRequest equipItem) {
-        doWithItem(equipItem.getItemSerialId(), item->{
-            if (item.getContainer() != null) {
-                mobile.removeItemFromContainer(item);
-            } else {
-                worldSession.removeItemFromTheGround(item);
-            }
+    public void handleEquipItem(UOItem item, Layer layer) {
+        if (item.getContainer() != null) {
+            mobile.removeItemFromContainer(item);
+        } else {
+            worldSession.removeItemFromTheGround(item);
+        }
 
-            mobile.equipItem(equipItem.getLayer(), item);
+        mobile.equipItem(layer, item);
 
-            if (log.isDebugEnabled())
-                log.debug("Item [{}] equipped on layer [{}]", item.getSerialId(), equipItem.getLayer());
+        if (log.isDebugEnabled())
+            log.debug("Item [{}] equipped on layer [{}]", item.getSerialId(), layer);
 
-            fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
-        });
+        fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
     }
 
     public void handleOpenContainer(Container container) {
@@ -112,13 +118,13 @@ class ItemInteractionService {
 
     private void doWithItem(int serialId, Consumer<UOItem> itemConsumer) {
         worldSession.findItemBySerialId(serialId)
-                .thenAccept(opt->opt.ifPresent(itemConsumer))
+                .thenAccept(itemConsumer)
                 .whenComplete(((unused, throwable) -> logging(serialId, throwable)));
     }
 
     private void doWithContainer(int serialId, Consumer<Container> containerConsumer) {
         worldSession.findContainerBySerialId(serialId)
-                .thenAccept(opt->opt.ifPresent(containerConsumer))
+                .thenAccept(containerConsumer)
                 .whenComplete(((unused, throwable) -> logging(serialId, throwable)));
     }
 

@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.shard.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.infrastructure.storage.DataNotFoundException;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,7 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -83,23 +83,25 @@ public class PsqlMobileStorage extends AbstractStorage implements MobileStorage 
     }
 
     @Override
-    public CompletableFuture<Optional<UOMobile>> findMobileById(UUID id) {
+    public CompletableFuture<UOMobile> findMobileById(UUID id) {
         return CompletableFuture.supplyAsync(
                 () -> {
                     final var sql = "SELECT * FROM v_mobile_full WHERE mobile_id = ?;";
 
-                    return findOne(sql, p -> p.setObject(1, id), this::mapMobileData);
+                    return findOne(sql, p -> p.setObject(1, id), this::mapMobileData)
+                            .orElseThrow(DataNotFoundException::new);
                 },
                 executor);
     }
 
     @Override
-    public CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId) {
+    public CompletableFuture<UOMobile> findMobileBySerialId(int serialId) {
         return CompletableFuture.supplyAsync(
                 () -> {
                     final var sql = "SELECT * FROM v_mobile_full WHERE serial_id = ?;";
 
-                    return findOne(sql, p -> p.setInt(1, serialId), this::mapMobileData);
+                    return findOne(sql, p -> p.setInt(1, serialId), this::mapMobileData)
+                            .orElseThrow(DataNotFoundException::new);
                 },
                 executor);
     }

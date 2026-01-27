@@ -64,57 +64,59 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public CompletableFuture<Optional<UOMobile>> findMobileBySerialId(int serialId) {
+    public CompletableFuture<UOMobile> findMobileBySerialId(int serialId) {
         var cached = mobileCache.get(serialId);
         if (cached != null) {
-            log.info("Mobile [{}] recovered from cache", serialId);
-            return CompletableFuture.completedFuture(Optional.of(cached));
+            if (log.isDebugEnabled()) {
+                log.debug("Mobile [{}-{}] recovered from cache", serialId, cached.getName());
+            }
+
+            return CompletableFuture.completedFuture(cached);
         }
 
         return mobileStorage.findMobileBySerialId(serialId)
-                .thenCompose(mobOpt -> mobOpt
-                        .map(this::loadAndCacheMobile)
-                        .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty())));
+                .thenCompose(this::loadAndCacheMobile);
     }
 
-    private CompletableFuture<Optional<UOMobile>> loadAndCacheMobile(UOMobile mobile) {
+    private CompletableFuture<UOMobile> loadAndCacheMobile(UOMobile mobile) {
         return itemStorage.loadEquippedItems(mobile)
                 .thenApply(itemCache::putAll)
                 .thenApply(items -> {
                     items.forEach(mobile::equipItem);
                     mobileCache.put(mobile);
-                    return Optional.of(mobile);
+                    return mobile;
                 }).whenComplete(this::logging);
     }
 
     @Override
-    public CompletableFuture<Optional<UOItem>> findItemBySerialId(int serialId) {
+    public CompletableFuture<UOItem> findItemBySerialId(int serialId) {
         UOItem cached = itemCache.get(serialId);
         if (cached != null) {
-            return CompletableFuture.completedFuture(Optional.of(cached));
+            return CompletableFuture.completedFuture(cached);
         }
 
         return itemStorage.findItemBySerialId(serialId)
-                .thenApply(item -> item.map(this::cacheItem))
+                .thenApply(this::cacheItem)
                 .whenComplete(this::logging);
     }
 
     @Override
-    public CompletableFuture<Optional<UOItem>> findItemByName(String name) {
+    public CompletableFuture<UOItem> findItemByName(String name) {
         return itemStorage.findItemByName(name)
-                .thenApply(item->item.map(this::cacheItem))
+                .thenApply(this::cacheItem)
                 .whenComplete(this::logging);
     }
 
     @Override
-    public CompletableFuture<Optional<Container>> findContainerBySerialId(int serialId) {
+    public CompletableFuture<Container> findContainerBySerialId(int serialId) {
         return findMobileBySerialId(serialId)
-                .thenCompose(mobileOpt -> mobileOpt.map(mobile -> CompletableFuture.completedFuture(Optional.of((Container) mobile)))
-                .orElseGet(() -> findItemBySerialId(serialId)
-                    .thenApply(itemOpt ->
-                            itemOpt.map(item -> (Container) item)
-                    )))
-                .whenComplete(this::logging);
+                .thenApply(mobile-> (Container) mobile)
+                .exceptionallyCompose(throwable -> {
+                    if (throwable instanceof DataNotFoundException exception) {
+                        return findItemBySerialId(serialId).thenApply(item -> (Container) item);
+                    }
+                    throw new IllegalArgumentException("Unable to load container", throwable);
+                });
     }
 
     @Override

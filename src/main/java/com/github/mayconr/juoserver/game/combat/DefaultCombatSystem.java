@@ -43,7 +43,7 @@ public class DefaultCombatSystem extends IntervalGameTask implements CombatSyste
     }
 
     @Override
-    public void execute() {
+    public void execute(double delta) {
         CombatCommand cmd;
         while ((cmd = commandQueue.poll()) != null) {
             cmd.apply(combatStateMap, attackingIndex);

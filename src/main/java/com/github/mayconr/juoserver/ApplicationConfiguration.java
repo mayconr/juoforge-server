@@ -2,8 +2,8 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.common.event.DefaultEventBus;
 import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.policy.ActionPolicyRegistry;
-import com.github.mayconr.juoserver.common.policy.ActionPolicyService;
+import com.github.mayconr.juoserver.common.policy.PolicyRegistry;
+import com.github.mayconr.juoserver.common.policy.PolicyService;
 import com.github.mayconr.juoserver.common.template.HardcodedItemRegistry;
 import com.github.mayconr.juoserver.common.template.HardcodedNpcTemplateLoader;
 import com.github.mayconr.juoserver.common.template.ItemTemplateRegistry;
@@ -46,6 +46,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -57,16 +58,22 @@ public class ApplicationConfiguration {
     // ==== Policy ===
 
     @Bean
-    public ActionPolicyRegistry actionPolicyRegistry() {
-        return new ActionPolicyRegistry();
+    public PolicyRegistry actionPolicyRegistry() {
+        return new PolicyRegistry();
     }
 
     @Bean
-    public ActionPolicyService actionPolicyService(ActionPolicyRegistry registry) {
-        return new ActionPolicyService(registry);
+    public PolicyService actionPolicyService(PolicyRegistry registry) {
+        return new PolicyService(registry);
     }
 
     // ========= Independents =========
+
+    @Bean
+    @ConfigurationProperties(prefix = "server")
+    public ServerProperties properties() {
+        return new ServerProperties();
+    }
 
     @Bean
     public OllanaClient ollanaClient() {
@@ -104,8 +111,9 @@ public class ApplicationConfiguration {
             EventBus eventBus,
             GameLoop gameLoop,
             CombatSystem combatSystem,
-            ActionPolicyService policyService) {
-        return new PlayerSessionFactory(eventBus, gameLoop, combatSystem, policyService);
+            PolicyService policyService,
+            ServerProperties properties) {
+        return new PlayerSessionFactory(eventBus, gameLoop, combatSystem, policyService, properties);
     }
 
     @Bean

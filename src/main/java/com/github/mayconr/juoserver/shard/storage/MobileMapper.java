@@ -99,9 +99,6 @@ class MobileMapper {
         int weaponDamageIncrease = 0;
         int lowerReagentCost = 0;
         int spellDamageIncrease = 0;
-        int hpRegen = 0;
-        int staminaRegen = 0;
-        int manaRegen = 0;
         int reflectPhysicalDamage = 0;
         int enhancePotions = 0;
         int fasterCastRecovery = 0;
@@ -161,9 +158,6 @@ class MobileMapper {
                 weaponDamageIncrease,
                 lowerReagentCost,
                 spellDamageIncrease,
-                hpRegen,
-                staminaRegen,
-                manaRegen,
                 reflectPhysicalDamage,
                 enhancePotions,
                 fasterCastRecovery,

@@ -12,7 +12,7 @@ public class NpcVitalsTask extends IntervalGameTask {
     }
 
     @Override
-    public void execute() {}
+    public void execute(double delta) {}
 
     @Override
     public boolean isDone() {
