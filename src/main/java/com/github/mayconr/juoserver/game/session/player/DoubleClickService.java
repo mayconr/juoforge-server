@@ -1,7 +1,11 @@
 package com.github.mayconr.juoserver.game.session.player;
 
+import com.github.mayconr.juoserver.common.useitem.ItemUseContext;
+import com.github.mayconr.juoserver.common.useitem.ItemUseService;
+import com.github.mayconr.juoserver.common.useitem.Trigger;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
 import com.github.mayconr.juoserver.game.session.world.WorldSession;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +19,8 @@ class DoubleClickService {
     private final WorldSession worldSession;
     private final SessionOutbound outbound;
     private final MountService mountService;
+    private final PlayerItemService playerItemService;
+    private final ItemUseService itemUseService;
 
     public void handleDoubleClick(DoubleClick doubleClick) {
         final var serialId = doubleClick.getSerialId();
@@ -76,7 +82,17 @@ class DoubleClickService {
 
     private void itemClicked(int serialId) {
         worldSession.findItemBySerialId(serialId)
-            .thenAccept(this::handleItemInteraction)
+            .thenAccept(item->{
+                // TODO check the item range
+
+                if (item instanceof Container container) {
+                    playerItemService.openContainer(container);
+                    return;
+                }
+
+                // if the item is not a container, delegate the behavior
+                itemUseService.use(new ItemUseContext(player, item, Trigger.DOUBLE_CLICK));
+            })
             .whenComplete((itemOpt, throwable) -> {
                 if (throwable != null) {
                     log.error("Unable to load item [{}]", serialId, throwable);
@@ -84,44 +100,4 @@ class DoubleClickService {
             });
     }
 
-    private void handleItemInteraction(UOItem item) {
-        if (item instanceof Container container) {
-            openContainer(container);
-            return;
-        }
-
-        moveItemToPlayer(item);
-    }
-
-    private void openContainer(Container container) {
-        worldSession.loadContainerItems(container)
-            .thenAccept(items->{
-                container.addItemsToContainer(items);
-                outbound.write(new DrawContainer(container));
-                if (!container.getItemsInContainer().isEmpty()) {
-                    outbound.write(new AddMultipleItemsToContainer(container, container.getItemsInContainer()));
-                }
-                outbound.flush();
-            })
-            .whenComplete(((unused, throwable) -> {
-                if (throwable != null) {
-                    log.error("Unable to open container [{}]", container.getId(), throwable);
-                }
-            }));
-
-    }
-
-    private void moveItemToPlayer(UOItem item) {
-        player.addItemToContainer(item);
-
-        outbound.writeAndFlush(new AddItemToContainer(player, item));
-
-        log.info(
-                "Item [{}-{}] added to container [{}-{}]",
-                item.getSerialId(),
-                item.getName(),
-                player.getSerialId(),
-                player.getName()
-        );
-    }
 }

@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.common.policy.PolicyService;
 import com.github.mayconr.juoserver.common.policy.actions.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
 import com.github.mayconr.juoserver.game.session.player.movement.MovementService;
 import com.github.mayconr.juoserver.game.session.player.speech.SpeechService;
 import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
@@ -27,7 +28,7 @@ public class DefaultPlayerSession implements PlayerSession {
     private final PolicyService policyService;
     private final SpeechService speechService;
     private final MovementService movementService;
-    private final ItemInteractionService itemInteractionService;
+    private final PlayerItemService playerItemService;
     private final DoubleClickService doubleClickService;
     private final MegaClilocService megaClilocService;
     private final TargetService targetService;
@@ -83,17 +84,17 @@ public class DefaultPlayerSession implements PlayerSession {
 
     @Override
     public void pickUpItem(PickUpItem pickedUpItem) {
-        itemInteractionService.handlePickUpItem(pickedUpItem);
+        playerItemService.pickUpItem(pickedUpItem);
     }
 
     @Override
     public void dropItemOnTheGround(DropItem droppedItem) {
-        itemInteractionService.handleDropItemOnTheGround(droppedItem);
+        playerItemService.dropItemOnTheGround(droppedItem);
     }
 
     @Override
     public void dropItemInContainer(DropItem droppedItem) {
-        itemInteractionService.handleDropItemInContainer(droppedItem);
+        playerItemService.dropItemInContainer(droppedItem);
     }
 
     @Override
@@ -107,13 +108,18 @@ public class DefaultPlayerSession implements PlayerSession {
     @Override
     public void equipItem(EquipItemRequest equipItem) {
         worldSession.findItemBySerialId(equipItem.getItemSerialId())
-            .thenAccept(item->itemInteractionService.handleEquipItem(item, equipItem.getLayer()))
+            .thenAccept(item-> playerItemService.handleEquipItem(item, equipItem.getLayer()))
             .whenComplete(this::logging);
     }
 
     @Override
+    public void addItemToInventory(UOItem item) {
+        playerItemService.addItemToInventory(item);
+    }
+
+    @Override
     public void openContainerInRange(Container container) {
-        itemInteractionService.handleOpenContainer(container);
+        playerItemService.openContainer(container);
     }
 
     @Override

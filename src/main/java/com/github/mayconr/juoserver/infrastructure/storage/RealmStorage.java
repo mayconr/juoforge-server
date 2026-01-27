@@ -50,7 +50,6 @@ public interface RealmStorage {
 
     void deleteItem(UOItem item);
 
-
     CompletableFuture<Collection<UOMobile>> saveMobileRuntime();
 
     CompletableFuture<Collection<UOMobile>> saveMobileVitals();

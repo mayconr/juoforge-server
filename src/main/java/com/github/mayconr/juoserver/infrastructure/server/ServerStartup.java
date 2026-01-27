@@ -23,7 +23,6 @@ public class ServerStartup {
         this.childNioEventLoopGroup = childNioEventLoopGroup;
     }
 
-    @PostConstruct
     public void initialize() throws InterruptedException {
         try {
             LOGGER.info("Server initializing...");

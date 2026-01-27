@@ -11,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Setter
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class UOMobile extends UOObject implements Container {
+
+    private static final int MOBILES_MAX_SERIAL_ID = 0x3FFFFFFF;
+
     private UUID id;
     private Direction direction;
     private int hue;
@@ -343,5 +346,9 @@ public class UOMobile extends UOObject implements Container {
 
     public boolean isWarMode() {
         return CharacterStatus.WAR_MODE.equals(status);
+    }
+
+    public static boolean isMobile(int serialId) {
+        return serialId <= MOBILES_MAX_SERIAL_ID;
     }
 }

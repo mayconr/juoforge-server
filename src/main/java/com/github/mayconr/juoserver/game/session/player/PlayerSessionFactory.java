@@ -3,11 +3,13 @@ package com.github.mayconr.juoserver.game.session.player;
 import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.common.event.EventBus;
 import com.github.mayconr.juoserver.common.policy.PolicyService;
+import com.github.mayconr.juoserver.common.useitem.ItemUseService;
 import com.github.mayconr.juoserver.game.combat.CombatSystem;
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
 import com.github.mayconr.juoserver.game.session.player.movement.MovementService;
 import com.github.mayconr.juoserver.game.session.player.speech.SpeechService;
 import com.github.mayconr.juoserver.game.session.player.target.TargetService;
@@ -24,6 +26,7 @@ public class PlayerSessionFactory {
     private final CombatSystem combatSystem;
     private final PolicyService policyService;
     private final ServerProperties properties;
+    private final ItemUseService itemUseService;
     private WorldSession worldSession;
 
     public void initialize(WorldSession worldSession) {
@@ -34,12 +37,12 @@ public class PlayerSessionFactory {
         final var initializationService = new InitializationService(player, eventBus, worldSession, outbound, fanout);
         final var speechService = new SpeechService(player, eventBus, fanout);
         final var movementService = new MovementService(player, eventBus, outbound, fanout, worldSession);
-        final var itemIterationService = new ItemInteractionService(player, fanout, outbound, worldSession, policyService);
+        final var itemService = new PlayerItemService(player, fanout, outbound, worldSession, policyService);
         final var megaClilocService = new MegaClilocService(player, outbound, worldSession);
         final var targetService = new TargetService(player, outbound);
         final var combatService = new CombatService(player, fanout, outbound, combatSystem);
-        final var mountService = new MountService(player, outbound, fanout, worldSession);
-        final var clickService = new DoubleClickService(player, worldSession, outbound, mountService);
+        final var mountService = new MountService(player, outbound, fanout, worldSession, policyService);
+        final var clickService = new DoubleClickService(player, worldSession, outbound, mountService, itemService, itemUseService);
         final var vitalsService = new VitalsService(player, outbound, properties);
 
         final var session =
@@ -50,7 +53,7 @@ public class PlayerSessionFactory {
                         policyService,
                         speechService,
                         movementService,
-                        itemIterationService,
+                        itemService,
                         clickService,
                         megaClilocService,
                         targetService,

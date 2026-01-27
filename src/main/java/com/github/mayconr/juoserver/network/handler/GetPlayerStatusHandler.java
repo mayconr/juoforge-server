@@ -11,6 +11,11 @@ public class GetPlayerStatusHandler extends PlayerSessionChannelInboundHandler<G
     @Override
     protected void channelRead0(
             PlayerSession session, ChannelHandlerContext ctx, GetPlayerStatus msg) {
-        ctx.writeAndFlush(new StatusBarInfo(session.getPlayer()));
+        switch (msg.getType()) {
+            case BASIC_STATUS -> ctx.writeAndFlush(new StatusBarInfo(session.getPlayer()));
+            case REQUEST_SKILL -> System.out.println("pediu skill");
+            case GOD_CLIENT -> System.out.println("god client");
+        }
+
     }
 }

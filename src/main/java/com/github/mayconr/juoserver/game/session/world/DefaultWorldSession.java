@@ -28,8 +28,6 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class DefaultWorldSession implements WorldSession {
 
-    private static final int MOBILES_MAX_SERIAL_ID = 0x3FFFFFFF;
-    public static final int OBJECTS_MIN_SERIAL_ID = MOBILES_MAX_SERIAL_ID + 1;
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
     private final SessionFanout fanout;
@@ -150,7 +148,7 @@ public class DefaultWorldSession implements WorldSession {
 
     @Override
     public boolean isMobile(int serialId) {
-        return serialId <= MOBILES_MAX_SERIAL_ID;
+        return UOMobile.isMobile(serialId);
     }
 
     @Override
@@ -249,7 +247,7 @@ public class DefaultWorldSession implements WorldSession {
 
     @Override
     public boolean isItem(int serialId) {
-        return serialId >= OBJECTS_MIN_SERIAL_ID;
+        return UOItem.isItem(serialId);
     }
 
     @Override

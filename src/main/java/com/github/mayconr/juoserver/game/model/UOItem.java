@@ -12,6 +12,7 @@ import java.util.UUID;
 @ToString(callSuper = true)
 public class UOItem extends UOObject {
 
+    public static final int OBJECTS_MIN_SERIAL_ID = 0x3FFFFFFF + 1;
     private UUID id;
     private ItemType type;
     private Layer layer;
@@ -82,4 +83,19 @@ public class UOItem extends UOObject {
         this.mountNpc = other.mountNpc;
     }
 
+    public static boolean isItem(int serialId) {
+        return serialId >= OBJECTS_MIN_SERIAL_ID;
+    }
+
+    public boolean isOnTheGround() {
+        return owner == null && container == null;
+    }
+
+    public boolean isOnBackpack() {
+        return container != null && owner == null;
+    }
+
+    public boolean isEquipped() {
+        return owner != null && container == null;
+    }
 }

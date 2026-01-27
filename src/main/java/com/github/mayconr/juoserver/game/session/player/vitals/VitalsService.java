@@ -21,7 +21,7 @@ public class VitalsService {
     public void regen(double interval) {
         boolean dirty = false;
         final double min = 0.1;
-        final int saturationFactor = properties.getVitals().getSaturationFactor();
+        final int saturationFactor = properties.getVitals().saturationFactor();
 
         final double hpRegenBase = (min + ((double) player.getStrength() / (player.getStrength() + saturationFactor)));
         hpAcc += hpRegenBase * interval;

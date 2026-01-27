@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.session.player;
+package com.github.mayconr.juoserver.game.session.player.item;
 
 import com.github.mayconr.juoserver.common.policy.PolicyService;
 import com.github.mayconr.juoserver.common.policy.actions.DropItemGroundPolicy;
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor
-class ItemInteractionService {
+public class PlayerItemService {
     public static final String ATTR_KEY_CAN_MOVE_ITEM = "canMoveItem";
 
     private final UOMobile mobile;
@@ -26,7 +26,7 @@ class ItemInteractionService {
     private final WorldSession worldSession;
     private final PolicyService policyService;
 
-    public void handlePickUpItem(PickUpItem pickedUpItem) {
+    public void pickUpItem(PickUpItem pickedUpItem) {
         doWithItem(pickedUpItem.getSerialId(), item->{
             // TODO verify distance of item and mobile
             item.addAttribute(ATTR_KEY_CAN_MOVE_ITEM, item.isMovable());
@@ -42,18 +42,38 @@ class ItemInteractionService {
         });
     }
 
-    public void handleDropItemOnTheGround(DropItem droppedItem) {
+    /**
+     * Adds an item to the mobile's inventory and notifies the client.
+     */
+    public void addItemToInventory(UOItem item) {
+        mobile.addItemToContainer(item);
+
+        outbound.writeAndFlush(new AddItemToContainer(mobile, item));
+
+        if (log.isDebugEnabled()) {
+            log.debug(
+                    "Item [{}-{}] added to container [{}-{}]",
+                    item.getSerialId(),
+                    item.getName(),
+                    mobile.getSerialId(),
+                    mobile.getName());
+        }
+    }
+
+    public void dropItemOnTheGround(DropItem droppedItem) {
         doWithItem(droppedItem.getSerialId(), item -> {
             if (isItemMovable(item)) {
                 final var result = policyService.evaluate(DropItemGroundPolicy.class, new DropItemGroundPolicy(mobile, item));
                 // Check policies for drop item
                 if (result.allowed()) {
                     item.setLocation(droppedItem);
+
                     final var container = item.getContainer();
                     if (container != null) {
                         container.removeItemFromContainer(item);
                     }
                     item.setOwner(null);
+
                     worldSession.dropItemOnTheGround(item);
                 }
             }
@@ -61,7 +81,7 @@ class ItemInteractionService {
         });
     }
 
-    public void handleDropItemInContainer(DropItem dropItem) {
+    public void dropItemInContainer(DropItem dropItem) {
         doWithItem(dropItem.getSerialId(), droppedItem->{
             if (isItemMovable(droppedItem)) {
                 doWithContainer(dropItem.getContainerSerialId(), container->{
@@ -107,15 +127,6 @@ class ItemInteractionService {
         fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
     }
 
-    public void handleOpenContainer(Container container) {
-        // TODO check if container is close enough
-        outbound.write(new DrawContainer(container));
-        if (!container.getItemsInContainer().isEmpty()) {
-            outbound.write(new AddMultipleItemsToContainer(container, container.getItemsInContainer()));
-        }
-        outbound.flush();
-    }
-
     private void doWithItem(int serialId, Consumer<UOItem> itemConsumer) {
         worldSession.findItemBySerialId(serialId)
                 .thenAccept(itemConsumer)
@@ -128,7 +139,22 @@ class ItemInteractionService {
                 .whenComplete(((unused, throwable) -> logging(serialId, throwable)));
     }
 
-    private <T> void logging(int serialId, Throwable throwable) {
+    public void openContainer(Container container) {
+        worldSession.loadContainerItems(container)
+            .thenAccept(items->{
+                // TODO check container range
+                container.addItemsToContainer(items);
+
+                outbound.write(new DrawContainer(container));
+                if (!container.getItemsInContainer().isEmpty()) {
+                    outbound.write(new AddMultipleItemsToContainer(container, container.getItemsInContainer()));
+                }
+                outbound.flush();
+            })
+            .whenComplete(((unused, throwable) -> logging(container.getSerialId(), throwable)));
+    }
+
+    private void logging(int serialId, Throwable throwable) {
         if (throwable != null) {
             log.error("Unable to handle item serial [{}] due to error", serialId, throwable);
         } else {

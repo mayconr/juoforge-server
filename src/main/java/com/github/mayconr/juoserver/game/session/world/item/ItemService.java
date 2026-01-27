@@ -50,7 +50,7 @@ public class ItemService {
         eventBus.publish(new ItemCreated(item));
         if (log.isDebugEnabled())
             log.debug(
-                    "Item [{}] created a location [{},{},{}] with serialId [{}]",
+                    "Item [{}] created a trigguer [{},{},{}] with serialId [{}]",
                     item,
                     location.getX(),
                     location.getY(),

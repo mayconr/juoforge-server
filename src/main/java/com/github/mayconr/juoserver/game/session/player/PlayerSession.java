@@ -34,6 +34,8 @@ public interface PlayerSession {
 
     void equipItem(EquipItemRequest equipItem);
 
+    void addItemToInventory(UOItem item);
+
     void openContainerInRange(Container container);
 
     void sendTarget(CursorType type, Consumer<TargetResult> consumer);

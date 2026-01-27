@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -109,14 +108,14 @@ public class CachedRealmStorage implements RealmStorage {
 
     @Override
     public CompletableFuture<Container> findContainerBySerialId(int serialId) {
-        return findMobileBySerialId(serialId)
-                .thenApply(mobile-> (Container) mobile)
-                .exceptionallyCompose(throwable -> {
-                    if (throwable instanceof DataNotFoundException exception) {
-                        return findItemBySerialId(serialId).thenApply(item -> (Container) item);
-                    }
-                    throw new IllegalArgumentException("Unable to load container", throwable);
-                });
+        if (UOMobile.isMobile(serialId)) {
+            return findMobileBySerialId(serialId)
+                    .thenApply(mobile-> (Container) mobile);
+        }
+        if (UOItem.isItem(serialId)) {
+            return findItemBySerialId(serialId).thenApply(item -> (Container) item);
+        }
+        return CompletableFuture.failedFuture(new IllegalArgumentException("Serial ["+serialId+"] is not valid"));
     }
 
     @Override
