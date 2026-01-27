@@ -24,30 +24,27 @@ public class MountService {
     private final WorldSession worldSession;
 
     public void handleMount(UONpc npc) {
-        handleMount(npc.getMountItemName());
-
-        worldSession.deleteMobile(npc);
-        player.setLocation(npc);
-        player.setDirection(npc.getDirection());
-
-        fanout.write(new DeleteObject(npc));
-        outbound.writeAndFlush(new DrawGamePlayer(player));
-    }
-
-    public void handleMount(String mount) {
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
             throw new IllegalStateException("Player " + player.getName() + " already mounted");
         }
-        worldSession.createItemAtLocation(mount, player)
-            .thenAccept(item->{
-                player.equipItem(Layer.MOUNT, item);
-                fanout.writeAndFlush(new EquipItem(player, Layer.MOUNT, item)); // TODO filter by channels in range
-            })
-            .whenComplete(((unused, throwable) -> {
-                if (throwable != null) {
-                    log.error("Unable to equip item", throwable);
-                }
-            }));
+        worldSession.createItemAtLocation(npc.getMountItemName(), player)
+                .thenAccept(item->{
+                    worldSession.deleteMobile(npc);
+                    worldSession.deleteItem(item);
+
+                    player.equipItem(Layer.MOUNT, item);
+                    player.setLocation(npc);
+                    player.setDirection(npc.getDirection());
+
+                    fanout.write(new DeleteObject(npc));
+                    fanout.writeAndFlush(new EquipItem(player, Layer.MOUNT, item)); // TODO filter by channels in range
+                }).whenComplete(this::logging);
+
+
+    }
+
+    public void handleMount(String mount) {
+
     }
 
     public void handleUnmount() {
@@ -63,12 +60,14 @@ public class MountService {
 
                     fanout.write(new DrawMobile(npc));
                     fanout.writeAndFlush(new DeleteObject(mountItem)); // TODO filter by channels in range
-                }).whenComplete(((unused, throwable) -> {
-                    if (throwable != null) {
-                        log.error("Unable to create unmount npc", throwable);
-                    }
-                }));
+                }).whenComplete(this::logging);
 
+        }
+    }
+
+    private <T> void logging(T value, Throwable throwable) {
+        if (throwable != null) {
+            log.error("Error to handle mount", throwable);
         }
     }
 }
