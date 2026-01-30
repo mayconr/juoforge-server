@@ -16,9 +16,6 @@ import com.github.mayconr.juoserver.network.packet.ObjectRevision;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 @Slf4j
 @RequiredArgsConstructor
 public class ItemService {
@@ -29,18 +26,15 @@ public class ItemService {
     private final SessionFanout fanout;
     private final EventBus eventBus;
 
-    public CompletableFuture<UOItem> handleCreateItemAtLocation(String name, Location location) {
+    public UOItem handleCreateItem(String name, Location location) {
         final var template = itemTemplateRegistry.get(name);
         if (template == null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Item template ["+name+"] not found"));
+            throw new IllegalArgumentException("Item template ["+name+"] not found");
         }
         final var item = ItemFactory.createFromTemplate(serialGenerator, template, location);
-
-        return storage.createItem(item)
-            .thenApply(i->{
-                drawItem(i, location);
-                return item;
-            });
+        storage.cacheItem(item);
+        drawItem(item, location);
+        return item;
     }
 
     private void drawItem(UOItem item, Location location) {
@@ -50,7 +44,7 @@ public class ItemService {
         eventBus.publish(new ItemCreated(item));
         if (log.isDebugEnabled())
             log.debug(
-                    "Item [{}] created a trigguer [{},{},{}] with serialId [{}]",
+                    "Item [{}] created a trigger [{},{},{}] with serialId [{}]",
                     item,
                     location.getX(),
                     location.getY(),

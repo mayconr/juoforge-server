@@ -4,17 +4,22 @@ import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.common.policy.PolicyService;
 import com.github.mayconr.juoserver.common.policy.actions.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.session.player.action.ActionService;
+import com.github.mayconr.juoserver.game.session.player.click.ClickService;
 import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
+import com.github.mayconr.juoserver.game.session.player.message.PlayerMessageService;
 import com.github.mayconr.juoserver.game.session.player.movement.MovementService;
+import com.github.mayconr.juoserver.game.session.player.skill.PlayerSkillService;
 import com.github.mayconr.juoserver.game.session.player.speech.SpeechService;
 import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
 import com.github.mayconr.juoserver.game.session.player.target.TargetService;
 import com.github.mayconr.juoserver.game.session.player.vitals.VitalsService;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -29,15 +34,18 @@ public class DefaultPlayerSession implements PlayerSession {
     private final SpeechService speechService;
     private final MovementService movementService;
     private final PlayerItemService playerItemService;
-    private final DoubleClickService doubleClickService;
+    private final ClickService clickService;
     private final MegaClilocService megaClilocService;
     private final TargetService targetService;
     private final CombatService combatService;
     private final MountService mountService;
     private final VitalsService vitalsService;
+    private final PlayerSkillService skillService;
+    private final ActionService actionService;
+    private final StatusService statusService;
+    private final PlayerMessageService playerMessageService;
 
-
-    private WorldSession worldSession;
+    private WorldInternal worldInternal;
     private String clientVersion;
     private boolean active;
 
@@ -56,8 +64,8 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void initialize(WorldSession worldSession, String clientVersion) {
-        this.worldSession = worldSession;
+    public void initialize(WorldInternal worldInternal, String clientVersion) {
+        this.worldInternal = worldInternal;
         this.clientVersion = clientVersion;
         this.initializationService.initialize(this, clientVersion);
     }
@@ -101,15 +109,14 @@ public class DefaultPlayerSession implements PlayerSession {
     public void doubleClick(DoubleClick doubleClick) {
         final var result = policyService.evaluate(DoubleClickPolicy.class, new DoubleClickPolicy(player, doubleClick.getSerialId()));
         if (result.allowed()) {
-            doubleClickService.handleDoubleClick(doubleClick);
+            clickService.doubleClick(doubleClick);
         }
     }
 
     @Override
     public void equipItem(EquipItemRequest equipItem) {
-        worldSession.findItemBySerialId(equipItem.getItemSerialId())
-            .thenAccept(item-> playerItemService.handleEquipItem(item, equipItem.getLayer()))
-            .whenComplete(this::logging);
+        worldInternal.getItemBySerialId(equipItem.getItemSerialId())
+            .ifPresent(item-> playerItemService.equipItem(item, equipItem.getLayer()));
     }
 
     @Override
@@ -152,9 +159,38 @@ public class DefaultPlayerSession implements PlayerSession {
         mountService.handleUnmount();
     }
 
-    private <T> void logging(T data, Throwable throwable) {
-        if (throwable != null) {
-            log.error("Unable to l");
-        }
+    @Override
+    public void useSkill(int skillId) {
+        skillService.useSkill(skillId);
+    }
+
+    @Override
+    public void handleAction(ActionRequest request) {
+        actionService.handleAction(request);
+    }
+
+    @Override
+    public void singleClick(SingleClickRequest request) {
+        clickService.singleClick(request);
+    }
+
+    @Override
+    public void sendSkillGump(int serialId) {
+        skillService.sendGumpDialog(serialId);
+    }
+
+    @Override
+    public void sendStatusGump(int serialId) {
+        statusService.sendStatusGump(serialId);
+    }
+
+    @Override
+    public void updateSkillsLock(Collection<SkillValue> skills) {
+        skillService.updateSkillsLock(skills);
+    }
+
+    @Override
+    public void sendMessage(String message, MessageOptions options) {
+        playerMessageService.sendMessage(message, options);
     }
 }

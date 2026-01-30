@@ -13,13 +13,13 @@ import io.netty.buffer.ByteBuf;
 public class SendSpeech extends AbstractPacket {
 
     public static final int CODE = (byte) 0x1C;
-    private TextType type;
-    private int hue;
-    private int itemId;
-    private int modelId;
-    private int font;
-    private String name;
-    private String message;
+    private final TextType type;
+    private final int hue;
+    private final int itemId;
+    private final int modelId;
+    private final int font;
+    private final String name;
+    private final String message;
 
     public SendSpeech(
             TextType type,
@@ -65,7 +65,7 @@ public class SendSpeech extends AbstractPacket {
     public void writesTo(ByteBuf buf) {
         buf.writeByte(CODE);
         buf.writeShort(getLength());
-        buf.writeInt(itemId);
+        buf.writeInt(itemId == 0 ? 0xFFFFFFFF : itemId);
         buf.writeShort(modelId);
         buf.writeByte(type.getCode());
         buf.writeShort(hue);

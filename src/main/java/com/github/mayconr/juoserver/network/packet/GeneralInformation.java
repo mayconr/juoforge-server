@@ -57,7 +57,7 @@ public class GeneralInformation extends AbstractPacket {
 
     /**
      * SubCommand 0x000C
-     * Client closed the status gump of a mobile
+     * Client closed the status gump of a player
      */
     @Getter
     public static final class CloseStatusGump implements SubCommand {

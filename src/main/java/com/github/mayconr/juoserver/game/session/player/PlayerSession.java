@@ -2,9 +2,10 @@ package com.github.mayconr.juoserver.game.session.player;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -14,7 +15,7 @@ public interface PlayerSession {
 
     boolean isActive();
 
-    void initialize(WorldSession worldSession, String clientVersion);
+    void initialize(WorldInternal worldInternal, String clientVersion);
 
     void speech(UnicodeSpeachRequest request);
 
@@ -50,4 +51,17 @@ public interface PlayerSession {
 
     void unmount();
 
+    void useSkill(int skillId);
+
+    void handleAction(ActionRequest request);
+
+    void singleClick(SingleClickRequest singleClickRequest);
+
+    void sendSkillGump(int serialId);
+
+    void sendStatusGump(int serialId);
+
+    void updateSkillsLock(Collection<SkillValue> skills);
+
+    void sendMessage(String message, MessageOptions options);
 }

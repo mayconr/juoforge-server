@@ -24,10 +24,12 @@ import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.session.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.game.session.world.DefaultWorldSession;
+import com.github.mayconr.juoserver.game.session.world.DefaultWorld;
 import com.github.mayconr.juoserver.game.session.world.MessageService;
 import com.github.mayconr.juoserver.game.session.world.SerialGenerator;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.session.world.animation.AnimationService;
+import com.github.mayconr.juoserver.game.session.world.file.UOFileReader;
 import com.github.mayconr.juoserver.game.session.world.item.ItemService;
 import com.github.mayconr.juoserver.game.session.world.player.PlayerMobileService;
 import com.github.mayconr.juoserver.game.session.world.player.PlayerSessionService;
@@ -52,8 +54,8 @@ public class WorldConfig {
     }
 
     @Bean
-    public GameLoop gameLoop() {
-        final var gameLoop = new DefaultGameLoop();
+    public GameLoop gameLoop(ServerProperties properties) {
+        final var gameLoop = new DefaultGameLoop(properties);
         Runtime.getRuntime().addShutdownHook(new Thread(gameLoop::stop));
         return gameLoop.start();
     }
@@ -185,7 +187,7 @@ public class WorldConfig {
     }
 
     @Bean
-    public WorldSession worldSession(
+    public WorldInternal worldSession(
             RealmStorage realmStorage,
             ChannelGroup channelGroup,
             SessionFanout fanout,
@@ -215,7 +217,10 @@ public class WorldConfig {
                 fanout
         );
 
-        final var worldSession = new DefaultWorldSession(
+        final var fileReader = new UOFileReader();
+        final var animationService = new AnimationService(fanout);
+
+        final var worldSession = new DefaultWorld(
                 serialGenerator,
                 realmStorage,
                 fanout,
@@ -226,7 +231,9 @@ public class WorldConfig {
                 messageService,
                 itemService,
                 playerMobileService,
-                playerSessionService
+                playerSessionService,
+                fileReader,
+                animationService
         );
 
         worldSession.initialize();

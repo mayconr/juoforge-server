@@ -29,7 +29,7 @@ public class StatusBarInfo extends AbstractPacket {
         buf.writeInt(mobile.getSerialId()); // 7
 
         buf.writeBytes(padString(mobile.getDisplayName(), 30, StandardCharsets.US_ASCII)); // 37
-        // writeFixedString(buf, mobile.getName(), 30);
+        // writeFixedString(buf, player.getName(), 30);
 
         buf.writeShort(mobile.getHitpoints()); // 39
         buf.writeShort(mobile.getMaxHitpoints()); // 41

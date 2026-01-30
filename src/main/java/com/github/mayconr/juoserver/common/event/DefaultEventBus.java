@@ -32,20 +32,16 @@ public class DefaultEventBus implements EventBus {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends GameEvent> HandlerResult publish(T event) {
+    public <T extends GameEvent> void publish(T event) {
         List<ConditionalHandler<?>> handlers = listeners.get(event.getClass());
         if (handlers != null) {
             for (ConditionalHandler<?> h : handlers) {
                 ConditionalHandler<T> handler = (ConditionalHandler<T>) h;
                 if (handler.predicate.test(event)) {
-                    HandlerResult result = handler.eventHandler.handle(event);
-                    if (result == HandlerResult.BLOCK) {
-                        return HandlerResult.BLOCK;
-                    }
+                    handler.eventHandler.handle(event);
                 }
             }
         }
-        return HandlerResult.CONTINUE;
     }
 
     private record ConditionalHandler<T>(EventHandler<T> eventHandler, Predicate<T> predicate) {}

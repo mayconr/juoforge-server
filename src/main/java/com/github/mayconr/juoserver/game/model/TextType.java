@@ -1,7 +1,10 @@
 package com.github.mayconr.juoserver.game.model;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 
+@Getter
 public enum TextType {
     NORMAL(0x00),
     BROADCAST(0x01),
@@ -20,15 +23,10 @@ public enum TextType {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
-
     public static TextType byCode(int code) {
         return Arrays.stream(values())
                 .filter(value -> value.code == code)
                 .findFirst()
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid TextType for code " + code));
+                .orElse(TextType.NORMAL);
     }
 }

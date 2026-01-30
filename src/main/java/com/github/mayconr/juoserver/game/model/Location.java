@@ -7,4 +7,5 @@ public interface Location {
     int getY();
 
     int getZ();
+
 }

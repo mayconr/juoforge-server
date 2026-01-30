@@ -2,7 +2,6 @@ package com.github.mayconr.juoserver.game.session.world;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
@@ -10,21 +9,22 @@ import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface WorldSession {
+public interface WorldInternal extends WorldActions, WorldView, MobileActions, ItemActions, PlayerActions {
 
     /*
         GENERAL USAGE METHODS
      */
     void initialize();
 
-    void sendBroadcastMessage(String message);
+    CompletableFuture<UOMobile> loadMobile(int serialId);
 
-    /*
-        MOBILE METHODS
-     */
-    CompletableFuture<UOMobile> findMobileBySerialId(int serialId);
+    CompletableFuture<UOMobile> unloadMobile(int serialId);
 
-    CompletableFuture<PlayerSession> createAndLoginPlayer(UOAccount account, CreateCharacter character, SessionOutbound outbound);
+    CompletableFuture<UOItem> loadItem(int serialId);
+
+    CompletableFuture<UOItem> unloadItem(int serialId);
+
+    CompletableFuture<PlayerSession> createAndLoginPlayer(CreateCharacter character, SessionOutbound outbound);
 
     CompletableFuture<PlayerSession> loginExistingPlayer(UOPlayer player, SessionOutbound outbound);
 
@@ -40,34 +40,9 @@ public interface WorldSession {
 
     boolean isMobile(int serialId);
 
-    void deleteMobile(int serialId);
-
-    void deleteMobile(UOMobile mobile);
-
-    CompletableFuture<NpcSession> createNpcSession(String name, Location location);
-
-    CompletableFuture<UONpc> createNpcAtLocation(String name, Location location);
-
-    /*
-        ITEM METHODS
-     */
-    CompletableFuture<UOItem> findItemBySerialId(int serialId);
-
-    CompletableFuture<UOItem> createItemAtLocation(String name, Location location);
-
-    void deleteItem(int serial);
-
-    void deleteItem(UOItem item);
-
-    void moveItem(UOItem item, Location location);
-
     CompletableFuture<List<UOItem>> loadContainerItems(Container container);
 
     CompletableFuture<List<UOItem>> getItemsInRange(Location location);
-
-    CompletableFuture<Container> findContainerBySerialId(int serialId);
-
-    boolean isItem(int serialId);
 
     void dropItemOnTheGround(UOItem item);
 

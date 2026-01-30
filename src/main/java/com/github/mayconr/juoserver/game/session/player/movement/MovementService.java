@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.common.event.MobileMoved;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,33 +21,33 @@ public class MovementService {
     private final EventBus eventBus;
     private final SessionOutbound outbound;
     private final SessionFanout fanout;
-    private final WorldSession worldSession;
+    private final WorldInternal worldInternal;
 
     public void handleMove(MoveRequest request) {
         if (request == null) {
             return;
         }
 
-        var result = worldSession.tryMove(player, request);
+        var result = worldInternal.tryMove(player, request);
 
         if (!result.success()) {
             // TODO Refuse movement
             return;
         }
 
-        worldSession.applyMove(player, result);
+        worldInternal.applyMove(player, result);
         outbound.write(new MovementAck(request.getSequence(), player.getNotoriety()));
         drawWorld(result);
     }
 
     public void handleMove(Location location) {
-        final var result = worldSession.tryMove(player, location);
+        final var result = worldInternal.tryMove(player, location);
         if (!result.success()) {
             // TODO Refuse movement
             return;
         }
 
-        worldSession.applyMove(player, result);
+        worldInternal.applyMove(player, result);
         outbound.write(new DrawGamePlayer(player));
 
         drawWorld(result);
@@ -55,8 +55,8 @@ public class MovementService {
 
     private void drawWorld(MovementResult result) {
 
-        var mobilesFuture = worldSession.getMobilesInRange(player);
-        var itemsFuture   = worldSession.getItemsInRange(player);
+        var mobilesFuture = worldInternal.getMobilesInRange(player);
+        var itemsFuture   = worldInternal.getItemsInRange(player);
 
         mobilesFuture
             .thenCombine(itemsFuture, WorldView::new)

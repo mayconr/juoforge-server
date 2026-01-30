@@ -10,7 +10,8 @@ public enum ItemType {
     CONTAINER(2),
     CLOTHING(3),
     MOUNT(4),
-    OTHER(5);
+    OTHER(5),
+    TOOL(6);
 
     private final int code;
 

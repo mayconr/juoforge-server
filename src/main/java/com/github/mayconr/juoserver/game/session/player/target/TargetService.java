@@ -29,13 +29,13 @@ public class TargetService {
         consumerMap.put(targetId, consumer);
 
         outbound.writeAndFlush(new Target(targetId, CursorTarget.LOCATION, type));
-        log.info("Target [{}] sent to client", targetId);
+        log.debug("Target [{}] sent to client", targetId);
     }
 
     public void handleTarget(Target target) {
         final var consumer = consumerMap.remove(target.getCursorId());
         if (consumer != null) {
-            log.info("Recieved callback for Target [{}]", target.getCursorId());
+            log.debug("Received callback for Target [{}]", target.getCursorId());
             final var result = switch (target.getTarget()) {
                 case LOCATION -> new TargetResult(
                         mobile,

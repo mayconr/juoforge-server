@@ -2,12 +2,12 @@ package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
 import com.github.mayconr.juoserver.game.model.CharacterListFlag;
-import com.github.mayconr.juoserver.game.model.UOAccount;
+import com.github.mayconr.juoserver.game.model.SessionCreationContext;
+import com.github.mayconr.juoserver.game.model.UOCity;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.network.packet.CharacterList;
 import com.github.mayconr.juoserver.network.packet.GameServerLogin;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
-import com.github.mayconr.juoserver.infrastructure.server.Future;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
@@ -27,45 +27,45 @@ public class GameServerLoginHandler extends SimpleChannelInboundHandler<GameServ
 
     private final AccountStorage accountStorage;
     private final MobileStorage mobileStorage;
-    private final RealmStorage realmStorage;
+    private final RealmStorage storage;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, GameServerLogin msg) throws Exception {
         final var outbound = new SessionOutbound(ctx, ctx.channel(), ctx.executor());
-        ctx.channel().attr(AttributeKeys.SESSION_OUTBOUND_KEY).set(outbound);
 
-        Future.fire(accountStorage.findByUsername(msg.getUsername())
-            .thenAccept(opt->{
-                if (opt.isEmpty()) {
+        accountStorage.findByUsername(msg.getUsername())
+                .thenApply(account -> {
+                    ctx.channel().attr(AttributeKeys.SESSION_OUTBOUND_KEY).set(outbound);
+                    outbound.attr().set(AttributeKeys.ACCOUNT_KEY, account);
+                    return account;
+                })
+                .thenCompose(mobileStorage::findPlayersByAccount)
+                .thenAccept(mobiles->handleMobiles(outbound, mobiles))
+                .exceptionally(throwable -> {
                     log.warn("Account not found for {}", msg.getUsername());
                     outbound.writeAndFlush(new LoginReject(LoginReject.Reason.COULD_NOT_ATTACH_SERVER));
-                    return;
-                }
-
-                handleAcct(outbound, opt.get());
-            })
-        );
-    }
-
-    private void handleAcct(SessionOutbound outbound, UOAccount account) {
-        log.info("Account [{}] logged in", account.getUsername());
-        outbound.attr().set(AttributeKeys.ACCOUNT_KEY, account);
-
-        Future.fire(mobileStorage.findPlayersByAccount(account)
-            .thenAccept(players-> handleMobiles(outbound, players))
-        );
+                    return null;
+                });
     }
 
     private void handleMobiles(SessionOutbound outbound, List<AccountLoginMobile> mobiles) {
-        final var slots = new HashMap<Integer, AccountLoginMobile>();
-        int counter = 0;
+        final var mobileSlots = new HashMap<Integer, AccountLoginMobile>();
+        int mobileCounter = 0;
         for (AccountLoginMobile mobile : mobiles) {
-            slots.put(counter++, mobile);
+            mobileSlots.put(mobileCounter++, mobile);
         }
-        outbound.attr().set(AttributeKeys.CHARACTERS_SLOT_KEY, slots);
+
+        final var citySlots = new HashMap<Integer, UOCity>();
+        int cityCounter = 0;
+        for (UOCity city : storage.getCities()) {
+            citySlots.put(cityCounter++, city);
+        }
+
+        outbound.attr().set(AttributeKeys.SESSION_CREATION_CONTEXT, new SessionCreationContext(mobileSlots, citySlots));
+
         outbound.writeAndFlush(new CharacterList(
                 mobiles,
-                realmStorage.getCities(),
+                citySlots,
                 CharacterListFlag.ENABLE_AOS_COMMON,
                 CharacterListFlag.SAMURAI_NINJA_CLASSES,
                 CharacterListFlag.ENABLE_NPC_POPUP,

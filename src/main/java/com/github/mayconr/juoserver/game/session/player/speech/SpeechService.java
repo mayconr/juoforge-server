@@ -55,7 +55,7 @@ public class SpeechService {
     }
 
     private void handleCommand(String text) {
-        // TODO check if mobile has permission
+        // TODO check if player has permission
 
         eventBus.publish(Prompt.newInstance(mobile, text));
     }

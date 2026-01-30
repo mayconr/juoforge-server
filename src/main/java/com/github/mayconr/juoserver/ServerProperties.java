@@ -10,21 +10,29 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public class ServerProperties {
 
     private final Vitals vitals;
+    private final GameLoop gameLoop;
 
     @ConstructorBinding
-    public ServerProperties(Vitals vitals) {
+    public ServerProperties(Vitals vitals, GameLoop gameLoop) {
         this.vitals = vitals;
+        this.gameLoop = gameLoop;
     }
 
     /**
      * @param saturationFactor Controls how quickly regen approaches its maximum as the stat increases.
      */
     public record Vitals(int saturationFactor) {
-
-            @ConstructorBinding
-            public Vitals(@DefaultValue("100") int saturationFactor) {
-                this.saturationFactor = saturationFactor;
-            }
+        @ConstructorBinding
+        public Vitals(@DefaultValue("100") int saturationFactor) {
+            this.saturationFactor = saturationFactor;
         }
+    }
+
+    public record GameLoop(int tps) {
+        @ConstructorBinding
+        public GameLoop(@DefaultValue("20")int tps) {
+            this.tps = tps;
+        }
+    }
 
 }

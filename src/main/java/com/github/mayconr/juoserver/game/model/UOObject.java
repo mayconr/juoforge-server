@@ -76,4 +76,5 @@ public class UOObject implements Location, AttributeSupport {
         }
         return value;
     }
+
 }

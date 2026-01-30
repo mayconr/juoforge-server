@@ -10,7 +10,7 @@ import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.session.npc.NpcSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,7 +24,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
     private final RealmStorage realmStorage;
     private final OllanaClient ollanaClient;
     private final EventBus eventBus;
-    private WorldSession worldSession;
+    private WorldInternal worldInternal;
     private NpcSession npcSession;
 
     private static final List<OllanaClient.Message> OLLAMA_CONTEXT =
@@ -58,8 +58,8 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
     }
 
     @Override
-    public void initialize(WorldSession worldSession, NpcSession session) {
-        this.worldSession = worldSession;
+    public void initialize(WorldInternal worldInternal, NpcSession session) {
+        this.worldInternal = worldInternal;
         this.npcSession = session;
         // eventBus.register(MobileSpeech.class, this::onMobileSpeech);
         log.info("AI initialized for NPC " + session.getNpc().getName());
@@ -80,7 +80,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         }
 
         final var npc = npcSession.getNpc();
-        final var playerSession = worldSession.getPlayerSession(player);
+        final var playerSession = worldInternal.getPlayerSession(player);
         final var speechText = speech.message();
 
         if (speechText.startsWith("move")) {
@@ -123,25 +123,19 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
 
         if (!mobile.hasAttribute(VAULT_ATTRIBUTE)) {
             // Cria vault se não existir
-            worldSession.createItemAtLocation("Vault", player)
-                .thenAccept(vault->{
-                    vault.addAttribute(VAULT_ATTRIBUTE, true); // TODO: impedir abrir com double click
-                    mobile.addAttribute(VAULT_ATTRIBUTE, vault.getSerialId());
-                    playerSession.openContainerInRange((Container) vault);
-                });
+            final var vault = worldInternal.createItem("Vault", player);
+            vault.addAttribute(VAULT_ATTRIBUTE, true); // TODO: impedir abrir com double click
+            mobile.addAttribute(VAULT_ATTRIBUTE, vault.getSerialId());
+            playerSession.openContainerInRange((Container) vault);
         } else {
             // Vault já existe
             final var serialId = mobile.getAttribute(VAULT_ATTRIBUTE, -1);
-            realmStorage.findContainerBySerialId(serialId)
-                .exceptionally(throwable -> {
-                    log.error("Unable to load container serial [{}]", serialId, throwable);
-                    return null;
-                }).thenAccept(container->{
-                    if (container instanceof UOContainer cont) {
-                        worldSession.moveItem(cont, mobile);
-                        playerSession.openContainerInRange(container);
-                    }
-                });
+            final var container = realmStorage.getContainerBySerialId(serialId)
+                    .orElseThrow(()->new IllegalArgumentException("Container not found for serial "+serialId));
+            if (container instanceof UOContainer cont) {
+                worldInternal.moveItem(cont, mobile);
+                playerSession.openContainerInRange(cont);
+            }
         }
     }
 
@@ -154,7 +148,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
             })
             .whenComplete((itemOpt, throwable)->{
                 if (throwable != null) {
-                    worldSession.deleteItem(itemOpt);
+                    worldInternal.deleteItem(itemOpt);
                 }
             });
     }

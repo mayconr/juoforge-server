@@ -11,11 +11,11 @@ import io.netty.buffer.ByteBuf;
 public class CharacterAnimation extends AbstractPacket {
     private static final int CODE = 0x6E;
 
-    private int serialId;
-    private AnimationRepeat repeat;
-    private AnimationType type;
-    private int frameCount;
-    private AnimationDirection direction;
+    private final int serialId;
+    private final AnimationRepeat repeat;
+    private final AnimationType type;
+    private final int frameCount;
+    private final AnimationDirection direction;
 
     public CharacterAnimation(
             UOMobile mobile,

@@ -1,13 +1,11 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
 import com.github.mayconr.juoserver.game.model.UOAccount;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface AccountStorage {
 
-    CompletableFuture<Optional<UOAccount>> findByUsername(String username);
+    CompletableFuture<UOAccount> findByUsername(String username);
 
-    CompletableFuture<Optional<UOAccount>> findById(String accountId);
 }

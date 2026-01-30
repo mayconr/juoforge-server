@@ -83,7 +83,7 @@ public class SendGumpDialog extends AbstractPacket {
         buf.writeShort(getLength());
 
         // cabeçalho
-        buf.writeInt(mobile.getSerialId()); // serial UO do mobile
+        buf.writeInt(mobile.getSerialId()); // serial UO do player
         buf.writeInt(gumpId);
         buf.writeInt(x);
         buf.writeInt(y);

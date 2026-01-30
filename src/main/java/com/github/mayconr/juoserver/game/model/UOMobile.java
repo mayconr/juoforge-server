@@ -79,6 +79,9 @@ public class UOMobile extends UOObject implements Container {
     private UOContainer backpack;
     private Map<Layer, UOItem> equippedItems = new ConcurrentHashMap<>();
 
+    // Skills
+    private SkillContainer skills;
+
     public UOMobile(UOMobile other) {
         super(
                 other.getSerialId(),
@@ -151,6 +154,8 @@ public class UOMobile extends UOObject implements Container {
 
         this.backpack = other.getBackpack();
         this.equippedItems = other.getEquippedItems();
+
+        this.skills = other.skills;
     }
 
     public UOMobile(
@@ -271,6 +276,8 @@ public class UOMobile extends UOObject implements Container {
         this.fasterCastRecovery = fasterCastRecovery;
         this.fasterCasting = fasterCasting;
         this.lowerManaCost = lowerManaCost;
+
+        this.skills = new SkillContainer();
     }
 
     public void equipItem(UOItem item) {
@@ -287,6 +294,11 @@ public class UOMobile extends UOObject implements Container {
 
     public boolean isItemEquipped(UOItem item) {
         return equippedItems.containsValue(item);
+    }
+
+    public boolean isLayerAvailable(Layer layer) {
+        // TODO when one hand or two hand, must check both layers
+        return !equippedItems.containsKey(layer);
     }
 
     public void unequipItem(UOItem unequippedItem) {
@@ -316,7 +328,7 @@ public class UOMobile extends UOObject implements Container {
     @Override
     public void addItemToContainer(UOItem item) {
         if (backpack == null) {
-            throw new IllegalStateException("Backpack does not exist for mobile " + getName());
+            throw new IllegalStateException("Backpack does not exist for player " + getName());
         }
         item.setContainer(backpack);
         backpack.addItemToContainer(item);

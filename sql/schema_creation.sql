@@ -145,6 +145,19 @@ CREATE TABLE mobile_runtime (
             )
 );
 
+CREATE TABLE mobile_skills (
+      id UUID PRIMARY KEY,
+      mobile_id UUID NOT NULL,
+      skill_id INT NOT NULL,
+      skill_base DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+      skill_cap DOUBLE PRECISION NOT NULL DEFAULT 100.0,
+      skill_lock INT NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT uq_mobile_skill UNIQUE (mobile_id, skill_id)
+);
+
+
 CREATE VIEW v_account_mobiles_login as
 SELECT id AS mobile_id,
        serial_id,

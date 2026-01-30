@@ -4,12 +4,12 @@ import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
 
-public class LookRequest extends AbstractPacket {
+public class SingleClickRequest extends AbstractPacket {
     public static final int CODE = (byte) 0x09;
 
     private final int serialId;
 
-    public LookRequest(ByteBuf buf) {
+    public SingleClickRequest(ByteBuf buf) {
         super(CODE, 5);
         buf.readByte(); // CODE
         this.serialId = buf.readInt();

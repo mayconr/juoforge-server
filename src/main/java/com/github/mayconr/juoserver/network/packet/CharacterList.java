@@ -1,39 +1,39 @@
 package com.github.mayconr.juoserver.network.packet;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
 import com.github.mayconr.juoserver.game.model.CharacterListFlag;
 import com.github.mayconr.juoserver.game.model.UOCity;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
-
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 public class CharacterList extends AbstractPacket {
     public static final int CODE = (byte) 0xA9;
 
     private final List<AccountLoginMobile> mobiles;
-    private final List<UOCity> cities;
+    private final Map<Integer, UOCity> cities;
     private final CharacterListFlag[] flags;
 
     public CharacterList(
-            List<AccountLoginMobile> mobiles, List<UOCity> cities, CharacterListFlag... flags) {
-        super(CODE, calculateLength(mobiles, cities));
+            List<AccountLoginMobile> mobiles, Map<Integer, UOCity> cities, CharacterListFlag... flags) {
+        super(CODE, calculateLength(mobiles.size(), cities.size()));
         this.mobiles = mobiles;
         this.cities = cities;
         this.flags = flags;
     }
 
-    private static int calculateLength(List<AccountLoginMobile> mobiles, List<UOCity> cities) {
+    private static int calculateLength(int mobileCount, int locationCount) {
         return 1
                 + 2
                 + +1
-                + mobiles.size() * (30 + 30)
+                + mobileCount * (30 + 30)
                 + 1
-                + cities.size() * (1 + 32 + 32 + 6 * 4)
+                + locationCount * (1 + 32 + 32 + 6 * 4)
                 + 4;
     }
 
@@ -48,14 +48,16 @@ public class CharacterList extends AbstractPacket {
         }
         buf.writeByte(cities.size());
 
-        int counter = 0;
-        for (UOCity uoCity : cities) {
-            buf.writeByte(counter++);
-            buf.writeBytes(padString(uoCity.getName(), 32, StandardCharsets.UTF_8));
-            buf.writeBytes(padString(uoCity.getLocation(), 32, StandardCharsets.UTF_8));
-            buf.writeInt(uoCity.getStartingLocation().getX());
-            buf.writeInt(uoCity.getStartingLocation().getY());
-            buf.writeInt(uoCity.getStartingLocation().getZ());
+        for (Map.Entry<Integer, UOCity> entry : cities.entrySet()) {
+            final int counter = entry.getKey();
+            final var uoCity = entry.getValue();
+
+            buf.writeByte(counter);
+            buf.writeBytes(padString(uoCity.name(), 32, StandardCharsets.UTF_8));
+            buf.writeBytes(padString(uoCity.location(), 32, StandardCharsets.UTF_8));
+            buf.writeInt(uoCity.startingLocation().getX());
+            buf.writeInt(uoCity.startingLocation().getY());
+            buf.writeInt(uoCity.startingLocation().getZ());
             buf.writeInt(0);
             buf.writeInt(0);
             buf.writeInt(0);

@@ -12,16 +12,27 @@ public interface RealmStorage {
 
     void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier);
 
+    CompletableFuture<UOMobile> loadMobile(int serialId);
+
+    CompletableFuture<UOItem> loadItem(int serialId);
+
+    Optional<UOMobile> getMobileBySerialId(int serialId);
+
+    Optional<UOItem> getItemBySerialId(int serialId);
+
+    Optional<Container> getContainerBySerialId(int serialId);
+
     CompletableFuture<Integer> getNextItemSerial();
 
     CompletableFuture<Integer> getNextMobileSerial();
 
+    @Deprecated
     CompletableFuture<UOMobile> findMobileBySerialId(int serialId);
 
+    @Deprecated
     CompletableFuture<UOItem> findItemBySerialId(int serialId);
 
-    CompletableFuture<UOItem> findItemByName(String name);
-
+    @Deprecated
     CompletableFuture<Container> findContainerBySerialId(int serialId);
 
     List<UOCity> getCities();
@@ -34,11 +45,11 @@ public interface RealmStorage {
 
     CompletableFuture<Boolean> mobileExists(String name);
 
-    CompletableFuture<UOPlayer> createNewPlayer(UOMobile mobile);
+    CompletableFuture<UOPlayer> insertNewPlayer(int mobileSerialId, int itemSerialId, UOMobile mobile);
 
-    CompletableFuture<UONpc> createNpc(UONpc npc);
+    void cacheNpc(UONpc npc);
 
-    CompletableFuture<UOItem> createItem(UOItem item);
+    void cacheItem(UOItem npc);
 
     CompletableFuture<List<UOItem>> loadContainerItems(Container container);
 

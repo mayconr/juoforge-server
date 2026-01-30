@@ -13,9 +13,9 @@ public class MobileFactory {
                 UUID.randomUUID(),
                 serialGenerator.nextMobileMobile(),
                 0x190,
-                2514,
-                550,
-                0,
+                details.location().getX(),
+                details.location().getY(),
+                details.location().getZ(),
                 details.name(),
                 details.name(),
                 Collections.emptyMap(),
@@ -28,9 +28,9 @@ public class MobileFactory {
                 Gender.MALE,
                 80,
                 100,
-                50,
-                50,
-                100,
+                details.status().strength(),
+                details.status().dexterity(),
+                details.status().intelligence(),
                 50,
                 100,
                 50,
@@ -68,9 +68,13 @@ public class MobileFactory {
                 0,
                 0
         ), details.account().getId());
-        for (UOItem item : details.equipedItems()) {
+        for (UOItem item : details.equippedItems()) {
+            if (item.getSerialId() == 0) {
+                item.setSerialId(serialGenerator.nextItemSerial());
+            }
             player.equipItem(item);
         }
+        player.setSkills(new SkillContainer(details.skills()));
         return player;
     }
 

@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.common.event.EventBus;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UONpc;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.DrawMobile;
 import com.github.mayconr.juoserver.network.packet.SendSpeech;
 
@@ -20,7 +20,7 @@ public class DefaultNpcSession implements NpcSession {
     private final MovementService movementService;
 
     public DefaultNpcSession(
-            WorldSession worldSession,
+            WorldInternal worldInternal,
             UONpc npc,
             ChannelGroup channelGroup,
             EventBus eventBus,
@@ -31,7 +31,7 @@ public class DefaultNpcSession implements NpcSession {
         this.eventBus = eventBus;
         this.npcAI = npcAI;
         this.movementService = movementService;
-        this.npcAI.initialize(worldSession, this);
+        this.npcAI.initialize(worldInternal, this);
     }
 
     @Override

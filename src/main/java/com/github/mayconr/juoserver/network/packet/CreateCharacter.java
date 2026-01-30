@@ -6,7 +6,11 @@ import java.nio.charset.StandardCharsets;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import lombok.ToString;
 
+@Getter
+@ToString
 public class CreateCharacter extends AbstractPacket {
 
     public static final int CODE = (byte) 0x00;
@@ -14,25 +18,25 @@ public class CreateCharacter extends AbstractPacket {
     private final int loginCount;
     private final int profession;
     private final int sex;
-    private int strength;
-    private int dexterity;
-    private int inteligence;
-    private int skill1;
-    private int skill1Value;
-    private int skill2;
-    private int skill2Value;
-    private int skill3;
-    private int skill3Value;
-    private short skinColor;
-    private short hairStyle;
-    private short hairColor;
-    private short beardStyle;
-    private short beardColor;
-    private short locationIndex;
-    private short slot;
-    private InetAddress clientIp;
-    private short shirtColor;
-    private short pantsColor;
+    private final int strength;
+    private final int dexterity;
+    private final int intelligence;
+    private final int skill1;
+    private final int skill1Value;
+    private final int skill2;
+    private final int skill2Value;
+    private final int skill3;
+    private final int skill3Value;
+    private final short skinColor;
+    private final short hairStyle;
+    private final short hairColor;
+    private final short beardStyle;
+    private final short beardColor;
+    private final short locationIndex;
+    private final short slot;
+    private final InetAddress clientIp;
+    private final short shirtColor;
+    private final short pantsColor;
 
     public CreateCharacter(ByteBuf buf) {
         super(CODE, 104);
@@ -50,7 +54,7 @@ public class CreateCharacter extends AbstractPacket {
         this.sex = buf.readByte();
         this.strength = buf.readByte();
         this.dexterity = buf.readByte();
-        this.inteligence = buf.readByte();
+        this.intelligence = buf.readByte();
         this.skill1 = buf.readByte();
         this.skill1Value = buf.readByte();
         this.skill2 = buf.readByte();
@@ -68,102 +72,5 @@ public class CreateCharacter extends AbstractPacket {
         this.clientIp = readInetAddress(buf);
         this.shirtColor = buf.readShort();
         this.pantsColor = buf.readShort();
-    }
-
-    public String getCharacterName() {
-        return characterName;
-    }
-
-    public int getLoginCount() {
-        return loginCount;
-    }
-
-    public int getProfession() {
-        return profession;
-    }
-
-    public int getSex() {
-        return sex;
-    }
-
-    public int getStrength() {
-        return strength;
-    }
-
-    public int getDexterity() {
-        return dexterity;
-    }
-
-    public int getInteligence() {
-        return inteligence;
-    }
-
-    public int getSkill1() {
-        return skill1;
-    }
-
-    public int getSkill1Value() {
-        return skill1Value;
-    }
-
-    public int getSkill2() {
-        return skill2;
-    }
-
-    public int getSkill2Value() {
-        return skill2Value;
-    }
-
-    public int getSkill3() {
-        return skill3;
-    }
-
-    public int getSkill3Value() {
-        return skill3Value;
-    }
-
-    public short getSkinColor() {
-        return skinColor;
-    }
-
-    public short getHairStyle() {
-        return hairStyle;
-    }
-
-    public short getHairColor() {
-        return hairColor;
-    }
-
-    public short getBeardStyle() {
-        return beardStyle;
-    }
-
-    public short getBeardColor() {
-        return beardColor;
-    }
-
-    public short getLocationIndex() {
-        return locationIndex;
-    }
-
-    public short getSlot() {
-        return slot;
-    }
-
-    public InetAddress getClientIp() {
-        return clientIp;
-    }
-
-    public short getShirtColor() {
-        return shirtColor;
-    }
-
-    public short getPantsColor() {
-        return pantsColor;
-    }
-
-    @Override
-    public String toString() {
-        return "CreateCharacter{" + "characterName='" + characterName + '\'' + '}';
     }
 }

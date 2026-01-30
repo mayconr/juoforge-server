@@ -10,8 +10,7 @@ public class RequestHelp extends AbstractPacket {
 
     public RequestHelp(ByteBuf buf) {
         super(CODE, 258);
-        buf.readByte(); // CODE
-        byte[] noData = new byte[257];
-        buf.readBytes(noData);
+        buf.skipBytes(258);
     }
+
 }

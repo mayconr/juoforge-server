@@ -33,10 +33,7 @@ public class PlayerSessionService {
                 session.setActive(false);
                 playerSessionMap.remove(serial);
                 eventBus.publish(new PlayerSessionClosed(session));
-                log.info(
-                        "Session closed for mobile [{}-{}]",
-                        player.getSerialId(),
-                        player.getName());
+                log.info("Session closed for player [{}-{}]", player.getSerialId(), player.getName());
             });
             session.setActive(true);
             eventBus.publish(new PlayerSessionCreated(session));

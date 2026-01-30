@@ -24,7 +24,7 @@ public final class SerialGenerator {
             .thenAccept(serials -> {
                 nextItemSerial.set(serials.itemSerial());
                 nextMobileSerial.set(serials.mobileSerial());
-                log.info("Serial generator initialized with values item={} mobile={}", serials.itemSerial(), serials.mobileSerial());
+                log.info("Serial generator initialized with values item={} player={}", serials.itemSerial(), serials.mobileSerial());
             })
             .whenComplete((unused, throwable) -> {
                 if (throwable != null) {

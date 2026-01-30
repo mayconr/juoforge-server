@@ -38,6 +38,11 @@
 			<version>3.18.0</version>
 		</dependency>
 		<dependency>
+			<groupId>eu.janinko.Andaria</groupId>
+			<artifactId>ultimasdk</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
 		</dependency>

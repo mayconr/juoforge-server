@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.mayconr.juoserver.network.packet.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.netty.buffer.ByteBufUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
+@Slf4j
 public class UOProtocolDecoder extends ByteToMessageDecoder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UOProtocolDecoder.class);
     private final Map<Integer, Class<? extends AbstractPacket>> packetsClass = new HashMap<>();
     private boolean hasSeed;
 
@@ -31,7 +31,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(UnicodeSpeachRequest.CODE, UnicodeSpeachRequest.class);
         packetsClass.put(MegaCliloc.CODE, MegaCliloc.class);
         packetsClass.put(GeneralInformation.CODE, GeneralInformation.class);
-        packetsClass.put(LookRequest.CODE, LookRequest.class);
+        packetsClass.put(SingleClickRequest.CODE, SingleClickRequest.class);
         packetsClass.put(PickUpItem.CODE, PickUpItem.class);
         packetsClass.put(DropItem.CODE, DropItem.class);
         packetsClass.put(EquipItemRequest.CODE, EquipItemRequest.class);
@@ -41,6 +41,9 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(RequestWarMode.CODE, RequestWarMode.class);
         packetsClass.put(AttackRequest.CODE, AttackRequest.class);
         packetsClass.put(GumpSelection.CODE, GumpSelection.class);
+        packetsClass.put(UseRequest.CODE, UseRequest.class);
+        packetsClass.put(ActionRequest.CODE, ActionRequest.class);
+        packetsClass.put(SendSkill.CODE, SendSkill.class);
     }
 
     @Override
@@ -48,7 +51,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
             throws Exception {
         if (!hasSeed) {
             var seed = new LoginSeedPacket(buf);
-            LOGGER.info("Seed received from address {}", seed.getAddress());
+            log.info("Seed received from address {}", seed.getAddress());
             this.hasSeed = true;
         }
 
@@ -59,16 +62,25 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
 
             var packetClass = packetsClass.get((int) code);
             if (packetClass != null) {
+                final var startIndex = buf.readerIndex();
+                // Consume the buffer
                 out.add(packetClass.getConstructor(ByteBuf.class).newInstance(buf));
-                LOGGER.debug("Packet received [0x{} - {}]", hexCode, packetClass.getSimpleName());
+
+                if (log.isDebugEnabled()) {
+                    final var length = buf.readerIndex() - startIndex;
+                    var slice = buf.slice(startIndex, length);
+                    var hexDump = ByteBufUtil.hexDump(slice).toUpperCase();
+                    log.debug("Packet received [0x{} - {} - {}]", hexCode, hexDump, packetClass.getSimpleName());
+                }
+
             } else {
                 hasUnknownPacket = true;
-                LOGGER.info(
+                log.info(
                         "Unknown packet [0x{}] is not possible to decode remaining data.", hexCode);
 
                 byte[] remainingData = new byte[buf.readableBytes()];
                 buf.readBytes(remainingData);
-                LOGGER.debug(
+                log.debug(
                         "Unknown packet data [{}]",
                         HexFormat.of().formatHex(remainingData).toUpperCase());
             }

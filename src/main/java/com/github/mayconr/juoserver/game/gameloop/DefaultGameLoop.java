@@ -3,20 +3,24 @@ package com.github.mayconr.juoserver.game.gameloop;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.mayconr.juoserver.ServerProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Slf4j
 public class DefaultGameLoop implements GameLoop {
 
-    private static final int TPS = 20;
     private final List<GameTask> gameTasks = new ArrayList<>();
     private volatile boolean running = true;
+
+    private final ServerProperties properties;
 
     @Override
     public void addTask(GameTask task) {
         synchronized (gameTasks) {
             this.gameTasks.add(task);
-            log.info("Game task [{}] added!", task);
+            log.debug("Game task [{}] added!", task);
         }
     }
 
@@ -25,7 +29,7 @@ public class DefaultGameLoop implements GameLoop {
         synchronized (gameTasks) {
             for (GameTask task : tasks) {
                 this.gameTasks.add(task);
-                log.info("Game task [{}] added!", task);
+                log.debug("Game task [{}] added!", task);
             }
         }
     }
@@ -53,12 +57,12 @@ public class DefaultGameLoop implements GameLoop {
                             task.execute(currentTick, deltaSeconds);
                             if (task.isDone()) {
                                 iterator.remove();
-                                log.info("Game task [{}] removed!", task);
+                                log.debug("Game task [{}] removed!", task);
                             }
                         }
                     }
 
-                    Thread.sleep(1000 / TPS);
+                    Thread.sleep(1000 / properties.getGameLoop().tps());
                     currentTick++;
 
                 } catch (InterruptedException e) {

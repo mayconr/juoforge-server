@@ -4,6 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+src/main/java/com/github/mayconr/shard
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +33,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/src/main/java/com/github/mayconr/shard/

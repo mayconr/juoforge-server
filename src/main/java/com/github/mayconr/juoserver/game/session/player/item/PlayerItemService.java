@@ -8,12 +8,10 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,27 +21,28 @@ public class PlayerItemService {
     private final UOMobile mobile;
     private final SessionFanout fanout;
     private final SessionOutbound outbound;
-    private final WorldSession worldSession;
+    private final WorldInternal worldInternal;
     private final PolicyService policyService;
 
     public void pickUpItem(PickUpItem pickedUpItem) {
-        doWithItem(pickedUpItem.getSerialId(), item->{
-            // TODO verify distance of item and mobile
-            item.addAttribute(ATTR_KEY_CAN_MOVE_ITEM, item.isMovable());
-            if (item.isMovable()) {
-                if (item.getContainer() != null) {
-                    item.getContainer().removeItemFromContainer(item);
+        worldInternal.getItemBySerialId(pickedUpItem.getSerialId())
+            .ifPresent(item->{
+                // TODO verify distance of item and player
+                item.addAttribute(ATTR_KEY_CAN_MOVE_ITEM, item.isMovable());
+                if (item.isMovable()) {
+                    if (item.getContainer() != null) {
+                        item.getContainer().removeItemFromContainer(item);
+                    }
+                    if (mobile.isItemEquipped(item)) {
+                        mobile.unequipItem(item);
+                        fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
+                    }
                 }
-                if (mobile.isItemEquipped(item)) {
-                    mobile.unequipItem(item);
-                    fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
-                }
-            }
-        });
+            });
     }
 
     /**
-     * Adds an item to the mobile's inventory and notifies the client.
+     * Adds an item to the player's inventory and notifies the client.
      */
     public void addItemToInventory(UOItem item) {
         mobile.addItemToContainer(item);
@@ -61,62 +60,65 @@ public class PlayerItemService {
     }
 
     public void dropItemOnTheGround(DropItem droppedItem) {
-        doWithItem(droppedItem.getSerialId(), item -> {
-            if (isItemMovable(item)) {
-                final var result = policyService.evaluate(DropItemGroundPolicy.class, new DropItemGroundPolicy(mobile, item));
-                // Check policies for drop item
-                if (result.allowed()) {
-                    item.setLocation(droppedItem);
+        worldInternal.getItemBySerialId(droppedItem.getSerialId())
+            .ifPresent(item->{
+                if (isItemMovable(item)) {
+                    final var result = policyService.evaluate(DropItemGroundPolicy.class, new DropItemGroundPolicy(mobile, item));
+                    // Check policies for drop item
+                    if (result.allowed()) {
+                        item.setLocation(droppedItem);
 
-                    final var container = item.getContainer();
-                    if (container != null) {
-                        container.removeItemFromContainer(item);
+                        final var container = item.getContainer();
+                        if (container != null) {
+                            container.removeItemFromContainer(item);
+                        }
+                        item.setOwner(null);
+
+                        worldInternal.dropItemOnTheGround(item);
                     }
-                    item.setOwner(null);
-
-                    worldSession.dropItemOnTheGround(item);
                 }
-            }
-            fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
-        });
+                fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
+            });
     }
 
     public void dropItemInContainer(DropItem dropItem) {
-        doWithItem(dropItem.getSerialId(), droppedItem->{
-            if (isItemMovable(droppedItem)) {
-                doWithContainer(dropItem.getContainerSerialId(), container->{
-                    droppedItem.setLocation(dropItem.getX(), dropItem.getY(), dropItem.getContainerGridIndex());
+        worldInternal.getItemBySerialId(dropItem.getSerialId())
+            .ifPresent(item->{
+                if (isItemMovable(item)) {
+                    worldInternal.getContainerBySerialId(dropItem.getContainerSerialId())
+                        .ifPresent(container->{
+                            item.setLocation(dropItem.getX(), dropItem.getY(), dropItem.getContainerGridIndex());
 
-                    // Link item to container
-                    container.addItemToContainer(droppedItem);
-                    droppedItem.setOwner(null);
+                            // Link item to container
+                            container.addItemToContainer(item);
+                            item.setOwner(null);
 
-                    fanout.writeAndFlush(new DeleteObject(droppedItem), out->!out.equals(outbound)); // TODO filter by range
-                    if (mobile.equals(container) || mobile.getBackpack().equals(container)) {
-                        outbound.writeAndFlush(new AddItemToContainer(mobile.getBackpack(), droppedItem));
-                    } else {
-                        if (container instanceof UOMobile otherMobile) {
-                            fanout.writeAndFlush(new AddItemToContainer(otherMobile.getBackpack(), droppedItem)); // TODO filter by mobile container
-                        } else {
-                            fanout.writeAndFlush(new AddItemToContainer(container, droppedItem)); // TODO filter by range
-                        }
-                    }
-                });
-            } else {
-                fanout.writeAndFlush(new ObjectInfo(droppedItem)); // TODO filter by range
-            }
-        });
+                            fanout.writeAndFlush(new DeleteObject(item), out->!out.equals(outbound)); // TODO filter by range
+                            if (mobile.equals(container) || mobile.getBackpack().equals(container)) {
+                                outbound.writeAndFlush(new AddItemToContainer(mobile.getBackpack(), item));
+                            } else {
+                                if (container instanceof UOMobile otherMobile) {
+                                    fanout.writeAndFlush(new AddItemToContainer(otherMobile.getBackpack(), item)); // TODO filter by player container
+                                } else {
+                                    fanout.writeAndFlush(new AddItemToContainer(container, item)); // TODO filter by range
+                                }
+                            }
+                        });
+                } else {
+                    fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
+                }
+            });
     }
 
     private boolean isItemMovable(UOItem item) {
         return Boolean.TRUE.equals(item.getAndSetAttribute(ATTR_KEY_CAN_MOVE_ITEM, null));
     }
 
-    public void handleEquipItem(UOItem item, Layer layer) {
+    public void equipItem(UOItem item, Layer layer) {
         if (item.getContainer() != null) {
             mobile.removeItemFromContainer(item);
         } else {
-            worldSession.removeItemFromTheGround(item);
+            worldInternal.removeItemFromTheGround(item);
         }
 
         mobile.equipItem(layer, item);
@@ -127,20 +129,8 @@ public class PlayerItemService {
         fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
     }
 
-    private void doWithItem(int serialId, Consumer<UOItem> itemConsumer) {
-        worldSession.findItemBySerialId(serialId)
-                .thenAccept(itemConsumer)
-                .whenComplete(((unused, throwable) -> logging(serialId, throwable)));
-    }
-
-    private void doWithContainer(int serialId, Consumer<Container> containerConsumer) {
-        worldSession.findContainerBySerialId(serialId)
-                .thenAccept(containerConsumer)
-                .whenComplete(((unused, throwable) -> logging(serialId, throwable)));
-    }
-
     public void openContainer(Container container) {
-        worldSession.loadContainerItems(container)
+        worldInternal.loadContainerItems(container)
             .thenAccept(items->{
                 // TODO check container range
                 container.addItemsToContainer(items);

@@ -1,31 +1,35 @@
-package com.github.mayconr.juoserver.game.session.player;
+package com.github.mayconr.juoserver.game.session.player.click;
 
 import com.github.mayconr.juoserver.common.useitem.ItemUseContext;
 import com.github.mayconr.juoserver.common.useitem.ItemUseService;
 import com.github.mayconr.juoserver.common.useitem.Trigger;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.session.player.MountService;
 import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
-import com.github.mayconr.juoserver.game.session.world.WorldSession;
-import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.network.packet.DoubleClick;
+import com.github.mayconr.juoserver.network.packet.ObjectInfo;
+import com.github.mayconr.juoserver.network.packet.OpenPaperdoll;
+import com.github.mayconr.juoserver.network.packet.SingleClickRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-class DoubleClickService {
+public class ClickService {
 
     private final UOPlayer player;
-    private final WorldSession worldSession;
+    private final WorldInternal worldInternal;
     private final SessionOutbound outbound;
     private final MountService mountService;
     private final PlayerItemService playerItemService;
     private final ItemUseService itemUseService;
 
-    public void handleDoubleClick(DoubleClick doubleClick) {
+    public void doubleClick(DoubleClick doubleClick) {
         final var serialId = doubleClick.getSerialId();
 
-        if (doubleClick.isPaperdool() || worldSession.isMobile(serialId)) {
+        if (doubleClick.isPaperdool() || worldInternal.isMobile(serialId)) {
             mobileClicked(doubleClick);
         } else {
             itemClicked(serialId);
@@ -40,13 +44,8 @@ class DoubleClickService {
             return;
         }
 
-        worldSession.findMobileBySerialId(serialId)
-            .thenAccept(this::otherMobileDoubleClick)
-            .whenComplete((mobileOpt, throwable) -> {
-                if (throwable != null) {
-                    log.error("Unable to load mobile [{}]", serialId, throwable);
-                }
-            });
+        worldInternal.getMobileBySerialId(serialId)
+                .ifPresent(this::otherMobileDoubleClick);
     }
 
     private void selfDoubleClick(DoubleClick doubleClick) {
@@ -69,20 +68,15 @@ class DoubleClickService {
     }
 
     private void openPaperdoll(int serialId) {
-        worldSession
-            .findMobileBySerialId(serialId)
-            .whenComplete((mobile, throwable) -> {
-                    if (throwable != null) {
-                        log.error("Error to load mobile for serial {}", serialId, throwable);
-                        throw new MobileNotFoundException(serialId);
-                    }
-                    outbound.writeAndFlush(new OpenPaperdoll(mobile, OpenPaperdoll.Flag.NORMAL));
-                });
+        worldInternal.getMobileBySerialId(serialId)
+            .ifPresent(mobile->{
+                outbound.writeAndFlush(new OpenPaperdoll(mobile, OpenPaperdoll.Flag.NORMAL));
+            });
     }
 
     private void itemClicked(int serialId) {
-        worldSession.findItemBySerialId(serialId)
-            .thenAccept(item->{
+        worldInternal.getItemBySerialId(serialId)
+            .ifPresent(item->{
                 // TODO check the item range
 
                 if (item instanceof Container container) {
@@ -90,14 +84,25 @@ class DoubleClickService {
                     return;
                 }
 
+                if (player.isLayerAvailable(item.getLayer())) {
+                    playerItemService.equipItem(item, item.getLayer());
+                }
                 // if the item is not a container, delegate the behavior
                 itemUseService.use(new ItemUseContext(player, item, Trigger.DOUBLE_CLICK));
-            })
-            .whenComplete((itemOpt, throwable) -> {
-                if (throwable != null) {
-                    log.error("Unable to load item [{}]", serialId, throwable);
-                }
             });
+    }
+
+    public void singleClick(SingleClickRequest request) {
+        final int serial = request.getSerialId();
+        if (UOMobile.isMobile(serial)) {
+
+        } else if (UOItem.isItem(serial)) {
+            worldInternal.getItemBySerialId(serial)
+                .ifPresent(item->{
+                    outbound.writeAndFlush(new ObjectInfo(item));
+                });
+        }
+
     }
 
 }
