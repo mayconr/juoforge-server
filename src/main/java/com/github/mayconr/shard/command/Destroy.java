@@ -4,26 +4,22 @@ import com.github.mayconr.juoserver.common.event.Prompt;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.world.ItemActions;
-import com.github.mayconr.juoserver.game.session.world.PlayerActions;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.session.world.WorldActions;
 
 public class Destroy extends AbstractCommand {
 
-    private final PlayerActions playerActions;
-    private final ItemActions itemActions;
+    private final WorldActions worldActions;
 
-    public Destroy(PlayerActions playerActions, ItemActions itemActions) {
+    public Destroy(WorldActions worldActions) {
         super("destroy");
-        this.playerActions = playerActions;
-        this.itemActions = itemActions;
+        this.worldActions = worldActions;
     }
 
     @Override
     public void handle(Prompt event) {
-        playerActions.sendTarget((UOPlayer) event.mobile(), CursorType.NEUTRAL, target->{
+        worldActions.sendTarget((UOPlayer) event.mobile(), CursorType.NEUTRAL, target->{
             if (UOItem.isItem(target.serialId())) {
-                itemActions.deleteItem(target.serialId());
+                worldActions.deleteItem(target.serialId());
             }
         });
     }

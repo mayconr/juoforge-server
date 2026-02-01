@@ -330,7 +330,6 @@ public class UOMobile extends UOObject implements Container {
         if (backpack == null) {
             throw new IllegalStateException("Backpack does not exist for player " + getName());
         }
-        item.setContainer(backpack);
         backpack.addItemToContainer(item);
     }
 

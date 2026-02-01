@@ -9,11 +9,8 @@ import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface WorldInternal extends WorldActions, WorldView, MobileActions, ItemActions, PlayerActions {
+public interface WorldInternal extends WorldActions, WorldView {
 
-    /*
-        GENERAL USAGE METHODS
-     */
     void initialize();
 
     CompletableFuture<UOMobile> loadMobile(int serialId);
@@ -48,5 +45,5 @@ public interface WorldInternal extends WorldActions, WorldView, MobileActions, I
 
     void removeItemFromTheGround(UOItem item);
 
-
+    void sendSkill(UOMobile mobile, SkillValue value);
 }

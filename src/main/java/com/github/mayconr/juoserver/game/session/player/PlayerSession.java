@@ -64,4 +64,6 @@ public interface PlayerSession {
     void updateSkillsLock(Collection<SkillValue> skills);
 
     void sendMessage(String message, MessageOptions options);
+
+    void sendSkill(SkillValue value);
 }

@@ -59,4 +59,8 @@ public class PlayerSkillService {
         }
         outbound.flush();
     }
+
+    public void sendSkill(SkillValue value) {
+        outbound.writeAndFlush(new SendSkill(SendSkillType.SINGLE_UPDATE, List.of(value)));
+    }
 }

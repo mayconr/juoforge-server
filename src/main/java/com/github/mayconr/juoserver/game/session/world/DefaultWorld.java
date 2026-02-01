@@ -184,26 +184,6 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public void deleteItem(int serial) {
-        if (!UOItem.isItem(serial)) {
-            throw new IllegalArgumentException("Serial ["+serial+"] is not an item");
-        }
-        final var item = storage.getItemBySerialId(serial)
-                .orElseThrow(()->new IllegalArgumentException("Item ["+serial+"] not found"));
-        itemService.handleDeleteItem(item);
-    }
-
-    @Override
-    public void deleteItem(UOItem item) {
-        itemService.handleDeleteItem(item);
-    }
-
-    @Override
-    public void moveItem(UOItem item, Location location) {
-        itemService.handleMoveItem(item, location);
-    }
-
-    @Override
     public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
         return storage.loadContainerItems(container);
     }
@@ -286,8 +266,8 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public UOItem createItem(String name, Location location) {
-        return itemService.handleCreateItem(name, location);
+    public UOItem createItemAtLocation(String name, Location location) {
+        return itemService.createItemAtLocation(name, location);
     }
 
     @Override
@@ -313,6 +293,30 @@ public class DefaultWorld implements WorldInternal {
 
     // -- ITEMS ACTIONS --
 
+    @Override
+    public void deleteItem(int serial) {
+        if (!UOItem.isItem(serial)) {
+            throw new IllegalArgumentException("Serial ["+serial+"] is not an item");
+        }
+        final var item = storage.getItemBySerialId(serial).orElseThrow(()->new IllegalArgumentException("Item ["+serial+"] not found"));
+        itemService.deleteItem(item);
+    }
+
+    @Override
+    public void deleteItem(UOItem item) {
+        itemService.deleteItem(item);
+    }
+
+    @Override
+    public void moveItem(UOItem item, Location location) {
+        itemService.moveItem(item, location);
+    }
+
+    @Override
+    public UOItem createItemInContainer(String name, Container container) {
+        return itemService.createItemInContainer(name, container);
+    }
+
 
     // -- PLAYER ACTIONS --
 
@@ -324,5 +328,12 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void sendMessage(UOPlayer player, String text, MessageOptions options) {
         playerSessionService.getSession(player).sendMessage(text, options);
+    }
+
+    @Override
+    public void sendSkill(UOMobile mobile, SkillValue value) {
+        if (mobile instanceof UOPlayer player) {
+            playerSessionService.getSession(player).sendSkill(value);
+        }
     }
 }

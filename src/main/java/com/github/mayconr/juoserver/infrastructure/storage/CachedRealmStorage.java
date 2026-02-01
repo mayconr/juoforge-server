@@ -220,7 +220,9 @@ public class CachedRealmStorage implements RealmStorage {
     @Override
     public void cacheItem(UOItem item) {
         itemCache.put(item);
-        worldItemIndex.add(item);
+        if (item.isOnTheGround()) {
+            worldItemIndex.add(item);
+        }
     }
 
     @Override

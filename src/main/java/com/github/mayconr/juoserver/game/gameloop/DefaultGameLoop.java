@@ -62,7 +62,7 @@ public class DefaultGameLoop implements GameLoop {
                         }
                     }
 
-                    Thread.sleep(1000 / properties.getGameLoop().tps());
+                    Thread.sleep(1000 / properties.gameLoop().tps());
                     currentTick++;
 
                 } catch (InterruptedException e) {

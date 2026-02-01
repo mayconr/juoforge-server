@@ -2,13 +2,10 @@ package com.github.mayconr.juoserver.game.session.player.item;
 
 import com.github.mayconr.juoserver.common.policy.PolicyService;
 import com.github.mayconr.juoserver.common.policy.actions.DropItemGroundPolicy;
-import com.github.mayconr.juoserver.game.model.Container;
-import com.github.mayconr.juoserver.game.model.Layer;
-import com.github.mayconr.juoserver.game.model.UOItem;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,24 +18,23 @@ public class PlayerItemService {
     private final UOMobile mobile;
     private final SessionFanout fanout;
     private final SessionOutbound outbound;
-    private final WorldInternal worldInternal;
+    private final RealmStorage storage;
     private final PolicyService policyService;
 
     public void pickUpItem(PickUpItem pickedUpItem) {
-        worldInternal.getItemBySerialId(pickedUpItem.getSerialId())
-            .ifPresent(item->{
-                // TODO verify distance of item and player
-                item.addAttribute(ATTR_KEY_CAN_MOVE_ITEM, item.isMovable());
-                if (item.isMovable()) {
-                    if (item.getContainer() != null) {
-                        item.getContainer().removeItemFromContainer(item);
-                    }
-                    if (mobile.isItemEquipped(item)) {
-                        mobile.unequipItem(item);
-                        fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
-                    }
-                }
-            });
+        final var item = storage.getItemBySerialId(pickedUpItem.getSerialId())
+                        .orElseThrow(()->new IllegalStateException("Item not found " + pickedUpItem.getSerialId()));
+        // TODO verify distance of item and player
+        item.addAttribute(ATTR_KEY_CAN_MOVE_ITEM, item.isMovable());
+        if (item.isMovable()) {
+            if (item.getContainer() != null) {
+                item.getContainer().removeItemFromContainer(item);
+            }
+            if (mobile.isItemEquipped(item)) {
+                mobile.unequipItem(item);
+                fanout.writeAndFlush(new DrawMobile(mobile)); // TODO filter by range
+            }
+        }
     }
 
     /**
@@ -46,6 +42,7 @@ public class PlayerItemService {
      */
     public void addItemToInventory(UOItem item) {
         mobile.addItemToContainer(item);
+        storage.removeItemFromTheGround(item);
 
         outbound.writeAndFlush(new AddItemToContainer(mobile, item));
 
@@ -60,54 +57,80 @@ public class PlayerItemService {
     }
 
     public void dropItemOnTheGround(DropItem droppedItem) {
-        worldInternal.getItemBySerialId(droppedItem.getSerialId())
-            .ifPresent(item->{
-                if (isItemMovable(item)) {
-                    final var result = policyService.evaluate(DropItemGroundPolicy.class, new DropItemGroundPolicy(mobile, item));
-                    // Check policies for drop item
-                    if (result.allowed()) {
-                        item.setLocation(droppedItem);
+        final var item = storage.getItemBySerialId(droppedItem.getSerialId())
+                .orElseThrow(()->new IllegalStateException("Item not found " + droppedItem.getSerialId()));
 
-                        final var container = item.getContainer();
-                        if (container != null) {
-                            container.removeItemFromContainer(item);
-                        }
-                        item.setOwner(null);
+        // TODO verify if user can drop the item
 
-                        worldInternal.dropItemOnTheGround(item);
-                    }
+        if (isItemMovable(item)) {
+            final var result = policyService.evaluate(DropItemGroundPolicy.class, new DropItemGroundPolicy(mobile, item));
+            // Check policies for drop item
+            if (result.allowed()) {
+                item.setLocation(droppedItem);
+
+                final var container = item.getContainer();
+                if (container != null) {
+                    container.removeItemFromContainer(item);
                 }
-                fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
-            });
+                item.setOwner(null);
+
+                storage.dropItemOnTheGround(item);
+            }
+        }
+        fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
     }
 
     public void dropItemInContainer(DropItem dropItem) {
-        worldInternal.getItemBySerialId(dropItem.getSerialId())
-            .ifPresent(item->{
-                if (isItemMovable(item)) {
-                    worldInternal.getContainerBySerialId(dropItem.getContainerSerialId())
-                        .ifPresent(container->{
-                            item.setLocation(dropItem.getX(), dropItem.getY(), dropItem.getContainerGridIndex());
+        final var item = storage.getItemBySerialId(dropItem.getSerialId())
+                .orElseThrow(()->new IllegalStateException("Invalid item "+dropItem.getSerialId()));
 
-                            // Link item to container
-                            container.addItemToContainer(item);
-                            item.setOwner(null);
+        if (!isItemMovable(item)) {
+            fanout.writeAndFlush(new ObjectInfo(item));
+            return;
+        }
+        // TODO verify if user can drop the item
+        final int targetSerialId = dropItem.getContainerSerialId();
 
-                            fanout.writeAndFlush(new DeleteObject(item), out->!out.equals(outbound)); // TODO filter by range
-                            if (mobile.equals(container) || mobile.getBackpack().equals(container)) {
-                                outbound.writeAndFlush(new AddItemToContainer(mobile.getBackpack(), item));
-                            } else {
-                                if (container instanceof UOMobile otherMobile) {
-                                    fanout.writeAndFlush(new AddItemToContainer(otherMobile.getBackpack(), item)); // TODO filter by player container
-                                } else {
-                                    fanout.writeAndFlush(new AddItemToContainer(container, item)); // TODO filter by range
-                                }
-                            }
-                        });
-                } else {
-                    fanout.writeAndFlush(new ObjectInfo(item)); // TODO filter by range
+        // Remove item from the ground
+        storage.removeItemFromTheGround(item);
+
+        if (UOMobile.isMobile(targetSerialId)) {
+            final var mob = storage.getMobileBySerialId(targetSerialId)
+                    .orElseThrow(()->new IllegalStateException("Mobile not found for serial "+targetSerialId));
+
+            item.setLocation(dropItem.getX(), dropItem.getY(), dropItem.getContainerGridIndex());
+            item.setOwner(null);
+            mob.addItemToContainer(item);
+
+            fanout.writeAndFlush(new DeleteObject(item), out->!out.equals(outbound));
+            outbound.writeAndFlush(new AddItemToContainer(mob.getBackpack(), item));
+        }
+
+        if (UOItem.isItem(targetSerialId)) {
+            final var targetItem = storage.getItemBySerialId(dropItem.getContainerSerialId())
+                    .orElseThrow(()->new IllegalStateException("Invalid container "+dropItem.getContainerSerialId()));
+
+            // Target item is a container
+            if (targetItem instanceof UOContainer container) {
+                item.setLocation(dropItem.getX(), dropItem.getY(), dropItem.getContainerGridIndex());
+                item.setOwner(null);
+                container.addItemToContainer(item);
+
+                fanout.writeAndFlush(new AddItemToContainer(container, item));
+
+            } else {
+                // Stack items
+                targetItem.setAmount(targetItem.getAmount() + item.getAmount());
+                storage.deleteItem(item);
+                outbound.write(new DeleteObject(item));
+
+                if (targetItem.isOnBackpack()) {
+                    outbound.writeAndFlush(new AddItemToContainer(targetItem.getContainer(), targetItem));
+                } else if (targetItem.isOnTheGround()) {
+                    outbound.writeAndFlush(new ObjectInfo(targetItem));
                 }
-            });
+            }
+        }
     }
 
     private boolean isItemMovable(UOItem item) {
@@ -118,7 +141,7 @@ public class PlayerItemService {
         if (item.getContainer() != null) {
             mobile.removeItemFromContainer(item);
         } else {
-            worldInternal.removeItemFromTheGround(item);
+            storage.removeItemFromTheGround(item);
         }
 
         mobile.equipItem(layer, item);
@@ -130,7 +153,7 @@ public class PlayerItemService {
     }
 
     public void openContainer(Container container) {
-        worldInternal.loadContainerItems(container)
+        storage.loadContainerItems(container)
             .thenAccept(items->{
                 // TODO check container range
                 container.addItemsToContainer(items);

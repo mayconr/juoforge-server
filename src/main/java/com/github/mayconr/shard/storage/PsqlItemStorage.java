@@ -141,7 +141,7 @@ public class PsqlItemStorage extends AbstractStorage implements ItemStorage {
         }
 
         final var item = new UOItem(id, serialId, modelId, x, y, z, name, displayName, attr, type, layer, amount, hue, movable, hidden,
-                direction, container, "horse");
+                direction, container, Collections.emptyList(), "horse");
 
         return switch (type) {
             case CONTAINER -> new UOContainer(item, (int) item.getAttrMap().getOrDefault("gumpId", 0));

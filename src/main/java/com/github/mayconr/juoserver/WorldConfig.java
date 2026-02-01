@@ -33,6 +33,9 @@ import com.github.mayconr.juoserver.game.session.world.file.UOFileReader;
 import com.github.mayconr.juoserver.game.session.world.item.ItemService;
 import com.github.mayconr.juoserver.game.session.world.player.PlayerMobileService;
 import com.github.mayconr.juoserver.game.session.world.player.PlayerSessionService;
+import com.github.mayconr.juoserver.game.skill.DefaultRNG;
+import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
+import com.github.mayconr.juoserver.game.skill.SkillSystem;
 import com.github.mayconr.juoserver.infrastructure.storage.CachedRealmStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
@@ -40,6 +43,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import io.netty.channel.group.ChannelGroup;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 
 @EnableConfigurationProperties(ServerProperties.class)
 public class WorldConfig {
@@ -109,6 +113,11 @@ public class WorldConfig {
         return new DefaultGumpSystem(fanout);
     }
 
+    @Bean
+    public SkillSystem skillSystem(ServerProperties properties, WorldInternal worldInternal) {
+        return new DefaultSkillSystem(properties, new DefaultRNG(), worldInternal);
+    }
+
     // =========================================================================
     // AI
     // =========================================================================
@@ -174,7 +183,8 @@ public class WorldConfig {
             CombatSystem combatSystem,
             PolicyService policyService,
             ServerProperties serverProperties,
-            ItemUseService itemUseService) {
+            ItemUseService itemUseService,
+            RealmStorage storage) {
 
         return new PlayerSessionFactory(
                 eventBus,
@@ -182,7 +192,8 @@ public class WorldConfig {
                 combatSystem,
                 policyService,
                 serverProperties,
-                itemUseService
+                itemUseService,
+                storage
         );
     }
 
@@ -199,27 +210,26 @@ public class WorldConfig {
 
         final var serialGenerator = new SerialGenerator(realmStorage);
         final var messageService = new MessageService(channelGroup);
+        final var playerSessionService = new PlayerSessionService(
+                playerSessionFactory,
+                eventBus,
+                fanout
+        );
         final var itemService = new ItemService(
                 serialGenerator,
                 itemTemplateRegistry,
                 realmStorage,
                 fanout,
-                eventBus
+                eventBus,
+                playerSessionService
         );
         final var playerMobileService = new PlayerMobileService(
                 serialGenerator,
                 realmStorage,
                 itemTemplateRegistry
         );
-        final var playerSessionService = new PlayerSessionService(
-                playerSessionFactory,
-                eventBus,
-                fanout
-        );
-
         final var fileReader = new UOFileReader();
         final var animationService = new AnimationService(fanout);
-
         final var worldSession = new DefaultWorld(
                 serialGenerator,
                 realmStorage,

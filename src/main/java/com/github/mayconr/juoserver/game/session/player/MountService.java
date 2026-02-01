@@ -34,7 +34,7 @@ public class MountService {
         }
         final var result = policyService.evaluate(Mount.class, new Mount(player, npc));
         if (result.allowed()) {
-            final var item = worldInternal.createItem(npc.getMountItemName(), player);
+            final var item = worldInternal.createItemAtLocation(npc.getMountItemName(), player);
             worldInternal.removeItemFromTheGround(item);
             worldInternal.deleteMobile(npc);
 

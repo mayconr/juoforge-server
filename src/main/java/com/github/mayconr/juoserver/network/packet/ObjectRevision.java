@@ -10,8 +10,8 @@ public class ObjectRevision extends AbstractPacket {
     public static final int CODE = (byte) 0xDC;
     private static final int BASE_HASH = 0x40000000;
 
-    private int serialId;
-    private int hash;
+    private final int serialId;
+    private final int hash;
 
     public ObjectRevision(UOItem item) {
         super(CODE, 9);

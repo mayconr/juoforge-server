@@ -30,6 +30,7 @@ public class ItemFactory {
                 false,
                 Direction.NORTH,
                 null,
+                template.flags(),
                 template.mountNpc()
         );
         if (template.attr().containsKey("gumpId")) {

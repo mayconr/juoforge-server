@@ -10,6 +10,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.shard.command.*;
+import com.github.mayconr.shard.command.Test;
 import com.github.mayconr.shard.storage.PsqlAccountStorage;
 import com.github.mayconr.shard.storage.PsqlItemStorage;
 import com.github.mayconr.shard.storage.PsqlMobileStorage;
@@ -87,9 +88,10 @@ public class ShardConfiguration {
             bus.register(new Save(worldStorage));
             bus.register(new CreateNpc(worldInternal));
             bus.register(new CreateItem(worldInternal));
-            bus.register(new TeleTo(worldInternal, worldInternal));
-            bus.register(new Kill(worldInternal, worldInternal, worldInternal));
-            bus.register(new Destroy(worldInternal, worldInternal));
+            bus.register(new TeleTo(worldInternal));
+            bus.register(new Kill(worldInternal, worldInternal));
+            bus.register(new Destroy(worldInternal));
+            bus.register(new Test(worldInternal, worldInternal));
         };
     }
 }

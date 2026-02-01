@@ -1,8 +1,10 @@
 package com.github.mayconr.juoserver.common.template;
 
+import com.github.mayconr.juoserver.game.model.ItemFlag;
 import com.github.mayconr.juoserver.game.model.ItemType;
 import com.github.mayconr.juoserver.game.model.Layer;
 
+import java.util.List;
 import java.util.Map;
 
 public record ItemTemplate(String name,
@@ -13,5 +15,6 @@ public record ItemTemplate(String name,
                            boolean movable,
                            int hue,
                            String mountNpc,
+                           List<ItemFlag> flags,
                            Map<String, Object> attr) {
 }

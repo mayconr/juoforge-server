@@ -13,3 +13,7 @@ server:
     saturationFactor: 100
   gameLoop:
     tps: 20
+  skills:
+    minGainChance: 0
+    maxGainChance: 0.5 # 50%
+    balanceOffset: 50

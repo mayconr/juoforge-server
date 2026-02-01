@@ -1,21 +1,17 @@
 package com.github.mayconr.juoserver;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
-@Data
 @ConfigurationProperties(prefix = "server")
-public class ServerProperties {
-
-    private final Vitals vitals;
-    private final GameLoop gameLoop;
+public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills) {
 
     @ConstructorBinding
-    public ServerProperties(Vitals vitals, GameLoop gameLoop) {
+    public ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills) {
         this.vitals = vitals;
         this.gameLoop = gameLoop;
+        this.skills = skills;
     }
 
     /**
@@ -35,4 +31,56 @@ public class ServerProperties {
         }
     }
 
+    /**
+     * Configuration values used by the skill system to calculate the probability
+     * of gaining skill points after performing an action.
+     *
+     * <p>This configuration is generic and system-wide. It does not contain
+     * skill-specific rules or gameplay logic, but instead defines the bounds
+     * and balance parameters used by the skill gain formula.</p>
+     *
+     * <h3>Skill gain chance formula</h3>
+     *
+     * <pre>
+     * chance = clamp(
+     *     (difficulty - skillValue + balanceOffset) / 100,
+     *     minGainChance,
+     *     maxGainChance
+     * );
+     * </pre>
+     *
+     * <h3>Parameters</h3>
+     *
+     * <ul>
+     *   <li>
+     *     <b>minGainChance</b> – The minimum probability (0.0 to 1.0) of gaining
+     *     skill from an action. This prevents progression from becoming
+     *     completely blocked at high skill values or low-difficulty actions.
+     *   </li>
+     *   <li>
+     *     <b>maxGainChance</b> – The maximum probability (0.0 to 1.0) of gaining
+     *     skill from a single action. This prevents guaranteed skill gains and
+     *     helps avoid excessive or automated progression.
+     *   </li>
+     *   <li>
+     *     <b>balanceOffset</b> – A balancing offset applied to the formula that
+     *     defines the equilibrium point where the chance of gaining skill is
+     *     approximately 50%. Higher values make skill gains easier overall,
+     *     while lower values make progression slower and more demanding.
+     *   </li>
+     * </ul>
+     *
+     * <p>The default values are chosen to approximate a classic Ultima
+     * Online–style progression curve, where skill gains are frequent at lower
+     * levels and become increasingly rare as the skill approaches its upper
+     * range.</p>
+     */
+    public record Skills(double minGainChance, double maxGainChance, int balanceOffset) {
+        @ConstructorBinding
+        public Skills(@DefaultValue("0") double minGainChance, @DefaultValue("0.50") double maxGainChance, @DefaultValue("50") int balanceOffset) {
+            this.minGainChance = minGainChance;
+            this.maxGainChance = maxGainChance;
+            this.balanceOffset = balanceOffset;
+        }
+    }
 }

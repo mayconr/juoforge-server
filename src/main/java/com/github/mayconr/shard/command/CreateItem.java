@@ -15,6 +15,6 @@ public class CreateItem extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        worldActions.createItem(event.arguments()[0], event.mobile());
+        worldActions.createItemAtLocation(event.arguments()[0], event.mobile());
     }
 }

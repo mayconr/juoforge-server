@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.network.packet;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOObject;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
@@ -17,17 +18,17 @@ public class AddItemToContainer extends AbstractPacket {
     private final int containerSerialId;
     private final UOItem itemToBeAdded;
 
-    public AddItemToContainer(Container container, UOItem itemToBeAdded) {
-        super(CODE, 21);
-        this.container = container;
-        this.containerSerialId = container.getSerialId();
-        this.itemToBeAdded = itemToBeAdded;
-    }
-
     public AddItemToContainer(UOMobile mobile, UOItem itemToBeAdded) {
         super(CODE, 21);
         this.container = mobile;
         this.containerSerialId = mobile.getBackpack().getSerialId();
+        this.itemToBeAdded = itemToBeAdded;
+    }
+
+    public AddItemToContainer(Container container, UOItem itemToBeAdded) {
+        super(CODE, 21);
+        this.container = container;
+        this.containerSerialId = container.getSerialId();
         this.itemToBeAdded = itemToBeAdded;
     }
 

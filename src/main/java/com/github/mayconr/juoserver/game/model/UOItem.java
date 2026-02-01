@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ public class UOItem extends UOObject {
     private Direction direction;
     private Container container;
     private UOMobile owner;
-
+    private List<ItemFlag> flags;
     /** Npc created after a player unmount. Only for mountType: MOUNT */
     private String mountNpc;
 
@@ -45,6 +46,7 @@ public class UOItem extends UOObject {
             boolean hidden,
             Direction direction,
             Container container,
+            List<ItemFlag> flags,
             String mountNpc) {
         super(serialId, modelId, x, y, z, name, displayName, attr);
         this.id = id;
@@ -56,6 +58,7 @@ public class UOItem extends UOObject {
         this.hidden = hidden;
         this.direction = direction;
         this.container = container;
+        this.flags = flags;
         this.mountNpc = mountNpc;
     }
 
@@ -79,7 +82,8 @@ public class UOItem extends UOObject {
         this.hidden = other.hidden;
         this.direction = other.direction;
         this.container = other.container;
-        this.owner = other.getOwner();
+        this.owner = other.owner;
+        this.flags = other.flags;
         this.mountNpc = other.mountNpc;
     }
 

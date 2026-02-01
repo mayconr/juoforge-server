@@ -15,6 +15,7 @@ import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
 import com.github.mayconr.juoserver.game.session.player.target.TargetService;
 import com.github.mayconr.juoserver.game.session.player.vitals.VitalsService;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class DefaultPlayerSession implements PlayerSession {
 
     private final UOPlayer player;
     private final ServerProperties properties;
+    private final RealmStorage storage;
     private final InitializationService initializationService;
     private final PolicyService policyService;
     private final SpeechService speechService;
@@ -192,5 +194,10 @@ public class DefaultPlayerSession implements PlayerSession {
     @Override
     public void sendMessage(String message, MessageOptions options) {
         playerMessageService.sendMessage(message, options);
+    }
+
+    @Override
+    public void sendSkill(SkillValue value) {
+        skillService.sendSkill(value);
     }
 }

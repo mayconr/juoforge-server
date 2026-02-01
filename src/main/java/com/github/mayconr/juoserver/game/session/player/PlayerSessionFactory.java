@@ -20,6 +20,7 @@ import com.github.mayconr.juoserver.game.session.player.target.TargetService;
 import com.github.mayconr.juoserver.game.session.player.vitals.PlayerVitalsTask;
 import com.github.mayconr.juoserver.game.session.player.vitals.VitalsService;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -31,6 +32,7 @@ public class PlayerSessionFactory {
     private final PolicyService policyService;
     private final ServerProperties properties;
     private final ItemUseService itemUseService;
+    private final RealmStorage storage;
     private WorldInternal worldInternal;
 
     public void initialize(WorldInternal worldInternal) {
@@ -41,7 +43,7 @@ public class PlayerSessionFactory {
         final var initializationService = new InitializationService(player, eventBus, worldInternal, outbound, fanout);
         final var speechService = new SpeechService(player, eventBus, fanout);
         final var movementService = new MovementService(player, eventBus, outbound, fanout, worldInternal);
-        final var itemService = new PlayerItemService(player, fanout, outbound, worldInternal, policyService);
+        final var itemService = new PlayerItemService(player, fanout, outbound, storage, policyService);
         final var megaClilocService = new MegaClilocService(player, outbound, worldInternal);
         final var targetService = new TargetService(player, outbound);
         final var combatService = new CombatService(player, fanout, outbound, combatSystem);
@@ -57,6 +59,7 @@ public class PlayerSessionFactory {
                 new DefaultPlayerSession(
                         player,
                         properties,
+                        storage,
                         initializationService,
                         policyService,
                         speechService,
