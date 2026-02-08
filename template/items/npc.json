@@ -1,0 +1,37 @@
+[
+  {
+    "name": "vendor_sell",
+    "displayName": "vendor sell",
+    "layer": "SHOP_SALE",
+    "modelId": 3701,
+    "movable": true,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["CONTAINER"],
+    "attr": {}
+  },
+  {
+    "name": "vendor_bought",
+    "displayName": "vendor bought",
+    "layer": "SHOP_BOUGHT",
+    "modelId": 3701,
+    "movable": true,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["CONTAINER"],
+    "attr": {}
+  },
+  {
+    "name": "vendor_pack",
+    "displayName": "vendor pack",
+    "layer": "SHOP_PACK",
+    "modelId": 3701,
+    "movable": true,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["CONTAINER"],
+    "attr": {
+      "gumpId": 48
+    }
+  }
+]

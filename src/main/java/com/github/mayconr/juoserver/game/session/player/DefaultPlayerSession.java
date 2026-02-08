@@ -1,18 +1,20 @@
 package com.github.mayconr.juoserver.game.session.player;
 
 import com.github.mayconr.juoserver.ServerProperties;
-import com.github.mayconr.juoserver.common.policy.PolicyService;
-import com.github.mayconr.juoserver.common.policy.actions.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.event.*;
+import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
+import com.github.mayconr.juoserver.game.policy.PolicyService;
+import com.github.mayconr.juoserver.game.session.SessionFanout;
+import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.player.action.ActionService;
 import com.github.mayconr.juoserver.game.session.player.click.ClickService;
 import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
 import com.github.mayconr.juoserver.game.session.player.message.PlayerMessageService;
-import com.github.mayconr.juoserver.game.session.player.movement.MovementService;
 import com.github.mayconr.juoserver.game.session.player.skill.PlayerSkillService;
-import com.github.mayconr.juoserver.game.session.player.speech.SpeechService;
 import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
 import com.github.mayconr.juoserver.game.session.player.target.TargetService;
+import com.github.mayconr.juoserver.game.session.player.vendor.VendorService;
 import com.github.mayconr.juoserver.game.session.player.vitals.VitalsService;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -23,18 +25,19 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
 public class DefaultPlayerSession implements PlayerSession {
 
     private final UOPlayer player;
+    private final SessionOutbound outbound;
+    private final SessionFanout fanout;
     private final ServerProperties properties;
     private final RealmStorage storage;
     private final InitializationService initializationService;
     private final PolicyService policyService;
-    private final SpeechService speechService;
-    private final MovementService movementService;
     private final PlayerItemService playerItemService;
     private final ClickService clickService;
     private final MegaClilocService megaClilocService;
@@ -46,8 +49,9 @@ public class DefaultPlayerSession implements PlayerSession {
     private final ActionService actionService;
     private final StatusService statusService;
     private final PlayerMessageService playerMessageService;
+    private final VendorService vendorService;
 
-    private WorldInternal worldInternal;
+    private WorldInternal world;
     private String clientVersion;
     private boolean active;
 
@@ -67,34 +71,14 @@ public class DefaultPlayerSession implements PlayerSession {
 
     @Override
     public void initialize(WorldInternal worldInternal, String clientVersion) {
-        this.worldInternal = worldInternal;
+        this.world = worldInternal;
         this.clientVersion = clientVersion;
         this.initializationService.initialize(this, clientVersion);
     }
 
     @Override
-    public void speech(UnicodeSpeachRequest request) {
-        speechService.handleSpeech(request);
-    }
-
-    @Override
-    public void move(MoveRequest moveRequest) {
-        movementService.handleMove(moveRequest);
-    }
-
-    @Override
-    public void move(Location location) {
-        movementService.handleMove(location);
-    }
-
-    @Override
     public void showMegaCliloc(List<Integer> serialList) {
         megaClilocService.handleMegaCliloc(serialList);
-    }
-
-    @Override
-    public void pickUpItem(PickUpItem pickedUpItem) {
-        playerItemService.pickUpItem(pickedUpItem);
     }
 
     @Override
@@ -117,18 +101,13 @@ public class DefaultPlayerSession implements PlayerSession {
 
     @Override
     public void equipItem(EquipItemRequest equipItem) {
-        worldInternal.getItemBySerialId(equipItem.getItemSerialId())
+        world.getItemBySerialId(equipItem.getItemSerialId())
             .ifPresent(item-> playerItemService.equipItem(item, equipItem.getLayer()));
     }
 
     @Override
     public void addItemToInventory(UOItem item) {
         playerItemService.addItemToInventory(item);
-    }
-
-    @Override
-    public void openContainerInRange(Container container) {
-        playerItemService.openContainer(container);
     }
 
     @Override
@@ -197,7 +176,96 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void sendSkill(SkillValue value) {
-        skillService.sendSkill(value);
+    public void sendBuyList(UOMobile vendor, List<UOItem> items) {
+        vendorService.sendBuyList(vendor, items);
     }
+
+    public void onMobileMoved(MobileMoved moved) {
+        if (player.equals(moved.mobile())) {
+            var mobiles = world.getMobilesInRange(player, properties.world().lightOfSight());
+            var items  = world.getItemsInRange(player, properties.world().lightOfSight());
+
+            outbound.write(new MovementAck(moved.sequence(), player.getNotoriety()));
+
+            for (UOMobile mobile : mobiles) {
+                if (!mobile.equals(player)) {
+                    outbound.write(new DrawMobile(mobile));
+                }
+            }
+            for (UOItem item : items) {
+                outbound.write(new ObjectInfo(item));
+            }
+
+            if (moved.teleport()) {
+                outbound.write(new DrawGamePlayer(player));
+                fanout.write(new UpdatePlayer(player));
+            } else {
+                // Notify everyone close
+                fanout.write(new UpdatePlayer(player));
+            }
+            fanout.flush();
+        }
+
+        // TODO drawMobile when enter on range, after that update player
+    }
+
+    public void onMobileSpeech(MobileSpeech event) {
+        if (player.equals(event.player())) {
+            fanout.writeAndFlush(new SendSpeech(event), lineOfSightMobilesFilter());
+        }
+    }
+
+    public void onItemEquipped(ItemEquipped equipped) {
+        if (player.equals(equipped.mobile())) {
+            fanout.writeAndFlush(new DrawMobile(equipped.mobile()), lineOfSightMobilesFilter());
+        }
+    }
+
+    public void onItemUnequipped(ItemUnequipped itemUnequipped) {
+        if (player.equals(itemUnequipped.player())) {
+            fanout.writeAndFlush(new DrawMobile(itemUnequipped.player()), lineOfSightMobilesFilter());
+        }
+    }
+
+    public void onEnteredLineOfSight(MobileEnteredLineOfSight event) {
+        if (player.equals(event.target())) {
+            outbound.write(new DrawMobile(event.observer()));
+        }
+    }
+
+    public void onNpcCreated(NpcCreated event) {
+        fanout.writeAndFlush(new DrawMobile(event.npc()), lineOfSightMobilesFilter());
+    }
+
+    public void onNpcDeleted(NpcDeleted event) {
+        fanout.writeAndFlush(new DeleteObject(event.deletedNpc()), lineOfSightMobilesFilter());
+    }
+
+    public void onPlayerDeleted(PlayerDeleted event) {
+        fanout.writeAndFlush(new DeleteObject(event.deletedPlayer()));
+    }
+
+    public void onSkillGained(SkillGained event) {
+        if (player.equals(event.mobile())) {
+            outbound.writeAndFlush(new SendSkill(SendSkillType.SINGLE_UPDATE, List.of(event.skill())));
+        }
+    }
+
+    public void onSkillGumpRequested(SkillGumpRequested event) {
+        if (player.equals(event.player())) {
+            log.info("Sending skills of {}", event.skillsOf());
+            outbound.writeAndFlush(new SendSkill(SendSkillType.FULL_LIST_WITH_CAP, event.skillsOf().getSkills().skills()));
+        } else {
+            log.info("Not implemented yet");
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Sending skill gump for [{}-{}]", player.getSerialId(), player.getName());
+        }
+    }
+
+    private Predicate<UOPlayer> lineOfSightMobilesFilter() {
+        return mobile->world.getMobilesInRange(player, properties.world().lightOfSight()).contains(mobile);
+    }
+
 }

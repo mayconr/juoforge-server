@@ -6,17 +6,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum Gender {
-    MALE(0),
-    FEMALE(1);
+    HUMAN_MALE(2),
+    HUMAN_FEMALE(3);
 
     private final int code;
 
-    public static Gender fromCode(int code) {
+    public static Gender byCode(int code) {
         for (Gender gender : values()) {
             if (gender.code == code) {
                 return gender;
             }
         }
-        return Gender.MALE;
+        return Gender.HUMAN_MALE;
     }
 }

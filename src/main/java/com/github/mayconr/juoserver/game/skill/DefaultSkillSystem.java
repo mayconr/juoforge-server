@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.game.model.SkillGainContext;
 import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.rng.RNG;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 
@@ -12,7 +13,12 @@ public class DefaultSkillSystem implements SkillSystem {
 
     private final ServerProperties properties;
     private final RNG rng;
-    private final WorldInternal worldInternal;
+    private WorldInternal world;
+
+    @Override
+    public void initialize(WorldInternal worldInternal) {
+        this.world = worldInternal;
+    }
 
     @Override
     public void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
@@ -68,15 +74,10 @@ public class DefaultSkillSystem implements SkillSystem {
     private void applyGain(UOMobile mobile, SkillValue skill, double amount) {
         double currentBase = skill.getBase();
 
-        double newBase = Math.min(
-                skill.getBase() + amount,
-                skill.getCap()
-        );
+        skill.increase(amount);
 
-        skill.setBase(newBase);
-
-        if (newBase - 0.1 > currentBase) {
-            worldInternal.sendSkill(mobile, skill);
+        if (skill.getBase() - 0.1 > currentBase) {
+            world.skillGained(mobile, skill);
         }
     }
 }

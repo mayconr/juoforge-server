@@ -1,16 +1,12 @@
 package com.github.mayconr.juoserver.game.session.player.target;
 
-import com.github.mayconr.juoserver.game.model.CursorTarget;
-import com.github.mayconr.juoserver.game.model.CursorType;
-import com.github.mayconr.juoserver.game.model.PointInTheWorld;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.network.packet.Target;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -19,7 +15,7 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class TargetService {
 
-    private final UOMobile mobile;
+    private final UOPlayer player;
     private final SessionOutbound outbound;
     private final Map<Integer, Consumer<TargetResult>> consumerMap = new ConcurrentHashMap<>();
     private final AtomicInteger targetSeq = new AtomicInteger(1);
@@ -38,14 +34,14 @@ public class TargetService {
             log.debug("Received callback for Target [{}]", target.getCursorId());
             final var result = switch (target.getTarget()) {
                 case LOCATION -> new TargetResult(
-                        mobile,
+                        player,
                         TargetType.STATICS,
                         0,
                         target.getModelId(),
                         new PointInTheWorld(target.getX(), target.getY(), target.getZ())
                 );
                 case OBJECT -> new TargetResult(
-                        mobile,
+                        player,
                         TargetType.OBJECT,
                         target.getClickedSerialId(),
                         0,

@@ -4,12 +4,12 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
-import com.github.mayconr.juoserver.network.packet.MoveRequest;
+import com.github.mayconr.juoserver.network.packet.GetPlayerStatus;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface WorldInternal extends WorldActions, WorldView {
+public interface WorldInternal extends WorldActions, WorldView, MovementInternal, SpeechInternal, ItemInternal {
 
     void initialize();
 
@@ -27,23 +27,18 @@ public interface WorldInternal extends WorldActions, WorldView {
 
     PlayerSession getPlayerSession(UOMobile mobile);
 
-    CompletableFuture<List<UOMobile>> getMobilesInRange(Location location);
-
-    MovementResult tryMove(UOMobile mobile, MoveRequest request);
-
-    MovementResult tryMove(UOMobile mobile, Location location);
-
-    void applyMove(UOMobile mobile, MovementResult result);
-
     boolean isMobile(int serialId);
 
     CompletableFuture<List<UOItem>> loadContainerItems(Container container);
 
-    CompletableFuture<List<UOItem>> getItemsInRange(Location location);
+    List<UOItem> getItemsInRange(Location location, int radius);
 
     void dropItemOnTheGround(UOItem item);
 
     void removeItemFromTheGround(UOItem item);
 
-    void sendSkill(UOMobile mobile, SkillValue value);
+    void skillGained(UOMobile mobile, SkillValue value);
+
+    void playerStatusRequested(UOPlayer sendTo, GetPlayerStatus getPlayerStatus);
+
 }

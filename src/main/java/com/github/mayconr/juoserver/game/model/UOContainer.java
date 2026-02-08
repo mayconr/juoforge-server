@@ -27,6 +27,7 @@ public class UOContainer extends UOItem implements Container {
 
     @Override
     public void addItemToContainer(UOItem item) {
+        item.setOwner(null);
         item.setContainer(this);
         itensInContainer.put(item.getSerialId(), item);
     }

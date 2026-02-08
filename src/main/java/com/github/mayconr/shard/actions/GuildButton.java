@@ -1,7 +1,7 @@
 package com.github.mayconr.shard.actions;
 
-import com.github.mayconr.juoserver.common.event.EventHandler;
-import com.github.mayconr.juoserver.common.event.GuildButtonPressed;
+import com.github.mayconr.juoserver.game.event.EventHandler;
+import com.github.mayconr.juoserver.game.model.event.GuildButtonPressed;
 
 public class GuildButton implements EventHandler<GuildButtonPressed> {
     @Override

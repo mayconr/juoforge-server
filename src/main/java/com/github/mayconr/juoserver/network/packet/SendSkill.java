@@ -45,7 +45,7 @@ public class SendSkill extends AbstractPacket {
         SkillLock lock = SkillLock.fromCode(buf.readUnsignedByte());
 
         this.type = null;
-        final var skill = SkillValue.of(skillId, 0, 0);
+        final var skill = SkillValue.of(skillId, SkillLock.UP);
         skill.setLock(lock);
 
         this.skills = List.of(skill);

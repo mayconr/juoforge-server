@@ -1,7 +1,7 @@
 package com.github.mayconr.shard.command;
 
-import com.github.mayconr.juoserver.common.event.EventRegistry;
-import com.github.mayconr.juoserver.common.event.Prompt;
+import com.github.mayconr.juoserver.game.event.EventRegistry;
+import com.github.mayconr.juoserver.game.model.event.Prompt;
 
 import java.util.function.Predicate;
 

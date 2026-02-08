@@ -1,60 +1,149 @@
 package com.github.mayconr.juoserver.game.session.npc;
 
-import com.github.mayconr.juoserver.game.ai.NpcAI;
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.game.model.Direction;
-import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.game.event.EventHandler;
+import com.github.mayconr.juoserver.game.event.GameEvent;
+import com.github.mayconr.juoserver.game.model.TextType;
 import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
+import com.github.mayconr.juoserver.game.session.SessionFanout;
+import com.github.mayconr.juoserver.game.session.npc.action.BuyListAction;
+import com.github.mayconr.juoserver.game.session.npc.action.NpcAction;
+import com.github.mayconr.juoserver.game.session.npc.action.SayAction;
+import com.github.mayconr.juoserver.game.session.npc.ai.NpcAI;
+import com.github.mayconr.juoserver.game.session.npc.profile.BehaviorProfile;
+import com.github.mayconr.juoserver.game.session.npc.behavior.NpcBehavior;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
-import com.github.mayconr.juoserver.network.packet.DrawMobile;
 import com.github.mayconr.juoserver.network.packet.SendSpeech;
+import lombok.RequiredArgsConstructor;
 
-import io.netty.channel.group.ChannelGroup;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
 
-public class DefaultNpcSession implements NpcSession {
+@RequiredArgsConstructor
+public class DefaultNpcSession implements NpcSession, NpcContext {
+
+    private final Queue<NpcAction> actionQueue = new ArrayDeque<>();
+    private final Map<String, Object> memory = new HashMap<>();
 
     private final UONpc npc;
-    private final ChannelGroup channelGroup;
+    private final SessionFanout fanout;
     private final EventBus eventBus;
-    private final NpcAI npcAI;
-    private final MovementService movementService;
+    private final BehaviorProfile profile;
+    private final NpcAI ai;
 
-    public DefaultNpcSession(
-            WorldInternal worldInternal,
-            UONpc npc,
-            ChannelGroup channelGroup,
-            EventBus eventBus,
-            NpcAI npcAI,
-            MovementService movementService) {
-        this.npc = npc;
-        this.channelGroup = channelGroup;
-        this.eventBus = eventBus;
-        this.npcAI = npcAI;
-        this.movementService = movementService;
-        this.npcAI.initialize(worldInternal, this);
+    private WorldInternal world;
+    private NpcBehavior current;
+
+    public void initialize(WorldInternal world) {
+        this.world = world;
+        // Initialize behavior
+        current = ai.decide(this, profile);
+        current.initialize(this);
+
+        // Register speech listener
+        eventBus.register(MobileSpeech.class, new SpeechListener(world));
     }
 
     @Override
-    public UONpc getNpc() {
+    public WorldInternal world() {
+        return world;
+    }
+
+    @Override
+    public UONpc npc() {
         return npc;
     }
 
     @Override
-    public void walk(Direction direction) {
-        System.out.println("npc andando");
+    public void think(double delta) {
+        // TODO check is session is alive
+        current.onThink(delta);
+        while (!actionQueue.isEmpty()) {
+            switch (actionQueue.poll()) {
+                case SayAction say -> {
+                    fanout.writeAndFlush(new SendSpeech(TextType.NORMAL, 2046, npc.getSerialId(), npc.getModelId(), 1, npc.getDisplayName(), say.text()));
+                }
+                case BuyListAction buyList -> {
+                    world.getPlayerSession(buyList.buyer()).sendBuyList(npc, buyList.items());
+                }
+            }
+        }
     }
 
     @Override
-    public void speech(String message) {
-        channelGroup.writeAndFlush(new SendSpeech(npc, message));
+    public <T> void set(String key, T value) {
+        memory.put(key, value);
     }
 
     @Override
-    public void move(Direction direction) {
-        npc.move(direction);
-        channelGroup.writeAndFlush(new DrawMobile(npc));
+    public <T> T get(String key, Class<T> type) {
+        return (T) memory.get(key);
     }
 
     @Override
-    public void move(Location location) {}
+    public boolean has(String key) {
+        return memory.containsValue(key);
+    }
+
+    @Override
+    public void remove(String key) {
+        memory.remove(key);
+    }
+
+    @Override
+    public void enqueue(NpcAction action) {
+        actionQueue.add(action);
+    }
+
+    @RequiredArgsConstructor
+    private class SpeechListener implements EventHandler<MobileSpeech> {
+
+        private final WorldInternal world;
+
+        @Override
+        public void handle(MobileSpeech event) {
+            final var radius = (int) npc.getAttrMap().getOrDefault("behavior.radius", 1);
+
+            if (!world.isInRange(npc, event.player(), radius)) {
+                return;
+            }
+
+            switchBehaviorWhenDecided(event);
+
+            // behavior react
+            current.onSpeech(event.player(), event.message());
+        }
+    }
+
+    /**
+     * Processes a game event and updates the NPC behavior if a transition is required.
+     *
+     * <p>This method forwards the received {@link GameEvent} to the AI system,
+     * allowing it to update its internal state. After that, the AI evaluates
+     * the current context and profile to decide which behavior should be active.</p>
+     *
+     * <p>If the decided behavior differs from the current one, the method performs
+     * a behavior transition by calling {@code onExit} on the current behavior,
+     * updating the active behavior reference, and initializing the new behavior
+     * with the current NPC context.</p>
+     *
+     * <p>This method is responsible only for behavior switching logic and does not
+     * execute behavior actions directly.</p>
+     *
+     * @param event the game event that may influence the NPC behavior decision
+     */
+    private void switchBehaviorWhenDecided(GameEvent event) {
+        var ctx = DefaultNpcSession.this;
+
+        ai.onEvent(ctx, event);
+        var next = ai.decide(ctx, profile);
+        if (next != current) {
+            current.onExit(ctx);
+            current = next;
+            current.initialize(ctx);
+        }
+    }
 }

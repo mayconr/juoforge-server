@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.session;
 
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.network.handler.AttributeKeys;
 import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class DefaultSessionFanout implements SessionFanout {
     }
 
     @Override
-    public void writeAndFlush(Object message, Predicate<SessionOutbound> predicate) {
+    public void writeAndFlush(Object message, Predicate<UOPlayer> predicate) {
         for (var channel : channelGroup) {
             if (!channel.isActive()) {
                 continue;
@@ -38,7 +39,8 @@ public class DefaultSessionFanout implements SessionFanout {
                 continue;
             }
 
-            if (!predicate.test(outbound)) {
+            final var playerSession = outbound.attr().get(AttributeKeys.PLAYER_SESSION_KEY);
+            if (!predicate.test((UOPlayer) playerSession.getPlayer())) {
                 continue;
             }
 
@@ -52,6 +54,27 @@ public class DefaultSessionFanout implements SessionFanout {
     public void write(Object message) {
         for (var channel : channelGroup) {
             if (!channel.isActive()) {
+                continue;
+            }
+
+            channel.eventLoop().execute(() -> {
+                channel.write(message);
+            });
+        }
+    }
+
+    @Override
+    public void write(Object message, Predicate<UOMobile> predicate) {
+        for (var channel : channelGroup) {
+            if (!channel.isActive()) {
+                continue;
+            }
+            var outbound = channel.attr(AttributeKeys.SESSION_OUTBOUND_KEY).get();
+            if (outbound == null) {
+                continue;
+            }
+            final var playerSession = outbound.attr().get(AttributeKeys.PLAYER_SESSION_KEY);
+            if (!predicate.test(playerSession.getPlayer())) {
                 continue;
             }
             channel.eventLoop().execute(() -> {

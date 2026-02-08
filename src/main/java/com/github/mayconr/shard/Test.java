@@ -1,19 +1,21 @@
 package com.github.mayconr.shard;
 
-import com.github.mayconr.juoserver.common.event.*;
-import com.github.mayconr.juoserver.common.policy.PolicyRegistry;
-import com.github.mayconr.juoserver.common.policy.PolicyResult;
-import com.github.mayconr.juoserver.common.policy.actions.DoubleClickPolicy;
-import com.github.mayconr.juoserver.common.policy.actions.DropItemGroundPolicy;
-import com.github.mayconr.juoserver.common.useitem.ItemUseContext;
-import com.github.mayconr.juoserver.common.useitem.ItemUseRegistry;
-import com.github.mayconr.juoserver.common.useitem.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.game.event.HandlerResult;
 import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
+import com.github.mayconr.juoserver.game.model.event.*;
+import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
+import com.github.mayconr.juoserver.game.model.policy.DropItemGroundPolicy;
+import com.github.mayconr.juoserver.game.policy.PolicyRegistry;
+import com.github.mayconr.juoserver.game.policy.PolicyResult;
 import com.github.mayconr.juoserver.game.session.player.target.TargetType;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.trigger.item.ItemUseContext;
+import com.github.mayconr.juoserver.game.trigger.item.ItemUseRegistry;
+import com.github.mayconr.juoserver.game.trigger.item.ItemUseTrigger;
 import com.github.mayconr.shard.actions.GuildButton;
 import com.github.mayconr.shard.actions.HelpRequested;
 import com.github.mayconr.shard.skills.Anatomy;
@@ -69,7 +71,7 @@ public class Test {
         eventBus.register(GuildButtonPressed.class, new GuildButton());
         eventBus.register(SkillLocked.class, new SkillLockedHandler());
         // eventBus.register(MobileMove.class, this::onMove);
-        eventBus.register(MobileSpoke.class, this::speech);
+        eventBus.register(MobileSpeech.class, this::speech);
         /*eventBus.register(
         Prompt.class, this::move, prompt -> prompt.name().equalsIgnoreCase("goto"));*/
         eventBus.register(
@@ -148,13 +150,12 @@ public class Test {
         return HandlerResult.CONTINUE;
     }
 
-    public HandlerResult speech(MobileSpoke spoke) {
-        System.out.println("falou " + spoke.message());
+    public HandlerResult speech(MobileSpeech spoke) {
         return HandlerResult.CONTINUE;
     }
 
     public HandlerResult move(Prompt prompt) {
-        worldInternal.getPlayerSession(prompt.mobile()).move(new PointInTheWorld(2516, 555, 0));
+        worldInternal.teleport(prompt.mobile(), new PointInTheWorld(2516, 555, 0));
         return HandlerResult.CONTINUE;
     }
 

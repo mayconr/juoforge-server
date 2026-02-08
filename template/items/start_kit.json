@@ -1,0 +1,48 @@
+[
+  {
+    "name": "backpack",
+    "displayName": "Backpack",
+    "layer": "BACKPACK",
+    "modelId": 3701,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE", "CONTAINER"],
+    "attr": {
+      "gumpId": 60
+    }
+  },
+  {
+    "name": "shirt",
+    "displayName": "shirt",
+    "layer": "SHIRT",
+    "modelId": 5399,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "pants",
+    "displayName": "pants",
+    "layer": "PANTS",
+    "modelId": 5422,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "shoes",
+    "displayName": "shoes",
+    "layer": "SHOES",
+    "modelId": 5903,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  }
+]

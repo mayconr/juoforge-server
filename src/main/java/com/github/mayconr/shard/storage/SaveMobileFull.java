@@ -92,14 +92,14 @@ public class SaveMobileFull {
                 serial_id,
                 name,
                 display_name,
-                type,
                 model_id,
                 hue,
                 layer,
                 unit_weight,
-                amount
+                amount,
+                flags
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb);
             """;
 
     private static final String INSERT_ITEM_STATE = """
@@ -251,7 +251,7 @@ public class SaveMobileFull {
         }
     }
 
-    private void insertEquippedItems(Connection conn, UOMobile mobile) throws SQLException {
+    private void insertEquippedItems(Connection conn, UOMobile mobile) throws SQLException, JsonProcessingException {
         try (
                 PreparedStatement psItem  = conn.prepareStatement(INSERT_ITEM);
                 PreparedStatement psState = conn.prepareStatement(INSERT_ITEM_STATE)
@@ -263,22 +263,22 @@ public class SaveMobileFull {
         }
     }
 
-    private void insertItem(PreparedStatement ps, UOItem item) throws SQLException {
+    private void insertItem(PreparedStatement ps, UOItem item) throws SQLException, JsonProcessingException {
         ps.setObject(1, item.getId());
         ps.setInt(2, item.getSerialId());
         ps.setString(3, item.getName());
         ps.setString(4, item.getDisplayName());
-        ps.setInt(5, item.getType().getCode());
-        ps.setInt(6, item.getModelId());
-        ps.setInt(7, item.getHue());
+        ps.setInt(5, item.getModelId());
+        ps.setInt(6, item.getHue());
         if (item.getLayer() != null) {
-            ps.setShort(8, (short) item.getLayer().getCode());
+            ps.setShort(7, (short) item.getLayer().getCode());
         } else {
-            ps.setNull(8, Types.SMALLINT);
+            ps.setNull(7, Types.SMALLINT);
         }
 
-        ps.setInt(9, 0);
-        ps.setInt(10, item.getAmount());
+        ps.setInt(8, 0);
+        ps.setInt(9, item.getAmount());
+        ps.setObject(10, objectMapper.writeValueAsString(item.getFlags()));
         ps.executeUpdate();
     }
 

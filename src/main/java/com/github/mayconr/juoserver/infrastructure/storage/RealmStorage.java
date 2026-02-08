@@ -37,7 +37,7 @@ public interface RealmStorage {
 
     List<UOCity> getCities();
 
-    CompletableFuture<List<UOMobile>> getMobilesInRange(Location location);
+    List<UOMobile> getMobilesInRange(Location location, int radius);
 
     void updateMobileLocation(UOMobile mobile, Location oldLoc, Location newLoc);
 
@@ -57,7 +57,7 @@ public interface RealmStorage {
 
     void removeItemFromTheGround(UOItem item);
 
-    CompletableFuture<List<UOItem>> getItemsInRange(Location location);
+    List<UOItem> getItemsInRange(Location location);
 
     void deleteItem(UOItem item);
 
@@ -72,4 +72,6 @@ public interface RealmStorage {
     CompletableFuture<Collection<UOItem>> saveItems();
 
     CompletableFuture<Collection<UOItem>> saveItemStates();
+
+    boolean isInRange(Location location1, Location location2, int radius);
 }

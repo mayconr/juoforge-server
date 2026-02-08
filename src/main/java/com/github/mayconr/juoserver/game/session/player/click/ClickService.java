@@ -1,12 +1,12 @@
 package com.github.mayconr.juoserver.game.session.player.click;
 
-import com.github.mayconr.juoserver.common.useitem.ItemUseContext;
-import com.github.mayconr.juoserver.common.useitem.ItemUseService;
-import com.github.mayconr.juoserver.common.useitem.Trigger;
+import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
+import com.github.mayconr.juoserver.game.trigger.item.ItemUseContext;
+import com.github.mayconr.juoserver.game.trigger.item.ItemUseService;
+import com.github.mayconr.juoserver.game.trigger.Trigger;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.player.MountService;
-import com.github.mayconr.juoserver.game.session.player.item.PlayerItemService;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.DoubleClick;
 import com.github.mayconr.juoserver.network.packet.ObjectInfo;

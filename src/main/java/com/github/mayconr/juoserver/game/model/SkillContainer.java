@@ -23,7 +23,7 @@ public class SkillContainer {
     }
 
     public SkillValue get(Integer id) {
-        return skills.getOrDefault(id, SkillValue.zero(id));
+        return skills.computeIfAbsent(id, SkillValue::zero);
     }
 
     public void set(Integer id, SkillValue value) {

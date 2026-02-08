@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
 public class DrawContainer extends AbstractPacket {
 
     public static final int CODE = (byte) 0x24;
-    private Container container;
+    private final Container container;
 
     public DrawContainer(Container container) {
         super(CODE, 9);

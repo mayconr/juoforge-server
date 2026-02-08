@@ -44,17 +44,19 @@ public class WorldMobileIndex {
         }
     }
 
-    public List<Integer> getSerialsInRange(Location location) {
+    public List<Integer> getNearbySerials(Location location, int radius) {
         int blockX = location.getX() / 24;
         int blockY = location.getY() / 24;
 
-        List<Integer> result = new ArrayList<>(32);
+        int blockRadius = (radius / 24) + 1;
 
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
+        List<Integer> result = new ArrayList<>(64);
+
+        for (int dx = -blockRadius; dx <= blockRadius; dx++) {
+            for (int dy = -blockRadius; dy <= blockRadius; dy++) {
                 long key = regionKey(blockX + dx, blockY + dy);
                 var set = mobilesByRegion.get(key);
-                if (set != null) {
+                if (set != null && !set.isEmpty()) {
                     result.addAll(set);
                 }
             }

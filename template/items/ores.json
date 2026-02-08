@@ -1,0 +1,68 @@
+[
+  {
+    "name": "iron_ore",
+    "displayName": "iron ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "dull_copper_ore",
+    "displayName": "dull copper ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 46,
+    "mountNpc": null,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "shadow_ore",
+    "displayName": "shadow ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 922,
+    "mountNpc": null,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "copper_ore",
+    "displayName": "copper ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 47,
+    "mountNpc": null,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "bronze_ore",
+    "displayName": "bronze ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 52,
+    "mountNpc": null,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "gold_ore",
+    "displayName": "gold ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 153,
+    "mountNpc": null,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  }
+]

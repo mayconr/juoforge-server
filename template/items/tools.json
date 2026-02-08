@@ -1,0 +1,24 @@
+[
+  {
+    "name": "pickaxe",
+    "displayName": "pickaxe",
+    "layer": "ONE_HANDED",
+    "modelId": 3717,
+    "movable": true,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEAPON", "WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "axe",
+    "displayName": "axe",
+    "layer": "ONE_HANDED",
+    "modelId": 3909,
+    "movable": true,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEAPON", "WEARABLE"],
+    "attr": {}
+  }
+]

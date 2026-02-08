@@ -1,10 +1,10 @@
 package com.github.mayconr.juoserver.game.session.world.item;
 
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.event.ItemCreated;
-import com.github.mayconr.juoserver.common.event.ItemDeleted;
-import com.github.mayconr.juoserver.common.event.ItemMoved;
-import com.github.mayconr.juoserver.common.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.game.model.event.ItemCreated;
+import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
+import com.github.mayconr.juoserver.game.model.event.ItemMoved;
+import com.github.mayconr.juoserver.game.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.world.SerialGenerator;
@@ -44,6 +44,13 @@ public class ItemService {
                     location.getZ(),
                     item.getSerialId());
 
+        return item;
+    }
+
+    public UOItem createEquippedItem(String name, UOMobile mobile) {
+        final var item = createAndCacheItem(name, new PointInTheWorld(0,0,0));
+        mobile.equipItem(item);
+        storage.cacheItem(item);
         return item;
     }
 

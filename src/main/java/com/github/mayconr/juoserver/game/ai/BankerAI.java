@@ -1,20 +1,13 @@
 package com.github.mayconr.juoserver.game.ai;
 
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.event.HandlerResult;
-import com.github.mayconr.juoserver.common.event.MobileSpoke;
+import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.game.gameloop.IntervalGameTask;
-import com.github.mayconr.juoserver.game.model.Container;
-import com.github.mayconr.juoserver.game.model.UOContainer;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.session.npc.NpcSession;
-import com.github.mayconr.juoserver.game.session.player.PlayerSession;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -62,7 +55,7 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         this.worldInternal = worldInternal;
         this.npcSession = session;
         // eventBus.register(MobileSpeech.class, this::onMobileSpeech);
-        log.info("AI initialized for NPC " + session.getNpc().getName());
+        //log.info("AI initialized for NPC " + session.getNpc().getName());
         // sk-ee998c407c534c54acac93a2858cba2d
     }
 
@@ -71,11 +64,11 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
         // this.npcSession.move(Direction.NORTH);
     }
 
-    public HandlerResult onMobileSpeech(MobileSpoke speech) {
-        final var mobile = speech.mobile();
+    /*public HandlerResult onMobileSpeech(MobileSpoke speech) {
+        final var player = speech.player();
 
         // speaker must be a player
-        if (!(mobile instanceof UOPlayer player)) {
+        if (!(player instanceof UOPlayer player)) {
             return HandlerResult.CONTINUE;
         }
 
@@ -89,11 +82,11 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
                 case "move s" -> npcSession.move(Direction.SOUTH);
                 case "move w" -> npcSession.move(Direction.SOUTHWEST);
                 case "move e" -> npcSession.move(Direction.EAST);
-            }*/
+            }
             System.out.println(npcSession.getNpc().getX() + " " + npcSession.getNpc().getY());
-            npcSession.move(mobile);
+            npcSession.move(player);
         } else {
-            final var contextKey = "CHAT_WITH_" + mobile.getSerialId();
+            final var contextKey = "CHAT_WITH_" + player.getSerialId();
 
             final var messages = npc.getAttribute(contextKey, new ArrayList<>(OLLAMA_CONTEXT));
             messages.add(new OllanaClient.Message("user", speech.message()));
@@ -119,21 +112,21 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
     private void handleAction(UOPlayer player, PlayerSession playerSession, String action) {
         if (!"openClientBank".equals(action)) return;
 
-        final var mobile = player; // alias
+        final var player = player; // alias
 
-        if (!mobile.hasAttribute(VAULT_ATTRIBUTE)) {
+        if (!player.hasAttribute(VAULT_ATTRIBUTE)) {
             // Cria vault se não existir
             final var vault = worldInternal.createItemAtLocation("Vault", player);
             vault.addAttribute(VAULT_ATTRIBUTE, true); // TODO: impedir abrir com double click
-            mobile.addAttribute(VAULT_ATTRIBUTE, vault.getSerialId());
+            player.addAttribute(VAULT_ATTRIBUTE, vault.getSerialId());
             playerSession.openContainerInRange((Container) vault);
         } else {
             // Vault já existe
-            final var serialId = mobile.getAttribute(VAULT_ATTRIBUTE, -1);
+            final var serialId = player.getAttribute(VAULT_ATTRIBUTE, -1);
             final var container = realmStorage.getContainerBySerialId(serialId)
                     .orElseThrow(()->new IllegalArgumentException("Container not found for serial "+serialId));
             if (container instanceof UOContainer cont) {
-                worldInternal.moveItem(cont, mobile);
+                worldInternal.moveItem(cont, player);
                 playerSession.openContainerInRange(cont);
             }
         }
@@ -151,5 +144,5 @@ public class BankerAI extends IntervalGameTask implements NpcAI {
                     worldInternal.deleteItem(itemOpt);
                 }
             });
-    }
+    }**/
 }

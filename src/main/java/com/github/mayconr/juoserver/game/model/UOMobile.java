@@ -292,6 +292,11 @@ public class UOMobile extends UOObject implements Container {
         item.setOwner(this);
     }
 
+    public void unequipItem(UOItem item) {
+        equippedItems.remove(item.getLayer());
+        item.setOwner(null);
+    }
+
     public boolean isItemEquipped(UOItem item) {
         return equippedItems.containsValue(item);
     }
@@ -299,18 +304,6 @@ public class UOMobile extends UOObject implements Container {
     public boolean isLayerAvailable(Layer layer) {
         // TODO when one hand or two hand, must check both layers
         return !equippedItems.containsKey(layer);
-    }
-
-    public void unequipItem(UOItem unequippedItem) {
-        Layer layer = null;
-        for (Map.Entry<Layer, UOItem> entry : equippedItems.entrySet()) {
-            if (Objects.equals(unequippedItem, entry.getValue())) {
-                layer = entry.getKey();
-            }
-        }
-        if (layer != null) {
-            equippedItems.remove(layer);
-        }
     }
 
     public void setBackpack(UOContainer backpack) {
@@ -353,6 +346,10 @@ public class UOMobile extends UOObject implements Container {
     public void move(Direction direction) {
         this.direction = direction;
         setLocation(getX() + direction.getDx(), getY() + direction.getDy());
+    }
+
+    public boolean isMounted() {
+        return equippedItems.containsKey(Layer.MOUNT);
     }
 
     public boolean isWarMode() {

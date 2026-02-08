@@ -1,10 +1,10 @@
 package com.github.mayconr.juoserver.game.session.player;
 
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.event.PlayerSessionStarted;
+import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.model.Season;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.event.PlayerSessionStarted;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.world.WorldInternal;
@@ -25,27 +25,22 @@ class InitializationService {
     private final SessionFanout fanout;
 
     public void initialize(PlayerSession session, String clientVersion) {
-        worldInternal.getMobilesInRange(mobile)
-            .thenCombine(worldInternal.getItemsInRange(mobile), Entities::new)
-            .thenAccept(entities -> finalizeLogin(entities, session))
-            .whenComplete((unused, throwable) -> {
-                if (throwable != null) {
-                    log.error("Error to intialize session", throwable);
-                }
-            });
+        final var mobiles = worldInternal.getMobilesInRange(mobile, 24);
+        final var items = worldInternal.getItemsInRange(mobile, 24);
+        finalizeLogin(mobiles, items, session);
     }
 
-    private void finalizeLogin(Entities entities, PlayerSession session) {
+    private void finalizeLogin(List<UOMobile> mobiles, List<UOItem> items, PlayerSession session) {
         outbound.write(new LoginConfirm(mobile, 7168, 4096));
         outbound.write(new SeasonalInformation(Season.Summer, true));
 
-        for (UOMobile someone : entities.mobiles()) {
+        for (UOMobile someone : mobiles) {
             if (!someone.equals(mobile)) {
                 outbound.write(new DrawMobile(someone));
             }
         }
 
-        for (UOItem item : entities.items()) {
+        for (UOItem item : items) {
             outbound.write(new ObjectInfo(item));
         }
 
@@ -61,5 +56,4 @@ class InitializationService {
         eventBus.publish(new PlayerSessionStarted(session));
     }
 
-    private record Entities(List<UOMobile> mobiles, List<UOItem> items) {}
 }

@@ -24,12 +24,12 @@ public class InsertItemFull {
                     serial_id,
                     name,
                     display_name,
-                    type,
                     model_id,
                     hue,
                     layer,
                     unit_weight,
-                    amount
+                    amount,
+                    flags
                 )
                 VALUES (
                     ?,        -- id (UUID)
@@ -41,7 +41,8 @@ public class InsertItemFull {
                     ?,        -- hue
                     ?,        -- layer
                     ?,        -- unit_weight
-                    ?        -- amount                    
+                    ?,        -- amount  
+                    ?::jsonb  -- flags                  
                 )
             )
             INSERT INTO item_state (
@@ -77,12 +78,12 @@ public class InsertItemFull {
                 ps.setInt(2, item.getSerialId());
                 ps.setString(3, item.getName());
                 ps.setString(4, item.getDisplayName());
-                ps.setInt(5, item.getType().getCode());
-                ps.setInt(6, item.getModelId());
-                ps.setInt(7, item.getHue());
-                ps.setShort(8, (short)item.getLayer().getCode()); // nullable
-                ps.setInt(9, 0); // weight
-                ps.setInt(10, item.getAmount());
+                ps.setInt(5, item.getModelId());
+                ps.setInt(6, item.getHue());
+                ps.setShort(7, (short)item.getLayer().getCode()); // nullable
+                ps.setInt(8, 0); // weight
+                ps.setInt(9, item.getAmount());
+                ps.setObject(10, objectMapper.writeValueAsString(item.getFlags()));
 
                 // item_state
 

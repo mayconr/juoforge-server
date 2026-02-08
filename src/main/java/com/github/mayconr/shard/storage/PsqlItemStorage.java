@@ -60,7 +60,7 @@ public class PsqlItemStorage extends AbstractStorage implements ItemStorage {
         this.insertItemFull = new InsertItemFull(dataSource, executor, objectMapper);
         this.saveItemStates = new SaveItemStates(dataSource, executor, objectMapper);
         this.getSerial = new GetSerial(dataSource, executor);
-        this.saveItems = new SaveItems(dataSource, executor);
+        this.saveItems = new SaveItems(dataSource, executor, objectMapper);
     }
 
     @Override
@@ -108,16 +108,16 @@ public class PsqlItemStorage extends AbstractStorage implements ItemStorage {
                 .orElseThrow(DataNotFoundException::new), executor);
     }
 
-    private UOItem mapItem(ResultSet rs) throws SQLException {
+    private UOItem mapItem(ResultSet rs) throws SQLException, JsonProcessingException {
         UUID id = (UUID) rs.getObject("item_id");
         int serialId = rs.getInt("serial_id");
-        ItemType type = ItemType.byCode(rs.getInt("type"));
         int modelId = rs.getInt("model_id");
         int hue = rs.getInt("hue");
         int amount = rs.getInt("amount");
         Layer layer = Layer.fromCode(rs.getInt("layer"));
         String name = rs.getString("name");
         String displayName = rs.getString("display_name");
+        List<ItemFlag> flags = objectMapper.readValue(rs.getString("flags"), new TypeReference<List<ItemFlag>>() {});
 
         int x = rs.getObject("x") != null ? rs.getInt("x") : 0;
         int y = rs.getObject("y") != null ? rs.getInt("y") : 0;
@@ -140,13 +140,13 @@ public class PsqlItemStorage extends AbstractStorage implements ItemStorage {
             container = null;
         }
 
-        final var item = new UOItem(id, serialId, modelId, x, y, z, name, displayName, attr, type, layer, amount, hue, movable, hidden,
-                direction, container, Collections.emptyList(), "horse");
+        final var item = new UOItem(id, serialId, modelId, x, y, z, name, displayName, attr, layer, amount, hue, movable, hidden,
+                direction, container, flags, "horse");
 
-        return switch (type) {
-            case CONTAINER -> new UOContainer(item, (int) item.getAttrMap().getOrDefault("gumpId", 0));
-            default -> item;
-        };
+        if (item.hasFlag(ItemFlag.CONTAINER)) {
+            return new UOContainer(item, (int) item.getAttrMap().getOrDefault("gumpId", 0));
+        }
+        return item;
     }
 
     @Override

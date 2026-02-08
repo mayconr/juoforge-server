@@ -9,6 +9,8 @@ logging:
     com.github.mayconr.juoserver.game.session.player.skill: DEBUG
 
 server:
+  mobile:
+    backpack: backpack
   vitals:
     saturationFactor: 100
   gameLoop:
@@ -17,3 +19,6 @@ server:
     minGainChance: 0
     maxGainChance: 0.5 # 50%
     balanceOffset: 50
+    cap: 100
+  world:
+    lightOfSight: 24

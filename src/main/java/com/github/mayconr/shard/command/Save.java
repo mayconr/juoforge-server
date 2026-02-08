@@ -1,7 +1,6 @@
 package com.github.mayconr.shard.command;
 
-import com.github.mayconr.juoserver.common.event.HandlerResult;
-import com.github.mayconr.juoserver.common.event.Prompt;
+import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.extern.slf4j.Slf4j;
 

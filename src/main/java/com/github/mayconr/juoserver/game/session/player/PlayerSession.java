@@ -17,13 +17,7 @@ public interface PlayerSession {
 
     void initialize(WorldInternal worldInternal, String clientVersion);
 
-    void speech(UnicodeSpeachRequest request);
-
-    void move(MoveRequest moveRequest);
-
     void showMegaCliloc(List<Integer> serialList);
-
-    void pickUpItem(PickUpItem pickedUpItem);
 
     void dropItemOnTheGround(DropItem droppedItem);
 
@@ -31,13 +25,9 @@ public interface PlayerSession {
 
     void doubleClick(DoubleClick doubleClick);
 
-    void move(Location location);
-
     void equipItem(EquipItemRequest equipItem);
 
     void addItemToInventory(UOItem item);
-
-    void openContainerInRange(Container container);
 
     void sendTarget(CursorType type, Consumer<TargetResult> consumer);
 
@@ -65,5 +55,5 @@ public interface PlayerSession {
 
     void sendMessage(String message, MessageOptions options);
 
-    void sendSkill(SkillValue value);
+    void sendBuyList(UOMobile vendor, List<UOItem> items);
 }

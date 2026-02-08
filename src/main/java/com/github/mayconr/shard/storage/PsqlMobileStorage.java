@@ -119,7 +119,7 @@ public class PsqlMobileStorage extends AbstractStorage implements MobileStorage 
         UOMobile mobile;
         if (accountId == null) {
             final var mountItemName = rs.getString("mount_item_name");
-            mobile = new UONpc(MobileMapper.mapMobile(rs), NpcType.MOUNT,"BANKER", mountItemName);
+            mobile = new UONpc(MobileMapper.mapMobile(rs), NpcType.MOUNT, mountItemName);
         } else {
             mobile = new UOPlayer(MobileMapper.mapMobile(rs), accountId);
         }

@@ -5,13 +5,22 @@ import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties(prefix = "server")
-public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills) {
+public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills, Mobile mobile, World world) {
 
     @ConstructorBinding
-    public ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills) {
+    public ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills, Mobile mobile, World world) {
         this.vitals = vitals;
         this.gameLoop = gameLoop;
         this.skills = skills;
+        this.mobile = mobile;
+        this.world = world;
+    }
+
+    public record Mobile(String backpack) {
+        @ConstructorBinding
+        public Mobile(@DefaultValue("backpack") String backpack) {
+            this.backpack = backpack;
+        }
     }
 
     /**
@@ -75,12 +84,21 @@ public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills) 
      * levels and become increasingly rare as the skill approaches its upper
      * range.</p>
      */
-    public record Skills(double minGainChance, double maxGainChance, int balanceOffset) {
+    public record Skills(double minGainChance, double maxGainChance, int balanceOffset, double cap) {
         @ConstructorBinding
-        public Skills(@DefaultValue("0") double minGainChance, @DefaultValue("0.50") double maxGainChance, @DefaultValue("50") int balanceOffset) {
+        public Skills(@DefaultValue("0") double minGainChance, @DefaultValue("0.50") double maxGainChance, @DefaultValue("50") int balanceOffset, @DefaultValue("50") double cap) {
             this.minGainChance = minGainChance;
             this.maxGainChance = maxGainChance;
             this.balanceOffset = balanceOffset;
+            this.cap = cap;
+        }
+    }
+
+
+    public record World(int lightOfSight) {
+        @ConstructorBinding
+        public World(@DefaultValue("24") int lightOfSight) {
+            this.lightOfSight = lightOfSight;
         }
     }
 }

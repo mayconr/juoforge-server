@@ -15,7 +15,6 @@ public class UOItem extends UOObject {
 
     public static final int OBJECTS_MIN_SERIAL_ID = 0x3FFFFFFF + 1;
     private UUID id;
-    private ItemType type;
     private Layer layer;
     private int amount;
     private int hue;
@@ -38,7 +37,6 @@ public class UOItem extends UOObject {
             String name,
             String displayName,
             Map<String, Object> attr,
-            ItemType type,
             Layer layer,
             int amount,
             int hue,
@@ -50,7 +48,6 @@ public class UOItem extends UOObject {
             String mountNpc) {
         super(serialId, modelId, x, y, z, name, displayName, attr);
         this.id = id;
-        this.type = type;
         this.layer = layer;
         this.amount = Math.max(1, amount);
         this.hue = hue;
@@ -74,7 +71,6 @@ public class UOItem extends UOObject {
                 other.getAttrMap()
         );
         this.id = other.id;
-        this.type = other.type;
         this.layer = other.layer;
         this.amount = other.amount;
         this.hue = other.hue;
@@ -95,11 +91,26 @@ public class UOItem extends UOObject {
         return owner == null && container == null;
     }
 
-    public boolean isOnBackpack() {
+    public boolean isInContainer() {
         return container != null && owner == null;
     }
 
     public boolean isEquipped() {
         return owner != null && container == null;
+    }
+
+    public boolean hasFlag(ItemFlag flag) {
+        return flags.contains(flag);
+    }
+
+    public void increaseAmount(int amount) {
+        this.amount += amount;
+    }
+
+    public void removeWhenInContainer() {
+        if (isInContainer()) {
+            container.removeItemFromContainer(this);
+            container = null;
+        }
     }
 }

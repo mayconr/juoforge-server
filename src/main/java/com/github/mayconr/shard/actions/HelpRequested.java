@@ -1,7 +1,7 @@
 package com.github.mayconr.shard.actions;
 
-import com.github.mayconr.juoserver.common.event.EventHandler;
-import com.github.mayconr.juoserver.common.event.HelpButtonPressed;
+import com.github.mayconr.juoserver.game.event.EventHandler;
+import com.github.mayconr.juoserver.game.model.event.HelpButtonPressed;
 
 public class HelpRequested implements EventHandler<HelpButtonPressed> {
     @Override

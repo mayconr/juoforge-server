@@ -1,0 +1,20 @@
+[
+  {
+    "name": "horse",
+    "displayName": "horse",
+    "type": "MOUNT",
+    "modelId": 200,
+    "notoriety": "INNOCENT",
+    "hue": 0,
+    "mountItemName": "horse",
+    "behavior": {
+      "profile" : "BANKER",
+      "ai" : "DIALOGUE_REACTIVE"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
+    },
+    "equippedItems": []
+  }
+]

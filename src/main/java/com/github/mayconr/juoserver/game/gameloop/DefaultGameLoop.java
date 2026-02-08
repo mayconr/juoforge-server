@@ -45,18 +45,25 @@ public class DefaultGameLoop implements GameLoop {
             while (running) {
                 try {
                     long now = System.nanoTime();
-                    double deltaSeconds = (now - lastTime) / 1_000_000_000.0;
+                    double currentDelta = (now - lastTime) / 1_000_000_000.0;
                     lastTime = now;
 
-                    deltaSeconds = Math.min(deltaSeconds, 0.5);
+                    currentDelta = Math.min(currentDelta, 0.5);
 
                     synchronized (gameTasks) {
                         final var iterator = gameTasks.iterator();
                         while (iterator.hasNext()) {
                             final var task = iterator.next();
-                            task.execute(currentTick, deltaSeconds);
+                            try {
+                                task.execute(currentTick, currentDelta);
+                            } catch (Exception e) {
+                                log.error("Task [{}] failed and it will be removed", task, e);
+                                iterator.remove();
+                            }
+
                             if (task.isDone()) {
                                 iterator.remove();
+                                task.onDone(currentTick, currentDelta);
                                 log.debug("Game task [{}] removed!", task);
                             }
                         }

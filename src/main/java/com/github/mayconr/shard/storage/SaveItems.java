@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.storage;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import lombok.RequiredArgsConstructor;
 
@@ -20,27 +21,27 @@ public class SaveItems {
                 serial_id,
                 name,
                 display_name,
-                type,
                 model_id,
                 hue,
                 layer,
                 unit_weight,
-                amount
+                amount,
+                flags
             )
             VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb
             )
             ON CONFLICT (id) DO UPDATE
             SET
                 serial_id    = EXCLUDED.serial_id,
                 name         = EXCLUDED.name,
                 display_name = EXCLUDED.display_name,
-                type         = EXCLUDED.type,
                 model_id     = EXCLUDED.model_id,
                 hue          = EXCLUDED.hue,
                 layer        = EXCLUDED.layer,
                 unit_weight  = EXCLUDED.unit_weight,
-                amount       = EXCLUDED.amount;
+                amount       = EXCLUDED.amount,
+                flags        = EXCLUDED.flags;
             """;
 
     private static final String UPDATE_SERIAL = """
@@ -58,6 +59,7 @@ public class SaveItems {
 
     private final DataSource dataSource;
     private final Executor executor;
+    private final ObjectMapper objectMapper;
 
     public CompletableFuture<Collection<UOItem>> save(int serial, Collection<UOItem> items, Collection<UOItem> dirties) {
         return CompletableFuture.supplyAsync(()->{
@@ -70,12 +72,12 @@ public class SaveItems {
                             ps.setInt(2, item.getSerialId());
                             ps.setString(3, item.getName());
                             ps.setString(4, item.getDisplayName());
-                            ps.setInt(5, item.getType().getCode());
-                            ps.setInt(6, item.getModelId());
-                            ps.setInt(7, item.getHue());
-                            ps.setInt(8, item.getLayer().getCode());
-                            ps.setInt(9, 0);
-                            ps.setInt(10, item.getAmount());
+                            ps.setInt(5, item.getModelId());
+                            ps.setInt(6, item.getHue());
+                            ps.setInt(7, item.getLayer().getCode());
+                            ps.setInt(8, 0);
+                            ps.setInt(9, item.getAmount());
+                            ps.setObject(10, objectMapper.writeValueAsString(item.getFlags()));
                             ps.addBatch();
                         }
                         ps.executeBatch();

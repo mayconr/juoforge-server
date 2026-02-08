@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.session.world.player;
 
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.event.PlayerSessionClosed;
-import com.github.mayconr.juoserver.common.event.PlayerSessionCreated;
+import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.game.model.event.PlayerSessionClosed;
+import com.github.mayconr.juoserver.game.model.event.PlayerSessionCreated;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;

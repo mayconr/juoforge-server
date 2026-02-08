@@ -3,7 +3,6 @@ package com.github.mayconr.juoserver.game.model;
 import java.util.List;
 
 public record PlayerDetails(UOAccount account,
-                            String password,
                             String name,
                             Status status,
                             Location location,

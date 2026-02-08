@@ -220,13 +220,14 @@ CREATE TABLE items (
    name VARCHAR(64) NOT NULL,
    display_name VARCHAR(64) NOT NULL,
 
-   type INT NOT NULL,
    model_id INT NOT NULL,
    hue INT NOT NULL,
    layer SMALLINT,
 
    unit_weight INT NOT NULL,
    amount INT NOT NULL DEFAULT 1,
+
+   flags JSONB NOT NULL DEFAULT '{}',
 
    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
@@ -273,12 +274,12 @@ SELECT i.id AS item_id,
        i.serial_id,
        i.name,
        i.display_name,
-       i.type,
        i.model_id,
        i.hue,
        i.layer,
        i.unit_weight,
        i.amount,
+       i.flags,
        s.owner_mobile_id,
        s.parent_item_id,
        s.x,

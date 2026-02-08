@@ -1,0 +1,79 @@
+[
+  {
+    "name": "hair",
+    "displayName": "hair",
+    "layer": "HAIR",
+    "modelId": 8251,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "long_hair",
+    "displayName": "long hair",
+    "layer": "HAIR",
+    "modelId": 8252,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "ponytail",
+    "displayName": "ponytail",
+    "layer": "HAIR",
+    "modelId": 8253,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "long_beard",
+    "displayName": "long beard",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8254,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "short_beard",
+    "displayName": "short beard",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8255,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "goatee",
+    "displayName": "goatee",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8256,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "mustache",
+    "displayName": "mustache",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8257,
+    "movable": false,
+    "hue": 0,
+    "mountNpc": null,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  }
+]

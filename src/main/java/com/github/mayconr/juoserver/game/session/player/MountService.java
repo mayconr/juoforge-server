@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.session.player;
 
-import com.github.mayconr.juoserver.common.policy.PolicyService;
-import com.github.mayconr.juoserver.common.policy.actions.Mount;
+import com.github.mayconr.juoserver.game.policy.PolicyService;
+import com.github.mayconr.juoserver.game.model.policy.Mount;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;

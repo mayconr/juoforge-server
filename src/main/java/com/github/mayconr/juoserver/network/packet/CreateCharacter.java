@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.network.packet;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 
+import com.github.mayconr.juoserver.game.model.Gender;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
@@ -17,7 +18,7 @@ public class CreateCharacter extends AbstractPacket {
     private final String characterName;
     private final int loginCount;
     private final int profession;
-    private final int sex;
+    private final Gender gender;
     private final int strength;
     private final int dexterity;
     private final int intelligence;
@@ -51,7 +52,7 @@ public class CreateCharacter extends AbstractPacket {
         this.loginCount = buf.readInt();
         this.profession = buf.readByte();
         buf.readBytes(15); // unknown2
-        this.sex = buf.readByte();
+        this.gender = Gender.byCode(buf.readByte());
         this.strength = buf.readByte();
         this.dexterity = buf.readByte();
         this.intelligence = buf.readByte();

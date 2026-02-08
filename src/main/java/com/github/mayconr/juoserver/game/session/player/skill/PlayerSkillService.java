@@ -1,11 +1,11 @@
 package com.github.mayconr.juoserver.game.session.player.skill;
 
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.event.SkillLocked;
-import com.github.mayconr.juoserver.common.event.UseSkillRequested;
+import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.model.SendSkillType;
 import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.SkillLocked;
+import com.github.mayconr.juoserver.game.model.event.UseSkillRequested;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.network.packet.SendSkill;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +35,11 @@ public class PlayerSkillService {
     }
 
     public void sendGumpDialog(int serialId) {
-        int dataSerial = serialId;
         String dataName;
 
         if (serialId == player.getSerialId()) {
             dataName = player.getName();
-            outbound.writeAndFlush(new SendSkill(SendSkillType.FULL_LIST, player.getSkills().skills()));
+            outbound.writeAndFlush(new SendSkill(SendSkillType.FULL_LIST_WITH_CAP, player.getSkills().skills()));
         } else {
             dataName = "Unknown";
             log.info("Not implemented yet");
@@ -60,7 +59,4 @@ public class PlayerSkillService {
         outbound.flush();
     }
 
-    public void sendSkill(SkillValue value) {
-        outbound.writeAndFlush(new SendSkill(SendSkillType.SINGLE_UPDATE, List.of(value)));
-    }
 }

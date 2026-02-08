@@ -96,9 +96,9 @@ public class StatusBarInfo extends AbstractPacket {
 
     private static byte getSexRaceByte(UOMobile p) {
         if (p.getRace().equals(Race.ELF)) {
-            return p.getGender().equals(Gender.FEMALE) ? (byte) 3 : (byte) 2;
+            return p.getGender().equals(Gender.HUMAN_FEMALE) ? (byte) 3 : (byte) 2;
         }
-        return p.getGender().equals(Gender.FEMALE) ? (byte) 1 : (byte) 0;
+        return p.getGender().equals(Gender.HUMAN_FEMALE) ? (byte) 1 : (byte) 0;
     }
 
     private static byte getRaceByte(UOMobile p) {

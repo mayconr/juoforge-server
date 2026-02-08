@@ -5,20 +5,20 @@ import java.util.Collections;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.network.packet.DrawMobile;
 
-import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class MovementService {
 
-    private final ChannelGroup channelGroup;
+    private final SessionFanout fanout;
     private final UONpc npc;
 
     public void move(Direction direction) {
         npc.move(direction);
-        channelGroup.writeAndFlush(new DrawMobile(npc));
+        fanout.writeAndFlush(new DrawMobile(npc));
     }
 
     public void move(Location location) {
@@ -31,7 +31,7 @@ public class MovementService {
         try {
             final var pathfinder = new Pathfinder(map, Collections.emptySet());
             pathfinder.findNextDirection(npc, location).ifPresent(npc::move);
-            channelGroup.writeAndFlush(new DrawMobile(npc));
+            fanout.writeAndFlush(new DrawMobile(npc));
         } catch (Exception exception) {
             exception.printStackTrace();
             ;

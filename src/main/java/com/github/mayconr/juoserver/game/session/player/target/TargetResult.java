@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.session.player.target;
 
 import com.github.mayconr.juoserver.game.model.Location;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 
-public record TargetResult(UOMobile sender, TargetType type, int serialId, int modelId, Location location) {
+public record TargetResult(UOPlayer sender, TargetType type, int serialId, int modelId, Location location) {
 
     public boolean isObject() {
         return TargetType.OBJECT.equals(type);

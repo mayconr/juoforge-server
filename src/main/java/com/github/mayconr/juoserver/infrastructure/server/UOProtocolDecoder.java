@@ -32,7 +32,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(MegaCliloc.CODE, MegaCliloc.class);
         packetsClass.put(GeneralInformation.CODE, GeneralInformation.class);
         packetsClass.put(SingleClickRequest.CODE, SingleClickRequest.class);
-        packetsClass.put(PickUpItem.CODE, PickUpItem.class);
+        packetsClass.put(UnequipItem.CODE, UnequipItem.class);
         packetsClass.put(DropItem.CODE, DropItem.class);
         packetsClass.put(EquipItemRequest.CODE, EquipItemRequest.class);
         packetsClass.put(Target.CODE, Target.class);

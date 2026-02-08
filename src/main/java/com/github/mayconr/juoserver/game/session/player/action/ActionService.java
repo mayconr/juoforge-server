@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.session.player.action;
 
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.event.GuildButtonPressed;
-import com.github.mayconr.juoserver.common.event.HelpButtonPressed;
-import com.github.mayconr.juoserver.common.event.QuestButtonPressed;
+import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.game.model.event.GuildButtonPressed;
+import com.github.mayconr.juoserver.game.model.event.HelpButtonPressed;
+import com.github.mayconr.juoserver.game.model.event.QuestButtonPressed;
 import com.github.mayconr.juoserver.game.model.ActionSubCommand;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.network.packet.ActionRequest;

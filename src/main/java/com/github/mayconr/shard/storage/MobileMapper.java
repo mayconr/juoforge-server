@@ -49,7 +49,7 @@ class MobileMapper {
         Race race = rs.wasNull() ? Race.HUMAN : Race.fromCode(raceCode);
 
         int genderCode = rs.getInt("gender");
-        Gender gender = rs.wasNull() ? Gender.MALE : Gender.fromCode(genderCode);
+        Gender gender = rs.wasNull() ? Gender.HUMAN_MALE : Gender.byCode(genderCode);
 
         // --- Attributes ---
         int strength = rs.getInt("strength");

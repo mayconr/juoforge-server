@@ -63,6 +63,7 @@ public class CachedRealmStorage implements RealmStorage {
                 .thenApply(items -> {
                     items.forEach(mobile::equipItem);
                     mobileCache.put(mobile);
+                    worldMobileIndex.add(mobile);
                     return mobile;
                 }).whenComplete(this::logging);
     }
@@ -160,20 +161,25 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public CompletableFuture<List<UOMobile>> getMobilesInRange(Location location) {
-        List<Integer> serials =
-                worldMobileIndex.getSerialsInRange(location);
+    public List<UOMobile> getMobilesInRange(Location location, int radius) {
+        var serials = worldMobileIndex.getNearbySerials(location, radius);
+
+        if (serials.isEmpty()) {
+            return List.of();
+        }
 
         List<UOMobile> result = new ArrayList<>(serials.size());
 
-        for (Integer serial : serials) {
+        for (int serial : serials) {
             UOMobile mobile = mobileCache.get(serial);
-            if (mobile != null) {
-                result.add(mobile);
-            }
+            if (mobile == null) continue;
+
+            if (!isInRange(mobile, location, radius)) continue;
+
+            result.add(mobile);
         }
 
-        return CompletableFuture.completedFuture(result);
+        return result;
     }
 
     @Override
@@ -237,19 +243,11 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public CompletableFuture<List<UOItem>> getItemsInRange(Location location) {
-        final var serials = worldItemIndex.getSerialsInRange(location);
-
-        List<UOItem> result = new ArrayList<>(serials.size());
-
-        for (Integer serial : serials) {
-            UOItem item = itemCache.get(serial);
-            if (item != null) {
-                result.add(item);
-            }
-        }
-
-        return CompletableFuture.completedFuture(result);
+    public List<UOItem> getItemsInRange(Location location) {
+        return worldItemIndex.getSerialsInRange(location)
+                .stream()
+                .map(itemCache::get)
+                .toList();
     }
 
     @Override
@@ -267,6 +265,21 @@ public class CachedRealmStorage implements RealmStorage {
         itemCache.remove(item);
         worldItemIndex.remove(item);
         dirtyItems.add(item);
+    }
+
+    @Override
+    public boolean isInRange(Location location1, Location location2, int radius) {
+        int dx = Math.abs(location1.getX() - location2.getX());
+        int dy = Math.abs(location1.getY() - location2.getY());
+
+        // Range 2D (tile distance / Chebyshev)
+        if (Math.max(dx, dy) > radius) {
+            return false;
+        }
+
+        // (Z)
+        int dz = Math.abs(location1.getZ() - location2.getZ());
+        return dz <= 8;
     }
 
     @Override

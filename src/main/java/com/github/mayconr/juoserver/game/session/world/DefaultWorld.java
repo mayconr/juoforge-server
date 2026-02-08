@@ -1,30 +1,33 @@
 package com.github.mayconr.juoserver.game.session.world;
 
-import com.github.mayconr.juoserver.common.event.EventBus;
-import com.github.mayconr.juoserver.common.template.NpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.gameloop.GameLoop;
+import com.github.mayconr.juoserver.game.gameloop.GameTask;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.reader.UOFileReader;
 import com.github.mayconr.juoserver.game.session.SessionFanout;
 import com.github.mayconr.juoserver.game.session.SessionOutbound;
 import com.github.mayconr.juoserver.game.session.npc.NpcSession;
-import com.github.mayconr.juoserver.game.session.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.session.player.PlayerSession;
 import com.github.mayconr.juoserver.game.session.player.PlayerSessionFactory;
 import com.github.mayconr.juoserver.game.session.player.target.TargetResult;
 import com.github.mayconr.juoserver.game.session.world.animation.AnimationService;
-import com.github.mayconr.juoserver.game.session.world.file.UOFileReader;
+import com.github.mayconr.juoserver.game.session.world.item.EquipItemService;
 import com.github.mayconr.juoserver.game.session.world.item.ItemService;
-import com.github.mayconr.juoserver.game.session.world.player.PlayerMobileService;
+import com.github.mayconr.juoserver.game.session.world.movement.MovementService;
+import com.github.mayconr.juoserver.game.session.world.npc.NpcService;
+import com.github.mayconr.juoserver.game.session.world.player.PlayerCreationService;
+import com.github.mayconr.juoserver.game.session.world.player.PlayerRemovalService;
 import com.github.mayconr.juoserver.game.session.world.player.PlayerSessionService;
+import com.github.mayconr.juoserver.game.session.world.skill.SkillService;
+import com.github.mayconr.juoserver.game.session.world.speech.SpeechService;
+import com.github.mayconr.juoserver.game.skill.SkillSystem;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.handler.AttributeKeys;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -32,21 +35,29 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class DefaultWorld implements WorldInternal {
 
+    // General Systems
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
     private final SessionFanout fanout;
-    private final EventBus eventBus;
+    private final GameLoop gameLoop;
+    private final SkillSystem skillSystem;
+
+    // Session Factories
     private final PlayerSessionFactory playerSessionFactory;
-    private final NpcSessionFactory npcSessionFactory;
-    private final NpcTemplateRegistry npcTemplateRegistry;
 
     // Services
     private final MessageService messageService;
     private final ItemService itemService;
-    private final PlayerMobileService playerMobileService;
+    private final PlayerCreationService playerCreationService;
     private final PlayerSessionService playerSessionService;
     private final UOFileReader fileReader;
     private final AnimationService animationService;
+    private final NpcService npcService;
+    private final MovementService movementService;
+    private final SpeechService speechService;
+    private final EquipItemService equipItemService;
+    private final PlayerRemovalService playerRemovalService;
+    private final SkillService skillService;
 
 
     private final Map<UONpc, NpcSession> sessionMap = new HashMap<>();
@@ -57,6 +68,8 @@ public class DefaultWorld implements WorldInternal {
         serialGenerator.initialize();
         playerSessionFactory.initialize(this);
         fileReader.loadFiles();
+        skillSystem.initialize(this);
+        npcService.initialize(this);
     }
 
     @Override
@@ -84,10 +97,11 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public CompletableFuture<PlayerSession> createAndLoginPlayer(CreateCharacter character, SessionOutbound outbound) {
-        return playerMobileService.createPlayer(character, outbound)
+        return playerCreationService.createNewPlayer(character, outbound)
                 .thenCompose(player -> playerSessionService.create(player, outbound))
                 .thenApply(session -> registerSessionAttribute(outbound, session))
                 .exceptionally(throwable -> {
+                    log.error("Error creating player", throwable);
                     outbound.writeAndFlush(new LoginReject(LoginReject.Reason.SYNCHRONIZATION_ERROR));
                     return null;
                 });
@@ -114,51 +128,28 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public CompletableFuture<List<UOMobile>> getMobilesInRange(Location location) {
-        return storage.getMobilesInRange(location);
+    public List<UOMobile> getMobilesInRange(Location location, int radius) {
+        return storage.getMobilesInRange(location, radius);
     }
 
     @Override
-    public MovementResult tryMove(UOMobile mobile, MoveRequest request) {
-        final var direction = request.getDirection();
-        Location to;
-        if (mobile.getDirection().equals(direction)) {
-            to = new PointInTheWorld(mobile.getX() + direction.getDx(), mobile.getY() + direction.getDy(), mobile.getZ());
-        } else {
-            to = mobile;
-        }
-        return MovementResult.success(mobile, direction, to, request.isRunning());
-    }
+    public List<UOMobile> getOtherMobilesInRange(UOObject object, int radius) {
+        var candidates = storage.getMobilesInRange(object, radius);
 
-    @Override
-    public MovementResult tryMove(UOMobile mobile, Location location) {
-        final int dx = location.getX() - mobile.getX();
-        final int dy = location.getY() - mobile.getY();
-
-        if (dx == 0 && dy == 0) {
-            return MovementResult.denied(mobile, MovementFailureReason.BLOCKED);
+        if (candidates.isEmpty()) {
+            return candidates;
         }
 
-        final Direction direction = Direction.fromDelta(dx, dy);
+        List<UOMobile> result = new ArrayList<>(candidates.size());
 
-        return MovementResult.success(
-                mobile,
-                direction,
-                location,
-                false
-        );
-    }
+        int selfSerial = object.getSerialId();
 
-    @Override
-    public void applyMove(UOMobile mobile, MovementResult result) {
-        if (result.success()) {
-            synchronized (this) {
-                mobile.setDirection(result.direction());
-                mobile.setRunning(result.running());
-                mobile.setLocation(result.to());
-                storage.updateMobileLocation(mobile, result.from(), result.to());
-            }
+        for (UOMobile mobile : candidates) {
+            if (mobile.getSerialId() == selfSerial) continue;
+            result.add(mobile);
         }
+
+        return result;
     }
 
     @Override
@@ -167,20 +158,12 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public void deleteMobile(int serialId) {
-        if (!isMobile(serialId)) {
-            throw new IllegalArgumentException("Serial ["+serialId+"] is not a player");
-        }
-        final var mobile = storage.getMobileBySerialId(serialId)
-                .orElseThrow(()->new IllegalArgumentException("Mobile ["+serialId+"] not found"));
-
-        this.deleteMobile(mobile);
-    }
-
-    @Override
     public void deleteMobile(UOMobile mobile) {
-        storage.deleteMobile(mobile);
-        fanout.writeAndFlush(new DeleteObject(mobile));
+        switch (mobile) {
+            case UONpc npc -> npcService.deleteNpc(npc);
+            case UOPlayer player -> playerRemovalService.deletePlayer(player);
+            default -> throw new IllegalStateException("Unexpected value: " + mobile);
+        }
     }
 
     @Override
@@ -189,7 +172,7 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public CompletableFuture<List<UOItem>> getItemsInRange(Location location) {
+    public List<UOItem> getItemsInRange(Location location, int radius) {
         return storage.getItemsInRange(location);
     }
 
@@ -203,15 +186,9 @@ public class DefaultWorld implements WorldInternal {
         storage.removeItemFromTheGround(item);
     }
 
-    // --- WORLD VIEW ---
     @Override
     public Optional<UOMobile> getMobileBySerialId(int serial) {
         return storage.getMobileBySerialId(serial);
-    }
-
-    @Override
-    public List<UOMobile> mobilesInRange(Location location, int range) {
-        return List.of();
     }
 
     @Override
@@ -230,6 +207,11 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
+    public List<Static> getStatics(Location location) {
+        return fileReader.getStatics(location);
+    }
+
+    @Override
     public List<Static> getStatics(int x, int y) {
         return fileReader.getStatics(x, y);
     }
@@ -244,25 +226,9 @@ public class DefaultWorld implements WorldInternal {
         return fileReader.getLandTile(location);
     }
 
-    // -- WORLD ACTIONS ---
-
     @Override
     public void sendBroadcastMessage(String message) {
         messageService.handleSendBreadcastMessage(message);
-    }
-
-    @Override
-    public UONpc createNpc(String name, Location location) {
-        final var template = npcTemplateRegistry.get(name);
-        if (template == null) {
-            throw new IllegalArgumentException("NPC template not found "+name);
-        }
-        final var npc = MobileFactory.createNpcFromTemplate(serialGenerator, template, location);
-
-        storage.cacheNpc(npc);
-        fanout.writeAndFlush(new DrawMobile(npc));
-
-        return npc;
     }
 
     @Override
@@ -275,23 +241,12 @@ public class DefaultWorld implements WorldInternal {
         animationService.sendAnimation(mobile, options);
     }
 
-    // -- MOBILE ACTIONS --
-
     @Override
     public void move(UOMobile mobile, Direction dir) {
         if (mobile instanceof UOPlayer player) {
             // TODO playerSessionService.getSession(player).move();
         }
     }
-
-    @Override
-    public void teleport(UOMobile mobile, Location location) {
-        if (mobile instanceof UOPlayer player) {
-            playerSessionService.getSession(player).move(location);
-        }
-    }
-
-    // -- ITEMS ACTIONS --
 
     @Override
     public void deleteItem(int serial) {
@@ -317,9 +272,6 @@ public class DefaultWorld implements WorldInternal {
         return itemService.createItemInContainer(name, container);
     }
 
-
-    // -- PLAYER ACTIONS --
-
     @Override
     public void sendTarget(UOPlayer player, CursorType type, Consumer<TargetResult> consumer) {
         playerSessionService.getSession(player).sendTarget(type, consumer);
@@ -331,9 +283,71 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public void sendSkill(UOMobile mobile, SkillValue value) {
+    public void scheduleTask(GameTask task) {
+        gameLoop.addTask(task);
+    }
+
+    @Override
+    public void tryGainSkill(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
+        skillSystem.tryGain(mobile, skillId, difficulty, context);
+    }
+
+    // REFACTORED
+
+    @Override
+    public void move(UOPlayer player, MoveRequest moveRequest) {
+        movementService.move(player, moveRequest);
+    }
+
+    @Override
+    public void teleport(UOMobile mobile, Location location) {
         if (mobile instanceof UOPlayer player) {
-            playerSessionService.getSession(player).sendSkill(value);
+            movementService.move(player, location);
+        }
+    }
+
+    @Override
+    public void move(UOPlayer player, Location location) {
+        movementService.move(player, location);
+    }
+
+    @Override
+    public void speech(UOPlayer player, UnicodeSpeachRequest request) {
+        speechService.speech(player, request);
+    }
+
+    @Override
+    public void equipItem(UOPlayer player, EquipItemRequest equipItem) {
+        getItemBySerialId(equipItem.getItemSerialId())
+                .ifPresent(item->equipItemService.equipItem(player, item));
+    }
+
+    @Override
+    public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
+        equipItemService.unequipItem(player, pickedUpItem);
+    }
+
+    @Override
+    public UONpc createNpc(String name, Location location) {
+        return npcService.createNpc(name, location);
+    }
+
+    @Override
+    public boolean isInRange(Location location1, Location location2, int radius) {
+        return storage.isInRange(location1, location2, radius);
+    }
+
+    @Override
+    public void skillGained(UOMobile mobile, SkillValue value) {
+        skillService.skillGained(mobile, value);
+    }
+
+    @Override
+    public void playerStatusRequested(UOPlayer player, GetPlayerStatus getPlayerStatus) {
+        switch (getPlayerStatus.getType()) {
+            case BASIC_STATUS -> System.out.println("TODO send status bar info"); // TODO outbound.writeAndFlush(new StatusBarInfo(session.getPlayer()));
+            case REQUEST_SKILL -> skillService.sendSkillGump(player, getPlayerStatus.getSerialId());
+            case GOD_CLIENT -> System.out.println("god client");
         }
     }
 }

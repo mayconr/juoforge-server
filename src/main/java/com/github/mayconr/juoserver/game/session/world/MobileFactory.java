@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.session.world;
 
-import com.github.mayconr.juoserver.common.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.template.NpcTemplate;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -25,7 +25,7 @@ public class MobileFactory {
                 Notoriety.INNOCENT,
                 false,
                 Race.HUMAN,
-                Gender.MALE,
+                Gender.HUMAN_MALE,
                 80,
                 100,
                 details.status().strength(),
@@ -69,9 +69,6 @@ public class MobileFactory {
                 0
         ), details.account().getId());
         for (UOItem item : details.equippedItems()) {
-            if (item.getSerialId() == 0) {
-                item.setSerialId(serialGenerator.nextItemSerial());
-            }
             player.equipItem(item);
         }
         player.setSkills(new SkillContainer(details.skills()));
@@ -79,7 +76,7 @@ public class MobileFactory {
     }
 
     public static UONpc createNpcFromTemplate(SerialGenerator serialGenerator, NpcTemplate template, Location location) {
-        return new UONpc(new UOMobile(
+        var npc = new UONpc(new UOMobile(
                 UUID.randomUUID(),
                 serialGenerator.nextMobileMobile(),
                 template.modelId(),
@@ -95,7 +92,7 @@ public class MobileFactory {
                 template.notoriety(),
                 false,
                 Race.HUMAN,
-                Gender.MALE,
+                Gender.HUMAN_MALE,
                 80,
                 100,
                 50,
@@ -137,8 +134,8 @@ public class MobileFactory {
                 0,
                 0,
                 0
-        ), template.type(),
-            template.ai(),
-            template.mountItemName());
+        ), template.type(), template.mountItemName());
+        npc.setBehavior(template.behavior());
+        return npc;
     }
 }
