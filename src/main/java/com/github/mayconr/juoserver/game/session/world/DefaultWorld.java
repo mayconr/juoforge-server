@@ -20,6 +20,7 @@ import com.github.mayconr.juoserver.game.session.world.player.PlayerRemovalServi
 import com.github.mayconr.juoserver.game.session.world.player.PlayerSessionService;
 import com.github.mayconr.juoserver.game.session.world.skill.SkillService;
 import com.github.mayconr.juoserver.game.session.world.speech.SpeechService;
+import com.github.mayconr.juoserver.game.session.world.status.StatusService;
 import com.github.mayconr.juoserver.game.skill.SkillSystem;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.handler.AttributeKeys;
@@ -58,6 +59,7 @@ public class DefaultWorld implements WorldInternal {
     private final EquipItemService equipItemService;
     private final PlayerRemovalService playerRemovalService;
     private final SkillService skillService;
+    private final StatusService statusService;
 
 
     private final Map<UONpc, NpcSession> sessionMap = new HashMap<>();
@@ -345,7 +347,7 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void playerStatusRequested(UOPlayer player, GetPlayerStatus getPlayerStatus) {
         switch (getPlayerStatus.getType()) {
-            case BASIC_STATUS -> System.out.println("TODO send status bar info"); // TODO outbound.writeAndFlush(new StatusBarInfo(session.getPlayer()));
+            case BASIC_STATUS -> statusService.sendStatusGump(player, getPlayerStatus.getSerialId());
             case REQUEST_SKILL -> skillService.sendSkillGump(player, getPlayerStatus.getSerialId());
             case GOD_CLIENT -> System.out.println("god client");
         }

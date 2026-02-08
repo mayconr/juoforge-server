@@ -5,15 +5,11 @@ import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties(prefix = "server")
-public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills, Mobile mobile, World world) {
+public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills,
+                               Mobile mobile, World world, Files files) {
 
     @ConstructorBinding
-    public ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills, Mobile mobile, World world) {
-        this.vitals = vitals;
-        this.gameLoop = gameLoop;
-        this.skills = skills;
-        this.mobile = mobile;
-        this.world = world;
+    public ServerProperties {
     }
 
     public record Mobile(String backpack) {
@@ -99,6 +95,13 @@ public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills, 
         @ConstructorBinding
         public World(@DefaultValue("24") int lightOfSight) {
             this.lightOfSight = lightOfSight;
+        }
+    }
+
+    public record Files(String dataFileRoot) {
+        @ConstructorBinding
+        public Files(String dataFileRoot) {
+            this.dataFileRoot = dataFileRoot;
         }
     }
 }

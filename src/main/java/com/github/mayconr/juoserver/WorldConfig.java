@@ -10,6 +10,7 @@ import com.github.mayconr.juoserver.game.gameloop.DefaultGameLoop;
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
 import com.github.mayconr.juoserver.game.gump.DefaultGumpSystem;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
+import com.github.mayconr.juoserver.game.model.Static;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.game.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.game.policy.PolicyService;
@@ -34,6 +35,7 @@ import com.github.mayconr.juoserver.game.session.world.player.PlayerRemovalServi
 import com.github.mayconr.juoserver.game.session.world.player.PlayerSessionService;
 import com.github.mayconr.juoserver.game.session.world.skill.SkillService;
 import com.github.mayconr.juoserver.game.session.world.speech.SpeechService;
+import com.github.mayconr.juoserver.game.session.world.status.StatusService;
 import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillSystem;
 import com.github.mayconr.juoserver.game.template.*;
@@ -237,7 +239,7 @@ public class WorldConfig {
                 properties,
                 policyService
         );
-        final var fileReader = new UOFileReader();
+        final var fileReader = new UOFileReader(properties);
         final var animationService = new AnimationService(fanout);
         final var npcService = new NpcService(
                 npcSessionFactory,
@@ -251,6 +253,7 @@ public class WorldConfig {
         final var equipItemService = new EquipItemService(storage, eventBus);
         final var playerRemovalService = new PlayerRemovalService(storage, eventBus);
         final var skillService = new SkillService(eventBus, storage);
+        final var statusService = new StatusService(eventBus, storage);
 
         final var world = new DefaultWorld(
                 serialGenerator,
@@ -270,7 +273,8 @@ public class WorldConfig {
                 speechService,
                 equipItemService,
                 playerRemovalService,
-                skillService
+                skillService,
+                statusService
         );
 
         eventBus.register(MobileMoved.class, new RangeDetection(world, eventBus, properties));

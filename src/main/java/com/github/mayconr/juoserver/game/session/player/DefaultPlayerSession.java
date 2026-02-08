@@ -47,7 +47,6 @@ public class DefaultPlayerSession implements PlayerSession {
     private final VitalsService vitalsService;
     private final PlayerSkillService skillService;
     private final ActionService actionService;
-    private final StatusService statusService;
     private final PlayerMessageService playerMessageService;
     private final VendorService vendorService;
 
@@ -156,16 +155,6 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void sendSkillGump(int serialId) {
-        skillService.sendGumpDialog(serialId);
-    }
-
-    @Override
-    public void sendStatusGump(int serialId) {
-        statusService.sendStatusGump(serialId);
-    }
-
-    @Override
     public void updateSkillsLock(Collection<SkillValue> skills) {
         skillService.updateSkillsLock(skills);
     }
@@ -261,6 +250,12 @@ public class DefaultPlayerSession implements PlayerSession {
 
         if (log.isDebugEnabled()) {
             log.debug("Sending skill gump for [{}-{}]", player.getSerialId(), player.getName());
+        }
+    }
+
+    public void onStatusGumpRequested(StatusGumpRequested event) {
+        if (player.equals(event.player())) {
+            outbound.writeAndFlush(new StatusBarInfo(event.requestedFor()));
         }
     }
 

@@ -47,10 +47,6 @@ public interface PlayerSession {
 
     void singleClick(SingleClickRequest singleClickRequest);
 
-    void sendSkillGump(int serialId);
-
-    void sendStatusGump(int serialId);
-
     void updateSkillsLock(Collection<SkillValue> skills);
 
     void sendMessage(String message, MessageOptions options);

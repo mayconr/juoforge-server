@@ -3,7 +3,7 @@ logging:
     org.springframework: INFO
     com.github.mayconr.juoserver: INFO
     com.github.mayconr.juoserver.game.core: INFO
-    com.github.mayconr.juoserver.infrastructure.server: INFO
+    com.github.mayconr.juoserver.infrastructure.server: DEBUG
     com.github.mayconr.juoserver.network: DEBUG
     com.github.mayconr.juoserver.game.session.player.vitals: INFO
     com.github.mayconr.juoserver.game.session.player.skill: DEBUG
@@ -22,3 +22,5 @@ server:
     cap: 100
   world:
     lightOfSight: 24
+  files:
+    dataFileRoot: /home/mgregorio/uo/Ultima Online Classic

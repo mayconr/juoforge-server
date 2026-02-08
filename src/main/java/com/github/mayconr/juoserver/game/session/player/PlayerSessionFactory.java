@@ -50,7 +50,6 @@ public class PlayerSessionFactory {
         final var vitalsService = new VitalsService(player, outbound, properties);
         final var skillService = new PlayerSkillService(player, outbound, eventBus);
         final var actionService = new ActionService(player, eventBus);
-        final var statusService = new StatusService(player, outbound);
         final var messageService = new PlayerMessageService(outbound);
         final var vendorService = new VendorService(outbound);
 
@@ -72,7 +71,6 @@ public class PlayerSessionFactory {
                         vitalsService,
                         skillService,
                         actionService,
-                        statusService,
                         messageService,
                         vendorService);
         eventBus.register(MobileMoved.class, session::onMobileMoved);
@@ -85,6 +83,7 @@ public class PlayerSessionFactory {
         eventBus.register(PlayerDeleted.class, session::onPlayerDeleted);
         eventBus.register(SkillGained.class, session::onSkillGained);
         eventBus.register(SkillGumpRequested.class, session::onSkillGumpRequested);
+        eventBus.register(StatusGumpRequested.class, session::onStatusGumpRequested);
         gameLoop.addTask(new PlayerVitalsTask(session, vitalsService, properties));
         return session;
     }
