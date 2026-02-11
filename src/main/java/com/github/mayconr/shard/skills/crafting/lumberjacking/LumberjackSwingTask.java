@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.AnimationOptions;
 import com.github.mayconr.juoserver.game.model.AnimationType;
 import com.github.mayconr.juoserver.game.model.SkillGainContext;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.world.WorldActions;
+import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.shard.skills.Skills;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class LumberjackSwingTask implements GameTask {
         var item = resourceRoller.rollResource(WoodType.values(), 50);
 
         if (item != null) {
-            final var woodItem = worldActions.createItemInContainer(item.name().toLowerCase(), player);
+            final var woodItem = worldActions.createContainerItem(item.name().toLowerCase(), player);
             if (log.isDebugEnabled()) {
                 log.debug("Wood [{}] created in [{}-{}] backpack", woodItem.getName(), player.getSerialId(), player.getName());
             }

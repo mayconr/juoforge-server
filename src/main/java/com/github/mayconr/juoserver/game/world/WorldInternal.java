@@ -1,0 +1,52 @@
+package com.github.mayconr.juoserver.game.world;
+
+import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.player.PlayerSession;
+import com.github.mayconr.juoserver.network.packet.ActionRequest;
+import com.github.mayconr.juoserver.network.packet.CreateCharacter;
+import com.github.mayconr.juoserver.network.packet.GetPlayerStatus;
+import com.github.mayconr.juoserver.network.packet.Target;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+public interface WorldInternal extends WorldActions, WorldView, MovementInternal, SpeechInternal, ItemInternal, ClickInternal,
+        SkillInternal, CombatInternal {
+
+    void initialize();
+
+    CompletableFuture<UOMobile> loadMobile(int serialId);
+
+    CompletableFuture<UOMobile> unloadMobile(int serialId);
+
+    CompletableFuture<UOItem> loadItem(int serialId);
+
+    CompletableFuture<UOItem> unloadItem(int serialId);
+
+    CompletableFuture<UOPlayer> createPlayer(CreateCharacter character, Map<Integer, UOCity> cities, UOAccount account);
+
+    void login(UOPlayer player);
+
+    void logout(UOPlayer player);
+
+    PlayerSession getPlayerSession(UOMobile mobile);
+
+    boolean isMobile(int serialId);
+
+    CompletableFuture<List<UOItem>> loadContainerItems(Container container);
+
+    List<UOItem> getItemsInRange(Location location, int radius);
+
+    void skillGained(UOMobile mobile, SkillValue value);
+
+    void playerStatusRequested(UOPlayer sendTo, GetPlayerStatus getPlayerStatus);
+
+    void tooltipRequest(UOPlayer player, List<Integer> serials);
+
+    void resolveTarget(UOPlayer player, Target target);
+
+    void sendBuyGump(UOPlayer player, UOMobile vendor, List<UOItem> items);
+
+    void handleAction(UOPlayer player, ActionRequest request);
+}

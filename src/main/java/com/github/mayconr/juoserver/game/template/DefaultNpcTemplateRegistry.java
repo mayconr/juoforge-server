@@ -6,7 +6,6 @@ public class DefaultNpcTemplateRegistry implements NpcTemplateRegistry {
     private final Map<String, NpcTemplate> byName;
 
     public DefaultNpcTemplateRegistry(Map<String, NpcTemplate> byName) {
-        System.out.println(byName.get("banker"));
         this.byName = byName;
     }
 

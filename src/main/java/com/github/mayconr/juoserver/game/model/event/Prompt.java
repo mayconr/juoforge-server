@@ -4,10 +4,11 @@ import java.util.ArrayList;
 
 import com.github.mayconr.juoserver.game.event.GameEvent;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 
-public record Prompt(UOMobile mobile, String name, String[] arguments) implements GameEvent {
+public record Prompt(UOPlayer player, String name, String[] arguments) implements GameEvent {
 
-    public static Prompt newInstance(UOMobile mobile, String prompt) {
+    public static Prompt newInstance(UOPlayer player, String prompt) {
         final ArrayList<String> result = new ArrayList<>();
         int start = 0;
         for (int i = 0; i < prompt.length(); i++) {
@@ -18,9 +19,9 @@ public record Prompt(UOMobile mobile, String name, String[] arguments) implement
         }
         result.add(prompt.substring(start));
 
-        final var commandName = result.get(0).substring(1);
-        result.remove(0);
+        final var commandName = result.getFirst().substring(1);
+        result.removeFirst();
 
-        return new Prompt(mobile, commandName, result.toArray(new String[] {}));
+        return new Prompt(player, commandName, result.toArray(new String[] {}));
     }
 }

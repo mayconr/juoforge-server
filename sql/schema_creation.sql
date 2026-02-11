@@ -33,8 +33,6 @@ CREATE TABLE mobiles (
     notoriety SMALLINT,
     status SMALLINT,
 
-    mount_item_name VARCHAR(64),
-
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_mobiles_account
@@ -178,7 +176,6 @@ SELECT
     m.gender,
     m.notoriety,
     m.status,
-    m.mount_item_name,
     m.created_at,
 
     r.x,

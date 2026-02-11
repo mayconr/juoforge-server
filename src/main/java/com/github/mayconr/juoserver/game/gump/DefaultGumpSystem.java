@@ -2,8 +2,8 @@ package com.github.mayconr.juoserver.game.gump;
 
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.SessionFanout;
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.player.SessionFanout;
+import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import com.github.mayconr.juoserver.network.handler.AttributeKeys;
 import com.github.mayconr.juoserver.network.packet.GumpSelection;
 import com.github.mayconr.juoserver.network.packet.SendGumpDialog;

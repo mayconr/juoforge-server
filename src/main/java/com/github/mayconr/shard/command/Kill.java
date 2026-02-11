@@ -5,9 +5,9 @@ import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.MessageOptions;
 import com.github.mayconr.juoserver.game.model.TextType;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.player.target.TargetType;
-import com.github.mayconr.juoserver.game.session.world.WorldActions;
-import com.github.mayconr.juoserver.game.session.world.WorldView;
+import com.github.mayconr.juoserver.game.model.TargetType;
+import com.github.mayconr.juoserver.game.world.WorldActions;
+import com.github.mayconr.juoserver.game.world.WorldView;
 
 public class Kill extends AbstractCommand {
 
@@ -22,12 +22,12 @@ public class Kill extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        worldActions.sendTarget((UOPlayer) event.mobile(), CursorType.NEUTRAL, result->{
+        worldActions.sendTarget((UOPlayer) event.player(), CursorType.NEUTRAL, result->{
             if (TargetType.OBJECT.equals(result.type()) && UOPlayer.isMobile(result.serialId())) {
                 final var mobile = worldView.getMobileBySerialId(result.serialId())
                         .orElseThrow(IllegalArgumentException::new);
                 worldActions.deleteMobile(mobile);
-                worldActions.sendMessage((UOPlayer) event.mobile(), String.format("%s has been deleted", mobile.getDisplayName()), MessageOptions.of(TextType.EMOTE,105, 0));
+                worldActions.sendMessage((UOPlayer) event.player(), String.format("%s has been deleted", mobile.getDisplayName()), MessageOptions.of(TextType.EMOTE,105, 0));
             }
         });
     }

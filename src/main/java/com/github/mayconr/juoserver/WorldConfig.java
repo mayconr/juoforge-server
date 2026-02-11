@@ -10,37 +10,47 @@ import com.github.mayconr.juoserver.game.gameloop.DefaultGameLoop;
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
 import com.github.mayconr.juoserver.game.gump.DefaultGumpSystem;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
-import com.github.mayconr.juoserver.game.model.Static;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
+import com.github.mayconr.juoserver.game.npc.NpcSessionFactory;
+import com.github.mayconr.juoserver.game.player.DefaultSessionRegistry;
+import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
+import com.github.mayconr.juoserver.game.player.SessionFanout;
+import com.github.mayconr.juoserver.game.player.SessionRegistry;
 import com.github.mayconr.juoserver.game.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.game.policy.PolicyService;
 import com.github.mayconr.juoserver.game.reader.UOFileReader;
 import com.github.mayconr.juoserver.game.rng.DefaultRNG;
 import com.github.mayconr.juoserver.game.rng.RNG;
-import com.github.mayconr.juoserver.game.session.SessionFanout;
-import com.github.mayconr.juoserver.game.session.npc.NpcSessionFactory;
-import com.github.mayconr.juoserver.game.session.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.game.session.world.DefaultWorld;
-import com.github.mayconr.juoserver.game.session.world.MessageService;
-import com.github.mayconr.juoserver.game.session.world.SerialGenerator;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
-import com.github.mayconr.juoserver.game.session.world.animation.AnimationService;
-import com.github.mayconr.juoserver.game.session.world.item.EquipItemService;
-import com.github.mayconr.juoserver.game.session.world.item.ItemService;
-import com.github.mayconr.juoserver.game.session.world.movement.MovementService;
-import com.github.mayconr.juoserver.game.session.world.movement.RangeDetection;
-import com.github.mayconr.juoserver.game.session.world.npc.NpcService;
-import com.github.mayconr.juoserver.game.session.world.player.PlayerCreationService;
-import com.github.mayconr.juoserver.game.session.world.player.PlayerRemovalService;
-import com.github.mayconr.juoserver.game.session.world.player.PlayerSessionService;
-import com.github.mayconr.juoserver.game.session.world.skill.SkillService;
-import com.github.mayconr.juoserver.game.session.world.speech.SpeechService;
-import com.github.mayconr.juoserver.game.session.world.status.StatusService;
 import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillSystem;
 import com.github.mayconr.juoserver.game.template.*;
 import com.github.mayconr.juoserver.game.trigger.item.ItemUseRegistry;
 import com.github.mayconr.juoserver.game.trigger.item.ItemUseService;
+import com.github.mayconr.juoserver.game.world.DefaultWorld;
+import com.github.mayconr.juoserver.game.world.SerialGenerator;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.action.ActionService;
+import com.github.mayconr.juoserver.game.world.animation.AnimationService;
+import com.github.mayconr.juoserver.game.world.click.DoubleClickService;
+import com.github.mayconr.juoserver.game.world.click.SingleClickService;
+import com.github.mayconr.juoserver.game.world.combat.CombatService;
+import com.github.mayconr.juoserver.game.world.item.ItemCreationService;
+import com.github.mayconr.juoserver.game.world.item.ItemDropService;
+import com.github.mayconr.juoserver.game.world.item.ItemEquipService;
+import com.github.mayconr.juoserver.game.world.vendor.VendorService;
+import com.github.mayconr.juoserver.game.world.message.MessageService;
+import com.github.mayconr.juoserver.game.world.mount.MountService;
+import com.github.mayconr.juoserver.game.world.movement.MovementService;
+import com.github.mayconr.juoserver.game.world.movement.RangeDetection;
+import com.github.mayconr.juoserver.game.world.npc.NpcService;
+import com.github.mayconr.juoserver.game.world.player.PlayerCreationService;
+import com.github.mayconr.juoserver.game.world.player.PlayerLoginService;
+import com.github.mayconr.juoserver.game.world.player.PlayerRemovalService;
+import com.github.mayconr.juoserver.game.world.skill.SkillService;
+import com.github.mayconr.juoserver.game.world.speech.SpeechService;
+import com.github.mayconr.juoserver.game.world.status.StatusService;
+import com.github.mayconr.juoserver.game.world.target.TargetService;
+import com.github.mayconr.juoserver.game.world.tooltip.TooltipService;
 import com.github.mayconr.juoserver.infrastructure.storage.CachedRealmStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
@@ -146,6 +156,11 @@ public class WorldConfig {
     // =========================================================================
 
     @Bean
+    public TemplateLoader<MountTemplate> mountTemplateLoader() {
+        return new JsonTemplateLoader<>(Path.of("template/mounts"), MountTemplate.class);
+    }
+
+    @Bean
     public TemplateLoader<NpcTemplate> npcTemplateLoader() {
         return new JsonTemplateLoader<>(Path.of("template/npcs"), NpcTemplate.class);
     }
@@ -182,32 +197,21 @@ public class WorldConfig {
     // =========================================================================
 
     @Bean
-    public PlayerSessionFactory playerSessionFactory(
-            EventBus eventBus,
-            GameLoop gameLoop,
-            CombatSystem combatSystem,
-            PolicyService policyService,
-            ServerProperties serverProperties,
-            ItemUseService itemUseService,
-            RealmStorage storage) {
+    public SessionRegistry sessionRegistry(WorldInternal world, EventBus eventBus) {
+        return new DefaultSessionRegistry(world, eventBus);
+    }
 
-        return new PlayerSessionFactory(
-                eventBus,
-                gameLoop,
-                combatSystem,
-                policyService,
-                serverProperties,
-                itemUseService,
-                storage
-        );
+    @Bean
+    public PlayerSessionFactory playerSessionFactory(
+            GameLoop gameLoop,
+            ServerProperties serverProperties) {
+
+        return new PlayerSessionFactory(gameLoop, serverProperties);
     }
 
     @Bean
     public WorldInternal worldSession(
             RealmStorage storage,
-            ChannelGroup channelGroup,
-            SessionFanout fanout,
-            PlayerSessionFactory playerSessionFactory,
             EventBus eventBus,
             ItemTemplateRegistry itemTemplateRegistry,
             GameLoop gameLoop,
@@ -215,22 +219,17 @@ public class WorldConfig {
             ServerProperties properties,
             PolicyService policyService,
             NpcTemplateRegistry npcTemplateRegistry,
-            NpcSessionFactory npcSessionFactory) {
+            NpcSessionFactory npcSessionFactory,
+            ItemUseService itemUseService,
+            CombatSystem combatSystem) {
 
         final var serialGenerator = new SerialGenerator(storage);
-        final var messageService = new MessageService(channelGroup);
-        final var playerSessionService = new PlayerSessionService(
-                playerSessionFactory,
-                eventBus,
-                fanout
-        );
-        final var itemService = new ItemService(
+        final var messageService = new MessageService(eventBus);
+        final var itemService = new ItemCreationService(
                 serialGenerator,
                 itemTemplateRegistry,
                 storage,
-                fanout,
-                eventBus,
-                playerSessionService
+                eventBus
         );
         final var playerMobileService = new PlayerCreationService(
                 serialGenerator,
@@ -240,32 +239,39 @@ public class WorldConfig {
                 policyService
         );
         final var fileReader = new UOFileReader(properties);
-        final var animationService = new AnimationService(fanout);
+        final var animationService = new AnimationService(eventBus);
         final var npcService = new NpcService(
                 npcSessionFactory,
                 npcTemplateRegistry,
-                itemService,
+                itemTemplateRegistry,
                 serialGenerator,
                 storage,
                 eventBus);
         final var movementService = new MovementService(eventBus, storage);
         final var speechService = new SpeechService(eventBus);
-        final var equipItemService = new EquipItemService(storage, eventBus);
+        final var equipItemService = new ItemEquipService(storage, eventBus);
         final var playerRemovalService = new PlayerRemovalService(storage, eventBus);
         final var skillService = new SkillService(eventBus, storage);
         final var statusService = new StatusService(eventBus, storage);
+        final var tooltipService = new TooltipService(eventBus, storage);
+        final var itemDropService = new ItemDropService(eventBus, storage, policyService);
+        final var loginService = new PlayerLoginService(eventBus);
+        final var targetService = new TargetService(eventBus);
+        final var doubleClickService = new DoubleClickService(eventBus, storage, itemUseService, policyService);
+        final var singleClick = new SingleClickService(storage);
+        final var combatService = new CombatService(eventBus, combatSystem, storage);
+        final var merchantService = new VendorService(eventBus);
+        final var actionService = new ActionService(eventBus);
+        final var mount = new MountService(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
 
         final var world = new DefaultWorld(
                 serialGenerator,
                 storage,
-                fanout,
                 gameLoop,
                 skillSystem,
-                playerSessionFactory,
                 messageService,
                 itemService,
                 playerMobileService,
-                playerSessionService,
                 fileReader,
                 animationService,
                 npcService,
@@ -274,7 +280,17 @@ public class WorldConfig {
                 equipItemService,
                 playerRemovalService,
                 skillService,
-                statusService
+                statusService,
+                tooltipService,
+                itemDropService,
+                loginService,
+                targetService,
+                doubleClickService,
+                singleClick,
+                combatService,
+                merchantService,
+                actionService,
+                mount
         );
 
         eventBus.register(MobileMoved.class, new RangeDetection(world, eventBus, properties));

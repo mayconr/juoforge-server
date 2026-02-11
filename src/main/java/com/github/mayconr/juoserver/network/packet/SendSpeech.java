@@ -54,10 +54,10 @@ public class SendSpeech extends AbstractPacket {
         this(
                 mobileSpeech.context().type(),
                 mobileSpeech.context().hue(),
-                mobileSpeech.player().getSerialId(),
-                mobileSpeech.player().getModelId(),
+                mobileSpeech.mobile().getSerialId(),
+                mobileSpeech.mobile().getModelId(),
                 mobileSpeech.context().font(),
-                mobileSpeech.player().getDisplayName(),
+                mobileSpeech.mobile().getDisplayName(),
                 mobileSpeech.message());
     }
 

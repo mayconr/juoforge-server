@@ -1,9 +1,7 @@
 package com.github.mayconr.juoserver.game.gump;
 
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import com.github.mayconr.juoserver.network.packet.GumpSelection;
-
-import io.netty.channel.Channel;
 
 public interface GumpSystemCallback {
 

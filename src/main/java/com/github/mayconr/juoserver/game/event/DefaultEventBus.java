@@ -23,11 +23,24 @@ public class DefaultEventBus implements EventBus {
     }
 
     @Override
-    public <T extends GameEvent> void register(
-            Class<T> type, EventHandler<T> listener, Predicate<T> predicate) {
-        listeners
-                .computeIfAbsent(type, k -> new ArrayList<>())
+    public <T extends GameEvent> void register(Class<T> type, EventHandler<T> listener, Predicate<T> predicate) {
+        listeners.computeIfAbsent(type, k -> new ArrayList<>())
                 .add(new ConditionalHandler<>(listener, predicate));
+    }
+
+    @Override
+    public <T extends GameEvent> void unregister(Class<T> type, EventHandler<T> listener) {
+        List<ConditionalHandler<?>> handlers = listeners.get(type);
+        if (handlers == null) {
+            return;
+        }
+
+        handlers.removeIf(h -> h.eventHandler.equals(listener));
+
+        if (handlers.isEmpty()) {
+            listeners.remove(type);
+        }
+        System.out.println(handlers.size());
     }
 
     @Override

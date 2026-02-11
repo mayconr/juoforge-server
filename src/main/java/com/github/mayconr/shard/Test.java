@@ -4,18 +4,14 @@ import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.event.HandlerResult;
 import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
-import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.model.policy.DropItemGroundPolicy;
 import com.github.mayconr.juoserver.game.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.game.policy.PolicyResult;
-import com.github.mayconr.juoserver.game.session.player.target.TargetType;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
-import com.github.mayconr.juoserver.game.trigger.item.ItemUseContext;
 import com.github.mayconr.juoserver.game.trigger.item.ItemUseRegistry;
-import com.github.mayconr.juoserver.game.trigger.item.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.shard.actions.GuildButton;
 import com.github.mayconr.shard.actions.HelpRequested;
 import com.github.mayconr.shard.skills.Anatomy;
@@ -43,10 +39,9 @@ public class Test {
             return PolicyResult.allow();
         });
         policyRegistry.register(DropItemGroundPolicy.class, policy->{
-            System.out.println("jogou "+policy.item());
             return PolicyResult.allow();
         });
-        itemUseRegistry.register(new ItemUseTrigger() {
+        /*itemUseRegistry.register(new ItemUseTrigger() {
             @Override
             public boolean supports(ItemUseContext ctx) {
                 return ctx.item().getName().equals("hat");
@@ -64,7 +59,7 @@ public class Test {
                     }
                 });
             }
-        });
+        });*/
 
         eventBus.register(QuestButtonPressed.class, new com.github.mayconr.shard.actions.QuestButtonPressed());
         eventBus.register(HelpButtonPressed.class, new HelpRequested());
@@ -78,10 +73,6 @@ public class Test {
                 Prompt.class, this::where, prompt -> prompt.name().equalsIgnoreCase("where"));
         eventBus.register(
                 Prompt.class, this::select, prompt -> prompt.name().equalsIgnoreCase("target"));
-        eventBus.register(
-                Prompt.class, this::mount, prompt -> prompt.name().equalsIgnoreCase("mountItemName"));
-        eventBus.register(
-                Prompt.class, this::unmound, prompt -> prompt.name().equalsIgnoreCase("unmount"));
         eventBus.register(
                 Prompt.class, this::sendGump, prompt -> prompt.name().equalsIgnoreCase("gump"));
         eventBus.register(UseSkillRequested.class, new Anatomy(), s->s.skillId() == 1);
@@ -137,7 +128,7 @@ public class Test {
                                                 Button(2450, 2451, 2)))));
 
         gumpSystem.send(
-                prompt.mobile(),
+                prompt.player(),
                 gump,
                 (ctx, selection) -> {
                     System.out.println("Recebido " + selection.getText(0));
@@ -155,34 +146,23 @@ public class Test {
     }
 
     public HandlerResult move(Prompt prompt) {
-        worldInternal.teleport(prompt.mobile(), new PointInTheWorld(2516, 555, 0));
+        worldInternal.teleport(prompt.player(), new PointInTheWorld(2516, 555, 0));
         return HandlerResult.CONTINUE;
     }
 
     public HandlerResult where(Prompt prompt) {
         log.info(
                 "Estou em x={}, y={}, z={}",
-                prompt.mobile().getX(),
-                prompt.mobile().getY(),
-                prompt.mobile().getZ());
+                prompt.player().getX(),
+                prompt.player().getY(),
+                prompt.player().getZ());
         return HandlerResult.CONTINUE;
     }
 
     public HandlerResult select(Prompt prompt) {
-        final var session = worldInternal.getPlayerSession(prompt.mobile());
-        session.sendTarget(CursorType.HELPFUL, t->{});
+        final var session = worldInternal.getPlayerSession(prompt.player());
+
         return HandlerResult.CONTINUE;
     }
 
-    public void updateStatus(Prompt prompt) {}
-
-    public HandlerResult mount(Prompt prompt) {
-        worldInternal.getPlayerSession(prompt.mobile()).mount(prompt.arguments()[0]);
-        return HandlerResult.CONTINUE;
-    }
-
-    public HandlerResult unmound(Prompt prompt) {
-        worldInternal.getPlayerSession(prompt.mobile()).unmount();
-        return HandlerResult.CONTINUE;
-    }
 }

@@ -3,8 +3,8 @@ package com.github.mayconr.juoserver.game.ai;
 import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.game.gameloop.IntervalGameTask;
-import com.github.mayconr.juoserver.game.session.npc.NpcSession;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.npc.NpcSession;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.extern.slf4j.Slf4j;
 

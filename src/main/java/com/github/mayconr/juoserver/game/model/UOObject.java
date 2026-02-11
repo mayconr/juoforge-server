@@ -77,4 +77,8 @@ public class UOObject implements Location, AttributeSupport {
         return value;
     }
 
+    @Override
+    public Object get(String key) {
+        return attrMap.get(key);
+    }
 }

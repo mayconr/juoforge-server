@@ -6,7 +6,6 @@
     "modelId": 3701,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE", "CONTAINER"],
     "attr": {
       "gumpId": 60
@@ -19,7 +18,6 @@
     "modelId": 5399,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -30,7 +28,6 @@
     "modelId": 5422,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -41,7 +38,6 @@
     "modelId": 5903,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   }

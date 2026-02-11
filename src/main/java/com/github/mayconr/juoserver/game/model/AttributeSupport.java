@@ -6,7 +6,10 @@ public interface AttributeSupport {
 
     <T> T getAttribute(String key, T defaultValue);
 
+    Object get(String key);
+
     <T> T getAndSetAttribute(String key, T newValue);
 
     boolean hasAttribute(String key);
 }
+

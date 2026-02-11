@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.model.event;
 
 import com.github.mayconr.juoserver.game.event.GameEvent;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 
-public record MobileSpeech(UOPlayer player, String message, SpeechContext context) implements GameEvent {
+public record MobileSpeech(UOMobile mobile, String message, SpeechContext context) implements GameEvent {
 
 
 }

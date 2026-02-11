@@ -6,7 +6,6 @@
     "modelId": 7133,
     "movable": true,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["STACKABLE"],
     "attr": {}
   },
@@ -17,7 +16,6 @@
     "modelId": 7133,
     "movable": true,
     "hue": 2012,
-    "mountNpc": null,
     "flags": ["STACKABLE"],
     "attr": {}
   },
@@ -28,7 +26,6 @@
     "modelId": 7133,
     "movable": true,
     "hue": 1191,
-    "mountNpc": null,
     "flags": ["STACKABLE"],
     "attr": {}
   },
@@ -39,7 +36,6 @@
     "modelId": 7133,
     "movable": true,
     "hue": 1193,
-    "mountNpc": null,
     "flags": ["STACKABLE"],
     "attr": {}
   }

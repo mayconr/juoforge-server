@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.handler;
 
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 

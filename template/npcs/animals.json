@@ -6,7 +6,6 @@
     "modelId": 200,
     "notoriety": "INNOCENT",
     "hue": 0,
-    "mountItemName": "horse",
     "behavior": {
       "profile" : "BANKER",
       "ai" : "DIALOGUE_REACTIVE"

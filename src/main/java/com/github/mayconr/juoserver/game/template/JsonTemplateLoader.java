@@ -1,7 +1,9 @@
 package com.github.mayconr.juoserver.game.template;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -20,7 +22,11 @@ public class JsonTemplateLoader<T extends BaseTemplate> implements TemplateLoade
     private final Class<T> templateType;
 
     public JsonTemplateLoader(Path jsonPath, Class<T> templateType) {
-        this.objectMapper = new ObjectMapper().findAndRegisterModules();
+        this.objectMapper = JsonMapper.builder()
+                .findAndAddModules()
+                .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
+                .enable(JsonReadFeature.ALLOW_YAML_COMMENTS)
+                .build();
         this.jsonPath = jsonPath;
         this.templateType = templateType;
     }

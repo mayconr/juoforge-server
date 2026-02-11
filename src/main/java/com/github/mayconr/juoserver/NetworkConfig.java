@@ -1,9 +1,11 @@
 package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.gump.GumpSystemCallback;
-import com.github.mayconr.juoserver.game.session.DefaultSessionFanout;
-import com.github.mayconr.juoserver.game.session.SessionFanout;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.player.DefaultSessionFanout;
+import com.github.mayconr.juoserver.game.player.SessionFanout;
+import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
+import com.github.mayconr.juoserver.game.player.SessionRegistry;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.server.ClientConnectedHandlerAdapter;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
 import com.github.mayconr.juoserver.infrastructure.server.UOChannelInitializer;
@@ -69,33 +71,36 @@ public class NetworkConfig {
             MobileStorage mobileStorage,
             RealmStorage realmStorage,
             WorldInternal world,
-            GumpSystemCallback gumpSystemCallback) {
+            GumpSystemCallback gumpSystemCallback,
+            SessionRegistry sessionRegistry,
+            PlayerSessionFactory playerSessionFactory,
+            SessionFanout fanout) {
 
         return List.of(
                 new GameServerLoginHandler(accountStorage, mobileStorage, realmStorage),
                 new PingPongHandler(),
-                new LoginCharacterHandler(world),
+                new LoginCharacterHandler(world, playerSessionFactory, sessionRegistry, fanout),
                 new DeleteCharacterHandler(realmStorage),
-                new CreatePlayerHandler(world),
+                new CreatePlayerHandler(world, playerSessionFactory, fanout, sessionRegistry),
                 new ClientVersionHandler(world),
                 new MoveRequestHandler(world),
-                new DoubleClickHandler(),
+                new DoubleClickHandler(world),
                 new UnicodeSpeachRequestHandler(world),
-                new MegaClilocHandler(),
+                new TooltipRequestHandler(world),
                 new GeneralInformationHandler(),
-                new SingleClickHandler(),
+                new SingleClickHandler(world),
                 new ItemUnequippedHandler(world),
-                new DropItemHandler(),
+                new DropItemHandler(world),
                 new EquipItemHandler(world),
-                new TargetHandler(),
+                new TargetHandler(world),
                 new GetPlayerStatusHandler(world),
-                new RequestHelpHandler(),
-                new RequestWarModeHandler(),
-                new AttackRequestHandler(),
+                new RequestHelpHandler(world),
+                new RequestWarModeHandler(world),
+                new AttackRequestHandler(world),
                 new GumpSelectionHandler(gumpSystemCallback),
-                new UseRequestHandler(),
-                new ActionRequestedHandler(),
-                new SendSkillHandler()
+                new UseRequestHandler(world),
+                new ActionRequestedHandler(world),
+                new SendSkillHandler(world)
         );
     }
 

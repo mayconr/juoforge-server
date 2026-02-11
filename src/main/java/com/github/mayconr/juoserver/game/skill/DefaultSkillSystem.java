@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.SkillGainContext;
 import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.rng.RNG;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

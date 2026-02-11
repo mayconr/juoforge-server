@@ -8,4 +8,5 @@ public interface ItemTemplateRegistry {
 
     List<ItemTemplate> get(int modelId);
 
+    ItemTemplate getMountByNpcName(String name);
 }

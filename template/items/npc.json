@@ -6,7 +6,6 @@
     "modelId": 3701,
     "movable": true,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["CONTAINER"],
     "attr": {}
   },
@@ -17,7 +16,6 @@
     "modelId": 3701,
     "movable": true,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["CONTAINER"],
     "attr": {}
   },
@@ -28,7 +26,6 @@
     "modelId": 3701,
     "movable": true,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["CONTAINER"],
     "attr": {
       "gumpId": 48

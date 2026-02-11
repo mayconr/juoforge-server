@@ -6,7 +6,6 @@
     "modelId": 400 ,
     "notoriety": "INNOCENT",
     "hue": 33770,
-    "mountItemName": null,
     "behavior": {
       "profile" : "BANKER",
       "ai" : "DIALOGUE_REACTIVE"
@@ -15,6 +14,6 @@
       "behavior.radius": 3,
       "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
     },
-    "equippedItems" : ["robe","vendor_sell","vendor_bought"]
+    "equippedItems" : ["vendor_pack","vendor_sell","vendor_bought", "hat"]
   }
 ]

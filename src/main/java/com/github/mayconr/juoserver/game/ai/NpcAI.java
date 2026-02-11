@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.ai;
 
 import com.github.mayconr.juoserver.game.gameloop.GameTask;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
-import com.github.mayconr.juoserver.game.session.npc.NpcSession;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.game.npc.NpcSession;
 
 public interface NpcAI extends GameTask {
 

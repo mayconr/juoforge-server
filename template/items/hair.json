@@ -6,7 +6,6 @@
     "modelId": 8251,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -17,7 +16,6 @@
     "modelId": 8252,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -28,7 +26,6 @@
     "modelId": 8253,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -39,7 +36,6 @@
     "modelId": 8254,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -50,7 +46,6 @@
     "modelId": 8255,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -61,7 +56,6 @@
     "modelId": 8256,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   },
@@ -72,7 +66,6 @@
     "modelId": 8257,
     "movable": false,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEARABLE"],
     "attr": {}
   }

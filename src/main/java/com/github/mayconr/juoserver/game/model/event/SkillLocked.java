@@ -4,5 +4,7 @@ import com.github.mayconr.juoserver.game.event.GameEvent;
 import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 
-public record SkillLocked(UOMobile mobile, SkillValue value) implements GameEvent {
+import java.util.List;
+
+public record SkillLocked(UOMobile mobile, List<SkillValue> skills) implements GameEvent {
 }

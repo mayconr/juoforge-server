@@ -12,7 +12,6 @@ public record ItemTemplate(String name,
                            int modelId,
                            boolean movable,
                            int hue,
-                           String mountNpc,
                            List<ItemFlag> flags,
                            Map<String, Object> attr)
             implements BaseTemplate{

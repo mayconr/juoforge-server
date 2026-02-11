@@ -24,8 +24,6 @@ public class UOItem extends UOObject {
     private Container container;
     private UOMobile owner;
     private List<ItemFlag> flags;
-    /** Npc created after a player unmount. Only for mountType: MOUNT */
-    private String mountNpc;
 
     public UOItem(
             UUID id,
@@ -44,8 +42,7 @@ public class UOItem extends UOObject {
             boolean hidden,
             Direction direction,
             Container container,
-            List<ItemFlag> flags,
-            String mountNpc) {
+            List<ItemFlag> flags) {
         super(serialId, modelId, x, y, z, name, displayName, attr);
         this.id = id;
         this.layer = layer;
@@ -56,7 +53,6 @@ public class UOItem extends UOObject {
         this.direction = direction;
         this.container = container;
         this.flags = flags;
-        this.mountNpc = mountNpc;
     }
 
     public UOItem(UOItem other) {
@@ -80,7 +76,6 @@ public class UOItem extends UOObject {
         this.container = other.container;
         this.owner = other.owner;
         this.flags = other.flags;
-        this.mountNpc = other.mountNpc;
     }
 
     public static boolean isItem(int serialId) {

@@ -1,8 +1,12 @@
 package com.github.mayconr.juoserver.network.handler;
 
+import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.player.SessionFanout;
+import com.github.mayconr.juoserver.game.player.SessionOutbound;
+import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
+import com.github.mayconr.juoserver.game.player.SessionRegistry;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.LoginCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
 import io.netty.channel.ChannelHandler;
@@ -15,33 +19,51 @@ import lombok.extern.slf4j.Slf4j;
 public class LoginCharacterHandler extends SessionChannelInboundHandler<LoginCharacter> {
 
     private final WorldInternal world;
+    private final PlayerSessionFactory playerSessionFactory;
+    private final SessionRegistry sessionRegistry;
+    private final SessionFanout fanout;
 
     @Override
     protected void channelRead0(SessionOutbound outbound, LoginCharacter msg) {
-        final var slots = outbound.attr().remove(AttributeKeys.SESSION_CREATION_CONTEXT).mobiles();
 
-        final var selectedMobile = slots.get(msg.getSelectedSlot());
-        if (selectedMobile.name().equals(msg.getCharacterName())) {
-            world.loadMobile(selectedMobile.serialId())
-                .thenAccept(mobile->{
-                    if (mobile instanceof UOPlayer player) {
-                        world.loginExistingPlayer(player, outbound)
-                            .whenComplete((unused, throwable) -> {
-                                if (throwable != null) {
-                                    log.error("Unable to login existing player", throwable);
-                                    return;
-                                }
+        final var context = outbound.attr()
+                .remove(AttributeKeys.SESSION_CREATION_CONTEXT);
 
-                                log.info("Player [{}] logged in!", player.getName());
-                            });
-                    } else {
-                        log.error("Mobile [{}] is not a player", mobile.getName());
-                        outbound.write(new LoginReject(LoginReject.Reason.SYNCHRONIZATION_ERROR));
-                    }
-                });
-        } else {
-            outbound.writeAndFlush(new LoginReject(LoginReject.Reason.SYNCHRONIZATION_ERROR));
+        final var selectedMobile =
+                context.mobiles().get(msg.getSelectedSlot());
+
+        if (!selectedMobile.name().equals(msg.getCharacterName())) {
+            reject(outbound);
+            return;
         }
+
+        world.loadMobile(selectedMobile.serialId())
+                .thenAccept(mobile -> handleLoadedMobile(mobile, outbound));
     }
 
+    private void handleLoadedMobile(
+            UOMobile mobile,
+            SessionOutbound outbound) {
+
+        if (!(mobile instanceof UOPlayer player)) {
+            log.error("Mobile [{}] is not a player", mobile.getName());
+            reject(outbound);
+            return;
+        }
+
+        createSessionAndLogin(player, outbound);
+    }
+
+    private void createSessionAndLogin(UOPlayer player, SessionOutbound outbound) {
+
+        final var session = playerSessionFactory.createPlayerSession(player, outbound, fanout);
+
+        sessionRegistry.register(session);
+    }
+
+    private void reject(SessionOutbound outbound) {
+        outbound.writeAndFlush(
+                new LoginReject(LoginReject.Reason.SYNCHRONIZATION_ERROR)
+        );
+    }
 }

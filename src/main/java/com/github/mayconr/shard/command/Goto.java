@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
-import com.github.mayconr.juoserver.game.session.world.WorldActions;
+import com.github.mayconr.juoserver.game.world.WorldActions;
 
 import static com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI.*;
 
@@ -35,7 +35,7 @@ public class Goto extends AbstractCommand {
                                                 Button(1209, 1210, 100, "Britain"),
                                                 Button(1209, 1210, 101, "Minoc")))));
         gumpSystem.send(
-                event.mobile(),
+                event.player(),
                 gump,
                 (c, e) -> {
                     switch (e.getButtonId()) {

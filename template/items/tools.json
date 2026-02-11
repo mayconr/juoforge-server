@@ -6,7 +6,6 @@
     "modelId": 3717,
     "movable": true,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEAPON", "WEARABLE"],
     "attr": {}
   },
@@ -17,7 +16,6 @@
     "modelId": 3909,
     "movable": true,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["WEAPON", "WEARABLE"],
     "attr": {}
   }

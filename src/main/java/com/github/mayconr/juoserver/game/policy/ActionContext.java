@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.policy;
 
 import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 
 import java.time.Clock;
 

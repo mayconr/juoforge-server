@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
 import com.github.mayconr.juoserver.game.model.CharacterListFlag;
 import com.github.mayconr.juoserver.game.model.SessionCreationContext;
 import com.github.mayconr.juoserver.game.model.UOCity;
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
+import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import com.github.mayconr.juoserver.network.packet.CharacterList;
 import com.github.mayconr.juoserver.network.packet.GameServerLogin;
 import com.github.mayconr.juoserver.network.packet.LoginReject;

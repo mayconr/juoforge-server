@@ -30,12 +30,10 @@ public class SaveMobiles {
                             notoriety,
                             status,
                             -- Player attributes
-                            account_id,
-                            -- NPC attributes
-                            mount_item_name
+                            account_id
                         )
                         VALUES (
-                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                         )
                         ON CONFLICT (id) DO UPDATE
                         SET
@@ -88,11 +86,6 @@ public class SaveMobiles {
                                 ps.setObject(11, player.getAccountId());
                             } else {
                                 ps.setObject(11, null);
-                            }
-                            if (mobile instanceof UONpc npc) {
-                                ps.setString(12, npc.getMountItemName());
-                            } else {
-                                ps.setNull(12, Types.VARCHAR);
                             }
 
                             ps.addBatch();

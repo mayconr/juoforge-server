@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.world.WorldActions;
+import com.github.mayconr.juoserver.game.world.WorldActions;
 
 public class Destroy extends AbstractCommand {
 
@@ -17,7 +17,7 @@ public class Destroy extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        worldActions.sendTarget((UOPlayer) event.mobile(), CursorType.NEUTRAL, target->{
+        worldActions.sendTarget((UOPlayer) event.player(), CursorType.NEUTRAL, target->{
             if (UOItem.isItem(target.serialId())) {
                 worldActions.deleteItem(target.serialId());
             }

@@ -3,7 +3,7 @@ package com.github.mayconr.shard.command;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.session.world.WorldActions;
+import com.github.mayconr.juoserver.game.world.WorldActions;
 
 public class TeleTo extends AbstractCommand {
 
@@ -16,10 +16,10 @@ public class TeleTo extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        if (event.mobile() instanceof  UOPlayer player) {
+        if (event.player() instanceof  UOPlayer player) {
             worldActions.sendTarget(player, CursorType.HARMFUL, res->{
                 if (res.isStatics()) {
-                    worldActions.teleport(event.mobile(), res.location());
+                    worldActions.teleport(event.player(), res.location());
                 }
             });
         }

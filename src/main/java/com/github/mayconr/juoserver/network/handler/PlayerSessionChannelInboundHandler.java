@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.network.handler;
 
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.session.player.PlayerSession;
+import com.github.mayconr.juoserver.game.player.SessionOutbound;
+import com.github.mayconr.juoserver.game.player.PlayerSession;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 

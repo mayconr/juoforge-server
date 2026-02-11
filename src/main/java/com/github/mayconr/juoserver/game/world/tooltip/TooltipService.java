@@ -1,0 +1,35 @@
+package com.github.mayconr.juoserver.game.world.tooltip;
+
+import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOObject;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.TooltipRequested;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RequiredArgsConstructor
+public class TooltipService {
+
+    private final EventBus eventBus;
+    private final RealmStorage storage;
+
+    public void tooltipRequest(UOPlayer player, List<Integer> serials) {
+        final var objects = new ArrayList<UOObject>();
+        for (int serialId : serials) {
+
+            if (UOMobile.isMobile(serialId)) {
+                storage.getMobileBySerialId(serialId).ifPresent(objects::add);
+                        //.ifPresent(player-> outbound.write(new TooltipRequest(player)));
+            } else {
+                storage.getItemBySerialId(serialId).ifPresent(objects::add);
+                        //.ifPresent(item-> outbound.write(new TooltipRequest(item)));
+            }
+        }
+        eventBus.publish(new TooltipRequested(player, objects));
+    }
+
+}

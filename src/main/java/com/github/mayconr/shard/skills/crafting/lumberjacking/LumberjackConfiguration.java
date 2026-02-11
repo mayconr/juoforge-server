@@ -1,7 +1,7 @@
 package com.github.mayconr.shard.skills.crafting.lumberjacking;
 
-import com.github.mayconr.juoserver.game.session.world.WorldActions;
-import com.github.mayconr.juoserver.game.session.world.WorldView;
+import com.github.mayconr.juoserver.game.world.WorldActions;
+import com.github.mayconr.juoserver.game.world.WorldView;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

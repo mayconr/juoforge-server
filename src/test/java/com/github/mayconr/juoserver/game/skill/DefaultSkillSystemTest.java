@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.rng.AlwaysFailRNG;
 import com.github.mayconr.juoserver.game.rng.AlwaysSuccessRNG;
 import com.github.mayconr.juoserver.game.rng.SeededRNG;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +35,7 @@ class DefaultSkillSystemTest {
                 50,
                 100// balanceOffset
         );
-        properties = new ServerProperties(null, null, skillsConfig, null, null);
+        properties = new ServerProperties(null, null, skillsConfig, null, null, null);
     }
 
     @Test
@@ -198,7 +198,7 @@ class DefaultSkillSystemTest {
                 100
         );
 
-        var properties = new ServerProperties(null, null, skillsProps, null, null);
+        var properties = new ServerProperties(null, null, skillsProps, null, null, null);
 
         var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
         system.initialize(worldInternal);

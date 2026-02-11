@@ -3,7 +3,7 @@ package com.github.mayconr.shard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
-import com.github.mayconr.juoserver.game.session.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
 import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
@@ -92,6 +92,10 @@ public class ShardConfiguration {
             bus.register(new Kill(worldInternal, worldInternal));
             bus.register(new Destroy(worldInternal));
             bus.register(new Test(worldInternal, worldInternal));
+            bus.register(new CreateEquippedItem(worldInternal));
+            bus.register(new CreateContainerItem(worldInternal));
+            bus.register(new Mount(worldInternal, worldInternal));
+            bus.register(new Unmount(worldInternal));
         };
     }
 }

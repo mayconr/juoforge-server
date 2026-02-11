@@ -4,9 +4,9 @@ import com.github.mayconr.juoserver.game.gump.GumpContext;
 import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
 import com.github.mayconr.juoserver.game.model.SessionCreationContext;
 import com.github.mayconr.juoserver.game.model.UOAccount;
-import com.github.mayconr.juoserver.game.session.SessionAttributes;
-import com.github.mayconr.juoserver.game.session.SessionOutbound;
-import com.github.mayconr.juoserver.game.session.player.PlayerSession;
+import com.github.mayconr.juoserver.game.player.SessionAttributes;
+import com.github.mayconr.juoserver.game.player.SessionOutbound;
+import com.github.mayconr.juoserver.game.player.PlayerSession;
 import io.netty.util.AttributeKey;
 
 import java.util.Map;

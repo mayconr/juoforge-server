@@ -6,7 +6,6 @@
     "modelId": 3823,
     "movable": true,
     "hue": 0,
-    "mountNpc": null,
     "flags": ["STACKABLE"],
     "attr": {}
   }

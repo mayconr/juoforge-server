@@ -40,10 +40,9 @@ public class SaveMobileFull {
                 race,
                 gender,
                 notoriety,
-                status,
-                mount_item_name
+                status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
     private static final String INSERT_MOBILE_ATTRIBUTES = """
@@ -189,11 +188,6 @@ public class SaveMobileFull {
             ps.setInt(9, mobile.getGender().getCode());
             ps.setInt(10, mobile.getNotoriety().getCode());
             ps.setInt(11, mobile.getStatus().getCode());
-            if (mobile instanceof UONpc npc) {
-                ps.setString(12, npc.getMountItemName());
-            } else {
-                ps.setNull(12, Types.VARCHAR);
-            }
             ps.executeUpdate();
         }
     }
