@@ -23,6 +23,7 @@ public class DefaultPlayerSession implements PlayerSession {
     private final SessionOutbound outbound;
     private final SessionFanout fanout;
     private final ServerProperties properties;
+
     private WorldInternal world;
     private String clientVersion;
     private boolean active;
@@ -44,10 +45,11 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void initialize(WorldInternal worldInternal, String clientVersion) {
-        this.world = worldInternal;
+    public void initialize(WorldInternal world, String clientVersion) {
+        this.world = world;
         this.clientVersion = clientVersion;
         this.player.setConnected(true);
+        this.world.scheduleTask(new PlayerVitalsTask(player, world));
     }
 
     public void onMobileMoved(MobileMoved moved) {
@@ -311,6 +313,12 @@ public class DefaultPlayerSession implements PlayerSession {
             System.out.println(packContainer.getContainerGumpId() == 0x0030 );
             outbound.write(new DrawContainer(packContainer));
             outbound.flush();
+        }
+    }
+
+    public void onVitalsChanged(VitalsChanged event) {
+        if (player.equals(event.mobile())) {
+            outbound.writeAndFlush(new StatusBarInfo(player));
         }
     }
 

@@ -72,6 +72,7 @@ public class DefaultSessionRegistry implements SessionRegistry {
         eventBus.register(MobileStatusChanged.class, session::onMobileStatusChanged);
         eventBus.register(PlayerStartAttack.class, session::onPlayerStartAttack);
         eventBus.register(BuyGumpSent.class, session::onBuyGumpSent);
+        eventBus.register(VitalsChanged.class, session::onVitalsChanged);
     }
 
     private void unregisterEvents(DefaultPlayerSession session) {
@@ -105,5 +106,6 @@ public class DefaultSessionRegistry implements SessionRegistry {
         eventBus.unregister(MobileStatusChanged.class, session::onMobileStatusChanged);
         eventBus.unregister(PlayerStartAttack.class, session::onPlayerStartAttack);
         eventBus.unregister(BuyGumpSent.class, session::onBuyGumpSent);
+        eventBus.register(VitalsChanged.class, session::onVitalsChanged);
     }
 }

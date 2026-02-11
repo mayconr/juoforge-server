@@ -66,7 +66,7 @@ public class MountService {
             return;
         }
 
-        final var npcName = (String) item.get("npcName");
+        final var npcName = (String) item.getPersistentAttribute("npcName");
         if (npcName == null) {
             log.debug("Item [{}] is not a mount item", item.getName());
             return;

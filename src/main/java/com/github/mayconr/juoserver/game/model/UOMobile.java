@@ -91,7 +91,7 @@ public class UOMobile extends UOObject implements Container {
                 other.getZ(),
                 other.getName(),
                 other.getDisplayName(),
-                other.getAttrMap());
+                other.getPersistentAttrMap());
         this.id = other.id;
         this.direction = other.getDirection();
         this.hue = other.getHue();

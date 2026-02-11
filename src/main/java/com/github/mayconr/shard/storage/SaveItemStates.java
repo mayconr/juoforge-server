@@ -66,7 +66,7 @@ public class SaveItemStates {
                         ps.setNull(5, Types.INTEGER);
                         ps.setNull(6, Types.INTEGER);
                     }
-                    ps.setString(7, objectMapper.writeValueAsString(item.getAttrMap()));
+                    ps.setString(7, objectMapper.writeValueAsString(item.getPersistentAttrMap()));
 
                     ps.addBatch();
                 }

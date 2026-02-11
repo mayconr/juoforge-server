@@ -64,7 +64,7 @@ public class UOItem extends UOObject {
                 other.getZ(),
                 other.getName(),
                 other.getDisplayName(),
-                other.getAttrMap()
+                other.getPersistentAttrMap()
         );
         this.id = other.id;
         this.layer = other.layer;

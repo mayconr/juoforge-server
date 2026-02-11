@@ -106,7 +106,7 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
         @Override
         public void handle(MobileSpeech event) {
             final var player = (UOPlayer) event.mobile();
-            final var radius = (int) npc.getAttrMap().getOrDefault("behavior.radius", 1);
+            final var radius = (int) npc.getPersistentAttrMap().getOrDefault("behavior.radius", 1);
 
             if (!world.isInRange(npc, player, radius)) {
                 return;

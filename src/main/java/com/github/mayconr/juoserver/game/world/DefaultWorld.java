@@ -28,6 +28,7 @@ import com.github.mayconr.juoserver.game.world.target.TargetResult;
 import com.github.mayconr.juoserver.game.world.target.TargetService;
 import com.github.mayconr.juoserver.game.world.tooltip.TooltipService;
 import com.github.mayconr.juoserver.game.skill.SkillSystem;
+import com.github.mayconr.juoserver.game.world.vitals.VitalsService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +74,7 @@ public class DefaultWorld implements WorldInternal {
     private final VendorService vendorService;
     private final ActionService actionService;
     private final MountService mountService;
+    private final VitalsService vitalsService;
 
     @Override
     public void initialize() {
@@ -402,5 +404,10 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void unmount(UOPlayer player) {
         mountService.unmount(player);
+    }
+
+    @Override
+    public void regen(UOMobile mobile, double interval) {
+        vitalsService.regen(mobile, interval);
     }
 }

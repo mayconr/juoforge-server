@@ -49,4 +49,6 @@ public interface WorldInternal extends WorldActions, WorldView, MovementInternal
     void sendBuyGump(UOPlayer player, UOMobile vendor, List<UOItem> items);
 
     void handleAction(UOPlayer player, ActionRequest request);
+
+    void regen(UOMobile mobile, double interval);
 }

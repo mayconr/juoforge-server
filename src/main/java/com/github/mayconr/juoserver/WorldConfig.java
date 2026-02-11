@@ -51,6 +51,7 @@ import com.github.mayconr.juoserver.game.world.speech.SpeechService;
 import com.github.mayconr.juoserver.game.world.status.StatusService;
 import com.github.mayconr.juoserver.game.world.target.TargetService;
 import com.github.mayconr.juoserver.game.world.tooltip.TooltipService;
+import com.github.mayconr.juoserver.game.world.vitals.VitalsService;
 import com.github.mayconr.juoserver.infrastructure.storage.CachedRealmStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
@@ -202,11 +203,8 @@ public class WorldConfig {
     }
 
     @Bean
-    public PlayerSessionFactory playerSessionFactory(
-            GameLoop gameLoop,
-            ServerProperties serverProperties) {
-
-        return new PlayerSessionFactory(gameLoop, serverProperties);
+    public PlayerSessionFactory playerSessionFactory(ServerProperties properties) {
+        return new PlayerSessionFactory(properties);
     }
 
     @Bean
@@ -262,7 +260,8 @@ public class WorldConfig {
         final var combatService = new CombatService(eventBus, combatSystem, storage);
         final var merchantService = new VendorService(eventBus);
         final var actionService = new ActionService(eventBus);
-        final var mount = new MountService(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
+        final var mountService = new MountService(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
+        final var vitalsService = new VitalsService(eventBus, properties);
 
         final var world = new DefaultWorld(
                 serialGenerator,
@@ -290,7 +289,8 @@ public class WorldConfig {
                 combatService,
                 merchantService,
                 actionService,
-                mount
+                mountService,
+                vitalsService
         );
 
         eventBus.register(MobileMoved.class, new RangeDetection(world, eventBus, properties));

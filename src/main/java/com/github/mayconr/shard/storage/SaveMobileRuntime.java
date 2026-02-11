@@ -64,7 +64,7 @@ public class SaveMobileRuntime {
                     ps.setInt(7, mobile.getHitpoints());
                     ps.setInt(8, mobile.getStamina());
                     ps.setInt(9, mobile.getMana());
-                    ps.setString(10, objectMapper.writeValueAsString(mobile.getAttrMap()));
+                    ps.setString(10, objectMapper.writeValueAsString(mobile.getPersistentAttrMap()));
                     ps.addBatch();
                 }
                 ps.executeBatch();

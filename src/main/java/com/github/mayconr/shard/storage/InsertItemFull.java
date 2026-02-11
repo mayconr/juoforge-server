@@ -93,7 +93,7 @@ public class InsertItemFull {
                 ps.setInt(14, item.getX());
                 ps.setInt(15, item.getY());
                 ps.setInt(16, item.getZ());
-                ps.setString(17, objectMapper.writeValueAsString(item.getAttrMap()));
+                ps.setString(17, objectMapper.writeValueAsString(item.getPersistentAttrMap()));
 
                 ps.executeUpdate();
                 return item;

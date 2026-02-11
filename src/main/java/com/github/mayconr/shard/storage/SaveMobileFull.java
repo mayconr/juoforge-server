@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -284,7 +283,7 @@ public class SaveMobileFull {
         ps.setInt(5, item.getY());
         ps.setInt(6, item.getZ());
         try {
-            ps.setString(7, objectMapper.writeValueAsString(item.getAttrMap()));
+            ps.setString(7, objectMapper.writeValueAsString(item.getPersistentAttrMap()));
         } catch (JsonProcessingException e) {
             log.error("Unable to save attr for item [{}]", item.getSerialId(), e);
             ps.setString(7, "{}");

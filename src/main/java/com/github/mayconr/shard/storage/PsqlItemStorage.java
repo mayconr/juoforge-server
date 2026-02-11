@@ -144,7 +144,7 @@ public class PsqlItemStorage extends AbstractStorage implements ItemStorage {
                 direction, container, flags);
 
         if (item.hasFlag(ItemFlag.CONTAINER)) {
-            return new UOContainer(item, (int) item.getAttrMap().getOrDefault("gumpId", 0));
+            return new UOContainer(item, (int) item.getPersistentAttrMap().getOrDefault("gumpId", 0));
         }
         return item;
     }

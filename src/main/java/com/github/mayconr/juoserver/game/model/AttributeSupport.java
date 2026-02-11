@@ -2,14 +2,16 @@ package com.github.mayconr.juoserver.game.model;
 
 public interface AttributeSupport {
 
-    void addAttribute(String key, Object value);
+    void setPersistentAttribute(String key, Object value);
 
-    <T> T getAttribute(String key, T defaultValue);
+    <T> T getPersistentAttribute(String key, T defaultValue);
 
-    Object get(String key);
+    Object getPersistentAttribute(String key);
 
-    <T> T getAndSetAttribute(String key, T newValue);
+    void setRuntimeAttribute(String key, Object value);
 
-    boolean hasAttribute(String key);
+    <T> T getRuntimeAttribute(String key, T defaultValue);
+
+    Object getRuntimeAttribute(String key);
 }
 

@@ -20,9 +20,10 @@ public class UOObject implements Location, AttributeSupport {
     private int z;
     @ToString.Include private String name;
     private String displayName;
-    private final Map<String, Object> attrMap = new HashMap<>();
+    private final Map<String, Object> persistentAttrMap = new HashMap<>();
+    private final Map<String, Object> runtimeAttrMap = new HashMap<>();
 
-    public UOObject(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> attrMap) {
+    public UOObject(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> persistentAttrMap) {
         this.serialId = serialId;
         this.modelId = modelId;
         this.x = x;
@@ -30,7 +31,7 @@ public class UOObject implements Location, AttributeSupport {
         this.z = z;
         this.name = name;
         this.displayName = displayName;
-        this.attrMap.putAll(attrMap);
+        this.persistentAttrMap.putAll(persistentAttrMap);
     }
 
     public void setLocation(int x, int y) {
@@ -51,34 +52,32 @@ public class UOObject implements Location, AttributeSupport {
     }
 
     @Override
-    public void addAttribute(String key, Object value) {
-        attrMap.put(key, value);
+    public void setPersistentAttribute(String key, Object value) {
+        persistentAttrMap.put(key, value);
     }
 
     @Override
-    public <T> T getAttribute(String key, T defaultValue) {
-        return (T) attrMap.getOrDefault(key, defaultValue);
+    public <T> T getPersistentAttribute(String key, T defaultValue) {
+        return (T) persistentAttrMap.getOrDefault(key, defaultValue);
     }
 
     @Override
-    public boolean hasAttribute(String key) {
-        return attrMap.containsKey(key);
+    public Object getPersistentAttribute(String key) {
+        return persistentAttrMap.get(key);
     }
 
     @Override
-    public <T> T getAndSetAttribute(String key, T newValue) {
-        T value = (T) attrMap.get(key);
-
-        if (newValue != null) {
-            attrMap.put(key, newValue);
-        } else {
-            attrMap.remove(key);
-        }
-        return value;
+    public void setRuntimeAttribute(String key, Object value) {
+        runtimeAttrMap.put(key, value);
     }
 
     @Override
-    public Object get(String key) {
-        return attrMap.get(key);
+    public <T> T getRuntimeAttribute(String key, T defaultValue) {
+        return (T) runtimeAttrMap.getOrDefault(key, defaultValue);
+    }
+
+    @Override
+    public Object getRuntimeAttribute(String key) {
+        return runtimeAttrMap.get(key);
     }
 }
