@@ -12,10 +12,10 @@ import com.github.mayconr.juoserver.game.gump.DefaultGumpSystem;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.game.npc.NpcSessionFactory;
-import com.github.mayconr.juoserver.game.player.DefaultSessionRegistry;
+import com.github.mayconr.juoserver.game.player.DefaultSessionManager;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
 import com.github.mayconr.juoserver.game.player.SessionFanout;
-import com.github.mayconr.juoserver.game.player.SessionRegistry;
+import com.github.mayconr.juoserver.game.player.SessionManager;
 import com.github.mayconr.juoserver.game.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.game.policy.PolicyService;
 import com.github.mayconr.juoserver.game.reader.UOFileReader;
@@ -37,7 +37,6 @@ import com.github.mayconr.juoserver.game.world.combat.CombatService;
 import com.github.mayconr.juoserver.game.world.item.ItemCreationService;
 import com.github.mayconr.juoserver.game.world.item.ItemDropService;
 import com.github.mayconr.juoserver.game.world.item.ItemEquipService;
-import com.github.mayconr.juoserver.game.world.vendor.VendorService;
 import com.github.mayconr.juoserver.game.world.message.MessageService;
 import com.github.mayconr.juoserver.game.world.mount.MountService;
 import com.github.mayconr.juoserver.game.world.movement.MovementService;
@@ -51,6 +50,7 @@ import com.github.mayconr.juoserver.game.world.speech.SpeechService;
 import com.github.mayconr.juoserver.game.world.status.StatusService;
 import com.github.mayconr.juoserver.game.world.target.TargetService;
 import com.github.mayconr.juoserver.game.world.tooltip.TooltipService;
+import com.github.mayconr.juoserver.game.world.vendor.VendorService;
 import com.github.mayconr.juoserver.game.world.vitals.VitalsService;
 import com.github.mayconr.juoserver.infrastructure.storage.CachedRealmStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
@@ -131,8 +131,8 @@ public class WorldConfig {
     }
 
     @Bean
-    public GumpSystem gumpSystem(SessionFanout fanout) {
-        return new DefaultGumpSystem(fanout);
+    public GumpSystem gumpSystem(EventBus eventBus) {
+        return new DefaultGumpSystem(eventBus);
     }
 
     @Bean
@@ -198,8 +198,8 @@ public class WorldConfig {
     // =========================================================================
 
     @Bean
-    public SessionRegistry sessionRegistry(WorldInternal world, EventBus eventBus) {
-        return new DefaultSessionRegistry(world, eventBus);
+    public SessionManager sessionRegistry(WorldInternal world, EventBus eventBus) {
+        return new DefaultSessionManager(world, eventBus);
     }
 
     @Bean
@@ -219,7 +219,8 @@ public class WorldConfig {
             NpcTemplateRegistry npcTemplateRegistry,
             NpcSessionFactory npcSessionFactory,
             ItemUseService itemUseService,
-            CombatSystem combatSystem) {
+            CombatSystem combatSystem,
+            GumpSystem gumpSystem) {
 
         final var serialGenerator = new SerialGenerator(storage);
         final var messageService = new MessageService(eventBus);
@@ -253,7 +254,7 @@ public class WorldConfig {
         final var statusService = new StatusService(eventBus, storage);
         final var tooltipService = new TooltipService(eventBus, storage);
         final var itemDropService = new ItemDropService(eventBus, storage, policyService);
-        final var loginService = new PlayerLoginService(eventBus);
+        final var loginService = new PlayerLoginService(eventBus, storage);
         final var targetService = new TargetService(eventBus);
         final var doubleClickService = new DoubleClickService(eventBus, storage, itemUseService, policyService);
         final var singleClick = new SingleClickService(storage);
@@ -268,6 +269,7 @@ public class WorldConfig {
                 storage,
                 gameLoop,
                 skillSystem,
+                gumpSystem,
                 messageService,
                 itemService,
                 playerMobileService,

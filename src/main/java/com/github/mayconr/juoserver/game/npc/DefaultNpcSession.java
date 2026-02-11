@@ -9,9 +9,9 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
 import com.github.mayconr.juoserver.game.model.event.SpeechContext;
 import com.github.mayconr.juoserver.game.model.event.SpeechRange;
-import com.github.mayconr.juoserver.game.npc.action.BuyListAction;
 import com.github.mayconr.juoserver.game.npc.action.NpcAction;
 import com.github.mayconr.juoserver.game.npc.action.SayAction;
+import com.github.mayconr.juoserver.game.npc.action.SellListAction;
 import com.github.mayconr.juoserver.game.npc.ai.NpcAI;
 import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
 import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
@@ -19,7 +19,10 @@ import com.github.mayconr.juoserver.game.player.SessionFanout;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
 
 @RequiredArgsConstructor
 public class DefaultNpcSession implements NpcSession, NpcContext {
@@ -64,10 +67,9 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
             switch (actionQueue.poll()) {
                 case SayAction say -> {
                     eventBus.publish(new MobileSpeech(npc, say.text(), new SpeechContext(TextType.NORMAL, SpeechRange.NORMAL, 0,0, System.currentTimeMillis(), npc)));
-                    //fanout.writeAndFlush(new SendSpeech(TextType.NORMAL, 2046, npc.getSerialId(), npc.getModelId(), 1, npc.getDisplayName(), say.text()));
                 }
-                case BuyListAction buyList -> {
-                    world.sendBuyGump(buyList.buyer(), npc, Collections.emptyList());
+                case SellListAction buyList -> {
+                    world.sendBuyGump(buyList.buyer(), npc, buyList.itemsToSell());
                 }
             }
         }

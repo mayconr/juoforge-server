@@ -1,11 +1,11 @@
 package com.github.mayconr.juoserver.game.gameloop;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.mayconr.juoserver.ServerProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j

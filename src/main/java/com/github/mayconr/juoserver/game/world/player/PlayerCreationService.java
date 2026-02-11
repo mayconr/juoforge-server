@@ -63,14 +63,6 @@ public class PlayerCreationService {
     // Helpers
     // -------------------------
 
-    private UOAccount requireAccount(SessionOutbound outbound) {
-        final var account = outbound.attr().get(AttributeKeys.ACCOUNT_KEY);
-        if (account == null) {
-            throw new IllegalStateException("Account not found");
-        }
-        return account;
-    }
-
     private UOCity resolveCity(CreateCharacter character, Map<Integer,UOCity> cities) {
         final var city = cities.get((int) character.getLocationIndex());
         if (city == null) {

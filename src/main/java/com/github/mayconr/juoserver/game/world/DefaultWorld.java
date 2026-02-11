@@ -2,9 +2,13 @@ package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
 import com.github.mayconr.juoserver.game.gameloop.GameTask;
+import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
+import com.github.mayconr.juoserver.game.gump.GumpHandler;
+import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.reader.UOFileReader;
 import com.github.mayconr.juoserver.game.player.PlayerSession;
+import com.github.mayconr.juoserver.game.reader.UOFileReader;
+import com.github.mayconr.juoserver.game.skill.SkillSystem;
 import com.github.mayconr.juoserver.game.world.action.ActionService;
 import com.github.mayconr.juoserver.game.world.animation.AnimationService;
 import com.github.mayconr.juoserver.game.world.click.DoubleClickService;
@@ -13,7 +17,6 @@ import com.github.mayconr.juoserver.game.world.combat.CombatService;
 import com.github.mayconr.juoserver.game.world.item.ItemCreationService;
 import com.github.mayconr.juoserver.game.world.item.ItemDropService;
 import com.github.mayconr.juoserver.game.world.item.ItemEquipService;
-import com.github.mayconr.juoserver.game.world.vendor.VendorService;
 import com.github.mayconr.juoserver.game.world.message.MessageService;
 import com.github.mayconr.juoserver.game.world.mount.MountService;
 import com.github.mayconr.juoserver.game.world.movement.MovementService;
@@ -27,17 +30,14 @@ import com.github.mayconr.juoserver.game.world.status.StatusService;
 import com.github.mayconr.juoserver.game.world.target.TargetResult;
 import com.github.mayconr.juoserver.game.world.target.TargetService;
 import com.github.mayconr.juoserver.game.world.tooltip.TooltipService;
-import com.github.mayconr.juoserver.game.skill.SkillSystem;
+import com.github.mayconr.juoserver.game.world.vendor.VendorService;
 import com.github.mayconr.juoserver.game.world.vitals.VitalsService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -50,6 +50,7 @@ public class DefaultWorld implements WorldInternal {
     private final RealmStorage storage;
     private final GameLoop gameLoop;
     private final SkillSystem skillSystem;
+    private final GumpSystem gumpSystem;
 
     // Services
     private final MessageService messageService;
@@ -409,5 +410,20 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void regen(UOMobile mobile, double interval) {
         vitalsService.regen(mobile, interval);
+    }
+
+    @Override
+    public void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler) {
+        gumpSystem.send(player, gumpUI, handler);
+    }
+
+    @Override
+    public void gumpResponse(UOPlayer player, GumpSelection gumpSelection) {
+        gumpSystem.onGumpSelection(player, gumpSelection);
+    }
+
+    @Override
+    public List<UOPlayer> getOnlinePlayers() {
+        return new ArrayList<>(playerLoginService.getOnlinePlayers().values());
     }
 }

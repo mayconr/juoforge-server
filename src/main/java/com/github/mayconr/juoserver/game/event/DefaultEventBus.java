@@ -40,7 +40,6 @@ public class DefaultEventBus implements EventBus {
         if (handlers.isEmpty()) {
             listeners.remove(type);
         }
-        System.out.println(handlers.size());
     }
 
     @Override

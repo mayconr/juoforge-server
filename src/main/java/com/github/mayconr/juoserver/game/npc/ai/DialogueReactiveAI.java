@@ -26,6 +26,7 @@ public class DialogueReactiveAI implements NpcAI {
     public NpcBehavior decide(NpcContext ctx, BehaviorProfile profile) {
         final var npc = ctx.npc();
         final var supports = (List<String>) npc.getPersistentAttrMap().getOrDefault("behavior.supports", List.of());
+
         if (supports.contains(ctx.get(CtxKeys.LAST_SPEECH, String.class))) {
             return profile.service();
         }

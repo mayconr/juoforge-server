@@ -34,7 +34,7 @@ public class Goto extends AbstractCommand {
                                                 2,
                                                 Button(1209, 1210, 100, "Britain"),
                                                 Button(1209, 1210, 101, "Minoc")))));
-        gumpSystem.send(
+        worldActions.sendGump(
                 event.player(),
                 gump,
                 (c, e) -> {

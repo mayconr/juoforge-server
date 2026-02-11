@@ -15,6 +15,6 @@ public class VendorService {
     private final EventBus eventBus;
 
     public void sendBuyGump(UOPlayer player, UOMobile vendor, List<UOItem> items) {
-        eventBus.publish(new BuyGumpSent(player, vendor));
+        eventBus.publish(new BuyGumpSent(player, vendor, items));
     }
 }

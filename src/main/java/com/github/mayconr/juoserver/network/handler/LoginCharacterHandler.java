@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.player.SessionFanout;
 import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.game.player.SessionRegistry;
+import com.github.mayconr.juoserver.game.player.SessionManager;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.LoginCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
@@ -20,7 +20,7 @@ public class LoginCharacterHandler extends SessionChannelInboundHandler<LoginCha
 
     private final WorldInternal world;
     private final PlayerSessionFactory playerSessionFactory;
-    private final SessionRegistry sessionRegistry;
+    private final SessionManager sessionManager;
     private final SessionFanout fanout;
 
     @Override
@@ -58,7 +58,7 @@ public class LoginCharacterHandler extends SessionChannelInboundHandler<LoginCha
 
         final var session = playerSessionFactory.createPlayerSession(player, outbound, fanout);
 
-        sessionRegistry.register(session);
+        sessionManager.register(session);
     }
 
     private void reject(SessionOutbound outbound) {

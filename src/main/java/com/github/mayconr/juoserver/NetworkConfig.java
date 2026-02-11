@@ -1,10 +1,9 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.game.gump.GumpSystemCallback;
 import com.github.mayconr.juoserver.game.player.DefaultSessionFanout;
-import com.github.mayconr.juoserver.game.player.SessionFanout;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.game.player.SessionRegistry;
+import com.github.mayconr.juoserver.game.player.SessionFanout;
+import com.github.mayconr.juoserver.game.player.SessionManager;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.server.ClientConnectedHandlerAdapter;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
@@ -71,17 +70,16 @@ public class NetworkConfig {
             MobileStorage mobileStorage,
             RealmStorage realmStorage,
             WorldInternal world,
-            GumpSystemCallback gumpSystemCallback,
-            SessionRegistry sessionRegistry,
+            SessionManager sessionManager,
             PlayerSessionFactory playerSessionFactory,
             SessionFanout fanout) {
 
         return List.of(
                 new GameServerLoginHandler(accountStorage, mobileStorage, realmStorage),
                 new PingPongHandler(),
-                new LoginCharacterHandler(world, playerSessionFactory, sessionRegistry, fanout),
+                new LoginCharacterHandler(world, playerSessionFactory, sessionManager, fanout),
                 new DeleteCharacterHandler(realmStorage),
-                new CreatePlayerHandler(world, playerSessionFactory, fanout, sessionRegistry),
+                new CreatePlayerHandler(world, playerSessionFactory, fanout, sessionManager),
                 new ClientVersionHandler(world),
                 new MoveRequestHandler(world),
                 new DoubleClickHandler(world),
@@ -97,7 +95,7 @@ public class NetworkConfig {
                 new RequestHelpHandler(world),
                 new RequestWarModeHandler(world),
                 new AttackRequestHandler(world),
-                new GumpSelectionHandler(gumpSystemCallback),
+                new GumpSelectionHandler(world),
                 new UseRequestHandler(world),
                 new ActionRequestedHandler(world),
                 new SendSkillHandler(world)

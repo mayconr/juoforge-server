@@ -14,6 +14,8 @@ public interface RealmStorage {
 
     CompletableFuture<UOMobile> loadMobile(int serialId);
 
+    void unloadMobile(UOMobile mobile);
+
     CompletableFuture<UOItem> loadItem(int serialId);
 
     Optional<UOMobile> getMobileBySerialId(int serialId);

@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -26,7 +25,6 @@ public class DefaultPlayerSession implements PlayerSession {
 
     private WorldInternal world;
     private String clientVersion;
-    private boolean active;
 
     @Override
     public SessionOutbound getOutbound() {
@@ -34,14 +32,8 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     @Override
-    public boolean isActive() {
-        return active;
-    }
-
-    @Override
     public void deactivate() {
         player.setConnected(false);
-        this.active = false;
     }
 
     @Override
@@ -82,12 +74,7 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     public void onMobileSpeech(MobileSpeech event) {
-        if (player.equals(event.mobile())) {
-            return;
-        }
-        if (world.getMobilesInRange(player, properties.world().lightOfSight()).contains(event.mobile())) {
-            outbound.writeAndFlush(new SendSpeech(event));
-        }
+        outbound.writeAndFlush(new SendSpeech(event));
     }
 
     public void onItemEquipped(ItemEquipped equipped) {
@@ -231,6 +218,14 @@ public class DefaultPlayerSession implements PlayerSession {
         }
     }
 
+    public void onPlayerLoggedOut(PlayerLoggedOut event) {
+        if (player.equals(event.player())) {
+            // do not send anything. User has logged off
+            return;
+        }
+        outbound.writeAndFlush(new DeleteObject(event.player()));
+    }
+
     public void onMessageSent(MessageSent event) {
         if (player.equals(event.player())) {
             var speakerId = 0;
@@ -296,22 +291,13 @@ public class DefaultPlayerSession implements PlayerSession {
 
     public void onBuyGumpSent(BuyGumpSent event) {
         if (player.equals(event.player())) {
-            System.out.println("enviando packets");
             final var vendor = event.vendor();
-            final var sellContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_SALE);
-            final var buyContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BOUGHT);
-            final var packContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_PACK);
-
-            System.out.println(sellContainer+" | "+buyContainer+" | "+packContainer);
-
-            outbound.write(new EquipItem(vendor, Layer.SHOP_SALE, sellContainer));
-            outbound.write(new EquipItem(vendor, Layer.SHOP_BOUGHT, buyContainer));
-            outbound.write(new EquipItem(vendor, Layer.SHOP_PACK, packContainer));
-            outbound.write(new AddMultipleItemsToContainer(sellContainer, Collections.emptyList()));
-            outbound.write(new AddMultipleItemsToContainer(buyContainer, Collections.emptyList()));
-            outbound.write(new VendorBuyList(vendor, Collections.emptyList()));
-            System.out.println(packContainer.getContainerGumpId() == 0x0030 );
-            outbound.write(new DrawContainer(packContainer));
+            final var restockContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
+            //final var buyContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY);
+            //final var sellContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_SELL);
+            outbound.write(new AddMultipleItemsToContainer(restockContainer, event.items()));
+            outbound.write(new VendorBuyList(restockContainer, event.items()));
+            outbound.write(new DrawContainer(vendor.getSerialId(), 0x0030));
             outbound.flush();
         }
     }
@@ -319,6 +305,12 @@ public class DefaultPlayerSession implements PlayerSession {
     public void onVitalsChanged(VitalsChanged event) {
         if (player.equals(event.mobile())) {
             outbound.writeAndFlush(new StatusBarInfo(player));
+        }
+    }
+
+    public void onGumpSent(GumpSent event) {
+        if (player.equals(event.player())) {
+            outbound.writeAndFlush(new SendGumpDialog(event.player(), event.gumpId(), 100, 100, event.builtGump().layout, event.builtGump().texts));
         }
     }
 

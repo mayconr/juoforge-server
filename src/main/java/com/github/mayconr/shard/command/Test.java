@@ -19,11 +19,7 @@ public class Test extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        worldActions.sendTarget((UOPlayer) event.player(), CursorType.NEUTRAL, result->{
-            final var item = worldView.getContainerBySerialId(result.serialId()).orElseThrow(()->new IllegalStateException("item not found"));
-            //event.player().getSkills().get(Skills.MINING.getId()).setBase(Double.parseDouble(event.arguments()[0]));
-            //worldActions.createItemInContainer("iron_ore", item);
-        });
+        System.out.println(worldView.getOnlinePlayers());
 
     }
 }

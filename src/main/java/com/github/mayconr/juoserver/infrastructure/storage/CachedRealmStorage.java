@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
 import com.github.mayconr.juoserver.game.model.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+@RequiredArgsConstructor
 @Slf4j
 public class CachedRealmStorage implements RealmStorage {
 
@@ -26,13 +28,6 @@ public class CachedRealmStorage implements RealmStorage {
 
     private Supplier<Integer> itemSerialSupplier;
     private Supplier<Integer> mobileSerialSupplier;
-
-    public CachedRealmStorage(
-            MobileStorage mobileStorage,
-            ItemStorage itemStorage) {
-        this.mobileStorage = mobileStorage;
-        this.itemStorage = itemStorage;
-    }
 
     @Override
     public void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier) {
@@ -66,6 +61,20 @@ public class CachedRealmStorage implements RealmStorage {
                     worldMobileIndex.add(mobile);
                     return mobile;
                 }).whenComplete(this::logging);
+    }
+
+    @Override
+    public void unloadMobile(UOMobile mobile) {
+        // TODO save mobile to database
+
+        mobileCache.remove(mobile);
+        for (UOItem item : mobile.getItemsInContainer()) {
+            itemCache.remove(item);
+        }
+        for (UOItem item : mobile.getEquippedItems().values()) {
+            itemCache.remove(item);
+        }
+        log.info("Unloaded mobile {}", mobile);
     }
 
     @Override

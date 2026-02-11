@@ -2,10 +2,7 @@ package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.player.PlayerSession;
-import com.github.mayconr.juoserver.network.packet.ActionRequest;
-import com.github.mayconr.juoserver.network.packet.CreateCharacter;
-import com.github.mayconr.juoserver.network.packet.GetPlayerStatus;
-import com.github.mayconr.juoserver.network.packet.Target;
+import com.github.mayconr.juoserver.network.packet.*;
 
 import java.util.List;
 import java.util.Map;
@@ -51,4 +48,6 @@ public interface WorldInternal extends WorldActions, WorldView, MovementInternal
     void handleAction(UOPlayer player, ActionRequest request);
 
     void regen(UOMobile mobile, double interval);
+
+    void gumpResponse(UOPlayer player, GumpSelection gumpSelection);
 }

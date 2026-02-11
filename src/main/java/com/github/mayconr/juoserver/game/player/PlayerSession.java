@@ -9,8 +9,6 @@ public interface PlayerSession {
 
     UOPlayer getPlayer();
 
-    boolean isActive();
-
     void deactivate();
 
     void initialize(WorldInternal worldInternal, String clientVersion);

@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RequiredArgsConstructor
-public class DefaultSessionRegistry implements SessionRegistry {
+public class DefaultSessionManager implements SessionManager {
 
     private final Map<Integer, PlayerSession> sessionMap = new ConcurrentHashMap<>();
     private final WorldInternal world;
@@ -73,6 +73,8 @@ public class DefaultSessionRegistry implements SessionRegistry {
         eventBus.register(PlayerStartAttack.class, session::onPlayerStartAttack);
         eventBus.register(BuyGumpSent.class, session::onBuyGumpSent);
         eventBus.register(VitalsChanged.class, session::onVitalsChanged);
+        eventBus.register(GumpSent.class, session::onGumpSent);
+        eventBus.register(PlayerLoggedOut.class, session::onPlayerLoggedOut);
     }
 
     private void unregisterEvents(DefaultPlayerSession session) {
@@ -106,6 +108,8 @@ public class DefaultSessionRegistry implements SessionRegistry {
         eventBus.unregister(MobileStatusChanged.class, session::onMobileStatusChanged);
         eventBus.unregister(PlayerStartAttack.class, session::onPlayerStartAttack);
         eventBus.unregister(BuyGumpSent.class, session::onBuyGumpSent);
-        eventBus.register(VitalsChanged.class, session::onVitalsChanged);
+        eventBus.unregister(VitalsChanged.class, session::onVitalsChanged);
+        eventBus.unregister(GumpSent.class, session::onGumpSent);
+        eventBus.unregister(PlayerLoggedOut.class, session::onPlayerLoggedOut);
     }
 }

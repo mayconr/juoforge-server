@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.gameloop.GameTask;
+import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
+import com.github.mayconr.juoserver.game.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.target.TargetResult;
 
@@ -45,4 +47,6 @@ public interface WorldActions {
     void mount(UOPlayer player, UONpc npc);
 
     void unmount(UOPlayer player);
+
+    void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler);
 }

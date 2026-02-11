@@ -24,4 +24,6 @@ public interface WorldView {
     LandTile getLandTile(int x, int y);
 
     LandTile getLandTile(Location location);
+
+    List<UOPlayer> getOnlinePlayers();
 }

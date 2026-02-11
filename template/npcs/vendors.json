@@ -1,0 +1,36 @@
+[
+  {
+    "name": "banker",
+    "displayName": "Gary the banker",
+    "type": "HUMAN",
+    "modelId": 400 ,
+    "notoriety": "INNOCENT",
+    "hue": 33770,
+    "behavior": {
+      "profile" : "BANKER",
+      "ai" : "DIALOGUE_REACTIVE"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
+    },
+    "equippedItems" : ["vendor_sell","vendor_buy_restock","vendor_buy", "hat"]
+  },
+  {
+    "name": "blacksmith",
+    "displayName": "Jay the blacksmith",
+    "type": "HUMAN",
+    "modelId": 400 ,
+    "notoriety": "INNOCENT",
+    "hue": 33770,
+    "behavior": {
+      "profile" : "BANKER",
+      "ai" : "DIALOGUE_REACTIVE"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["buy"]
+    },
+    "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat"]
+  }
+]

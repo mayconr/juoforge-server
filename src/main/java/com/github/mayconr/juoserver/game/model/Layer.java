@@ -63,11 +63,11 @@ public enum Layer {
     /** Mount item layer. */
     MOUNT(0x19),
     /** Vendor 'buy pack' layer. */
-    SHOP_SALE(0x1A),
+    SHOP_BUY_RESTOCK(0x1A),
     /** Vendor 'resale pack' layer. */
-    SHOP_BOUGHT(0x1B),
+    SHOP_BUY(0x1B),
     /** Vendor 'sell pack' layer. */
-    SHOP_PACK(0x1C),
+    SHOP_SELL(0x1C),
     /** Bank box layer. */
     BANK(0x1D),
     /** Last valid layer. Equivalent to <tt>Layer.Bank</tt>. */

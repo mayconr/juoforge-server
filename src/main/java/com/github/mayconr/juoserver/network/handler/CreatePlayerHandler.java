@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.network.handler;
 import com.github.mayconr.juoserver.game.player.SessionFanout;
 import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.game.player.SessionRegistry;
+import com.github.mayconr.juoserver.game.player.SessionManager;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import io.netty.channel.ChannelHandler;
@@ -18,7 +18,7 @@ public class CreatePlayerHandler extends SessionChannelInboundHandler<CreateChar
     private final WorldInternal world;
     private final PlayerSessionFactory playerSessionFactory;
     private final SessionFanout fanout;
-    private final SessionRegistry sessionRegistry;
+    private final SessionManager sessionManager;
 
     @Override
     protected void channelRead0(SessionOutbound outbound, CreateCharacter character) {
@@ -30,7 +30,7 @@ public class CreatePlayerHandler extends SessionChannelInboundHandler<CreateChar
         world.createPlayer(character, cities, account)
             .thenAccept(player -> {
                 var session = playerSessionFactory.createPlayerSession(player, outbound, fanout);
-                sessionRegistry.register(session);
+                sessionManager.register(session);
             });
     }
 

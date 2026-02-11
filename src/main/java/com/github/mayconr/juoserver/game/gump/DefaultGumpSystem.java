@@ -1,70 +1,73 @@
 package com.github.mayconr.juoserver.game.gump;
 
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.player.SessionFanout;
+import com.github.mayconr.juoserver.game.model.event.GumpSent;
 import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import com.github.mayconr.juoserver.network.handler.AttributeKeys;
 import com.github.mayconr.juoserver.network.packet.GumpSelection;
-import com.github.mayconr.juoserver.network.packet.SendGumpDialog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 @RequiredArgsConstructor
-public class DefaultGumpSystem implements GumpSystem, GumpSystemCallback {
+public class DefaultGumpSystem implements GumpSystem {
 
+    public static final String PLAYER_GUMP_ID = "player.gumpId";
+    public static final String PLAYER_LAST_GUMP_RESPONSE = "player.lastGumpResponse";
     private final Random random = new Random();
-    private final SessionFanout fanout;
+    private final EventBus eventBus;
 
     @Override
-    public <T> void send(UOMobile mobile, DeclarativeGumpUI gumpUI, GumpHandler handler) {
-        fanout.getSessionOutbound(mobile).ifPresent(outbound -> {
-            final var gumpId = generateGumpId(outbound, (UOPlayer) mobile, handler);
+    public void send(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler) {
+        final var gumpId = generateGumpId(player, handler);
 
-            // Build the gump
-            final var builder = new GumpBuilder();
-            gumpUI.render(builder);
-            final var built = builder.build();
+        // Build the gump
+        final var builder = new GumpBuilder();
+        gumpUI.render(builder);
 
-            outbound.writeAndFlush(new SendGumpDialog(mobile, gumpId, 100, 100, built.layout, built.texts));
-            log.info("Sent gump {} to player {}", gumpId, mobile.getName());
-        });
-
+        eventBus.publish(new GumpSent(player, builder.build(), gumpId));
+        log.info("Sent gump {} to player {}", gumpId, player.getName());
     }
 
-    private int generateGumpId(SessionOutbound outbound, UOPlayer player, GumpHandler handler) {
-        final var attribute = outbound.attr().get(AttributeKeys.GUMP_IDS);
-        final var idMap = Optional.ofNullable(attribute).orElseGet(HashMap::new);
-        int gumpId = random.nextInt();
-        while (idMap.containsKey(gumpId)) {
-            gumpId = random.nextInt();
+    private int generateGumpId(UOPlayer player, GumpHandler handler) {
+        ReentrantLock lock = new ReentrantLock();
+        if (lock.tryLock()) {
+            final var gumpIds = player.getRuntimeAttribute(PLAYER_GUMP_ID, new HashMap<>());
+            int gumpId = random.nextInt();
+            while (gumpIds.containsKey(gumpId)) {
+                gumpId = random.nextInt();
+            }
+            gumpIds.put(gumpId, new GumpContext(gumpId, player, System.currentTimeMillis(), handler));
+
+            player.setRuntimeAttribute(PLAYER_GUMP_ID, gumpIds);
+
+            return gumpId;
         }
-        idMap.put(gumpId, new GumpContext(gumpId, player, System.currentTimeMillis(), handler));
-        outbound.attr().set(AttributeKeys.GUMP_IDS, idMap);
-        return gumpId;
+        throw new RuntimeException("Unable to generate gump id for player " + player.getName());
     }
 
     @Override
-    public void onGumpSelection(SessionOutbound outbound, GumpSelection gumpSelection) {
+    public void onGumpSelection(UOPlayer player, GumpSelection gumpSelection) {
         log.debug(
-                "Response received for GumpId {} on session {}",
+                "Response received for GumpId {} for player {}",
                 gumpSelection.getGumpId(),
-                outbound);
+                player.getName());
 
-        var map = outbound.attr().get(AttributeKeys.GUMP_IDS);
+        var map = (Map<Integer, GumpContext>)player.getRuntimeAttribute(PLAYER_GUMP_ID);
         if (map == null) {
-            log.warn("Gump Aborted: Gump response without active gumps from session {}", outbound);
+            log.warn("Gump Aborted: Gump response without active gumps for player {}", player.getName());
             return;
         }
         final var context = map.remove(gumpSelection.getGumpId());
 
         if (context.player().getSerialId() != gumpSelection.getSerialId()) {
-            log.warn("Gump Aborted: Gump spoofing attempt for channel {}", outbound);
+            log.warn("Gump Aborted: Gump spoofing attempt for player {}", player.getName());
             return;
         }
 
@@ -75,12 +78,12 @@ public class DefaultGumpSystem implements GumpSystem, GumpSystemCallback {
             return;
         }
 
-        final var last = outbound.attr().get(AttributeKeys.LAST_GUMP_RESPONSE);
+        final var last = player.getRuntimeAttribute(PLAYER_LAST_GUMP_RESPONSE, 0L);
         if (last != null && now - last < 100) { // TODO add to property
             log.warn("Gump Aborted: spam attempt");
             return;
         }
-        outbound.attr().set(AttributeKeys.LAST_GUMP_RESPONSE, now);
+        player.setRuntimeAttribute(PLAYER_LAST_GUMP_RESPONSE, now);
 
         // Text Entry validation
         for (String text : gumpSelection.getTextEntries()) {
@@ -97,7 +100,7 @@ public class DefaultGumpSystem implements GumpSystem, GumpSystemCallback {
 
         final var handler = context.handler();
         if (handler == null) {
-            log.warn("Replay or invalid gump {} for session {}", gumpSelection.getGumpId(), outbound);
+            log.warn("Replay or invalid gump {} for player {}", gumpSelection.getGumpId(), player.getName());
             return;
         }
         handler.handle(context, gumpSelection);
