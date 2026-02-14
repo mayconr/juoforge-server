@@ -1,7 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.economy.VendorNpcRole;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplate;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -136,6 +137,13 @@ public class MobileFactory {
                 0
         ), template.type());
         npc.setBehavior(template.behavior());
+        if (template.roles() != null) {
+            for (String role : template.roles()) {
+                if ("vendor".equals(role)) {
+                    npc.addRole(new VendorNpcRole("city-britain")); // TODO region must be resolved
+                }
+            }
+        }
         return npc;
     }
 }

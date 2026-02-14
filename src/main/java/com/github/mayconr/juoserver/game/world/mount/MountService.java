@@ -8,7 +8,7 @@ import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
 import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.game.model.policy.Mount;
 import com.github.mayconr.juoserver.game.policy.PolicyService;
-import com.github.mayconr.juoserver.game.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.game.world.item.ItemFactory;

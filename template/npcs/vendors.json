@@ -24,13 +24,15 @@
     "notoriety": "INNOCENT",
     "hue": 33770,
     "behavior": {
-      "profile" : "BANKER",
+      "profile" : "VENDOR",
       "ai" : "DIALOGUE_REACTIVE"
     },
     "attr": {
       "behavior.radius": 3,
-      "behavior.supports": ["buy"]
+      "behavior.supports": ["buy"],
+      "behavior.stockType": "ORE"
     },
-    "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat"]
+    "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat"],
+    "roles": ["vendor"]
   }
 ]

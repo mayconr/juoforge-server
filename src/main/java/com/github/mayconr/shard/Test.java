@@ -41,6 +41,7 @@ public class Test {
         policyRegistry.register(DropItemGroundPolicy.class, policy->{
             return PolicyResult.allow();
         });
+
         /*itemUseRegistry.register(new ItemUseTrigger() {
             @Override
             public boolean supports(ItemUseContext ctx) {

@@ -1,7 +1,9 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.economy.EconomySystemInternal;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.player.PlayerSession;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistryInternal;
 import com.github.mayconr.juoserver.network.packet.*;
 
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public interface WorldInternal extends WorldActions, WorldView, MovementInternal, SpeechInternal, ItemInternal, ClickInternal,
-        SkillInternal, CombatInternal {
+        SkillInternal, CombatInternal, EconomySystemInternal, ItemTemplateRegistryInternal {
 
     void initialize();
 

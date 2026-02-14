@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.template;
+package com.github.mayconr.juoserver.game.template.definitions.npc;
 
 import java.util.Map;
 

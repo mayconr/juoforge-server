@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.game.ai.ollama.OllamaClientChatImpl;
 import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
 import com.github.mayconr.juoserver.game.combat.CombatSystem;
 import com.github.mayconr.juoserver.game.combat.DefaultCombatSystem;
+import com.github.mayconr.juoserver.game.economy.*;
 import com.github.mayconr.juoserver.game.event.DefaultEventBus;
 import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.gameloop.DefaultGameLoop;
@@ -14,16 +15,26 @@ import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.game.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.player.DefaultSessionManager;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
-import com.github.mayconr.juoserver.game.player.SessionFanout;
 import com.github.mayconr.juoserver.game.player.SessionManager;
 import com.github.mayconr.juoserver.game.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.game.policy.PolicyService;
 import com.github.mayconr.juoserver.game.reader.UOFileReader;
+import com.github.mayconr.juoserver.game.region.MapRegionService;
+import com.github.mayconr.juoserver.game.region.MapRegionServiceImpl;
+import com.github.mayconr.juoserver.game.region.command.RegionPrompt;
 import com.github.mayconr.juoserver.game.rng.DefaultRNG;
 import com.github.mayconr.juoserver.game.rng.RNG;
 import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillSystem;
-import com.github.mayconr.juoserver.game.template.*;
+import com.github.mayconr.juoserver.game.template.JsonTemplateLoader;
+import com.github.mayconr.juoserver.game.template.TemplateLoader;
+import com.github.mayconr.juoserver.game.template.definitions.item.CachedItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplate;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.template.definitions.npc.DefaultNpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplate;
+import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.template.definitions.region.RegionTemplate;
 import com.github.mayconr.juoserver.game.trigger.item.ItemUseRegistry;
 import com.github.mayconr.juoserver.game.trigger.item.ItemUseService;
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
@@ -61,6 +72,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 @EnableConfigurationProperties(ServerProperties.class)
 public class WorldConfig {
@@ -146,10 +158,9 @@ public class WorldConfig {
 
     @Bean
     public NpcSessionFactory npcSessionFactory(
-            EventBus eventBus,
-            SessionFanout fanout) {
+            EventBus eventBus) {
 
-        return new NpcSessionFactory(eventBus, fanout);
+        return new NpcSessionFactory(eventBus);
     }
 
     // =========================================================================
@@ -157,18 +168,13 @@ public class WorldConfig {
     // =========================================================================
 
     @Bean
-    public TemplateLoader<MountTemplate> mountTemplateLoader() {
-        return new JsonTemplateLoader<>(Path.of("template/mounts"), MountTemplate.class);
-    }
-
-    @Bean
     public TemplateLoader<NpcTemplate> npcTemplateLoader() {
         return new JsonTemplateLoader<>(Path.of("template/npcs"), NpcTemplate.class);
     }
 
     @Bean
-    public NpcTemplateRegistry npcTemplateRegistry(TemplateLoader<NpcTemplate> templateLoader) {
-        return new DefaultNpcTemplateRegistry(templateLoader.load());
+    public TemplateLoader<RegionTemplate> regionTemplateLoader() {
+        return new JsonTemplateLoader<>(Path.of("template/regions"), RegionTemplate.class);
     }
 
     @Bean
@@ -177,8 +183,45 @@ public class WorldConfig {
     }
 
     @Bean
+    public NpcTemplateRegistry npcTemplateRegistry(TemplateLoader<NpcTemplate> templateLoader) {
+        return new DefaultNpcTemplateRegistry(templateLoader.load());
+    }
+
+    @Bean
     public ItemTemplateRegistry itemTemplateRegistry(TemplateLoader<ItemTemplate> itemTemplateLoader) {
-        return new DefaultItemTemplateRegistry(itemTemplateLoader.load());
+        return new CachedItemTemplateRegistry(itemTemplateLoader.load());
+    }
+
+    // =========================================================================
+    // Region
+    // =========================================================================
+
+    @Bean
+    public MapRegionService mapRegionService(TemplateLoader<RegionTemplate> templateLoader) {
+        return new MapRegionServiceImpl(templateLoader);
+    }
+
+    @Bean
+    public RegionPrompt regionPrompt(EventBus eventBus, WorldInternal world) {
+        var prompt = new RegionPrompt(world);
+        eventBus.register(prompt);
+        return prompt;
+    }
+
+    // =========================================================================
+    // Economy
+    // =========================================================================
+
+    @Bean
+    public EconomySystem economySystem(ItemTemplateRegistry itemTemplateRegistry) {
+        var iron = itemTemplateRegistry.get("iron_ore");
+        var gold = itemTemplateRegistry.get("gold_ore");
+        Map<ItemTemplate, RegionStockEntry> britainEntries = Map.of(
+                iron, new RegionStockEntry(iron, 1000, 0.8, 800),
+                gold, new RegionStockEntry(gold, 200, 1.2, 150)
+        );
+        Map<String, RegionStockPool> pools = Map.of("province-britannia", new RegionStockPool("province-britannia", britainEntries));
+        return new DefaultEconomySystem(pools, new ScarcityBasedPricingStrategy());
     }
 
     // =========================================================================
@@ -220,7 +263,9 @@ public class WorldConfig {
             NpcSessionFactory npcSessionFactory,
             ItemUseService itemUseService,
             CombatSystem combatSystem,
-            GumpSystem gumpSystem) {
+            GumpSystem gumpSystem,
+            MapRegionService regionService,
+            EconomySystem economySystem) {
 
         final var serialGenerator = new SerialGenerator(storage);
         final var messageService = new MessageService(eventBus);
@@ -264,12 +309,16 @@ public class WorldConfig {
         final var mountService = new MountService(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
         final var vitalsService = new VitalsService(eventBus, properties);
 
+
         final var world = new DefaultWorld(
                 serialGenerator,
                 storage,
                 gameLoop,
                 skillSystem,
                 gumpSystem,
+                regionService,
+                economySystem,
+                itemTemplateRegistry,
                 messageService,
                 itemService,
                 playerMobileService,

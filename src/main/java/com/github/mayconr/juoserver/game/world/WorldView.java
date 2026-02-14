@@ -1,11 +1,12 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.region.RegionQueryService;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface WorldView {
+public interface WorldView extends RegionQueryService {
 
     Optional<UOMobile> getMobileBySerialId(int serial);
 

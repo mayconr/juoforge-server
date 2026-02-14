@@ -19,7 +19,7 @@ public class Test extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        System.out.println(worldView.getOnlinePlayers());
+        System.out.println(worldView.resolveRegion(event.player()));
 
     }
 }

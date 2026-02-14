@@ -1,0 +1,46 @@
+@startuml
+
+enum RegionType {
+    PROVINCE
+    CITY
+    DISTRICT
+    BUILDING
+    DUNGEON
+    DUNGEON_LEVEL
+}
+
+interface RegionArea {
+    + contains(location: Location): boolean
+}
+
+class RectangularArea {
+    + x: int
+    + y: int
+    + width: int
+    + height: int
+}
+
+class RegionNode {
+    + name: String
+    + displayName: String
+    + type: RegionType
+    + parent: RegionNode
+    + children: List<RegionNode>
+    + area: RegionArea
+    + properties: Map<String, Object>
+    + <T> resolveProperty(key: String): T
+}
+
+class MapRegionService {
+    + regions: Map<String, RegionNode>
+    + resolveRegion(location: Location): RegionNode
+}
+
+RegionNode "1" --> "0..1" RegionNode : parent
+RegionNode "1" --> "0..*" RegionNode : children
+
+RectangularArea ..|> RegionArea
+
+MapRegionService --> RegionNode : manages >
+
+@enduml

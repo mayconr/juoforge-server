@@ -7,6 +7,7 @@ logging:
     com.github.mayconr.juoserver.network: DEBUG
     com.github.mayconr.juoserver.game.session.player.vitals: INFO
     com.github.mayconr.juoserver.game.session.player.skill: DEBUG
+    com.github.mayconr.juoserver.game.npc: DEBUG
 
 server:
   mobile:

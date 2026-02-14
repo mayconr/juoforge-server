@@ -1,0 +1,34 @@
+[
+  {
+    "name": "province-britannia",
+    "displayName" : "Britannia",
+    "parentName": null,
+    "type": "PROVINCE",
+    "area": {
+      "type": "rectangle",
+      "x": 0,
+      "y": 0,
+      "width": 6144,
+      "height": 4096
+    },
+    "properties": {
+      "taxRate": 0.05
+    }
+  },
+  {
+    "name": "city-britain",
+    "displayName": "Britain",
+    "parentName": "province-britannia",
+    "type": "CITY",
+    "area": {
+      "type": "rectangle",
+      "x": 1250,
+      "y": 1400,
+      "width": 500,
+      "height": 500
+    },
+    "properties": {
+      "taxRate": 0.10
+    }
+  }
+]

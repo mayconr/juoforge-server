@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.world.item;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
-import com.github.mayconr.juoserver.game.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplate;
 
 import java.util.Optional;
 import java.util.UUID;

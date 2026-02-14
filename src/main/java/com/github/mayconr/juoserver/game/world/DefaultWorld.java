@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.economy.EconomySystem;
+import com.github.mayconr.juoserver.game.economy.RegionStockPool;
+import com.github.mayconr.juoserver.game.economy.StockType;
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
 import com.github.mayconr.juoserver.game.gameloop.GameTask;
 import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
@@ -8,7 +11,11 @@ import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.player.PlayerSession;
 import com.github.mayconr.juoserver.game.reader.UOFileReader;
+import com.github.mayconr.juoserver.game.region.MapRegionService;
+import com.github.mayconr.juoserver.game.region.RegionNode;
 import com.github.mayconr.juoserver.game.skill.SkillSystem;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplate;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.action.ActionService;
 import com.github.mayconr.juoserver.game.world.animation.AnimationService;
 import com.github.mayconr.juoserver.game.world.click.DoubleClickService;
@@ -51,6 +58,9 @@ public class DefaultWorld implements WorldInternal {
     private final GameLoop gameLoop;
     private final SkillSystem skillSystem;
     private final GumpSystem gumpSystem;
+    private final MapRegionService regionService;
+    private final EconomySystem economySystem;
+    private final ItemTemplateRegistry itemTemplateRegistry;
 
     // Services
     private final MessageService messageService;
@@ -425,5 +435,35 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public List<UOPlayer> getOnlinePlayers() {
         return new ArrayList<>(playerLoginService.getOnlinePlayers().values());
+    }
+
+    @Override
+    public void registerRegion(RegionNode region) {
+        regionService.registerRegion(region);
+    }
+
+    @Override
+    public Optional<RegionNode> getRegion(String name) {
+        return regionService.getRegion(name);
+    }
+
+    @Override
+    public Optional<RegionNode> resolveRegion(Location location) {
+        return regionService.resolveRegion(location);
+    }
+
+    @Override
+    public RegionStockPool getStockPool(String regionName) {
+        return economySystem.getStockPool(regionName);
+    }
+
+    @Override
+    public List<ItemTemplate> getItemTemplates(StockType stockType) {
+        return itemTemplateRegistry.getItemTemplates(stockType);
+    }
+
+    @Override
+    public double getPrice(ItemTemplate template, String regionName) {
+        return economySystem.getPrice(template, regionName);
     }
 }

@@ -12,8 +12,8 @@ import com.github.mayconr.juoserver.game.world.MobileFactory;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.game.world.item.ItemFactory;
-import com.github.mayconr.juoserver.game.template.ItemTemplateRegistry;
-import com.github.mayconr.juoserver.game.template.NpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 

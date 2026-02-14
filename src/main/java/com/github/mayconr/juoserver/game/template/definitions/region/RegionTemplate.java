@@ -1,0 +1,8 @@
+package com.github.mayconr.juoserver.game.template.definitions.region;
+
+import com.github.mayconr.juoserver.game.template.BaseTemplate;
+
+import java.util.Map;
+
+public record RegionTemplate(String name, String displayName, String parentName, String type, AreaTemplate area, Map<String, Object> properties) implements BaseTemplate {
+}

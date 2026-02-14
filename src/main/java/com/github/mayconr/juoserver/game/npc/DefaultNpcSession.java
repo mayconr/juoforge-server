@@ -15,7 +15,6 @@ import com.github.mayconr.juoserver.game.npc.action.SellListAction;
 import com.github.mayconr.juoserver.game.npc.ai.NpcAI;
 import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
 import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
-import com.github.mayconr.juoserver.game.player.SessionFanout;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +30,6 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
     private final Map<String, Object> memory = new HashMap<>();
 
     private final UONpc npc;
-    private final SessionFanout fanout;
     private final EventBus eventBus;
     private final BehaviorProfile profile;
     private final NpcAI ai;
@@ -59,6 +57,10 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
         return npc;
     }
 
+    /**
+     * Gameloop tick
+     * @param delta
+     */
     @Override
     public void think(double delta) {
         // TODO check is session is alive

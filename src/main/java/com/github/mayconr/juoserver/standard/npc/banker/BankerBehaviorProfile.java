@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.npc.banker;
+package com.github.mayconr.juoserver.standard.npc.banker;
 
 import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
 import com.github.mayconr.juoserver.game.npc.behavior.IdleBehavior;
@@ -9,7 +9,7 @@ public class BankerBehaviorProfile implements BehaviorProfile {
 
     private final IdleBehavior idleBehavior = new IdleBehavior();
     private final TalkBehavior talkBehavior = new TalkBehavior();
-    private final BankServiceBehavior bankServiceBehavior = new BankServiceBehavior();
+    private final BankBehavior bankBehavior = new BankBehavior();
 
     @Override
     public NpcBehavior idle() {
@@ -23,6 +23,6 @@ public class BankerBehaviorProfile implements BehaviorProfile {
 
     @Override
     public NpcBehavior service() {
-        return bankServiceBehavior;
+        return bankBehavior;
     }
 }

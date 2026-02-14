@@ -1,15 +1,17 @@
-package com.github.mayconr.juoserver.game.npc.banker;
+package com.github.mayconr.juoserver.standard.npc.banker;
 
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.npc.NpcContext;
 import com.github.mayconr.juoserver.game.npc.action.SellListAction;
 import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 
+@Slf4j
 @RequiredArgsConstructor
-public class BankServiceBehavior implements NpcBehavior {
+public class BankBehavior implements NpcBehavior {
 
     private NpcContext context;
 
@@ -20,6 +22,9 @@ public class BankServiceBehavior implements NpcBehavior {
 
     @Override
     public void onSpeech(UOPlayer player, String text) {
+        if (log.isDebugEnabled()) {
+            log.debug("Palyer {} - onSpeech: {}" , player.getName(), text);
+        }
         context.enqueue(new SellListAction(player, Collections.emptyList()));
     }
 

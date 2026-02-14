@@ -1,5 +1,6 @@
-package com.github.mayconr.juoserver.game.template;
+package com.github.mayconr.juoserver.game.template.definitions.item;
 
+import com.github.mayconr.juoserver.game.economy.StockType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -8,12 +9,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class DefaultItemTemplateRegistry implements ItemTemplateRegistry {
+public class CachedItemTemplateRegistry implements ItemTemplateRegistry {
     private final Map<String, ItemTemplate> byName;
     private final Map<Integer, List<ItemTemplate>> byModelId;
     private final Map<String, ItemTemplate> mountByNpcName;
+    private final Map<StockType, List<ItemTemplate>> byStockType;
 
-    public DefaultItemTemplateRegistry(Map<String, ItemTemplate> templates) {
+    public CachedItemTemplateRegistry(Map<String, ItemTemplate> templates) {
         this.byName = Map.copyOf(templates);
         this.byModelId = templates.values().stream()
                 .collect(Collectors.groupingBy(
@@ -36,6 +38,16 @@ public class DefaultItemTemplateRegistry implements ItemTemplateRegistry {
                 }
                 mountByNpcName.put(key, template);
             });
+
+        byStockType = templates.values().stream()
+                .filter(template->template.stockType() != null)
+                .collect(Collectors.groupingBy(
+                        ItemTemplate::stockType,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                List::copyOf
+                        )
+                ));
     }
 
     @Override
@@ -55,5 +67,10 @@ public class DefaultItemTemplateRegistry implements ItemTemplateRegistry {
     @Override
     public ItemTemplate getMountByNpcName(String name) {
         return mountByNpcName.get(name);
+    }
+
+    @Override
+    public List<ItemTemplate> getItemTemplates(StockType stockType) {
+        return byStockType.get(stockType);
     }
 }

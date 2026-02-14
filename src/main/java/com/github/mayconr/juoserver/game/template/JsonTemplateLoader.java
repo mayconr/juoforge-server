@@ -1,7 +1,6 @@
 package com.github.mayconr.juoserver.game.template;
 
 import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,7 @@ public class JsonTemplateLoader<T extends BaseTemplate> implements TemplateLoade
 
     @Override
     public Map<String, T> load() {
-        Map<String, T> templates = new HashMap<>();
+        final Map<String, T> templates = new HashMap<>();
 
         try (Stream<Path> files = Files.walk(jsonPath)) {
             files.filter(Files::isRegularFile)
@@ -62,7 +61,7 @@ public class JsonTemplateLoader<T extends BaseTemplate> implements TemplateLoade
                 }
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to parse npc template file: " + path, e);
+            throw new IllegalStateException("Failed to parse template file: " + path, e);
         }
     }
 }
