@@ -11,7 +11,7 @@ import com.github.mayconr.juoserver.game.policy.PolicyService;
 import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
-import com.github.mayconr.juoserver.game.world.item.ItemFactory;
+import com.github.mayconr.juoserver.game.world.module.item.ItemFactory;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

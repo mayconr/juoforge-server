@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.item;
+package com.github.mayconr.juoserver.game.world.module.item;
 
 import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.model.UOItem;
@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ItemEquipService {
+public class ItemEquipHandler {
 
     private final RealmStorage storage;
     private final EventBus eventBus;

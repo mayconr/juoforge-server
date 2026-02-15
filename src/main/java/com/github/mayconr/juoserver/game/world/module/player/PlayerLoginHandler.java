@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.player;
+package com.github.mayconr.juoserver.game.world.module.player;
 
 import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
-public class PlayerLoginService {
+public class PlayerLoginHandler {
 
     @Getter
     private final Map<Integer, UOPlayer> onlinePlayers = new ConcurrentHashMap<>();

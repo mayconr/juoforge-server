@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.item;
+package com.github.mayconr.juoserver.game.world.module.item;
 
 import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.model.*;
@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ItemDropService {
+public class ItemDropHandler {
 
     private final EventBus eventBus;
     private final RealmStorage storage;
@@ -129,24 +129,21 @@ public class ItemDropService {
         }
     }
 
-    @RequiredArgsConstructor
-    private static class DroppedItemLocation implements Location {
+    private record DroppedItemLocation(DropItem dropItem) implements Location {
 
-        private final DropItem dropItem;
+            @Override
+            public int getX() {
+                return dropItem.getX();
+            }
 
-        @Override
-        public int getX() {
-            return dropItem.getX();
+            @Override
+            public int getY() {
+                return dropItem.getY();
+            }
+
+            @Override
+            public int getZ() {
+                return dropItem.getZ();
+            }
         }
-
-        @Override
-        public int getY() {
-            return dropItem.getY();
-        }
-
-        @Override
-        public int getZ() {
-            return dropItem.getZ();
-        }
-    }
 }

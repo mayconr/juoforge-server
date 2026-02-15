@@ -21,16 +21,12 @@ import com.github.mayconr.juoserver.game.world.animation.AnimationService;
 import com.github.mayconr.juoserver.game.world.click.DoubleClickService;
 import com.github.mayconr.juoserver.game.world.click.SingleClickService;
 import com.github.mayconr.juoserver.game.world.combat.CombatService;
-import com.github.mayconr.juoserver.game.world.item.ItemCreationService;
-import com.github.mayconr.juoserver.game.world.item.ItemDropService;
-import com.github.mayconr.juoserver.game.world.item.ItemEquipService;
 import com.github.mayconr.juoserver.game.world.message.MessageService;
+import com.github.mayconr.juoserver.game.world.module.item.ItemModule;
+import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
 import com.github.mayconr.juoserver.game.world.mount.MountService;
 import com.github.mayconr.juoserver.game.world.movement.MovementService;
 import com.github.mayconr.juoserver.game.world.npc.NpcService;
-import com.github.mayconr.juoserver.game.world.player.PlayerCreationService;
-import com.github.mayconr.juoserver.game.world.player.PlayerLoginService;
-import com.github.mayconr.juoserver.game.world.player.PlayerRemovalService;
 import com.github.mayconr.juoserver.game.world.skill.SkillService;
 import com.github.mayconr.juoserver.game.world.speech.SpeechService;
 import com.github.mayconr.juoserver.game.world.status.StatusService;
@@ -52,6 +48,10 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class DefaultWorld implements WorldInternal {
 
+    // Modules
+    private final ItemModule itemModule;
+    private final PlayerModule playerModule;
+
     // General Systems
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
@@ -64,20 +64,14 @@ public class DefaultWorld implements WorldInternal {
 
     // Services
     private final MessageService messageService;
-    private final ItemCreationService itemCreationService;
-    private final PlayerCreationService playerCreationService;
     private final UOFileReader fileReader;
     private final AnimationService animationService;
     private final NpcService npcService;
     private final MovementService movementService;
     private final SpeechService speechService;
-    private final ItemEquipService itemEquipService;
-    private final PlayerRemovalService playerRemovalService;
     private final SkillService skillService;
     private final StatusService statusService;
     private final TooltipService tooltipService;
-    private final ItemDropService itemDropService;
-    private final PlayerLoginService playerLoginService;
     private final TargetService targetService;
     private final DoubleClickService doubleClickService;
     private final SingleClickService singleClickService;
@@ -135,7 +129,7 @@ public class DefaultWorld implements WorldInternal {
     public void deleteMobile(UOMobile mobile) {
         switch (mobile) {
             case UONpc npc -> npcService.deleteNpc(npc);
-            case UOPlayer player -> playerRemovalService.deletePlayer(player);
+            case UOPlayer player -> playerModule.deletePlayer(player);
             default -> throw new IllegalStateException("Unexpected value: " + mobile);
         }
     }
@@ -197,7 +191,7 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public UOItem createItemAtLocation(String name, Location location) {
-        return itemCreationService.createItemAtLocation(name, location);
+        return itemModule.createItemAtLocation(name, location);
     }
 
     @Override
@@ -211,22 +205,22 @@ public class DefaultWorld implements WorldInternal {
             throw new IllegalArgumentException("Serial ["+serial+"] is not an item");
         }
         final var item = storage.getItemBySerialId(serial).orElseThrow(()->new IllegalArgumentException("Item ["+serial+"] not found"));
-        itemCreationService.deleteItem(item);
+        itemModule.deleteItem(item);
     }
 
     @Override
     public void deleteItem(UOItem item) {
-        itemCreationService.deleteItem(item);
+        itemModule.deleteItem(item);
     }
 
     @Override
     public void moveItem(UOItem item, Location location) {
-        itemCreationService.moveItem(item, location);
+        itemModule.moveItem(item, location);
     }
 
     @Override
     public UOItem createContainerItem(String name, Container container) {
-        return itemCreationService.createContainerItem(name, container);
+        return itemModule.createContainerItem(name, container);
     }
 
     @Override
@@ -281,12 +275,12 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void equipItem(UOPlayer player, EquipItemRequest equipItem) {
         getItemBySerialId(equipItem.getItemSerialId())
-                .ifPresent(item-> itemEquipService.equipItem(player, item));
+                .ifPresent(item-> itemModule.equipItem(player, item));
     }
 
     @Override
     public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
-        itemEquipService.unequipItem(player, pickedUpItem);
+        itemModule.unequipItem(player, pickedUpItem);
     }
 
     @Override
@@ -320,32 +314,32 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void dropItemOnTheGround(UOPlayer player, DropItem dropItem) {
-        itemDropService.dropItemOnTheGround(player, dropItem);
+        itemModule.dropItemOnTheGround(player, dropItem);
     }
 
     @Override
     public void dropItemInContainer(UOPlayer player, DropItem dropItem) {
-        itemDropService.dropItemInContainer(player, dropItem);
+        itemModule.dropItemInContainer(player, dropItem);
     }
 
     @Override
     public UOItem createEquippedItem(UOMobile mobile, String name) {
-        return itemCreationService.createEquippedItem(mobile, name);
+        return itemModule.createEquippedItem(mobile, name);
     }
 
     @Override
     public void login(UOPlayer player) {
-        playerLoginService.login(player);
+        playerModule.login(player);
     }
 
     @Override
     public void logout(UOPlayer player) {
-        playerLoginService.logout(player);
+        playerModule.logout(player);
     }
 
     @Override
     public CompletableFuture<UOPlayer> createPlayer(CreateCharacter character, Map<Integer, UOCity> cities, UOAccount account) {
-        return playerCreationService.createNewPlayer(character, cities, account);
+        return playerModule.createNewPlayer(character, cities, account);
     }
 
     @Override
@@ -415,7 +409,7 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public List<UOPlayer> getOnlinePlayers() {
-        return new ArrayList<>(playerLoginService.getOnlinePlayers().values());
+        return new ArrayList<>(playerLoginHandler.getOnlinePlayers().values());
     }
 
     @Override

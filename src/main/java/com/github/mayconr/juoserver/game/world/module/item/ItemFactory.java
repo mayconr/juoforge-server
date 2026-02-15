@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.item;
+package com.github.mayconr.juoserver.game.world.module.item;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;

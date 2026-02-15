@@ -45,17 +45,19 @@ import com.github.mayconr.juoserver.game.world.animation.AnimationService;
 import com.github.mayconr.juoserver.game.world.click.DoubleClickService;
 import com.github.mayconr.juoserver.game.world.click.SingleClickService;
 import com.github.mayconr.juoserver.game.world.combat.CombatService;
-import com.github.mayconr.juoserver.game.world.item.ItemCreationService;
-import com.github.mayconr.juoserver.game.world.item.ItemDropService;
-import com.github.mayconr.juoserver.game.world.item.ItemEquipService;
 import com.github.mayconr.juoserver.game.world.message.MessageService;
+import com.github.mayconr.juoserver.game.world.module.item.ItemDropHandler;
+import com.github.mayconr.juoserver.game.world.module.item.ItemEquipHandler;
+import com.github.mayconr.juoserver.game.world.module.item.ItemHandler;
+import com.github.mayconr.juoserver.game.world.module.item.ItemModule;
+import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
 import com.github.mayconr.juoserver.game.world.mount.MountService;
 import com.github.mayconr.juoserver.game.world.movement.MovementService;
 import com.github.mayconr.juoserver.game.world.movement.RangeDetection;
 import com.github.mayconr.juoserver.game.world.npc.NpcService;
-import com.github.mayconr.juoserver.game.world.player.PlayerCreationService;
-import com.github.mayconr.juoserver.game.world.player.PlayerLoginService;
-import com.github.mayconr.juoserver.game.world.player.PlayerRemovalService;
+import com.github.mayconr.juoserver.game.world.module.player.PlayerCreationHandler;
+import com.github.mayconr.juoserver.game.world.module.player.PlayerLoginHandler;
+import com.github.mayconr.juoserver.game.world.module.player.PlayerRemovalHandler;
 import com.github.mayconr.juoserver.game.world.skill.SkillService;
 import com.github.mayconr.juoserver.game.world.speech.SpeechService;
 import com.github.mayconr.juoserver.game.world.status.StatusService;
@@ -271,13 +273,13 @@ public class WorldConfig {
 
         final var serialGenerator = new SerialGenerator(storage);
         final var messageService = new MessageService(eventBus);
-        final var itemService = new ItemCreationService(
+        final var itemHandler = new ItemHandler(
                 serialGenerator,
                 itemTemplateRegistry,
                 storage,
                 eventBus
         );
-        final var playerMobileService = new PlayerCreationService(
+        final var playerCreationHandler = new PlayerCreationHandler(
                 serialGenerator,
                 storage,
                 itemTemplateRegistry,
@@ -295,13 +297,13 @@ public class WorldConfig {
                 eventBus);
         final var movementService = new MovementService(eventBus, storage);
         final var speechService = new SpeechService(eventBus);
-        final var equipItemService = new ItemEquipService(storage, eventBus);
-        final var playerRemovalService = new PlayerRemovalService(storage, eventBus);
+        final var itemEquipHandler = new ItemEquipHandler(storage, eventBus);
+        final var playerRemovalHandler = new PlayerRemovalHandler(storage, eventBus);
         final var skillService = new SkillService(eventBus, storage);
         final var statusService = new StatusService(eventBus, storage);
         final var tooltipService = new TooltipService(eventBus, storage);
-        final var itemDropService = new ItemDropService(eventBus, storage, policyService);
-        final var loginService = new PlayerLoginService(eventBus, storage);
+        final var itemDropHandler = new ItemDropHandler(eventBus, storage, policyService);
+        final var playerLoginHandler = new PlayerLoginHandler(eventBus, storage);
         final var targetService = new TargetService(eventBus);
         final var doubleClickService = new DoubleClickService(eventBus, storage, itemUseService, policyService);
         final var singleClick = new SingleClickService(storage);
@@ -311,8 +313,13 @@ public class WorldConfig {
         final var mountService = new MountService(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
         final var vitalsService = new VitalsService(eventBus, properties);
 
+        // modules
+        var itemModule = new ItemModule(itemHandler, itemDropHandler, itemEquipHandler);
+        var playerModule = new PlayerModule(playerCreationHandler, playerLoginHandler, playerRemovalHandler);
 
         final var world = new DefaultWorld(
+                itemModule,
+                playerModule,
                 serialGenerator,
                 storage,
                 gameLoop,
@@ -322,20 +329,14 @@ public class WorldConfig {
                 economySystem,
                 itemTemplateRegistry,
                 messageService,
-                itemService,
-                playerMobileService,
                 fileReader,
                 animationService,
                 npcService,
                 movementService,
                 speechService,
-                equipItemService,
-                playerRemovalService,
                 skillService,
                 statusService,
                 tooltipService,
-                itemDropService,
-                loginService,
                 targetService,
                 doubleClickService,
                 singleClick,

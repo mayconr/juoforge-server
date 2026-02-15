@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.player;
+package com.github.mayconr.juoserver.game.world.module.player;
 
 import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.game.model.*;
@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.policy.PolicyService;
 import com.github.mayconr.juoserver.game.player.SessionOutbound;
 import com.github.mayconr.juoserver.game.world.MobileFactory;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
-import com.github.mayconr.juoserver.game.world.item.ItemFactory;
+import com.github.mayconr.juoserver.game.world.module.item.ItemFactory;
 import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PlayerCreationService {
+public class PlayerCreationHandler {
 
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;

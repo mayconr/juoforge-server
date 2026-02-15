@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.item;
+package com.github.mayconr.juoserver.game.world.module.item;
 
 import com.github.mayconr.juoserver.game.event.EventBus;
 import com.github.mayconr.juoserver.game.model.*;
@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ItemCreationService {
+public class ItemHandler {
 
     private final SerialGenerator serialGenerator;
     private final ItemTemplateRegistry itemTemplateRegistry;
