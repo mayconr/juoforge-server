@@ -1,6 +1,10 @@
 package com.github.mayconr.juoserver.game.economy;
 
+import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplate;
+
+import java.util.List;
 
 /**
  * Internal contract for accessing regional economic data.
@@ -29,4 +33,5 @@ public interface EconomySystemInternal {
      * @return the calculated price
      */
     double getPrice(ItemTemplate template, String regionName);
+
 }

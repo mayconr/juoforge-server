@@ -259,7 +259,7 @@ public class DefaultPlayerSession implements PlayerSession {
 
             outbound.write(new DrawContainer(container));
             if (!container.getItemsInContainer().isEmpty()) {
-                outbound.write(new AddMultipleItemsToContainer(container, container.getItemsInContainer()));
+                outbound.write(AddMultipleItemsToContainer.ofUOItem(container, container.getItemsInContainer()));
             }
             outbound.flush();
         }
@@ -295,7 +295,9 @@ public class DefaultPlayerSession implements PlayerSession {
             final var restockContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
             //final var buyContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY);
             //final var sellContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_SELL);
-            outbound.write(new AddMultipleItemsToContainer(restockContainer, event.items()));
+
+
+            outbound.write(AddMultipleItemsToContainer.ofStockItem(restockContainer, event.items()));
             outbound.write(new VendorBuyList(restockContainer, event.items()));
             outbound.write(new DrawContainer(vendor.getSerialId(), 0x0030));
             outbound.flush();

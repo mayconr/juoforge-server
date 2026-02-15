@@ -216,9 +216,11 @@ public class WorldConfig {
     public EconomySystem economySystem(ItemTemplateRegistry itemTemplateRegistry) {
         var iron = itemTemplateRegistry.get("iron_ore");
         var gold = itemTemplateRegistry.get("gold_ore");
+        var dull = itemTemplateRegistry.get("dull_copper_ore");
         Map<ItemTemplate, RegionStockEntry> britainEntries = Map.of(
                 iron, new RegionStockEntry(iron, 1000, 0.8, 800),
-                gold, new RegionStockEntry(gold, 200, 1.2, 150)
+                gold, new RegionStockEntry(gold, 200, 1.2, 150),
+                dull, new RegionStockEntry(dull, 300, 1.2, 150)
         );
         Map<String, RegionStockPool> pools = Map.of("province-britannia", new RegionStockPool("province-britannia", britainEntries));
         return new DefaultEconomySystem(pools, new ScarcityBasedPricingStrategy());
@@ -304,7 +306,7 @@ public class WorldConfig {
         final var doubleClickService = new DoubleClickService(eventBus, storage, itemUseService, policyService);
         final var singleClick = new SingleClickService(storage);
         final var combatService = new CombatService(eventBus, combatSystem, storage);
-        final var merchantService = new VendorService(eventBus);
+        final var merchantService = new VendorService(eventBus, serialGenerator);
         final var actionService = new ActionService(eventBus);
         final var mountService = new MountService(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
         final var vitalsService = new VitalsService(eventBus, properties);

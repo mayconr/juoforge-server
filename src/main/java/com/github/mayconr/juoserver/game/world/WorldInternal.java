@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.economy.EconomySystemInternal;
+import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.player.PlayerSession;
 import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistryInternal;
@@ -45,7 +46,7 @@ public interface WorldInternal extends WorldActions, WorldView, MovementInternal
 
     void resolveTarget(UOPlayer player, Target target);
 
-    void sendBuyGump(UOPlayer player, UOMobile vendor, List<UOItem> items);
+    void sendBuyGump(UOPlayer player, UOMobile vendor, List<RegionStockEntry> items);
 
     void handleAction(UOPlayer player, ActionRequest request);
 

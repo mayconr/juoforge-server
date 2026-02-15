@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.economy.EconomySystem;
+import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
 import com.github.mayconr.juoserver.game.economy.RegionStockPool;
 import com.github.mayconr.juoserver.game.economy.StockType;
 import com.github.mayconr.juoserver.game.gameloop.GameLoop;
@@ -95,6 +96,7 @@ public class DefaultWorld implements WorldInternal {
         skillSystem.initialize(this);
         npcService.initialize(this);
         mountService.initialize(this);
+        vendorService.initialize(this);
     }
 
     @Override
@@ -398,7 +400,7 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public void sendBuyGump(UOPlayer player, UOMobile vendor, List<UOItem> items) {
+    public void sendBuyGump(UOPlayer player, UOMobile vendor, List<RegionStockEntry> items) {
         vendorService.sendBuyGump(player, vendor, items);
     }
 
