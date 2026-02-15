@@ -10,7 +10,7 @@ public interface WorldView extends RegionQueryService {
 
     Optional<UOMobile> getMobileBySerialId(int serial);
 
-    List<UOItem> itemsInRange(Location location, int range);
+    List<UOItem> getItemsInRange(Location location, int radius);
 
     List<UOMobile> getMobilesInRange(Location location, int radius);
 

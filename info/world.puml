@@ -1,0 +1,271 @@
+@startuml
+
+' =========================
+' API
+' =========================
+package "API" {
+
+     interface WorldActions {
+            + sendBroadcastMessage(message : String)
+            + createNpc(name : String, location : Location) : UONpc
+            + sendTarget(player : UOPlayer,type : CursorType,consumer : Consumer<TargetResult>)
+            + sendMessage(player : UOPlayer,text : String,options : MessageOptions)
+            + teleport(mobile : UOMobile, location : Location)
+            + deleteMobile(mobile : UOMobile)
+            + sendAnimation(mobile : UOMobile,options : AnimationOptions)
+            + deleteItem(serial : int)
+            + deleteItem(item : UOItem)
+            + moveItem(item : UOItem, location : Location)
+            + createContainerItem(name : String,container : Container) : UOItem
+            + createItemAtLocation(name : String,location : Location) : UOItem
+            + createEquippedItem(mobile : UOMobile,name : String) : UOItem
+            + scheduleTask(task : GameTask)
+            + tryGainSkill(mobile : UOMobile,skillId : int,difficulty : double,context : SkillGainContext)
+            + isInRange(object1 : Location,object2 : Location,radius : int) : boolean
+            + mount(player : UOPlayer, npc : UONpc)
+            + unmount(player : UOPlayer)
+            + sendGump(player : UOPlayer,gumpUI : DeclarativeGumpUI,handler : GumpHandler)
+        }
+    interface WorldView {
+            + getMobileBySerialId(serial : int): Optional<UOMobile>
+            + getItemsInRange(location : Location, radius : int): List<UOItem>
+            + getMobilesInRange(location : Location, radius : int): List<UOMobile>
+            + getItemBySerialId(serial : int): Optional<UOItem>
+            + getContainerBySerialId(serial : int): Optional<Container>
+            + getStatics(x : int, y : int): List<Static>
+            + getStatics(location : Location): List<Static>
+            + getLandTile(x : int, y : int): LandTile
+            + getLandTile(location : Location): LandTile
+            + getOnlinePlayers(): List<UOPlayer>
+        }
+    interface MovementInternal {
+            + move(player : UOPlayer,moveRequest : MoveRequest)
+            + move(player : UOPlayer,location : Location)
+        }
+     interface SpeechInternal {
+            + speech(player : UOPlayer,request : UnicodeSpeachRequest)
+        }
+    interface ItemInternal {
+            + equipItem(player : UOPlayer,equipItem : EquipItemRequest)
+            + unequipItem(player : UOPlayer,pickedUpItem : UnequipItem)
+            + dropItemOnTheGround(player : UOPlayer,dropItem : DropItem)
+            + removeItemFromTheGround(item : UOItem)
+            + dropItemInContainer(player : UOPlayer,dropItem : DropItem)
+        }
+    interface ClickInternal {
+            + doubleClick(player : UOPlayer,doubleClick : DoubleClick)
+            + singleClick(player : UOPlayer,singleClick : SingleClickRequest)
+        }
+    interface SkillInternal {
+            + useSkill(player : UOPlayer,skillId : int)
+            + sendSkillsLock(player : UOPlayer,skills : Collection<SkillValue>)
+        }
+    interface CombatInternal {
+            + toggleWarMode(player : UOPlayer,type : WarModeType)
+            + attack(player : UOPlayer,request : AttackRequest)
+            + regen(mobile : UOMobile, interval : double)
+        }
+    interface EconomySystemInternal {
+            + getStockPool(regionName : String): RegionStockPool
+            + getPrice(template : ItemTemplate,regionName : String) : double
+        }
+     interface ItemTemplateRegistryInternal {
+            + getItemTemplates(stockType : StockType) : List<ItemTemplate>
+        }
+    interface UiInternal {
+        + tooltipRequest(player : UOPlayer, serials : List<Integer>)
+        + resolveTarget(player : UOPlayer, target : Target)
+        + sendBuyGump(player : UOPlayer,vendor : UOMobile,items : List<RegionStockEntry>)
+        + gumpResponse(player : UOPlayer, gumpSelection : GumpSelection)
+        + playerStatusRequested(sendTo : UOPlayer,getPlayerStatus : GetPlayerStatus)
+    }
+    interface SessionInternal {
+        + login(player : UOPlayer)
+        + logout(player : UOPlayer)
+    }
+    interface WorldInternal {
+        + initialize()
+        + loadMobile(serialId : int) : CompletableFuture<UOMobile>
+        + unloadMobile(serialId : int) : CompletableFuture<UOMobile>
+        + loadItem(serialId : int) : CompletableFuture<UOItem>
+        + unloadItem(serialId : int) : CompletableFuture<UOItem>
+        + createPlayer(character : CreateCharacter,cities : Map<Integer, UOCity>,account : UOAccount) : CompletableFuture<UOPlayer>
+        + isMobile(serialId : int) : boolean
+        + loadContainerItems(container : Container): CompletableFuture<List<UOItem>>
+        + skillGained(mobile : UOMobile, value : SkillValue)
+        + handleAction(player : UOPlayer, request : ActionRequest)
+    }
+
+    WorldActions <|-- WorldInternal
+    WorldView <|-- WorldInternal
+    MovementInternal <|-- WorldInternal
+    SpeechInternal <|-- WorldInternal
+    ItemInternal <|-- WorldInternal
+    ClickInternal <|-- WorldInternal
+    SkillInternal <|-- WorldInternal
+    CombatInternal <|-- WorldInternal
+    EconomySystemInternal <|-- WorldInternal
+    ItemTemplateRegistryInternal <|-- WorldInternal
+    UiInternal <|-- WorldInternal
+    SessionInternal <|-- WorldInternal
+}
+
+' =========================
+' WORLD IMPLEMENTATION
+' =========================
+package "World" {
+
+    class DefaultWorld {
+        - serialGenerator : SerialGenerator
+        - storage : RealmStorage
+        - gameLoop : GameLoop
+
+        - skillSystem : SkillSystem
+        - gumpSystem : GumpSystem
+        - regionService : MapRegionService
+        - economySystem : EconomySystem
+        - itemTemplateRegistry : ItemTemplateRegistry
+
+        --
+
+        - messageService : MessageService
+        - itemCreationService : ItemCreationService
+        - playerCreationService : PlayerCreationService
+        - fileReader : UOFileReader
+        - animationService : AnimationService
+        - npcService : NpcService
+        - movementService : MovementService
+        - speechService : SpeechService
+        - itemEquipService : ItemEquipService
+        - playerRemovalService : PlayerRemovalService
+        - skillService : SkillService
+        - statusService : StatusService
+        - tooltipService : TooltipService
+        - itemDropService : ItemDropService
+        - playerLoginService : PlayerLoginService
+        - targetService : TargetService
+        - doubleClickService : DoubleClickService
+        - singleClickService : SingleClickService
+        - combatService : CombatService
+        - vendorService : VendorService
+        - actionService : ActionService
+        - mountService : MountService
+        - vitalsService : VitalsService
+    }
+
+    WorldInternal <|.. DefaultWorld
+}
+
+' =========================
+' CORE INFRASTRUCTURE
+' =========================
+package "Core Infrastructure" {
+    class SerialGenerator
+    class RealmStorage
+    class GameLoop
+    class UOFileReader
+}
+
+' =========================
+' SYSTEMS (Global Mechanics)
+' =========================
+package "Systems" {
+    class SkillSystem
+    class GumpSystem
+    class EconomySystem
+    class MapRegionService
+    class ItemTemplateRegistry
+}
+
+' =========================
+' PLAYER RESPONSIBILITY
+' =========================
+package "Player Domain" {
+    class PlayerCreationService
+    class PlayerRemovalService
+    class PlayerLoginService
+    class StatusService
+    class VitalsService
+}
+
+' =========================
+' ITEM RESPONSIBILITY
+' =========================
+package "Item Domain" {
+    class ItemCreationService
+    class ItemEquipService
+    class ItemDropService
+    class TooltipService
+    class DoubleClickService
+    class SingleClickService
+}
+
+' =========================
+' NPC RESPONSIBILITY
+' =========================
+package "NPC Domain" {
+    class NpcService
+    class VendorService
+}
+
+' =========================
+' COMBAT RESPONSIBILITY
+' =========================
+package "Combat Domain" {
+    class CombatService
+}
+
+' =========================
+' INTERACTION RESPONSIBILITY
+' =========================
+package "Interaction Domain" {
+    class MovementService
+    class SpeechService
+    class TargetService
+    class ActionService
+    class MountService
+    class AnimationService
+    class MessageService
+}
+
+' =========================
+' DEPENDENCIES
+' =========================
+DefaultWorld --> SerialGenerator
+DefaultWorld --> RealmStorage
+DefaultWorld --> GameLoop
+DefaultWorld --> UOFileReader
+
+DefaultWorld --> SkillSystem
+DefaultWorld --> GumpSystem
+DefaultWorld --> EconomySystem
+DefaultWorld --> MapRegionService
+DefaultWorld --> ItemTemplateRegistry
+
+DefaultWorld --> PlayerCreationService
+DefaultWorld --> PlayerRemovalService
+DefaultWorld --> PlayerLoginService
+DefaultWorld --> StatusService
+DefaultWorld --> VitalsService
+
+DefaultWorld --> ItemCreationService
+DefaultWorld --> ItemEquipService
+DefaultWorld --> ItemDropService
+DefaultWorld --> TooltipService
+DefaultWorld --> DoubleClickService
+DefaultWorld --> SingleClickService
+
+DefaultWorld --> NpcService
+DefaultWorld --> VendorService
+
+DefaultWorld --> CombatService
+
+DefaultWorld --> MovementService
+DefaultWorld --> SpeechService
+DefaultWorld --> TargetService
+DefaultWorld --> ActionService
+DefaultWorld --> MountService
+DefaultWorld --> AnimationService
+DefaultWorld --> MessageService
+
+@enduml

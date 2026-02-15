@@ -18,8 +18,6 @@ public interface WorldActions {
 
     void sendMessage(UOPlayer player, String text, MessageOptions options);
 
-    void move(UOMobile mobile, Direction dir);
-
     void teleport(UOMobile mobile, Location location);
 
     void deleteMobile(UOMobile mobile);

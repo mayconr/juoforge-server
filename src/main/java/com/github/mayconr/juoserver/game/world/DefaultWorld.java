@@ -10,7 +10,6 @@ import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.player.PlayerSession;
 import com.github.mayconr.juoserver.game.reader.UOFileReader;
 import com.github.mayconr.juoserver.game.region.MapRegionService;
 import com.github.mayconr.juoserver.game.region.RegionNode;
@@ -123,14 +122,6 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public PlayerSession getPlayerSession(UOMobile mobile) {
-        if (mobile instanceof UOPlayer player) {
-            return null;//playerSessionService.getSession(player);
-        }
-        throw new IllegalArgumentException("Mobile is not a player");
-    }
-
-    @Override
     public List<UOMobile> getMobilesInRange(Location location, int radius) {
         return storage.getMobilesInRange(location, radius);
     }
@@ -167,11 +158,6 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public Optional<UOMobile> getMobileBySerialId(int serial) {
         return storage.getMobileBySerialId(serial);
-    }
-
-    @Override
-    public List<UOItem> itemsInRange(Location location, int range) {
-        return List.of();
     }
 
     @Override
@@ -217,13 +203,6 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void sendAnimation(UOMobile mobile, AnimationOptions options) {
         animationService.sendAnimation(mobile, options);
-    }
-
-    @Override
-    public void move(UOMobile mobile, Direction dir) {
-        if (mobile instanceof UOPlayer player) {
-            // TODO playerSessionService.getSession(player).move();
-        }
     }
 
     @Override

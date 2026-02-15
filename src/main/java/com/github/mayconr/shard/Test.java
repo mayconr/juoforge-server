@@ -161,8 +161,6 @@ public class Test {
     }
 
     public HandlerResult select(Prompt prompt) {
-        final var session = worldInternal.getPlayerSession(prompt.player());
-
         return HandlerResult.CONTINUE;
     }
 
