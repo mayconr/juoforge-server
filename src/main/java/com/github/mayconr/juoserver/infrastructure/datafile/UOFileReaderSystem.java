@@ -18,7 +18,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
-public class UOFileReader {
+public class UOFileReaderSystem {
 
     private final ServerProperties properties;
     private Map map;

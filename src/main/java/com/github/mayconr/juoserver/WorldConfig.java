@@ -2,44 +2,26 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.ai.ollama.OllamaClientChatImpl;
 import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
-import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.gameloop.DefaultGameLoop;
-import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.game.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.player.DefaultSessionManager;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
 import com.github.mayconr.juoserver.game.player.SessionManager;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
-import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
-import com.github.mayconr.juoserver.infrastructure.region.MapRegionService;
-import com.github.mayconr.juoserver.infrastructure.region.MapRegionServiceImpl;
-import com.github.mayconr.juoserver.game.region.command.RegionPrompt;
-import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
-import com.github.mayconr.juoserver.infrastructure.rng.RNG;
-import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
-import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
-import com.github.mayconr.juoserver.game.world.module.item.template.CachedItemTemplateRegistry;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
-import com.github.mayconr.juoserver.game.template.definitions.npc.DefaultNpcTemplateRegistry;
-import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplate;
-import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplateRegistry;
-import com.github.mayconr.juoserver.game.template.definitions.region.RegionTemplate;
-import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseRegistry;
-import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
-import com.github.mayconr.juoserver.game.world.message.MessageService;
+import com.github.mayconr.juoserver.game.world.module.ai.AIModule;
 import com.github.mayconr.juoserver.game.world.module.combat.*;
 import com.github.mayconr.juoserver.game.world.module.economy.*;
 import com.github.mayconr.juoserver.game.world.module.item.ItemDropHandler;
 import com.github.mayconr.juoserver.game.world.module.item.ItemEquipHandler;
 import com.github.mayconr.juoserver.game.world.module.item.ItemHandler;
 import com.github.mayconr.juoserver.game.world.module.item.ItemModule;
+import com.github.mayconr.juoserver.game.world.module.item.template.CachedItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseRegistry;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.world.module.iteraction.InteractionModule;
 import com.github.mayconr.juoserver.game.world.module.iteraction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.world.module.iteraction.animation.AnimationHandler;
@@ -47,6 +29,12 @@ import com.github.mayconr.juoserver.game.world.module.iteraction.movement.Moveme
 import com.github.mayconr.juoserver.game.world.module.iteraction.movement.RangeDetection;
 import com.github.mayconr.juoserver.game.world.module.iteraction.speech.SpeechHandler;
 import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetHandler;
+import com.github.mayconr.juoserver.game.world.module.mobile.MobileModule;
+import com.github.mayconr.juoserver.game.world.module.mobile.MountHandler;
+import com.github.mayconr.juoserver.game.world.module.mobile.npc.NpcHandler;
+import com.github.mayconr.juoserver.game.world.module.mobile.npc.template.DefaultNpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.world.module.mobile.npc.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.world.module.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.module.player.PlayerCreationHandler;
 import com.github.mayconr.juoserver.game.world.module.player.PlayerLoginHandler;
 import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
@@ -57,13 +45,24 @@ import com.github.mayconr.juoserver.game.world.module.skill.SkillModule;
 import com.github.mayconr.juoserver.game.world.module.ui.*;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.DefaultGumpSystem;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpSystem;
-import com.github.mayconr.juoserver.game.world.mount.MountService;
-import com.github.mayconr.juoserver.game.world.npc.NpcService;
-import com.github.mayconr.juoserver.game.world.status.StatusService;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderSystem;
+import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.gameloop.DefaultGameLoop;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
+import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
+import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
+import com.github.mayconr.juoserver.infrastructure.region.MapRegionSystem;
+import com.github.mayconr.juoserver.infrastructure.region.MapRegionSystemImpl;
+import com.github.mayconr.juoserver.infrastructure.region.RegionTemplate;
+import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
+import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.CachedRealmStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
+import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
 import io.netty.channel.group.ChannelGroup;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -189,15 +188,8 @@ public class WorldConfig {
     // =========================================================================
 
     @Bean
-    public MapRegionService mapRegionService(TemplateLoader<RegionTemplate> templateLoader) {
-        return new MapRegionServiceImpl(templateLoader);
-    }
-
-    @Bean
-    public RegionPrompt regionPrompt(EventBus eventBus, WorldInternal world) {
-        var prompt = new RegionPrompt(world);
-        eventBus.register(prompt);
-        return prompt;
+    public MapRegionSystem mapRegionService(TemplateLoader<RegionTemplate> templateLoader) {
+        return new MapRegionSystemImpl(templateLoader);
     }
 
     // =========================================================================
@@ -265,34 +257,14 @@ public class WorldConfig {
             ItemUseService itemUseService,
             CombatSystem combatSystem,
             GumpSystem gumpSystem,
-            MapRegionService regionService,
+            MapRegionSystem regionService,
             EconomySystem economySystem) {
 
         final var serialGenerator = new SerialGenerator(storage);
-        final var messageService = new MessageService(eventBus);
-
-
-        final var fileReader = new UOFileReader(properties);
-
-        final var npcService = new NpcService(
-                npcSessionFactory,
-                npcTemplateRegistry,
-                itemTemplateRegistry,
-                serialGenerator,
-                storage,
-                eventBus);
 
 
 
-
-        final var statusService = new StatusService(eventBus, storage);
-
-
-
-
-
-        final var mountService = new MountService(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
-
+        final var fileReader = new UOFileReaderSystem(properties);
 
         // modules
         final var itemHandler = new ItemHandler(serialGenerator, itemTemplateRegistry, storage, eventBus);
@@ -309,7 +281,9 @@ public class WorldConfig {
         final var doubleClickHandler = new DoubleClickHandler(eventBus, storage, itemUseService, policyService);
         final var singleClickHandler = new SingleClickHandler(storage);
         final var skillUIHandler = new SkillUIHandler(eventBus, storage);
-        var uiModule = new UIModule(tooltipHandler, doubleClickHandler, singleClickHandler, skillUIHandler, gumpSystem);
+        final var messageHandler = new MessageHandler(eventBus);
+        final var statusHandler = new StatusHandler(eventBus, storage);
+        var uiModule = new UIModule(tooltipHandler, doubleClickHandler, singleClickHandler, skillUIHandler, gumpSystem, messageHandler, statusHandler);
 
         final var vitalsService = new VitalsHandler(eventBus, properties);
         final var combatService = new CombatHandler(eventBus, combatSystem, storage);
@@ -325,6 +299,12 @@ public class WorldConfig {
         final var animationService = new AnimationHandler(eventBus);
         final var interactionModule = new InteractionModule(movementHandler, speechHandler,  targetHandler, actionHandler, animationService);
 
+        final var mountHandler = new MountHandler(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
+        final var npcService = new NpcHandler(npcTemplateRegistry, itemTemplateRegistry, serialGenerator, storage, eventBus);
+        final var mobileModule = new MobileModule(mountHandler, npcService);
+
+        final var aiModule = new AIModule();
+
         final var world = new DefaultWorld(
                 itemModule,
                 playerModule,
@@ -333,16 +313,14 @@ public class WorldConfig {
                 skillModule,
                 economyModule,
                 interactionModule,
+                mobileModule,
+                aiModule,
                 serialGenerator,
                 storage,
                 gameLoop,
                 regionService,
                 itemTemplateRegistry,
-                messageService,
-                fileReader,
-                npcService,
-                statusService,
-                mountService
+                fileReader
         );
 
         eventBus.register(MobileMoved.class, new RangeDetection(world, eventBus, properties));

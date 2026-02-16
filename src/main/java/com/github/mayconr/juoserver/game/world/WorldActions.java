@@ -1,16 +1,14 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
-import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
-import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 
 import java.util.function.Consumer;
 
 public interface WorldActions {
-
-    void sendBroadcastMessage(String message);
 
     UONpc createNpc(String name, Location location);
 

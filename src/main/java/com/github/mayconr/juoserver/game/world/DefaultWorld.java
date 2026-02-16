@@ -1,30 +1,28 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
-import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
-import com.github.mayconr.juoserver.infrastructure.region.MapRegionService;
-import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
-import com.github.mayconr.juoserver.game.world.message.MessageService;
+import com.github.mayconr.juoserver.game.world.module.ai.AIModule;
 import com.github.mayconr.juoserver.game.world.module.combat.CombatModule;
 import com.github.mayconr.juoserver.game.world.module.economy.EconomyModule;
 import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
 import com.github.mayconr.juoserver.game.world.module.economy.RegionStockPool;
 import com.github.mayconr.juoserver.game.world.module.economy.StockType;
 import com.github.mayconr.juoserver.game.world.module.item.ItemModule;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.module.iteraction.InteractionModule;
 import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
+import com.github.mayconr.juoserver.game.world.module.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
 import com.github.mayconr.juoserver.game.world.module.skill.SkillModule;
 import com.github.mayconr.juoserver.game.world.module.ui.UIModule;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
-import com.github.mayconr.juoserver.game.world.mount.MountService;
-import com.github.mayconr.juoserver.game.world.npc.NpcService;
-import com.github.mayconr.juoserver.game.world.status.StatusService;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderSystem;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
+import com.github.mayconr.juoserver.infrastructure.region.MapRegionSystem;
+import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
@@ -46,29 +44,22 @@ public class DefaultWorld implements WorldInternal {
     private final SkillModule skillModule;
     private final EconomyModule economyModule;
     private final InteractionModule interactionModule;
+    private final MobileModule mobileModule;
+    private final AIModule aiModule;
 
-    // General Systems
+    // Systems
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
     private final GameLoop gameLoop;
-
-    private final MapRegionService regionService;
+    private final MapRegionSystem regionService;
     private final ItemTemplateRegistry itemTemplateRegistry;
-
-    // Services
-    private final MessageService messageService;
-    private final UOFileReader fileReader;
-    private final NpcService npcService;
-    private final StatusService statusService;
-    private final MountService mountService;
+    private final UOFileReaderSystem fileReader;
 
     @Override
     public void initialize() {
         storage.initialize(serialGenerator::getCurrentItemSerial, serialGenerator::getCurrentMobileSerial);
         serialGenerator.initialize();
         fileReader.loadFiles();
-        npcService.initialize(this);
-        mountService.initialize(this);
     }
 
     @Override
@@ -107,7 +98,7 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void deleteMobile(UOMobile mobile) {
         switch (mobile) {
-            case UONpc npc -> npcService.deleteNpc(npc);
+            case UONpc npc -> mobileModule.deleteNpc(npc);
             case UOPlayer player -> playerModule.deletePlayer(player);
             default -> throw new IllegalStateException("Unexpected value: " + mobile);
         }
@@ -164,11 +155,6 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public void sendBroadcastMessage(String message) {
-        messageService.handleSendBreadcastMessage(message);
-    }
-
-    @Override
     public UOItem createItemAtLocation(String name, Location location) {
         return itemModule.createItemAtLocation(name, location);
     }
@@ -214,7 +200,7 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void sendMessage(UOPlayer player, String text, MessageOptions options) {
-        messageService.sendMessage(player, text, options);
+        uiModule.sendMessage(player, text, options);
     }
 
     @Override
@@ -264,7 +250,7 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public UONpc createNpc(String name, Location location) {
-        return npcService.createNpc(name, location);
+        return mobileModule.createNpc(name, location);
     }
 
     @Override
@@ -275,7 +261,7 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void playerStatusRequested(UOPlayer player, GetPlayerStatus getPlayerStatus) {
         switch (getPlayerStatus.getType()) {
-            case BASIC_STATUS -> statusService.sendStatusGump(player, getPlayerStatus.getSerialId());
+            case BASIC_STATUS -> uiModule.sendStatusGump(player, getPlayerStatus.getSerialId());
             case REQUEST_SKILL -> uiModule.sendSkillGump(player, getPlayerStatus.getSerialId());
             case GOD_CLIENT -> System.out.println("god client");
         }
@@ -360,12 +346,12 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void mount(UOPlayer player, UONpc npc) {
-        mountService.mount(player, npc);
+        mobileModule.mount(player, npc);
     }
 
     @Override
     public void unmount(UOPlayer player) {
-        mountService.unmount(player);
+        mobileModule.unmount(player);
     }
 
     @Override

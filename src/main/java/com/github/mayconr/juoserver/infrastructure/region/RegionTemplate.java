@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.template.definitions.region;
+package com.github.mayconr.juoserver.infrastructure.region;
 
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 

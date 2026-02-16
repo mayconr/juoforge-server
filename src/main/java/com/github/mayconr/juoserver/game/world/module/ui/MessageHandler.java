@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.message;
+package com.github.mayconr.juoserver.game.world.module.ui;
 
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.MessageOptions;
@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.event.MessageSent;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class MessageService {
+public class MessageHandler {
 
     private final EventBus eventBus;
 

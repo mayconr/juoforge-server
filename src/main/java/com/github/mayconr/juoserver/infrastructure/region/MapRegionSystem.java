@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.region;
 
-public interface MapRegionService extends RegionQueryService {
+public interface MapRegionSystem extends RegionQueryService {
 
 }
 

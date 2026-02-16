@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.world.status;
+package com.github.mayconr.juoserver.game.world.module.ui;
 
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class StatusService {
+public class StatusHandler {
 
     private final EventBus eventBus;
     private final RealmStorage storage;

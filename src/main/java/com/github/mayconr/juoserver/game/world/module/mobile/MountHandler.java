@@ -1,36 +1,29 @@
-package com.github.mayconr.juoserver.game.world.mount;
+package com.github.mayconr.juoserver.game.world.module.mobile;
 
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
 import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.game.model.policy.Mount;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
-import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.game.world.module.item.ItemFactory;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MountService {
+public class MountHandler {
 
     private final EventBus eventBus;
     private final RealmStorage storage;
     private final PolicyService policyService;
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final SerialGenerator serialGenerator;
-
-    private WorldInternal world;
-
-    public void initialize(WorldInternal world) {
-        this.world = world;
-    }
 
     public void mount(UOPlayer player, UONpc npc) {
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
@@ -50,7 +43,7 @@ public class MountService {
             player.setLocation(npc);
             player.setDirection(npc.getDirection());
 
-            world.deleteMobile(npc);
+            //world.deleteMobile(npc);
 
             eventBus.publish(new ItemEquipped(player, item));
         } else {
@@ -75,8 +68,8 @@ public class MountService {
         player.unequipItem(item);
         storage.deleteItem(item);
 
-        final var npc = world.createNpc(npcName, player);
-        npc.setDirection(player.getDirection());
+        //final var npc = world.createNpc(npcName, player);
+        //npc.setDirection(player.getDirection());
 
         eventBus.publish(new ItemUnequipped(player, item));
     }

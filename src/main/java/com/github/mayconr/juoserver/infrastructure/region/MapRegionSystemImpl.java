@@ -2,7 +2,6 @@ package com.github.mayconr.juoserver.infrastructure.region;
 
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
-import com.github.mayconr.juoserver.game.template.definitions.region.RegionTemplate;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Comparator;
@@ -10,10 +9,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class MapRegionServiceImpl implements MapRegionService{
+public class MapRegionSystemImpl implements MapRegionSystem {
     private final Map<String, RegionNode> regions;
 
-    public MapRegionServiceImpl(TemplateLoader<RegionTemplate> templateLoader) {
+    public MapRegionSystemImpl(TemplateLoader<RegionTemplate> templateLoader) {
         this.regions = new RegionTemplateMapper().convert(templateLoader);
     }
 

@@ -2,8 +2,6 @@ package com.github.mayconr.juoserver.infrastructure.region;
 
 import com.github.mayconr.juoserver.game.model.RegionType;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
-import com.github.mayconr.juoserver.game.template.definitions.region.AreaTemplate;
-import com.github.mayconr.juoserver.game.template.definitions.region.RegionTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
