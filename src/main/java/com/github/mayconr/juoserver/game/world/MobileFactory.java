@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.economy.VendorNpcRole;
+import com.github.mayconr.juoserver.game.world.module.economy.VendorNpcRole;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplate;
 

@@ -1,6 +1,6 @@
 package com.github.mayconr.shard.actions;
 
-import com.github.mayconr.juoserver.game.event.EventHandler;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
 
 public class QuestButtonPressed implements EventHandler<com.github.mayconr.juoserver.game.model.event.QuestButtonPressed> {
     @Override

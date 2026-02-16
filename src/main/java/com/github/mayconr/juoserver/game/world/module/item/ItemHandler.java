@@ -1,10 +1,10 @@
 package com.github.mayconr.juoserver.game.world.module.item;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
-import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

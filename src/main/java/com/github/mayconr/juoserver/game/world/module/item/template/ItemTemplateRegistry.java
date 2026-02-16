@@ -1,0 +1,13 @@
+package com.github.mayconr.juoserver.game.world.module.item.template;
+
+import java.util.List;
+
+public interface ItemTemplateRegistry extends ItemTemplateRegistryInternal{
+
+    ItemTemplate get(String name);
+
+    List<ItemTemplate> get(int modelId);
+
+    ItemTemplate getMountByNpcName(String name);
+
+}

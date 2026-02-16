@@ -24,4 +24,5 @@ public interface ItemCommands {
     void equipItem(UOPlayer player, UOItem item);
 
     void unequipItem(UOPlayer player, UnequipItem pickedUpItem);
+
 }

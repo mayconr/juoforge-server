@@ -1,12 +1,12 @@
 package com.github.mayconr.shard.skills.crafting.lumberjacking;
 
-import com.github.mayconr.juoserver.game.trigger.item.ItemUseContext;
-import com.github.mayconr.juoserver.game.trigger.item.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseContext;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseTrigger;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.Static;
-import com.github.mayconr.juoserver.game.world.target.TargetResult;
+import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
 import com.github.mayconr.juoserver.game.model.TargetType;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.game.world.WorldView;

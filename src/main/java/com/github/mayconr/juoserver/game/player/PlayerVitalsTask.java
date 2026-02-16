@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.player;
 
-import com.github.mayconr.juoserver.game.gameloop.IntervalGameTask;
+import com.github.mayconr.juoserver.infrastructure.gameloop.IntervalGameTask;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 

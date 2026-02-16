@@ -2,8 +2,7 @@ package com.github.mayconr.juoserver.game.model.event;
 
 import java.util.ArrayList;
 
-import com.github.mayconr.juoserver.game.event.GameEvent;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 
 public record Prompt(UOPlayer player, String name, String[] arguments) implements GameEvent {

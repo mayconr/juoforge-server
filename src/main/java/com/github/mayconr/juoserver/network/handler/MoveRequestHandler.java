@@ -18,6 +18,6 @@ public class MoveRequestHandler extends PlayerSessionChannelInboundHandler<MoveR
 
     @Override
     protected void channelRead0(PlayerSession session, SessionOutbound outbound, MoveRequest msg) {
-        worldInternal.move((UOPlayer) session.getPlayer(), msg);
+        worldInternal.move(session.getPlayer(), msg);
     }
 }

@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.npc;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
-import com.github.mayconr.juoserver.game.gameloop.GameTask;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.npc.ai.NpcAiFactory;
 import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfileFactory;

@@ -1,9 +1,8 @@
 package com.github.mayconr.shard.skills.crafting.mining;
 
-import com.github.mayconr.juoserver.game.gameloop.GameTask;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.WorldActions;
-import com.github.mayconr.juoserver.game.skill.SkillSystem;
 import com.github.mayconr.shard.skills.Skills;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ public class MiningSwingTask implements GameTask {
     private static final int SWING_INTERVAL_TICKS = 30; // ex: 1s se tick=100ms
 
     private final WorldActions worldActions;
-    private final SkillSystem skillSystem;
     private final ResourceRoller resourceRoller;
     private final UOPlayer player;
     private long nextTick = 0;
@@ -38,8 +36,7 @@ public class MiningSwingTask implements GameTask {
             options = AnimationOptions.simpleForward(AnimationType.ATTACK_WITH_SWORD_SIDE, 20);
         }
         worldActions.sendAnimation(player, options);
-
-        skillSystem.tryGain(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
+        worldActions.tryGain(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
 
         final var skill = player.getSkills().get(Skills.MINING.getId());
         final var ore = resourceRoller.rollResource(OreType.values(), skill.getValue());

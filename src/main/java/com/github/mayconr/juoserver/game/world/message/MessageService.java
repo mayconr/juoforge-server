@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.world.message;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.MessageOptions;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.MessageSent;

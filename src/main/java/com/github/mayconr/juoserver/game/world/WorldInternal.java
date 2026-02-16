@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.economy.EconomySystemInternal;
+import com.github.mayconr.juoserver.game.world.module.economy.EconomySystemInternal;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistryInternal;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistryInternal;
 import com.github.mayconr.juoserver.network.packet.ActionRequest;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 
@@ -28,8 +28,6 @@ public interface WorldInternal extends WorldActions, WorldView, MovementInternal
     boolean isMobile(int serialId);
 
     CompletableFuture<List<UOItem>> loadContainerItems(Container container);
-
-    void skillGained(UOMobile mobile, SkillValue value);
 
     void handleAction(UOPlayer player, ActionRequest request);
 

@@ -1,40 +1,30 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.economy.EconomySystem;
-import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
-import com.github.mayconr.juoserver.game.economy.RegionStockPool;
-import com.github.mayconr.juoserver.game.economy.StockType;
-import com.github.mayconr.juoserver.game.gameloop.GameLoop;
-import com.github.mayconr.juoserver.game.gameloop.GameTask;
-import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
-import com.github.mayconr.juoserver.game.gump.GumpHandler;
-import com.github.mayconr.juoserver.game.gump.GumpSystem;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.reader.UOFileReader;
-import com.github.mayconr.juoserver.game.region.MapRegionService;
-import com.github.mayconr.juoserver.game.region.RegionNode;
-import com.github.mayconr.juoserver.game.skill.SkillSystem;
-import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplate;
-import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
-import com.github.mayconr.juoserver.game.world.action.ActionService;
-import com.github.mayconr.juoserver.game.world.animation.AnimationService;
-import com.github.mayconr.juoserver.game.world.click.DoubleClickService;
-import com.github.mayconr.juoserver.game.world.click.SingleClickService;
-import com.github.mayconr.juoserver.game.world.combat.CombatService;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
+import com.github.mayconr.juoserver.infrastructure.region.MapRegionService;
+import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.message.MessageService;
+import com.github.mayconr.juoserver.game.world.module.combat.CombatModule;
+import com.github.mayconr.juoserver.game.world.module.economy.EconomyModule;
+import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
+import com.github.mayconr.juoserver.game.world.module.economy.RegionStockPool;
+import com.github.mayconr.juoserver.game.world.module.economy.StockType;
 import com.github.mayconr.juoserver.game.world.module.item.ItemModule;
+import com.github.mayconr.juoserver.game.world.module.iteraction.InteractionModule;
+import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
 import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
+import com.github.mayconr.juoserver.game.world.module.skill.SkillModule;
+import com.github.mayconr.juoserver.game.world.module.ui.UIModule;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.world.mount.MountService;
-import com.github.mayconr.juoserver.game.world.movement.MovementService;
 import com.github.mayconr.juoserver.game.world.npc.NpcService;
-import com.github.mayconr.juoserver.game.world.skill.SkillService;
-import com.github.mayconr.juoserver.game.world.speech.SpeechService;
 import com.github.mayconr.juoserver.game.world.status.StatusService;
-import com.github.mayconr.juoserver.game.world.target.TargetResult;
-import com.github.mayconr.juoserver.game.world.target.TargetService;
-import com.github.mayconr.juoserver.game.world.tooltip.TooltipService;
-import com.github.mayconr.juoserver.game.world.vendor.VendorService;
-import com.github.mayconr.juoserver.game.world.vitals.VitalsService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
@@ -51,45 +41,34 @@ public class DefaultWorld implements WorldInternal {
     // Modules
     private final ItemModule itemModule;
     private final PlayerModule playerModule;
+    private final UIModule uiModule;
+    private final CombatModule combatModule;
+    private final SkillModule skillModule;
+    private final EconomyModule economyModule;
+    private final InteractionModule interactionModule;
 
     // General Systems
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
     private final GameLoop gameLoop;
-    private final SkillSystem skillSystem;
-    private final GumpSystem gumpSystem;
+
     private final MapRegionService regionService;
-    private final EconomySystem economySystem;
     private final ItemTemplateRegistry itemTemplateRegistry;
 
     // Services
     private final MessageService messageService;
     private final UOFileReader fileReader;
-    private final AnimationService animationService;
     private final NpcService npcService;
-    private final MovementService movementService;
-    private final SpeechService speechService;
-    private final SkillService skillService;
     private final StatusService statusService;
-    private final TooltipService tooltipService;
-    private final TargetService targetService;
-    private final DoubleClickService doubleClickService;
-    private final SingleClickService singleClickService;
-    private final CombatService combatService;
-    private final VendorService vendorService;
-    private final ActionService actionService;
     private final MountService mountService;
-    private final VitalsService vitalsService;
 
     @Override
     public void initialize() {
         storage.initialize(serialGenerator::getCurrentItemSerial, serialGenerator::getCurrentMobileSerial);
         serialGenerator.initialize();
         fileReader.loadFiles();
-        skillSystem.initialize(this);
         npcService.initialize(this);
         mountService.initialize(this);
-        vendorService.initialize(this);
     }
 
     @Override
@@ -196,7 +175,7 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void sendAnimation(UOMobile mobile, AnimationOptions options) {
-        animationService.sendAnimation(mobile, options);
+        interactionModule.sendAnimation(mobile, options);
     }
 
     @Override
@@ -225,12 +204,12 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void sendTarget(UOPlayer player, CursorType type, Consumer<TargetResult> consumer) {
-        targetService.sendTarget(player, type, consumer);
+        interactionModule.sendTarget(player, type, consumer);
     }
 
     @Override
     public void resolveTarget(UOPlayer player, Target target) {
-        targetService.resolveTarget(player, target);
+        interactionModule.resolveTarget(player, target);
     }
 
     @Override
@@ -245,31 +224,31 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void tryGainSkill(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
-        skillSystem.tryGain(mobile, skillId, difficulty, context);
+        skillModule.tryGain(mobile, skillId, difficulty, context);
     }
 
     // REFACTORED
 
     @Override
     public void move(UOPlayer player, MoveRequest moveRequest) {
-        movementService.move(player, moveRequest);
+        interactionModule.move(player, moveRequest);
     }
 
     @Override
     public void teleport(UOMobile mobile, Location location) {
         if (mobile instanceof UOPlayer player) {
-            movementService.move(player, location);
+            interactionModule.move(player, location);
         }
     }
 
     @Override
     public void move(UOPlayer player, Location location) {
-        movementService.move(player, location);
+        interactionModule.move(player, location);
     }
 
     @Override
     public void speech(UOPlayer player, UnicodeSpeachRequest request) {
-        speechService.speech(player, request);
+        interactionModule.speech(player, request);
     }
 
     @Override
@@ -294,22 +273,17 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public void skillGained(UOMobile mobile, SkillValue value) {
-        skillService.skillGained(mobile, value);
-    }
-
-    @Override
     public void playerStatusRequested(UOPlayer player, GetPlayerStatus getPlayerStatus) {
         switch (getPlayerStatus.getType()) {
             case BASIC_STATUS -> statusService.sendStatusGump(player, getPlayerStatus.getSerialId());
-            case REQUEST_SKILL -> skillService.sendSkillGump(player, getPlayerStatus.getSerialId());
+            case REQUEST_SKILL -> uiModule.sendSkillGump(player, getPlayerStatus.getSerialId());
             case GOD_CLIENT -> System.out.println("god client");
         }
     }
 
     @Override
     public void tooltipRequest(UOPlayer player, List<Integer> serials) {
-        tooltipService.tooltipRequest(player, serials);
+        uiModule.tooltipRequest(player, serials);
     }
 
     @Override
@@ -344,42 +318,44 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void doubleClick(UOPlayer player, DoubleClick doubleClick) {
-        doubleClickService.doubleClick(player, doubleClick);
+        uiModule.doubleClick(player, doubleClick);
     }
 
     @Override
     public void singleClick(UOPlayer player, SingleClickRequest singleClick) {
-        singleClickService.singleClick(player, singleClick);
+        uiModule.singleClick(player, singleClick);
     }
 
     @Override
     public void useSkill(UOPlayer player, int skillId) {
-        skillService.useSkill(player, skillId);
+        skillModule.useSkill(player, skillId);
     }
 
     @Override
     public void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills) {
-        skillService.sendSkillsLock(player, skills);
+        skillModule.sendSkillsLock(player, skills);
     }
 
     @Override
     public void toggleWarMode(UOPlayer player, WarModeType type) {
-        combatService.toggleWarMode(player, type);
+        combatModule.toggleWarMode(player, type);
     }
 
     @Override
     public void attack(UOPlayer player, AttackRequest request) {
-        combatService.attack(player, request);
+        combatModule.attack(player, request);
     }
 
     @Override
     public void sendBuyGump(UOPlayer player, UOMobile vendor, List<RegionStockEntry> items) {
-        vendorService.sendBuyGump(player, vendor, items);
+        var region = regionService.resolveRegion(player)
+                .orElseThrow(() -> new RuntimeException("Region not found"));
+        economyModule.sendBuyGump(player, vendor, region, items);
     }
 
     @Override
     public void handleAction(UOPlayer player, ActionRequest request) {
-        actionService.handleAction(player, request);
+        interactionModule.handleAction(player, request);
     }
 
     @Override
@@ -394,22 +370,22 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public void regen(UOMobile mobile, double interval) {
-        vitalsService.regen(mobile, interval);
+        combatModule.regen(mobile, interval);
     }
 
     @Override
     public void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler) {
-        gumpSystem.send(player, gumpUI, handler);
+        uiModule.sendGump(player, gumpUI, handler);
     }
 
     @Override
     public void gumpResponse(UOPlayer player, GumpSelection gumpSelection) {
-        gumpSystem.onGumpSelection(player, gumpSelection);
+        uiModule.onGumpSelection(player, gumpSelection);
     }
 
     @Override
     public List<UOPlayer> getOnlinePlayers() {
-        return new ArrayList<>(playerLoginHandler.getOnlinePlayers().values());
+        return Collections.emptyList();
     }
 
     @Override
@@ -429,7 +405,12 @@ public class DefaultWorld implements WorldInternal {
 
     @Override
     public RegionStockPool getStockPool(String regionName) {
-        return economySystem.getStockPool(regionName);
+        return economyModule.getStockPool(regionName);
+    }
+
+    @Override
+    public double getPrice(ItemTemplate template, String regionName) {
+        return economyModule.getPrice(template, regionName);
     }
 
     @Override
@@ -438,7 +419,7 @@ public class DefaultWorld implements WorldInternal {
     }
 
     @Override
-    public double getPrice(ItemTemplate template, String regionName) {
-        return economySystem.getPrice(template, regionName);
+    public void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
+        skillModule.tryGain(mobile, skillId, difficulty, context);
     }
 }

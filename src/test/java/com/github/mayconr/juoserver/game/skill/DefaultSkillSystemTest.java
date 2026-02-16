@@ -2,12 +2,14 @@ package com.github.mayconr.juoserver.game.skill;
 
 import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.game.TestFactory;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.SkillContainer;
 import com.github.mayconr.juoserver.game.model.SkillValue;
-import com.github.mayconr.juoserver.game.rng.AlwaysFailRNG;
-import com.github.mayconr.juoserver.game.rng.AlwaysSuccessRNG;
-import com.github.mayconr.juoserver.game.rng.SeededRNG;
+import com.github.mayconr.juoserver.infrastructure.rng.AlwaysFailRNG;
+import com.github.mayconr.juoserver.infrastructure.rng.AlwaysSuccessRNG;
+import com.github.mayconr.juoserver.infrastructure.rng.SeededRNG;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.module.skill.DefaultSkillSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultSkillSystemTest {
@@ -26,6 +29,8 @@ class DefaultSkillSystemTest {
     private ServerProperties properties;
     @Mock
     private WorldInternal worldInternal;
+    @Mock
+    private EventBus eventBus;
 
     @BeforeEach
     void setUp() {
@@ -40,8 +45,7 @@ class DefaultSkillSystemTest {
 
     @Test
     void shouldNotGainWhenRngFails() {
-        var system = new DefaultSkillSystem(properties, new AlwaysFailRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysFailRNG(), eventBus);
 
         var mobile = TestFactory.createTestMobile();
         var mining = SkillValue.of(TEST_SKILL_ID, 0, 100);
@@ -54,8 +58,7 @@ class DefaultSkillSystemTest {
 
     @Test
     void shouldGainSkillWhenRngSucceeds() {
-        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG(), eventBus);
 
         var mobile = TestFactory.createTestMobile();
         var mining = SkillValue.of(TEST_SKILL_ID, 0, 100);
@@ -68,8 +71,7 @@ class DefaultSkillSystemTest {
 
     @Test
     void shouldReduceGainAsSkillApproachesCap() {
-        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG(), eventBus);
 
         var mobile = TestFactory.createTestMobile();
         var mining = SkillValue.of(TEST_SKILL_ID, 40, 50);
@@ -84,8 +86,7 @@ class DefaultSkillSystemTest {
 
     @Test
     void shouldClampGainNearCap() {
-        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG(), eventBus);
 
         var mobile = TestFactory.createTestMobile();
         var mining = SkillValue.of(TEST_SKILL_ID, 49.9, 50);
@@ -100,8 +101,7 @@ class DefaultSkillSystemTest {
 
     @Test
     void shouldNeverExceedSkillCap() {
-        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG(), eventBus);
 
         var mobile = TestFactory.createTestMobile();
         var mining = SkillValue.of(TEST_SKILL_ID, 49.9, 50);
@@ -114,8 +114,7 @@ class DefaultSkillSystemTest {
 
     @Test
     void shouldClampExactlyAtCapWhenOverflowing() {
-        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG(),eventBus);
 
         var mobile = TestFactory.createTestMobile();
         var mining = SkillValue.of(TEST_SKILL_ID, 49.99, 50);
@@ -129,8 +128,8 @@ class DefaultSkillSystemTest {
 
     @Test
     void shouldSimulateMultipleSwingsAndApproachCap() {
-        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG(), eventBus);
+
         var skill = SkillValue.of(TEST_SKILL_ID, 0, 50);
         var mobile = TestFactory.createTestMobile(List.of(skill));
 
@@ -165,8 +164,8 @@ class DefaultSkillSystemTest {
 
         // low difficult
         var lowRng = new SeededRNG(123L);
-        var lowSystem = new DefaultSkillSystem(properties, lowRng);
-        lowSystem.initialize(worldInternal);
+        var lowSystem = new DefaultSkillSystem(properties, lowRng, eventBus);
+
         var lowSkill = SkillValue.of(TEST_SKILL_ID, 0, 50);
         var lowMobile = TestFactory.createTestMobile(List.of(lowSkill));
 
@@ -176,8 +175,8 @@ class DefaultSkillSystemTest {
 
         // high difficult
         var highRng = new SeededRNG(123L);
-        var highSystem = new DefaultSkillSystem(properties, highRng);
-        highSystem.initialize(worldInternal);
+        var highSystem = new DefaultSkillSystem(properties, highRng, eventBus);
+
         var highSkill = SkillValue.of(TEST_SKILL_ID, 0, 50);
         var highMobile = TestFactory.createTestMobile(List.of(highSkill));
 
@@ -200,8 +199,7 @@ class DefaultSkillSystemTest {
 
         var properties = new ServerProperties(null, null, skillsProps, null, null, null);
 
-        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG());
-        system.initialize(worldInternal);
+        var system = new DefaultSkillSystem(properties, new AlwaysSuccessRNG(), eventBus);
 
         // skill 0 → 100 (GM)
         var skill = SkillValue.of(TEST_SKILL_ID, 0.0, 100.0);

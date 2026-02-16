@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.npc;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
-import com.github.mayconr.juoserver.game.event.EventHandler;
-import com.github.mayconr.juoserver.game.event.GameEvent;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.TextType;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;

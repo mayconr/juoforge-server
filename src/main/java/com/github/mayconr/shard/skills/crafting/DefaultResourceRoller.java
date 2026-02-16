@@ -1,6 +1,6 @@
 package com.github.mayconr.shard.skills.crafting;
 
-import com.github.mayconr.juoserver.game.rng.RNG;
+import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;

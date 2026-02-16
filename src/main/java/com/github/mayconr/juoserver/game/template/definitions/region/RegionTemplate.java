@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.template.definitions.region;
 
-import com.github.mayconr.juoserver.game.template.BaseTemplate;
+import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 
 import java.util.Map;
 

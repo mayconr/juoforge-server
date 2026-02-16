@@ -1,12 +1,12 @@
 package com.github.mayconr.juoserver.game.world.module.item;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.ItemDroppedInContainer;
 import com.github.mayconr.juoserver.game.model.event.ItemDroppedOnTheGround;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked;
 import com.github.mayconr.juoserver.game.model.policy.DropItemGroundPolicy;
-import com.github.mayconr.juoserver.game.policy.PolicyService;
+import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.RequiredArgsConstructor;

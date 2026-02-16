@@ -1,17 +1,16 @@
 package com.github.mayconr.shard;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
-import com.github.mayconr.juoserver.game.event.HandlerResult;
-import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
-import com.github.mayconr.juoserver.game.gump.GumpSystem;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.HandlerResult;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.model.policy.DropItemGroundPolicy;
-import com.github.mayconr.juoserver.game.policy.PolicyRegistry;
-import com.github.mayconr.juoserver.game.policy.PolicyResult;
-import com.github.mayconr.juoserver.game.trigger.item.ItemUseRegistry;
+import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
+import com.github.mayconr.juoserver.infrastructure.policy.PolicyResult;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseRegistry;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.shard.actions.GuildButton;
 import com.github.mayconr.shard.actions.HelpRequested;
 import com.github.mayconr.shard.skills.Anatomy;
@@ -21,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI.*;
+import static com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI.*;
 
 @Component
 @Slf4j
@@ -29,7 +28,6 @@ public class Test {
 
     @Autowired private EventBus eventBus;
     @Autowired private WorldInternal worldInternal;
-    @Autowired private GumpSystem gumpSystem;
     @Autowired private PolicyRegistry policyRegistry;
     @Autowired private ItemUseRegistry itemUseRegistry;
 
@@ -128,7 +126,7 @@ public class Test {
                                                 InlineField(Label("Name"), TextField(1, 50)),
                                                 Button(2450, 2451, 2)))));
 
-        gumpSystem.send(
+        worldInternal.sendGump(
                 prompt.player(),
                 gump,
                 (ctx, selection) -> {

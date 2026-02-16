@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.region.RegionQueryService;
+import com.github.mayconr.juoserver.infrastructure.region.RegionQueryService;
 
 import java.util.List;
 import java.util.Optional;

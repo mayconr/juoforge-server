@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.player;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.handler.AttributeKeys;

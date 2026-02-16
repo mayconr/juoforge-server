@@ -1,11 +1,11 @@
 package com.github.mayconr.juoserver.standard.npc.vendor;
 
-import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
-import com.github.mayconr.juoserver.game.economy.StockType;
+import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
+import com.github.mayconr.juoserver.game.world.module.economy.StockType;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.npc.NpcContext;
 import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
-import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplate;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

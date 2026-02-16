@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.world.npc;
 
-import com.github.mayconr.juoserver.game.event.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UONpc;
@@ -12,7 +12,7 @@ import com.github.mayconr.juoserver.game.world.MobileFactory;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.game.world.module.item.ItemFactory;
-import com.github.mayconr.juoserver.game.template.definitions.item.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.template.definitions.npc.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;

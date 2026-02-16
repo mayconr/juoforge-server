@@ -1,6 +1,6 @@
 package com.github.mayconr.shard.skills;
 
-import com.github.mayconr.juoserver.game.event.EventHandler;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
 import com.github.mayconr.juoserver.game.model.event.SkillLocked;
 
 public class SkillLockedHandler implements EventHandler<SkillLocked> {

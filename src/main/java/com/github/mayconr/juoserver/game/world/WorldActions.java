@@ -1,10 +1,10 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.gameloop.GameTask;
-import com.github.mayconr.juoserver.game.gump.DeclarativeGumpUI;
-import com.github.mayconr.juoserver.game.gump.GumpHandler;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.world.target.TargetResult;
+import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
 
 import java.util.function.Consumer;
 
@@ -47,4 +47,6 @@ public interface WorldActions {
     void unmount(UOPlayer player);
 
     void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler);
+
+    void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context);
 }

@@ -1,6 +1,6 @@
 package com.github.mayconr.shard.skills.crafting.lumberjacking;
 
-import com.github.mayconr.juoserver.game.gameloop.GameTask;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.game.model.AnimationOptions;
 import com.github.mayconr.juoserver.game.model.AnimationType;
 import com.github.mayconr.juoserver.game.model.SkillGainContext;

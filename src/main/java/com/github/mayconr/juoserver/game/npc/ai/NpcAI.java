@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.npc.ai;
 
-import com.github.mayconr.juoserver.game.event.GameEvent;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
 import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
 import com.github.mayconr.juoserver.game.npc.NpcContext;

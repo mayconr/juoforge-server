@@ -1,7 +1,7 @@
 package com.github.mayconr.shard;
 
-import com.github.mayconr.juoserver.game.trigger.item.ItemUseRegistry;
-import com.github.mayconr.juoserver.game.trigger.item.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseRegistry;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseTrigger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.SmartInitializingSingleton;
