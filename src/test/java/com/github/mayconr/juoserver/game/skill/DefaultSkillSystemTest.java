@@ -9,7 +9,6 @@ import com.github.mayconr.juoserver.infrastructure.rng.AlwaysFailRNG;
 import com.github.mayconr.juoserver.infrastructure.rng.AlwaysSuccessRNG;
 import com.github.mayconr.juoserver.infrastructure.rng.SeededRNG;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
-import com.github.mayconr.juoserver.game.world.module.skill.DefaultSkillSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

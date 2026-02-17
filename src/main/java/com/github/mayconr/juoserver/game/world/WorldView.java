@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
-import com.github.mayconr.juoserver.game.world.module.economy.StockType;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.StockType;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.region.RegionQueryService;
 

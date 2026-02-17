@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.model.event;
 
-import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;

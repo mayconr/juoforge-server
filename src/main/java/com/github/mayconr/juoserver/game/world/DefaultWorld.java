@@ -1,27 +1,26 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.ServerProperties;
+import com.github.mayconr.juoserver.game.ai.AIModule;
+import com.github.mayconr.juoserver.game.combat.CombatModule;
+import com.github.mayconr.juoserver.game.economy.EconomyModule;
+import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.RegionStockPool;
+import com.github.mayconr.juoserver.game.economy.StockType;
+import com.github.mayconr.juoserver.game.interaction.InteractionModule;
+import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
+import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.mobile.MobileModule;
+import com.github.mayconr.juoserver.game.mobile.movement.RangeDetection;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.MobileMoved;
-import com.github.mayconr.juoserver.game.model.event.NpcCreated;
-import com.github.mayconr.juoserver.game.world.module.ai.AIModule;
-import com.github.mayconr.juoserver.game.world.module.combat.CombatModule;
-import com.github.mayconr.juoserver.game.world.module.economy.EconomyModule;
-import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
-import com.github.mayconr.juoserver.game.world.module.economy.RegionStockPool;
-import com.github.mayconr.juoserver.game.world.module.economy.StockType;
-import com.github.mayconr.juoserver.game.world.module.item.ItemModule;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
-import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
-import com.github.mayconr.juoserver.game.world.module.iteraction.InteractionModule;
-import com.github.mayconr.juoserver.game.world.module.iteraction.movement.RangeDetection;
-import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
-import com.github.mayconr.juoserver.game.world.module.mobile.MobileModule;
+import com.github.mayconr.juoserver.game.model.event.*;
+import com.github.mayconr.juoserver.game.skill.SkillModule;
+import com.github.mayconr.juoserver.game.ui.UIModule;
+import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
+import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
-import com.github.mayconr.juoserver.game.world.module.skill.SkillModule;
-import com.github.mayconr.juoserver.game.world.module.ui.UIModule;
-import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
-import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderSystem;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
@@ -75,14 +74,52 @@ public class DefaultWorld implements WorldInternal, World {
         fileReader.loadFiles();
 
         eventBus.register(NpcCreated.class, this::handleNpcCreated);
+        eventBus.register(PlayerSessionCreated.class, this::handleSessionCreated);
+        eventBus.register(PlayerSessionClosed.class, this::handleSessionClosed);
         eventBus.register(MobileMoved.class, new RangeDetection(this, eventBus, properties));
+        eventBus.register(NpcDeleted.class, this::handleMobileKilled);
     }
 
+    /**
+     * Handles the NPC creation event.
+     *
+     * <p>Attaches an AI instance to the newly created NPC using the aiModule.
+     * If an AI is successfully created, it is immediately activated via
+     * {@code wakeup} with the current context.</p>
+     *
+     * @param npcCreated event containing the newly created NPC
+     */
     private void handleNpcCreated(NpcCreated npcCreated) {
         var ai = aiModule.attach(npcCreated.npc());
         if (ai != null) {
             ai.wakeup(this);
         }
+    }
+
+    /**
+     * Handles the player session creation event.
+     *
+     * <p>Spawns the associated player into the game world.</p>
+     *
+     * @param event session creation event
+     */
+    private void handleSessionCreated(PlayerSessionCreated event) {
+        playerModule.spawn(event.session().getPlayer());
+    }
+
+    /**
+     * Handles the player session closure event.
+     *
+     * <p>Despawns the associated player from the game world.</p>
+     *
+     * @param event session closure event
+     */
+    private void handleSessionClosed(PlayerSessionClosed event) {
+        playerModule.despawn(event.session().getPlayer());
+    }
+
+    private void handleMobileKilled(NpcDeleted npcDeleted) {
+        aiModule.detach(npcDeleted.deletedNpc());
     }
 
     @Override
@@ -91,21 +128,6 @@ public class DefaultWorld implements WorldInternal, World {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Serial ["+serialId+"] is not a player"));
         }
         return storage.loadMobile(serialId);
-    }
-
-    @Override
-    public CompletableFuture<UOMobile> unloadMobile(int serialId) {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<UOItem> loadItem(int serialId) {
-        return storage.loadItem(serialId);
-    }
-
-    @Override
-    public CompletableFuture<UOItem> unloadItem(int serialId) {
-        return null;
     }
 
     @Override
@@ -128,18 +150,8 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
-        return storage.loadContainerItems(container);
-    }
-
-    @Override
     public List<UOItem> getItemsInRange(Location location, int radius) {
         return storage.getItemsInRange(location);
-    }
-
-    @Override
-    public void removeItemFromTheGround(UOItem item) {
-        storage.removeItemFromTheGround(item);
     }
 
     @Override
@@ -239,20 +251,20 @@ public class DefaultWorld implements WorldInternal, World {
     // REFACTORED
 
     @Override
-    public void move(UOPlayer player, MoveRequest moveRequest) {
-        interactionModule.move(player, moveRequest);
+    public void move(UOMobile mobile, MoveRequest moveRequest) {
+        mobileModule.move(mobile, moveRequest);
+    }
+
+    @Override
+    public void move(UOMobile mobile, Direction direction) {
+        mobileModule.move(mobile, direction);
     }
 
     @Override
     public void teleport(UOMobile mobile, Location location) {
         if (mobile instanceof UOPlayer player) {
-            interactionModule.move(player, location);
+            mobileModule.move(player, location);
         }
-    }
-
-    @Override
-    public void move(UOPlayer player, Location location) {
-        interactionModule.move(player, location);
     }
 
     @Override
@@ -312,12 +324,12 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void login(UOPlayer player) {
-        playerModule.login(player);
+        playerModule.spawn(player);
     }
 
     @Override
     public void logout(UOPlayer player) {
-        playerModule.logout(player);
+        playerModule.despawn(player);
     }
 
     @Override

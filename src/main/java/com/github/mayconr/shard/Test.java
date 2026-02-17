@@ -1,12 +1,12 @@
 package com.github.mayconr.shard;
 
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseRegistry;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.model.policy.DropItemGroundPolicy;
+import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.world.World;
-import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseRegistry;
-import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.eventbus.HandlerResult;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI.*;
+import static com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI.*;
 
 @Component
 @Slf4j

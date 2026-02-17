@@ -2,7 +2,7 @@ package com.github.mayconr.shard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpSystem;
+import com.github.mayconr.juoserver.game.ui.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
 import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;

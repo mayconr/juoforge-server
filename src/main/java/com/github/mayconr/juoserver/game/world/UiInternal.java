@@ -1,7 +1,5 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
-import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.network.packet.GetPlayerStatus;
 import com.github.mayconr.juoserver.network.packet.GumpSelection;
@@ -13,8 +11,6 @@ public interface UiInternal {
     void tooltipRequest(UOPlayer player, List<Integer> serials);
 
     void resolveTarget(UOPlayer player, Target target);
-
-
 
     void playerStatusRequested(UOPlayer sendTo, GetPlayerStatus getPlayerStatus);
 

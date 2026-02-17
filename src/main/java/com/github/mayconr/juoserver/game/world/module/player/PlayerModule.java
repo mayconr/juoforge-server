@@ -28,13 +28,13 @@ public class PlayerModule implements WorldModule, PlayerCommands {
     }
 
     @Override
-    public void login(UOPlayer player) {
-        playerLoginHandler.login(player);
+    public void spawn(UOPlayer player) {
+        playerLoginHandler.spawn(player);
     }
 
     @Override
-    public void logout(UOPlayer player) {
-        playerLoginHandler.logout(player);
+    public void despawn(UOPlayer player) {
+        playerLoginHandler.despawn(player);
     }
 
     @Override

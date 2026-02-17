@@ -19,12 +19,12 @@ public class PlayerLoginHandler {
     private final EventBus eventBus;
     private final RealmStorage storage;
 
-    public void login(UOPlayer player) {
+    public void spawn(UOPlayer player) {
         onlinePlayers.put(player.getSerialId(), player);
         eventBus.publish(new PlayerLoggedIn(player));
     }
 
-    public void logout(UOPlayer player) {
+    public void despawn(UOPlayer player) {
         onlinePlayers.remove(player.getSerialId());
         storage.unloadMobile(player);
         eventBus.publish(new PlayerLoggedOut(player));

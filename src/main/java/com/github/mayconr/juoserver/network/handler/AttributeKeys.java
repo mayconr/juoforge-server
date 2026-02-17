@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.handler;
 
-import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpContext;
+import com.github.mayconr.juoserver.game.ui.gump.GumpContext;
 import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
 import com.github.mayconr.juoserver.game.model.SessionCreationContext;
 import com.github.mayconr.juoserver.game.model.UOAccount;

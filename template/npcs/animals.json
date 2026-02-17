@@ -7,8 +7,8 @@
     "notoriety": "INNOCENT",
     "hue": 0,
     "behavior": {
-      "profile" : "BANKER",
-      "ai" : "DIALOGUE_REACTIVE"
+      "profile" : "ANIMAL",
+      "ai" : "PASSIVE_ANIMAL"
     },
     "attr": {
       "behavior.radius": 3,

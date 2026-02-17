@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.player;
 
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.network.handler.AttributeKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,13 +29,13 @@ public class DefaultSessionManager implements SessionManager {
         outbound.attr().set(AttributeKeys.PLAYER_SESSION_KEY, session);
         registerEvents((DefaultPlayerSession) session);
         session.initialize(world, "");
-        world.login(session.getPlayer());
+        eventBus.publish(new PlayerSessionCreated(session));
 
         outbound.onChannelClosed(()->{
             unregisterEvents((DefaultPlayerSession) session);
             session.deactivate();
             sessionMap.remove(serial);
-            world.logout(session.getPlayer());
+            eventBus.publish(new PlayerSessionClosed(session));
 
             log.info("Session closed for player [{}-{}]", serial, session.getPlayer().getName());
         });

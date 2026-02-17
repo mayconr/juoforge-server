@@ -11,9 +11,9 @@ import java.util.concurrent.CompletableFuture;
 public interface PlayerCommands {
     CompletableFuture<UOPlayer> createNewPlayer(CreateCharacter character, Map<Integer, UOCity> cities, UOAccount account);
 
-    void login(UOPlayer player);
+    void spawn(UOPlayer player);
 
-    void logout(UOPlayer player);
+    void despawn(UOPlayer player);
 
     void deletePlayer(UOPlayer player);
 }

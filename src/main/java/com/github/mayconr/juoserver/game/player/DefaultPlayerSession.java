@@ -45,30 +45,39 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     public void onMobileMoved(MobileMoved moved) {
-        if (player.equals(moved.mobile())) {
-            var mobiles = world.getMobilesInRange(player, properties.world().lightOfSight());
-            var items  = world.getItemsInRange(player, properties.world().lightOfSight());
+        if (!player.equals(moved.mobile())) {
+            final var mobile = moved.mobile();
 
-            outbound.write(new MovementAck(moved.sequence(), player.getNotoriety()));
-
-            for (UOMobile mobile : mobiles) {
-                if (!mobile.equals(player)) {
-                    outbound.write(new DrawMobile(mobile));
-                }
+            if (world.isInRange(player, mobile, properties.world().lightOfSight())) {
+                outbound.writeAndFlush(new DrawMobile(mobile));
             }
-            for (UOItem item : items) {
-                outbound.write(new ObjectInfo(item));
-            }
-
-            if (moved.teleport()) {
-                outbound.write(new DrawGamePlayer(player));
-                fanout.write(new UpdatePlayer(player));
-            } else {
-                // Notify everyone close
-                fanout.write(new UpdatePlayer(player));
-            }
-            fanout.flush();
+            return;
         }
+
+        // handle player movement
+        var mobiles = world.getMobilesInRange(player, properties.world().lightOfSight());
+        var items  = world.getItemsInRange(player, properties.world().lightOfSight());
+
+        outbound.write(new MovementAck(moved.sequence(), player.getNotoriety()));
+
+        for (UOMobile mobile : mobiles) {
+            if (!mobile.equals(player)) {
+                outbound.write(new DrawMobile(mobile));
+            }
+        }
+        for (UOItem item : items) {
+            outbound.write(new ObjectInfo(item));
+        }
+
+        if (moved.teleport()) {
+            outbound.write(new DrawGamePlayer(player));
+            fanout.write(new UpdatePlayer(player));
+        } else {
+            // Notify everyone close
+            fanout.write(new UpdatePlayer(player));
+        }
+        fanout.flush();
+
 
         // TODO drawMobile when enter on range, after that update player
     }
