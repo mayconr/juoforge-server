@@ -1,11 +1,13 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
 import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public interface WorldActions {
@@ -38,8 +40,6 @@ public interface WorldActions {
 
     void tryGainSkill(UOMobile mobile, int skillId, double difficulty, SkillGainContext context);
 
-    boolean isInRange(Location object1, Location object2, int radius);
-
     void mount(UOPlayer player, UONpc npc);
 
     void unmount(UOPlayer player);
@@ -47,4 +47,6 @@ public interface WorldActions {
     void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler);
 
     void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context);
+
+    void sendBuyGump(UOPlayer player, UOMobile vendor, List<RegionStockEntry> items);
 }

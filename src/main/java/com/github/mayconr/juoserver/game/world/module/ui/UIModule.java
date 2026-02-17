@@ -25,7 +25,7 @@ public class UIModule implements WorldModule, UICommands {
     private final StatusHandler statusHandler;
 
     @Override
-    public void update(long tick, double delta) {
+    public void update(double delta) {
 
     }
 

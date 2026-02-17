@@ -1,6 +1,6 @@
-package com.github.mayconr.juoserver.game.npc;
+package com.github.mayconr.juoserver.game.world.module.ai;
 
-public class CtxKeys {
+public class ContextKeys {
     public static final String LAST_SPEECH = "speech.last";
     public static final String SPEAKER = "speech.speaker";
     public static final String TARGET = "combat.target";

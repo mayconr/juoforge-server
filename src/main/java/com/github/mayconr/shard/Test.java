@@ -1,16 +1,16 @@
 package com.github.mayconr.shard;
 
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.eventbus.HandlerResult;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.model.policy.DropItemGroundPolicy;
+import com.github.mayconr.juoserver.game.world.World;
+import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseRegistry;
+import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.HandlerResult;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyResult;
-import com.github.mayconr.juoserver.game.world.module.item.trigger.ItemUseRegistry;
-import com.github.mayconr.juoserver.game.world.WorldInternal;
-import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.shard.actions.GuildButton;
 import com.github.mayconr.shard.actions.HelpRequested;
 import com.github.mayconr.shard.skills.Anatomy;
@@ -27,7 +27,7 @@ import static com.github.mayconr.juoserver.game.world.module.ui.gump.Declarative
 public class Test {
 
     @Autowired private EventBus eventBus;
-    @Autowired private WorldInternal worldInternal;
+    @Autowired private World world;
     @Autowired private PolicyRegistry policyRegistry;
     @Autowired private ItemUseRegistry itemUseRegistry;
 
@@ -126,7 +126,7 @@ public class Test {
                                                 InlineField(Label("Name"), TextField(1, 50)),
                                                 Button(2450, 2451, 2)))));
 
-        worldInternal.sendGump(
+        world.sendGump(
                 prompt.player(),
                 gump,
                 (ctx, selection) -> {
@@ -145,7 +145,7 @@ public class Test {
     }
 
     public HandlerResult move(Prompt prompt) {
-        worldInternal.teleport(prompt.player(), new PointInTheWorld(2516, 555, 0));
+        world.teleport(prompt.player(), new PointInTheWorld(2516, 555, 0));
         return HandlerResult.CONTINUE;
     }
 

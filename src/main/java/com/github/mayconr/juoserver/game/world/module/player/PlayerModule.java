@@ -18,7 +18,7 @@ public class PlayerModule implements WorldModule, PlayerCommands {
     private final PlayerRemovalHandler playerRemovalHandler;
 
     @Override
-    public void update(long tick, double delta) {
+    public void update(double delta) {
 
     }
 

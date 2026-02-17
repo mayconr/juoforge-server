@@ -1,15 +1,15 @@
-package com.github.mayconr.juoserver.game.npc.ai;
+package com.github.mayconr.juoserver.game.world.module.ai.decision;
 
+import com.github.mayconr.juoserver.game.world.module.ai.AIContext;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.Behavior;
+import com.github.mayconr.juoserver.game.world.module.ai.profile.BehaviorProfile;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
-import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
-import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
-import com.github.mayconr.juoserver.game.npc.NpcContext;
 
 /**
  * Defines the decision-making logic for an NPC.
  * <p>
  * An {@code NpcAI} is responsible for selecting the appropriate
- * {@link NpcBehavior} based on the current {@link NpcContext}
+ * {@link Behavior} based on the current {@link AIContext}
  * and the available behaviors provided by a {@link BehaviorProfile}.
  * </p>
  *
@@ -36,6 +36,8 @@ import com.github.mayconr.juoserver.game.npc.NpcContext;
  */
 public interface NpcAI {
 
+    String getKey();
+
     /**
      * Decides which behavior should be active for the NPC.
      * <p>
@@ -47,7 +49,7 @@ public interface NpcAI {
      * @param profile the behavior profile providing available behaviors
      * @return the behavior that should become active
      */
-    NpcBehavior decide(NpcContext ctx, BehaviorProfile profile);
+    Behavior decide(AIContext ctx, BehaviorProfile profile);
 
     /**
      * Notifies the AI of a game event.
@@ -64,5 +66,5 @@ public interface NpcAI {
      * @param ctx the current NPC context
      * @param event the game event being observed
      */
-    default void onEvent(NpcContext ctx, GameEvent event) {}
+    default void onEvent(AIContext ctx, GameEvent event) {}
 }

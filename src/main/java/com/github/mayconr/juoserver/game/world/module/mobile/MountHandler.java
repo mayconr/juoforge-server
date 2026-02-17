@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.world.module.mobile;
 
 import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
@@ -25,7 +26,7 @@ public class MountHandler {
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final SerialGenerator serialGenerator;
 
-    public void mount(UOPlayer player, UONpc npc) {
+    public UOItem mount(UOPlayer player, UONpc npc) {
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
             throw new IllegalStateException("Player " + player.getName() + " already mounted");
         }
@@ -34,7 +35,7 @@ public class MountHandler {
 
             var template = itemTemplateRegistry.getMountByNpcName(npc.getName());
             if (template == null) {
-                return;
+                return null;
             }
 
             final var item = ItemFactory.createFromTemplate(serialGenerator, template);
@@ -43,26 +44,20 @@ public class MountHandler {
             player.setLocation(npc);
             player.setDirection(npc.getDirection());
 
-            //world.deleteMobile(npc);
-
             eventBus.publish(new ItemEquipped(player, item));
+            return item;
         } else {
             log.info("Mount blocked by policy. Reason: {}", result.reason());
         }
+        return null;
     }
 
-    public void unmount(UOPlayer player) {
+    public UOItem unmount(UOPlayer player) {
         final var item = player.getEquippedItems().get(Layer.MOUNT);
 
         if (item == null) {
             log.debug("Player [{}] is not mounted", player.getName());
-            return;
-        }
-
-        final var npcName = (String) item.getPersistentAttribute("npcName");
-        if (npcName == null) {
-            log.debug("Item [{}] is not a mount item", item.getName());
-            return;
+            return null;
         }
 
         player.unequipItem(item);
@@ -72,6 +67,7 @@ public class MountHandler {
         //npc.setDirection(player.getDirection());
 
         eventBus.publish(new ItemUnequipped(player, item));
+        return item;
     }
 
 }

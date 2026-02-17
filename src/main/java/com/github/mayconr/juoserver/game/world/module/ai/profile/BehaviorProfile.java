@@ -1,11 +1,11 @@
-package com.github.mayconr.juoserver.game.npc.profile;
+package com.github.mayconr.juoserver.game.world.module.ai.profile;
 
-import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.Behavior;
 
 /**
  * Defines a set of behaviors available for a specific NPC role.
  * <p>
- * A {@code BehaviorProfile} groups related {@link NpcBehavior} implementations
+ * A {@code BehaviorProfile} groups related {@link Behavior} implementations
  * (such as idle, talk, or service) and is used by the NPC AI to decide
  * which behavior should be active at a given moment.
  * </p>
@@ -27,6 +27,7 @@ import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
  */
 public interface BehaviorProfile {
 
+    String getKey();
     /**
      * Returns the default idle behavior.
      * <p>
@@ -36,7 +37,7 @@ public interface BehaviorProfile {
      *
      * @return the idle behavior
      */
-    NpcBehavior idle();
+    Behavior idle();
 
     /**
      * Returns the talk behavior.
@@ -47,7 +48,7 @@ public interface BehaviorProfile {
      *
      * @return the talk behavior
      */
-    NpcBehavior talk();
+    Behavior talk();
 
     /**
      * Returns the service behavior.
@@ -58,5 +59,5 @@ public interface BehaviorProfile {
      *
      * @return the service behavior
      */
-    NpcBehavior service();
+    Behavior service();
 }

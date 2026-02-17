@@ -1,12 +1,11 @@
 package com.github.mayconr.juoserver.standard.npc.vendor;
 
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.world.module.ai.AIContext;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.Behavior;
 import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
 import com.github.mayconr.juoserver.game.world.module.economy.StockType;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.npc.NpcContext;
-import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
 import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
-import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,35 +14,29 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-public class VendorBehavior implements NpcBehavior {
+public class VendorBehavior implements Behavior {
 
-    private final WorldInternal world;
-
-    private NpcContext context;
+    private AIContext context;
 
     @Override
-    public void initialize(NpcContext context) {
+    public void initialize(AIContext context) {
         this.context = context;
     }
 
     @Override
     public void onSpeech(UOPlayer player, String text) {
         var npc = context.npc();
+        var world = context.world();
+
         var region = world.resolveRegion(context.npc())
                 .orElseThrow(() -> new RuntimeException("Region not found"));
-        var stockPool = world.getStockPool(region.getName());
         var stockType = StockType.valueOf((String) npc.getPersistentAttribute("behavior.stockType"));
         var templates = world.getItemTemplates(stockType);
         final List<RegionStockEntry> entries = new ArrayList<>();
-
-        for (ItemTemplate  template : templates) {
-            var entry = stockPool.getStockEntry(template);
-            // There is a stock configured for template + region
-            if (entry != null) {
-                entries.add(entry);
-            }
+        for (ItemTemplate template : templates) {
+            world.getStockEntry(template, region)
+                    .ifPresent(entries::add);
         }
-
         world.sendBuyGump(player, npc, entries);
 
     }

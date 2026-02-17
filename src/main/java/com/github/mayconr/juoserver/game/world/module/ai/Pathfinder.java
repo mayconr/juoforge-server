@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.npc;
+package com.github.mayconr.juoserver.game.world.module.ai;
 
 import java.util.*;
 

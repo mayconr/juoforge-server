@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.standard.npc.banker;
 
-import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
-import com.github.mayconr.juoserver.game.npc.behavior.IdleBehavior;
-import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
-import com.github.mayconr.juoserver.game.npc.behavior.TalkBehavior;
+import com.github.mayconr.juoserver.game.world.module.ai.profile.BehaviorProfile;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.IdleBehavior;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.Behavior;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.TalkBehavior;
 
 public class BankerBehaviorProfile implements BehaviorProfile {
 
@@ -12,17 +12,22 @@ public class BankerBehaviorProfile implements BehaviorProfile {
     private final BankBehavior bankBehavior = new BankBehavior();
 
     @Override
-    public NpcBehavior idle() {
+    public String getKey() {
+        return "BANKER";
+    }
+
+    @Override
+    public Behavior idle() {
         return idleBehavior;
     }
 
     @Override
-    public NpcBehavior talk() {
+    public Behavior talk() {
         return talkBehavior;
     }
 
     @Override
-    public NpcBehavior service() {
+    public Behavior service() {
         return bankBehavior;
     }
 }

@@ -1,6 +1,10 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
+import com.github.mayconr.juoserver.game.world.module.economy.StockType;
+import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.region.RegionQueryService;
 
 import java.util.List;
@@ -27,4 +31,10 @@ public interface WorldView extends RegionQueryService {
     LandTile getLandTile(Location location);
 
     List<UOPlayer> getOnlinePlayers();
+
+    boolean isInRange(Location object1, Location object2, int radius);
+
+    List<ItemTemplate> getItemTemplates(StockType stockType);
+
+    Optional<RegionStockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
 }

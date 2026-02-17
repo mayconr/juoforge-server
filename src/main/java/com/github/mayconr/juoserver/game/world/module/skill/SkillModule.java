@@ -16,7 +16,7 @@ public class SkillModule implements WorldModule, SkillCommands {
     private final SkillSystem skillSystem;
 
     @Override
-    public void update(long tick, double delta) {
+    public void update(double delta) {
 
     }
 

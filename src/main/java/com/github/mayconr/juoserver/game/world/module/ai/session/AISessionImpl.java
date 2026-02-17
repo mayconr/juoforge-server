@@ -1,30 +1,35 @@
-package com.github.mayconr.juoserver.game.npc;
+package com.github.mayconr.juoserver.game.world.module.ai.session;
 
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
-import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.TextType;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
 import com.github.mayconr.juoserver.game.model.event.SpeechContext;
 import com.github.mayconr.juoserver.game.model.event.SpeechRange;
-import com.github.mayconr.juoserver.game.npc.action.NpcAction;
-import com.github.mayconr.juoserver.game.npc.action.SayAction;
-import com.github.mayconr.juoserver.game.npc.action.SellListAction;
-import com.github.mayconr.juoserver.game.npc.ai.NpcAI;
-import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
-import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
+import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.WorldView;
+import com.github.mayconr.juoserver.game.world.module.ai.AIContext;
+import com.github.mayconr.juoserver.game.world.module.ai.action.NpcAction;
+import com.github.mayconr.juoserver.game.world.module.ai.action.SayAction;
+import com.github.mayconr.juoserver.game.world.module.ai.action.SellListAction;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.Behavior;
+import com.github.mayconr.juoserver.game.world.module.ai.decision.NpcAI;
+import com.github.mayconr.juoserver.game.world.module.ai.profile.BehaviorProfile;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
+@Slf4j
 @RequiredArgsConstructor
-public class DefaultNpcSession implements NpcSession, NpcContext {
+public class AISessionImpl implements AISession, AIContext {
 
     private final Queue<NpcAction> actionQueue = new ArrayDeque<>();
     private final Map<String, Object> memory = new HashMap<>();
@@ -33,22 +38,32 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
     private final EventBus eventBus;
     private final BehaviorProfile profile;
     private final NpcAI ai;
+    private Behavior current;
+    private World world;
+    private boolean awake;
 
-    private WorldInternal world;
-    private NpcBehavior current;
-
-    public void initialize(WorldInternal world) {
+    @Override
+    public void wakeup(World world) {
         this.world = world;
-        // Initialize behavior
+
         current = ai.decide(this, profile);
         current.initialize(this);
 
         // Register speech listener for players
         eventBus.register(MobileSpeech.class, new SpeechListener(world), speech -> speech.mobile() instanceof UOPlayer);
+
+        // AI will start to tick
+        awake = true;
+        log.info("NPC [{}] ai wakeup", npc.getName());
     }
 
     @Override
-    public WorldInternal world() {
+    public void kill() {
+
+    }
+
+    @Override
+    public World world() {
         return world;
     }
 
@@ -57,13 +72,12 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
         return npc;
     }
 
-    /**
-     * Gameloop tick
-     * @param delta
-     */
     @Override
     public void think(double delta) {
-        // TODO check is session is alive
+        if (!awake) {
+            return;
+        }
+
         current.onThink(delta);
         while (!actionQueue.isEmpty()) {
             switch (actionQueue.poll()) {
@@ -105,7 +119,7 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
     @RequiredArgsConstructor
     private class SpeechListener implements EventHandler<MobileSpeech> {
 
-        private final WorldInternal world;
+        private final WorldView world;
 
         @Override
         public void handle(MobileSpeech event) {
@@ -141,7 +155,7 @@ public class DefaultNpcSession implements NpcSession, NpcContext {
      * @param event the game event that may influence the NPC behavior decision
      */
     private void switchBehaviorWhenDecided(GameEvent event) {
-        var ctx = DefaultNpcSession.this;
+        var ctx = AISessionImpl.this;
 
         ai.onEvent(ctx, event);
         var next = ai.decide(ctx, profile);

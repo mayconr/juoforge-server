@@ -26,7 +26,7 @@ public class InteractionModule implements WorldModule, InteractionCommands {
     private final AnimationHandler animationHandler;
 
     @Override
-    public void update(long tick, double delta) {
+    public void update(double delta) {
 
     }
 

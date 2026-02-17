@@ -1,11 +1,11 @@
-package com.github.mayconr.juoserver.game.npc;
+package com.github.mayconr.juoserver.game.world.module.ai;
 
 import com.github.mayconr.juoserver.game.model.UONpc;
-import com.github.mayconr.juoserver.game.npc.action.NpcAction;
-import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.World;
+import com.github.mayconr.juoserver.game.world.module.ai.action.NpcAction;
 
-public interface NpcContext {
-    WorldInternal world();
+public interface AIContext {
+    World world();
     UONpc npc();
     <T> void set(String key, T value);
     <T> T get(String key, Class<T> type);

@@ -14,7 +14,7 @@ public interface UiInternal {
 
     void resolveTarget(UOPlayer player, Target target);
 
-    void sendBuyGump(UOPlayer player, UOMobile vendor, List<RegionStockEntry> items);
+
 
     void playerStatusRequested(UOPlayer sendTo, GetPlayerStatus getPlayerStatus);
 

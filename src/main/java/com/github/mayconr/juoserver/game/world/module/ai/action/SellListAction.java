@@ -1,7 +1,7 @@
-package com.github.mayconr.juoserver.game.npc.action;
+package com.github.mayconr.juoserver.game.world.module.ai.action;
 
-import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.world.module.economy.RegionStockEntry;
 
 import java.util.List;
 

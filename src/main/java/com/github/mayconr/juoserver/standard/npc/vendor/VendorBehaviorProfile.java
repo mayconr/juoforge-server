@@ -1,33 +1,33 @@
 package com.github.mayconr.juoserver.standard.npc.vendor;
 
-import com.github.mayconr.juoserver.game.npc.behavior.IdleBehavior;
-import com.github.mayconr.juoserver.game.npc.behavior.NpcBehavior;
-import com.github.mayconr.juoserver.game.npc.behavior.TalkBehavior;
-import com.github.mayconr.juoserver.game.npc.profile.BehaviorProfile;
-import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.Behavior;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.IdleBehavior;
+import com.github.mayconr.juoserver.game.world.module.ai.behavior.TalkBehavior;
+import com.github.mayconr.juoserver.game.world.module.ai.profile.BehaviorProfile;
 
 public class VendorBehaviorProfile implements BehaviorProfile {
 
     private final IdleBehavior idleBehavior = new IdleBehavior();
     private final TalkBehavior talkBehavior = new TalkBehavior();
-    private final VendorBehavior vendorBehavior;
+    private final VendorBehavior vendorBehavior = new VendorBehavior();
 
-    public VendorBehaviorProfile(WorldInternal world) {
-        this.vendorBehavior = new VendorBehavior(world);
+    @Override
+    public String getKey() {
+        return "VENDOR";
     }
 
     @Override
-    public NpcBehavior idle() {
+    public Behavior idle() {
         return idleBehavior;
     }
 
     @Override
-    public NpcBehavior talk() {
+    public Behavior talk() {
         return talkBehavior;
     }
 
     @Override
-    public NpcBehavior service() {
+    public Behavior service() {
         return vendorBehavior;
     }
 }

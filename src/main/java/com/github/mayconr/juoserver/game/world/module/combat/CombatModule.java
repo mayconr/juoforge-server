@@ -14,7 +14,7 @@ public class CombatModule implements WorldModule, CombatCommands {
     private final VitalsHandler vitalsHandler;
 
     @Override
-    public void update(long tick, double delta) {
+    public void update(double delta) {
 
     }
 

@@ -14,18 +14,18 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 
+import java.util.function.Consumer;
+
 @RequiredArgsConstructor
 public class NpcHandler {
 
-    //private final Map<Integer, NpcSession> sessionMap = new ConcurrentHashMap<>();
-    //private final NpcSessionFactory npcSessionFactory;
     private final NpcTemplateRegistry npcTemplateRegistry;
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
     private final EventBus eventBus;
 
-    public UONpc createNpc(String name, Location location) {
+    public UONpc createNpc(String name, Location location, Consumer<UONpc> decorator) {
         final var template = npcTemplateRegistry.get(name);
         if (template == null) {
             throw new IllegalArgumentException("NPC template not found "+name);
@@ -39,7 +39,7 @@ public class NpcHandler {
             storage.cacheItem(item);
         }
 
-        //sessionMap.put(npc.getSerialId(), npcSessionFactory.create(npc, worldInternal));
+        decorator.accept(npc);
 
         storage.cacheNpc(npc);
         eventBus.publish(new NpcCreated(npc));

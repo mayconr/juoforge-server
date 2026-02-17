@@ -14,7 +14,7 @@ public class ItemModule implements WorldModule, ItemCommands {
     private final ItemEquipHandler itemEquipHandler;
 
     @Override
-    public void update(long tick, double delta) {
+    public void update(double delta) {
 
     }
 

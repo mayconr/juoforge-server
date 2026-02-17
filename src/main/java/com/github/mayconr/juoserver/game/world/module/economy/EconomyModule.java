@@ -7,7 +7,9 @@ import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class EconomyModule implements WorldModule, EconomyCommands, EconomyQueries {
@@ -16,7 +18,7 @@ public class EconomyModule implements WorldModule, EconomyCommands, EconomyQueri
     private final EconomySystem economySystem;
 
     @Override
-    public void update(long tick, double delta) {
+    public void update(double delta) {
 
     }
 
@@ -33,5 +35,11 @@ public class EconomyModule implements WorldModule, EconomyCommands, EconomyQueri
     @Override
     public double getPrice(ItemTemplate template, String regionName) {
         return economySystem.getPrice(template, regionName);
+    }
+
+    @Override
+    public Optional<RegionStockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode) {
+        var pool = economySystem.getStockPool(regionNode.getName());
+        return Optional.ofNullable(pool.getStockEntry(template));
     }
 }

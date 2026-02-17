@@ -1,16 +1,18 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.game.ai.ollama.OllamaClientChatImpl;
-import com.github.mayconr.juoserver.game.ai.ollama.OllanaClient;
-import com.github.mayconr.juoserver.game.model.event.MobileMoved;
-import com.github.mayconr.juoserver.game.npc.NpcSessionFactory;
 import com.github.mayconr.juoserver.game.player.DefaultSessionManager;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;
 import com.github.mayconr.juoserver.game.player.SessionManager;
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
+import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.game.world.module.ai.AIModule;
+import com.github.mayconr.juoserver.game.world.module.ai.decision.NpcAI;
+import com.github.mayconr.juoserver.game.world.module.ai.decision.NpcAiRegistry;
+import com.github.mayconr.juoserver.game.world.module.ai.profile.BehaviorProfile;
+import com.github.mayconr.juoserver.game.world.module.ai.profile.BehaviorProfileRegistry;
+import com.github.mayconr.juoserver.game.world.module.ai.session.AISessionHandler;
 import com.github.mayconr.juoserver.game.world.module.combat.*;
 import com.github.mayconr.juoserver.game.world.module.economy.*;
 import com.github.mayconr.juoserver.game.world.module.item.ItemDropHandler;
@@ -26,7 +28,6 @@ import com.github.mayconr.juoserver.game.world.module.iteraction.InteractionModu
 import com.github.mayconr.juoserver.game.world.module.iteraction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.world.module.iteraction.animation.AnimationHandler;
 import com.github.mayconr.juoserver.game.world.module.iteraction.movement.MovementHandler;
-import com.github.mayconr.juoserver.game.world.module.iteraction.movement.RangeDetection;
 import com.github.mayconr.juoserver.game.world.module.iteraction.speech.SpeechHandler;
 import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetHandler;
 import com.github.mayconr.juoserver.game.world.module.mobile.MobileModule;
@@ -50,6 +51,7 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.gameloop.DefaultGameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.region.MapRegionSystem;
@@ -68,6 +70,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 @EnableConfigurationProperties(ServerProperties.class)
@@ -87,11 +90,6 @@ public class WorldConfig {
         final var gameLoop = new DefaultGameLoop(properties);
         Runtime.getRuntime().addShutdownHook(new Thread(gameLoop::stop));
         return gameLoop.start();
-    }
-
-    @Bean
-    public OllanaClient ollanaClient() {
-        return new OllamaClientChatImpl("http://localhost:11434");
     }
 
     @Bean
@@ -141,17 +139,6 @@ public class WorldConfig {
     @Bean
     public GumpSystem gumpSystem(EventBus eventBus) {
         return new DefaultGumpSystem(eventBus);
-    }
-
-    // =========================================================================
-    // AI
-    // =========================================================================
-
-    @Bean
-    public NpcSessionFactory npcSessionFactory(
-            EventBus eventBus) {
-
-        return new NpcSessionFactory(eventBus);
     }
 
     // =========================================================================
@@ -244,7 +231,15 @@ public class WorldConfig {
     }
 
     @Bean
-    public WorldInternal worldSession(
+    public AIModule aiModule(EventBus eventBus, List<NpcAI> npcAIs, List<BehaviorProfile> profiles) {
+        final var aiFactory = new NpcAiRegistry(npcAIs);
+        final var profileRegistry = new BehaviorProfileRegistry(profiles);
+        final var aiSessionHandler = new AISessionHandler(eventBus, profileRegistry, aiFactory);
+        return new AIModule(eventBus, aiSessionHandler);
+    }
+
+    @Bean
+    public World worldSession(
             RealmStorage storage,
             EventBus eventBus,
             ItemTemplateRegistry itemTemplateRegistry,
@@ -253,18 +248,16 @@ public class WorldConfig {
             ServerProperties properties,
             PolicyService policyService,
             NpcTemplateRegistry npcTemplateRegistry,
-            NpcSessionFactory npcSessionFactory,
             ItemUseService itemUseService,
             CombatSystem combatSystem,
             GumpSystem gumpSystem,
-            MapRegionSystem regionService,
-            EconomySystem economySystem) {
+            MapRegionSystem regionSystem,
+            EconomySystem economySystem,
+            AIModule aiModule) {
 
         final var serialGenerator = new SerialGenerator(storage);
 
-
-
-        final var fileReader = new UOFileReaderSystem(properties);
+        final var fileReaderSystem = new UOFileReaderSystem(properties);
 
         // modules
         final var itemHandler = new ItemHandler(serialGenerator, itemTemplateRegistry, storage, eventBus);
@@ -303,8 +296,6 @@ public class WorldConfig {
         final var npcService = new NpcHandler(npcTemplateRegistry, itemTemplateRegistry, serialGenerator, storage, eventBus);
         final var mobileModule = new MobileModule(mountHandler, npcService);
 
-        final var aiModule = new AIModule();
-
         final var world = new DefaultWorld(
                 itemModule,
                 playerModule,
@@ -315,16 +306,30 @@ public class WorldConfig {
                 interactionModule,
                 mobileModule,
                 aiModule,
+                eventBus,
                 serialGenerator,
                 storage,
                 gameLoop,
-                regionService,
+                regionSystem,
                 itemTemplateRegistry,
-                fileReader
+                fileReaderSystem,
+                properties
         );
 
-        eventBus.register(MobileMoved.class, new RangeDetection(world, eventBus, properties));
         world.initialize();
+
+        gameLoop.addTask(new GameTask() {
+            @Override
+            public void execute(long currentTick, double delta) {
+                world.update(delta);
+            }
+
+            @Override
+            public boolean isDone() {
+                return false;
+            }
+        });
+
         return world;
     }
 }

@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.world.module.economy;
 
 import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
+
+import java.util.Optional;
 
 public interface EconomyQueries {
 
@@ -20,4 +23,6 @@ public interface EconomyQueries {
      * @return the calculated price
      */
     double getPrice(ItemTemplate template, String regionName);
+
+    Optional<RegionStockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
 }

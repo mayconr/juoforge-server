@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.event.MobileMoved;
+import com.github.mayconr.juoserver.game.model.event.NpcCreated;
 import com.github.mayconr.juoserver.game.world.module.ai.AIModule;
 import com.github.mayconr.juoserver.game.world.module.combat.CombatModule;
 import com.github.mayconr.juoserver.game.world.module.economy.EconomyModule;
@@ -11,6 +14,7 @@ import com.github.mayconr.juoserver.game.world.module.item.ItemModule;
 import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.world.module.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.world.module.iteraction.InteractionModule;
+import com.github.mayconr.juoserver.game.world.module.iteraction.movement.RangeDetection;
 import com.github.mayconr.juoserver.game.world.module.iteraction.target.TargetResult;
 import com.github.mayconr.juoserver.game.world.module.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
@@ -19,6 +23,7 @@ import com.github.mayconr.juoserver.game.world.module.ui.UIModule;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.world.module.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderSystem;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.infrastructure.region.MapRegionSystem;
@@ -34,7 +39,7 @@ import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor
-public class DefaultWorld implements WorldInternal {
+public class DefaultWorld implements WorldInternal, World {
 
     // Modules
     private final ItemModule itemModule;
@@ -48,6 +53,7 @@ public class DefaultWorld implements WorldInternal {
     private final AIModule aiModule;
 
     // Systems
+    private final EventBus eventBus;
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
     private final GameLoop gameLoop;
@@ -55,11 +61,28 @@ public class DefaultWorld implements WorldInternal {
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final UOFileReaderSystem fileReader;
 
+    // Properties
+    private final ServerProperties properties;
+
+    public void update(double delta) {
+        aiModule.update(delta);
+    }
+
     @Override
     public void initialize() {
         storage.initialize(serialGenerator::getCurrentItemSerial, serialGenerator::getCurrentMobileSerial);
         serialGenerator.initialize();
         fileReader.loadFiles();
+
+        eventBus.register(NpcCreated.class, this::handleNpcCreated);
+        eventBus.register(MobileMoved.class, new RangeDetection(this, eventBus, properties));
+    }
+
+    private void handleNpcCreated(NpcCreated npcCreated) {
+        var ai = aiModule.attach(npcCreated.npc());
+        if (ai != null) {
+            ai.wakeup(this);
+        }
     }
 
     @Override
@@ -407,5 +430,10 @@ public class DefaultWorld implements WorldInternal {
     @Override
     public void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
         skillModule.tryGain(mobile, skillId, difficulty, context);
+    }
+
+    @Override
+    public Optional<RegionStockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode) {
+        return economyModule.getStockEntry(template, regionNode);
     }
 }
