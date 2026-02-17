@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.combat.*;
 import com.github.mayconr.juoserver.game.economy.*;
+import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.RegionStockPool;
 import com.github.mayconr.juoserver.game.mobile.movement.MobileMovementRules;
 import com.github.mayconr.juoserver.game.player.DefaultSessionManager;
 import com.github.mayconr.juoserver.game.player.PlayerSessionFactory;

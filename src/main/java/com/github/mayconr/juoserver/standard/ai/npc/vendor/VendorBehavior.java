@@ -1,11 +1,12 @@
 package com.github.mayconr.juoserver.standard.ai.npc.vendor;
 
-import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.ai.AIContext;
+import com.github.mayconr.juoserver.game.ai.action.SellListAction;
 import com.github.mayconr.juoserver.game.ai.behavior.Behavior;
-import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
-import com.github.mayconr.juoserver.game.economy.StockType;
+import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.StockType;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,8 +38,7 @@ public class VendorBehavior implements Behavior {
             world.getStockEntry(template, region)
                     .ifPresent(entries::add);
         }
-        world.sendBuyGump(player, npc, entries);
-
+        context.enqueue(new SellListAction(player, entries));
     }
 
     @Override

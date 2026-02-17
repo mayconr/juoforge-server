@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.economy;
+package com.github.mayconr.juoserver.game.economy.stock;
 
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 

@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.item.template;
 
-import com.github.mayconr.juoserver.game.economy.StockType;
+import com.github.mayconr.juoserver.game.economy.stock.StockType;
 
 import java.util.List;
 

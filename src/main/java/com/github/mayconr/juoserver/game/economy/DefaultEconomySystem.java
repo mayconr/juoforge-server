@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.economy;
 
+import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.RegionStockPool;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import lombok.RequiredArgsConstructor;
 

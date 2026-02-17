@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
-import com.github.mayconr.juoserver.game.economy.StockType;
+import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.StockType;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.region.RegionQueryService;

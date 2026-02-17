@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.economy.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
 import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
