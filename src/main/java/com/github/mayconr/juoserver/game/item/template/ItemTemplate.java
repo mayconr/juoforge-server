@@ -15,7 +15,7 @@ public record ItemTemplate(String name,
                            boolean movable,
                            int hue,
                            StockType stockType,
-                           double basePrice,
+                           int basePrice,
                            List<ItemFlag> flags,
                            Map<String, Object> attr)
             implements BaseTemplate {

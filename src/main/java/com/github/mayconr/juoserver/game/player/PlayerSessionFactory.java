@@ -10,6 +10,6 @@ public class PlayerSessionFactory {
     private final ServerProperties properties;
 
     public PlayerSession createPlayerSession(UOPlayer player, SessionOutbound outbound, SessionFanout fanout) {
-        return new DefaultPlayerSession(player, outbound, fanout, properties);
+        return new DefaultPlayerSession(player, outbound.getCtx().channel(), outbound, fanout, properties);
     }
 }

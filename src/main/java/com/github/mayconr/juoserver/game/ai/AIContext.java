@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.ai;
 
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.world.World;
-import com.github.mayconr.juoserver.game.ai.action.NpcAction;
+import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
 
 public interface AIContext {
     World world();

@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.network.packet;
 
 import com.github.mayconr.juoserver.game.model.Clilocs;
-import com.github.mayconr.juoserver.game.model.UOObject;
+import com.github.mayconr.juoserver.game.model.TooltipSupport;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
@@ -15,7 +15,7 @@ public class TooltipRequest extends AbstractPacket {
     public static final int CODE = (byte) 0xD6;
     @Getter
     private final List<Integer> serialList = new ArrayList<>();
-    private UOObject object;
+    private TooltipSupport support;
 
     public TooltipRequest(ByteBuf buf) {
         super(CODE, calculateLength(buf));
@@ -34,13 +34,13 @@ public class TooltipRequest extends AbstractPacket {
         return buf.readShort();
     }
 
-    public TooltipRequest(UOObject object) {
-        super(CODE, computeLength(object));
-        this.object = object;
+    public TooltipRequest(TooltipSupport support) {
+        super(CODE, computeLength(support));
+        this.support = support;
     }
 
-    private static int computeLength(UOObject object) {
-        return 25 + object.getDisplayName().length() * 2;
+    private static int computeLength(TooltipSupport object) {
+        return 25 + object.getTooltipText().length() * 2;
     }
 
     @Override
@@ -49,13 +49,13 @@ public class TooltipRequest extends AbstractPacket {
         buf.writeShort(getLength());
         buf.writeShort(0x0001);
 
-        buf.writeInt(object.getSerialId());
+        buf.writeInt(support.getSerialId());
         buf.writeShort(0);
-        buf.writeInt(Objects.hashCode(object.getSerialId()));
+        buf.writeInt(Objects.hashCode(support.getSerialId()));
 
         buf.writeInt(Clilocs.PREFIX_NAME_SUFFIX.getCode());
 
-        final String text = object.getDisplayName();
+        final String text = support.getTooltipText();
         buf.writeShort(text.length() * 2);
         if (!text.isEmpty()) {
             for (int i = 0; i < text.length(); i++) {

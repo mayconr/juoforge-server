@@ -1,21 +1,19 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.economy.EconomySystemInternal;
-import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistryInternal;
-import com.github.mayconr.juoserver.game.model.UOAccount;
-import com.github.mayconr.juoserver.game.model.UOCity;
-import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.network.packet.ActionRequest;
-import com.github.mayconr.juoserver.network.packet.CreateCharacter;
+import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.network.packet.*;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public interface WorldInternal extends WorldActions, WorldView, MovementInternal, SpeechInternal, ItemInternal, ClickInternal,
-        SkillInternal, CombatInternal, EconomySystemInternal, ItemTemplateRegistryInternal, UiInternal, SessionInternal {
+public interface WorldInternal extends WorldActions, WorldView, CombatInternal, UiInternal, SessionInternal {
 
     void initialize();
+
+    void speech(UOPlayer player, UnicodeSpeachRequest request);
+
+    void move(UOMobile mobile, MoveRequest moveRequest);
 
     CompletableFuture<UOMobile> loadMobile(int serialId);
 
@@ -24,5 +22,23 @@ public interface WorldInternal extends WorldActions, WorldView, MovementInternal
     boolean isMobile(int serialId);
 
     void handleAction(UOPlayer player, ActionRequest request);
+
+    void completeVendorPurchase(UOPlayer player, VendorBuyRequest vendorBuyRequest);
+
+    void doubleClick(UOPlayer player, DoubleClick doubleClick);
+
+    void singleClick(UOPlayer player, SingleClickRequest singleClick);
+
+    void equipItem(UOPlayer player, EquipItemRequest equipItem);
+
+    void unequipItem(UOPlayer player, UnequipItem pickedUpItem);
+
+    void dropItemOnTheGround(UOPlayer player, DropItem dropItem);
+
+    void dropItemInContainer(UOPlayer player, DropItem dropItem);
+
+    void useSkill(UOPlayer player, int skillId);
+
+    void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills);
 
 }

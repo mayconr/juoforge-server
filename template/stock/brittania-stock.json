@@ -1,0 +1,26 @@
+[
+  {
+    "name" : "brittania-initial-stock",
+    "region": "province-britannia",
+    "initialStock": [
+      {
+        "itemName": "iron_ore",
+        "maxStock": 1000,
+        "amount": 20,
+        "elasticity": 0.8
+      },
+      {
+        "itemName": "gold_ore",
+        "maxStock": 200,
+        "amount": 30,
+        "elasticity": 1.2
+      },
+      {
+        "itemName": "dull_copper_ore",
+        "maxStock": 300,
+        "amount": 25,
+        "elasticity": 1.2
+      }
+    ]
+  }
+]

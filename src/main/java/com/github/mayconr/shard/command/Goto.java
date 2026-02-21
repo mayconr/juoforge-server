@@ -3,19 +3,16 @@ package com.github.mayconr.shard.command;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
-import com.github.mayconr.juoserver.game.ui.gump.GumpSystem;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 
 import static com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI.*;
 
 public class Goto extends AbstractCommand {
 
-    private final GumpSystem gumpSystem;
     private final WorldActions worldActions;
 
-    public Goto(GumpSystem gumpSystem, WorldActions worldActions) {
+    public Goto(WorldActions worldActions) {
         super("goto");
-        this.gumpSystem = gumpSystem;
         this.worldActions = worldActions;
     }
 

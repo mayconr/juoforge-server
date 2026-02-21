@@ -11,6 +11,7 @@ public class UOPlayer extends UOMobile {
     private final UUID accountId;
     private String password;
     private boolean connected;
+    private VendorSession vendorSession;
 
     public UOPlayer(UOMobile mobile, UUID accountId) {
         super(mobile);

@@ -104,4 +104,5 @@ public record ServerProperties(Vitals vitals, GameLoop gameLoop, Skills skills,
             this.dataFileRoot = dataFileRoot;
         }
     }
+
 }

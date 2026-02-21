@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.economy;
 
-import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
-import com.github.mayconr.juoserver.game.economy.stock.RegionStockPool;
+import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.StockPool;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 
@@ -15,16 +15,7 @@ public interface EconomyQueries {
      * @param regionName the region identifier
      * @return the region stock pool
      */
-    RegionStockPool getStockPool(String regionName);
+    StockPool getStockPool(String regionName);
 
-    /**
-     * Calculates the dynamic price of an item template for a given region.
-     *
-     * @param template the item template
-     * @param regionName the region identifier
-     * @return the calculated price
-     */
-    double getPrice(ItemTemplate template, String regionName);
-
-    Optional<RegionStockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
+    Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
 }

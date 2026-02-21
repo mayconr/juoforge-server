@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.command;
 
+import com.github.mayconr.juoserver.game.model.ItemOptions;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,9 @@ public class CreateItem extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        worldActions.createItemAtLocation(event.arguments()[0], event.player());
+        worldActions.createItem(event.arguments()[0],
+                ItemOptions.builder()
+                        .target(new ItemOptions.ContainerTarget(event.player()))
+                        .build());
     }
 }

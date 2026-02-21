@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.ai.session;
 
 import com.github.mayconr.juoserver.game.model.UONpc;
-import com.github.mayconr.juoserver.game.ai.decision.NpcAiRegistry;
-import com.github.mayconr.juoserver.game.ai.profile.BehaviorProfileRegistry;
+import com.github.mayconr.juoserver.game.ai.NpcAiRegistry;
+import com.github.mayconr.juoserver.game.ai.BehaviorProfileRegistry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

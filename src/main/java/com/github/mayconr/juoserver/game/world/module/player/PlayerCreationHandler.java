@@ -139,8 +139,8 @@ public class PlayerCreationHandler {
         final var result = policyService.evaluate(CreateCharacterPolicy.class, new CreateCharacterPolicy(details));
         if (result.allowed()) {
             final var mobile = MobileFactory.createNewPlayer(serialGenerator, details);
-            final int mobileSerialId = serialGenerator.getCurrentMobileSerial();
-            final int itemSerialId = serialGenerator.getCurrentItemSerial();
+            final int mobileSerialId = serialGenerator.getCurrentMobile();
+            final int itemSerialId = serialGenerator.getCurrentItem();
             return storage.insertNewPlayer(mobileSerialId, itemSerialId, mobile);
         }
         return CompletableFuture.failedFuture(new IllegalStateException("Player creation aborted by policy. Reason: "+result.reason()));

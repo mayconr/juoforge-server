@@ -48,7 +48,7 @@ public class DefaultSessionManager implements SessionManager {
         eventBus.register(ItemUnequipped.class, session::onItemUnequipped);
         eventBus.register(MobileEnteredLineOfSight.class, session::onEnteredLineOfSight);
         eventBus.register(NpcCreated.class, session::onNpcCreated);
-        eventBus.register(NpcDeleted.class, session::onNpcDeleted);
+        eventBus.register(MobileDeleted.class, session::onMobileDeleted);
         eventBus.register(PlayerDeleted.class, session::onPlayerDeleted);
         eventBus.register(SkillGained.class, session::onSkillGained);
         eventBus.register(SkillGumpRequested.class, session::onSkillGumpRequested);
@@ -59,9 +59,9 @@ public class DefaultSessionManager implements SessionManager {
         eventBus.register(ItemStacked.class, session::onItemStacked);
         eventBus.register(GroundedItemCreated.class, session::onItemCreated);
         eventBus.register(EquippedItemCreated.class, session::onItemCreated);
-        eventBus.register(ContainerItemCreated.class, session::onItemCreated);
+        eventBus.register(ItemCreatedInContainer.class, session::onItemCreated);
         eventBus.register(ItemDeleted.class, session::onItemDeleted);
-        eventBus.register(ItemMoved.class, session::onItemMoved);
+        eventBus.register(ItemUpdated.class, session::onItemUpdated);
         eventBus.register(AnimationSent.class, session::onAnimationSent);
         eventBus.register(PlayerLoggedIn.class, session::onPlayerLoggedIn);
         eventBus.register(MessageSent.class, session::onMessageSent);
@@ -71,10 +71,11 @@ public class DefaultSessionManager implements SessionManager {
         eventBus.register(SkillLocked.class, session::onSkillLocked);
         eventBus.register(MobileStatusChanged.class, session::onMobileStatusChanged);
         eventBus.register(PlayerStartAttack.class, session::onPlayerStartAttack);
-        eventBus.register(BuyGumpSent.class, session::onBuyGumpSent);
+        eventBus.register(VendorSessionOpened.class, session::onVendorTradeSessionOpened);
         eventBus.register(VitalsChanged.class, session::onVitalsChanged);
         eventBus.register(GumpSent.class, session::onGumpSent);
         eventBus.register(PlayerLoggedOut.class, session::onPlayerLoggedOut);
+        eventBus.register(MobileGoldChanged.class, session::onMobileGoldChanged);
     }
 
     private void unregisterEvents(DefaultPlayerSession session) {
@@ -84,7 +85,7 @@ public class DefaultSessionManager implements SessionManager {
         eventBus.unregister(ItemUnequipped.class, session::onItemUnequipped);
         eventBus.unregister(MobileEnteredLineOfSight.class, session::onEnteredLineOfSight);
         eventBus.unregister(NpcCreated.class, session::onNpcCreated);
-        eventBus.unregister(NpcDeleted.class, session::onNpcDeleted);
+        eventBus.unregister(MobileDeleted.class, session::onMobileDeleted);
         eventBus.unregister(PlayerDeleted.class, session::onPlayerDeleted);
         eventBus.unregister(SkillGained.class, session::onSkillGained);
         eventBus.unregister(SkillGumpRequested.class, session::onSkillGumpRequested);
@@ -95,9 +96,9 @@ public class DefaultSessionManager implements SessionManager {
         eventBus.unregister(ItemStacked.class, session::onItemStacked);
         eventBus.unregister(GroundedItemCreated.class, session::onItemCreated);
         eventBus.unregister(EquippedItemCreated.class, session::onItemCreated);
-        eventBus.unregister(ContainerItemCreated.class, session::onItemCreated);
+        eventBus.unregister(ItemCreatedInContainer.class, session::onItemCreated);
         eventBus.unregister(ItemDeleted.class, session::onItemDeleted);
-        eventBus.unregister(ItemMoved.class, session::onItemMoved);
+        eventBus.unregister(ItemUpdated.class, session::onItemUpdated);
         eventBus.unregister(AnimationSent.class, session::onAnimationSent);
         eventBus.unregister(PlayerLoggedIn.class, session::onPlayerLoggedIn);
         eventBus.unregister(MessageSent.class, session::onMessageSent);
@@ -107,9 +108,10 @@ public class DefaultSessionManager implements SessionManager {
         eventBus.unregister(SkillLocked.class, session::onSkillLocked);
         eventBus.unregister(MobileStatusChanged.class, session::onMobileStatusChanged);
         eventBus.unregister(PlayerStartAttack.class, session::onPlayerStartAttack);
-        eventBus.unregister(BuyGumpSent.class, session::onBuyGumpSent);
+        eventBus.unregister(VendorSessionOpened.class, session::onVendorTradeSessionOpened);
         eventBus.unregister(VitalsChanged.class, session::onVitalsChanged);
         eventBus.unregister(GumpSent.class, session::onGumpSent);
         eventBus.unregister(PlayerLoggedOut.class, session::onPlayerLoggedOut);
+        eventBus.unregister(MobileGoldChanged.class, session::onMobileGoldChanged);
     }
 }

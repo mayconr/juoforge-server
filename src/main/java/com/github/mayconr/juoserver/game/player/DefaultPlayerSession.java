@@ -6,11 +6,13 @@ import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked.StackDestination;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
+import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 @Slf4j
@@ -19,6 +21,7 @@ public class DefaultPlayerSession implements PlayerSession {
 
     @Getter
     private final UOPlayer player;
+    private final Channel channel;
     private final SessionOutbound outbound;
     private final SessionFanout fanout;
     private final ServerProperties properties;
@@ -83,13 +86,11 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     public void onMobileSpeech(MobileSpeech event) {
-        outbound.writeAndFlush(new SendSpeech(event));
+        channel.writeAndFlush(new SendSpeech(event));
     }
 
     public void onItemEquipped(ItemEquipped equipped) {
-        if (player.equals(equipped.mobile())) {
-            fanout.writeAndFlush(new EquipItem(equipped.mobile(), equipped.item().getLayer(), equipped.item()), lineOfSightMobilesFilter());
-        }
+        runInEventLoop(()-> channel.writeAndFlush(new EquipItem(equipped.mobile(), equipped.item().getLayer(), equipped.item())), 20, TimeUnit.MILLISECONDS);
     }
 
     public void onItemUnequipped(ItemUnequipped itemUnequipped) {
@@ -105,11 +106,11 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     public void onNpcCreated(NpcCreated event) {
-        fanout.writeAndFlush(new DrawMobile(event.npc()), lineOfSightMobilesFilter());
+        outbound.writeAndFlush(new DrawMobile(event.npc()));
     }
 
-    public void onNpcDeleted(NpcDeleted event) {
-        fanout.writeAndFlush(new DeleteObject(event.deletedNpc()), lineOfSightMobilesFilter());
+    public void onMobileDeleted(MobileDeleted event) {
+        fanout.writeAndFlush(new DeleteObject(event.mobile()), lineOfSightMobilesFilter());
     }
 
     public void onPlayerDeleted(PlayerDeleted event) {
@@ -143,7 +144,7 @@ public class DefaultPlayerSession implements PlayerSession {
 
     public void onTooltipRequested(TooltipRequested event) {
         if (player.equals(event.player())) {
-            for (UOObject object : event.objects()) {
+            for (TooltipSupport object : event.objects()) {
                 outbound.writeAndFlush(new TooltipRequest(object));
             }
         }
@@ -170,14 +171,14 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     public void onItemCreated(GroundedItemCreated event) {
-        fanout.writeAndFlush(new ObjectInfo(event.item()), lineOfSightMobilesFilter());
+        runInEventLoop(()->channel.writeAndFlush(new ObjectInfo(event.item())),  20, TimeUnit.MILLISECONDS);
     }
 
     public void onItemCreated(EquippedItemCreated event) {
         fanout.writeAndFlush(new DrawMobile(event.mobile()), lineOfSightMobilesFilter());
     }
 
-    public void onItemCreated(ContainerItemCreated event) {
+    public void onItemCreated(ItemCreatedInContainer event) {
         if (event.container() instanceof UOPlayer pl && pl.equals(player)) {
             outbound.writeAndFlush(new AddItemToContainer(pl, event.item()));
             return;
@@ -187,11 +188,16 @@ public class DefaultPlayerSession implements PlayerSession {
     }
 
     public void onItemDeleted(ItemDeleted event) {
-        fanout.writeAndFlush(new DeleteObject(event.item()), lineOfSightMobilesFilter());
+        outbound.writeAndFlush(new DeleteObject(event.item()));
     }
 
-    public void onItemMoved(ItemMoved event) {
-        fanout.writeAndFlush(new ObjectInfo(event.item()));
+    public void onItemUpdated(ItemUpdated event) {
+        outbound.write(new ObjectRevision(event.item()));
+        if (event.item().isInContainer()) {
+            outbound.writeAndFlush(new AddItemToContainer(event.item().getContainer(), event.item()));
+            return;
+        }
+        outbound.writeAndFlush(new ObjectInfo(event.item()));
     }
 
     public void onAnimationSent(AnimationSent event) {
@@ -298,16 +304,12 @@ public class DefaultPlayerSession implements PlayerSession {
         }
     }
 
-    public void onBuyGumpSent(BuyGumpSent event) {
+    public void onVendorTradeSessionOpened(VendorSessionOpened event) {
         if (player.equals(event.player())) {
             final var vendor = event.vendor();
             final var restockContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
-            //final var buyContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY);
-            //final var sellContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_SELL);
-
-
-            outbound.write(AddMultipleItemsToContainer.ofStockItem(restockContainer, event.items()));
-            outbound.write(new VendorBuyList(restockContainer, event.items()));
+            outbound.write(AddMultipleItemsToContainer.ofStockItem(restockContainer, event.session().items().values()));
+            outbound.write(new VendorBuyList(restockContainer, event.session().items().values()));
             outbound.write(new DrawContainer(vendor.getSerialId(), 0x0030));
             outbound.flush();
         }
@@ -325,8 +327,21 @@ public class DefaultPlayerSession implements PlayerSession {
         }
     }
 
+    public void onMobileGoldChanged(MobileGoldChanged event) {
+        if (player.equals(event.mobile())) {
+            outbound.writeAndFlush(new StatusBarInfo(player));
+        }
+    }
+
     private Predicate<UOPlayer> lineOfSightMobilesFilter() {
         return mobile->world.getMobilesInRange(player, properties.world().lightOfSight()).contains(mobile);
     }
 
+    private void runInEventLoop(Runnable runnable) {
+        channel.eventLoop().execute(runnable);
+    }
+
+    private void runInEventLoop(Runnable runnable, long delay, TimeUnit unit) {
+        channel.eventLoop().schedule(runnable, delay, unit);
+    }
 }

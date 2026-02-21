@@ -98,7 +98,8 @@ public class NetworkConfig {
                 new GumpSelectionHandler(world),
                 new UseRequestHandler(world),
                 new ActionRequestedHandler(world),
-                new SendSkillHandler(world)
+                new SendSkillHandler(world),
+                new VendorBuyRequestHandler(world)
         );
     }
 

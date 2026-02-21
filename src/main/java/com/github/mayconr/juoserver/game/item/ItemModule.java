@@ -3,15 +3,17 @@ package com.github.mayconr.juoserver.game.item;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.network.packet.DropItem;
-import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 @RequiredArgsConstructor
-public class ItemModule implements WorldModule, ItemCommands {
+public class ItemModule implements WorldModule, ItemCommands, ItemQueries {
 
     private final ItemHandler itemHandler;
     private final ItemDropHandler itemDropHandler;
-    private final ItemEquipHandler itemEquipHandler;
+    private final ContainerHandler containerHandler;
 
     @Override
     public void update(double delta) {
@@ -19,8 +21,8 @@ public class ItemModule implements WorldModule, ItemCommands {
     }
 
     @Override
-    public UOItem createItemAtLocation(String name, Location location) {
-        return itemHandler.createItemAtLocation(name, location);
+    public UOItem createItemAtLocation(String name, int amount, Location location) {
+        return itemHandler.createItemAtLocation(name, amount, location);
     }
 
     @Override
@@ -29,8 +31,8 @@ public class ItemModule implements WorldModule, ItemCommands {
     }
 
     @Override
-    public UOItem createContainerItem(String name, Container container) {
-        return itemHandler.createContainerItem(name, container);
+    public UOItem createItemInContainer(String name, int amount, Container container) {
+        return itemHandler.createItemInContainer(name, amount, container);
     }
 
     @Override
@@ -59,12 +61,13 @@ public class ItemModule implements WorldModule, ItemCommands {
     }
 
     @Override
-    public void equipItem(UOPlayer player, UOItem item) {
-        itemEquipHandler.equipItem(player, item);
+    public List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> predicate) {
+        return containerHandler.getItemsInContainer(container, predicate);
     }
 
     @Override
-    public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
-        itemEquipHandler.unequipItem(player, pickedUpItem);
+    public ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers) {
+        int remaining = containerHandler.consumeItem(container, name, amount, searchNestedContainers);
+        return new ConsumeResult(remaining > -1, remaining);
     }
 }

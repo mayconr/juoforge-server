@@ -1,20 +1,31 @@
 package com.github.mayconr.juoserver.game.mobile;
 
 import com.github.mayconr.juoserver.game.mobile.movement.MovementHandler;
+import com.github.mayconr.juoserver.game.mobile.npc.MobileHandler;
+import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
+import com.github.mayconr.juoserver.game.model.event.NpcCreated;
+import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.WorldModule;
-import com.github.mayconr.juoserver.game.mobile.npc.NpcHandler;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
+import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MobileModule implements WorldModule, MobileCommands {
+public class MobileModule implements WorldModule, MobileCommands, MobileQueries {
 
     private final MountHandler mountHandler;
-    private final NpcHandler npcHandler;
+    private final MobileHandler mobileHandler;
     private final MovementHandler movementHandler;
+    private final ItemEquipHandler itemEquipHandler;
+    private final NpcTemplateRegistry npcTemplateRegistry;
+    private final Wallet wallet;
+    private final EventBus eventBus;
 
     @Override
     public void update(double delta) {
@@ -24,7 +35,7 @@ public class MobileModule implements WorldModule, MobileCommands {
     @Override
     public void mount(UOPlayer player, UONpc npc) {
         if (mountHandler.mount(player, npc) != null) {
-            npcHandler.deleteNpc(npc);
+            mobileHandler.deleteMobile(npc);
         }
     }
 
@@ -37,21 +48,27 @@ public class MobileModule implements WorldModule, MobileCommands {
                 log.debug("Item [{}] is not a mount item", item.getName());
                 return;
             }
+            final var template = npcTemplateRegistry.get(npcName);
+            if (template == null) {
+                throw  new IllegalStateException("NPC [" + npcName + "] is not a mount item");
+            }
+            var npc = mobileHandler.createNpc(template, player);
+            eventBus.publish(new NpcCreated(npc));
 
-            npcHandler.createNpc(npcName, player, npc->{
-                npc.setDirection(player.getDirection());
-            });
+            if (log.isDebugEnabled()) {
+                log.debug("Created mount NPC [{}]", npcName);
+            }
         }
     }
 
     @Override
-    public UONpc createNpc(String name, Location location) {
-        return npcHandler.createNpc(name, location, npc->{});
+    public UONpc createNpc(NpcTemplate template, Location location) {
+        return mobileHandler.createNpc(template, location);
     }
 
     @Override
     public void deleteNpc(UONpc npc) {
-        npcHandler.deleteNpc(npc);
+        mobileHandler.deleteMobile(npc);
     }
 
     @Override
@@ -60,12 +77,29 @@ public class MobileModule implements WorldModule, MobileCommands {
     }
 
     @Override
-    public void move(UOMobile player, MoveRequest request) {
-        movementHandler.move(player, request);
+    public void move(UOMobile mobile, MoveRequest request) {
+        movementHandler.move(mobile, request);
     }
 
     @Override
-    public void move(UOMobile player, Location location) {
-        movementHandler.move(player, location);
+    public void move(UOMobile mobile, Location location) {
+        movementHandler.move(mobile, location);
+    }
+
+    @Override
+    public void recalculateGold(UOMobile mobile) {
+        int oldBalance = mobile.getGold();
+        mobile.setGold(wallet.getBalance(mobile));
+        eventBus.publish(new MobileGoldChanged(mobile, oldBalance, mobile.getGold()));
+    }
+
+    @Override
+    public void equipItem(UOMobile mobile, UOItem item) {
+        itemEquipHandler.equipItem(mobile, item);
+    }
+
+    @Override
+    public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
+        itemEquipHandler.unequipItem(player, pickedUpItem);
     }
 }

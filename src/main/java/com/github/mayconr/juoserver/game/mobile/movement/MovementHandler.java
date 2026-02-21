@@ -5,25 +5,22 @@ import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.MovementResult;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
-import com.github.mayconr.juoserver.game.world.MovementInternal;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class MovementHandler implements MovementInternal {
+public class MovementHandler {
 
     private final EventBus eventBus;
     private final MobileMovementRules movementRules;
 
-    @Override
     public void move(UOMobile mobile, MoveRequest request) {
         if (request == null) {
             return;
         }
 
-        final MovementResult result =
-                movementRules.tryMove(mobile, request.getDirection(), request.isRunning());
+        final MovementResult result = movementRules.tryMove(mobile, request.getDirection(), request.isRunning());
 
         applyMove(mobile, result, request.getSequence(), false);
     }
@@ -46,15 +43,11 @@ public class MovementHandler implements MovementInternal {
                            MovementResult result,
                            int sequence,
                            boolean teleport) {
-
         if (!result.success()) {
             return;
         }
-
         movementRules.applyMove(mobile, result);
 
-        eventBus.publish(
-                new MobileMoved(mobile, result, sequence, teleport)
-        );
+        eventBus.publish(new MobileMoved(mobile, result, sequence, teleport));
     }
 }

@@ -2,10 +2,9 @@ package com.github.mayconr.juoserver.network.packet;
 
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOItem;
-import com.github.mayconr.juoserver.game.model.event.BuyGumpSent;
+import com.github.mayconr.juoserver.game.model.VendorSessionItem;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 import io.netty.buffer.ByteBuf;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,9 +23,9 @@ public class AddMultipleItemsToContainer extends AbstractPacket {
         return new AddMultipleItemsToContainer(container, containerItems);
     }
 
-    public static AddMultipleItemsToContainer ofStockItem(Container container, Collection<BuyGumpSent.StockItem> items) {
+    public static AddMultipleItemsToContainer ofStockItem(Container container, Collection<VendorSessionItem> items) {
         List<ContainerItem> containerItems = new ArrayList<>(items.size());
-        for (BuyGumpSent.StockItem item : items) {
+        for (VendorSessionItem item : items) {
             containerItems.add(new StockContainerItem(item));
         }
         return new AddMultipleItemsToContainer(container, containerItems);
@@ -108,7 +107,7 @@ public class AddMultipleItemsToContainer extends AbstractPacket {
             }
         }
 
-    private record StockContainerItem(BuyGumpSent.StockItem item) implements ContainerItem {
+    private record StockContainerItem(VendorSessionItem item) implements ContainerItem {
             @Override
             public int getAmount() {
                 return item.entry().getCurrentStock();

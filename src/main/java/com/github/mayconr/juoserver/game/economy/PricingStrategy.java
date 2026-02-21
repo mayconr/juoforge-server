@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.economy;
 
-import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 
 public interface PricingStrategy {
-    double calculate(RegionStockEntry entry, ItemTemplate template);
+    int calculate(StockEntry entry, ItemTemplate template);
 }

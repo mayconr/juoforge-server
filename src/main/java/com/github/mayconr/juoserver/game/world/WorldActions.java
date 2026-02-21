@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.economy.stock.RegionStockEntry;
+import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
@@ -30,11 +30,9 @@ public interface WorldActions {
 
     void moveItem(UOItem item, Location location);
 
-    UOItem createContainerItem(String name, Container container);
+    UOItem createItem(String name, ItemOptions options);
 
-    UOItem createItemAtLocation(String name, Location location);
-
-    UOItem createEquippedItem(UOMobile mobile, String name);
+    ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers);
 
     void scheduleTask(GameTask task);
 
@@ -48,7 +46,7 @@ public interface WorldActions {
 
     void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context);
 
-    void sendBuyGump(UOPlayer player, UOMobile vendor, List<RegionStockEntry> items);
+    void beginVendorPurchase(UOPlayer player, UOMobile vendor, List<StockEntry> items);
 
     void move(UOMobile mobile, Direction direction);
 }

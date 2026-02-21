@@ -2,14 +2,13 @@ package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.network.packet.DropItem;
-import com.github.mayconr.juoserver.network.packet.UnequipItem;
 
 public interface ItemCommands {
-    UOItem createItemAtLocation(String name, Location location);
+    UOItem createItemAtLocation(String name, int amount, Location location);
 
     UOItem createEquippedItem(UOMobile mobile, String name);
 
-    UOItem createContainerItem(String name, Container container);
+    UOItem createItemInContainer(String name, int amount, Container container);
 
     void deleteItem(UOItem item);
 
@@ -21,8 +20,5 @@ public interface ItemCommands {
 
     void dropItemInContainer(UOPlayer player, UOItem item, Container container);
 
-    void equipItem(UOPlayer player, UOItem item);
-
-    void unequipItem(UOPlayer player, UnequipItem pickedUpItem);
-
+    ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers);
 }

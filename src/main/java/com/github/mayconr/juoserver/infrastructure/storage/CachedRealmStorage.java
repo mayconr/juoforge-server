@@ -37,6 +37,10 @@ public class CachedRealmStorage implements RealmStorage {
         mobileStorage.loadNPCs()
             .thenCombine(itemStorage.loadGroundItems(), InitialData::new)
             .thenAccept(data->{
+                for (UOMobile mobile : data.mobiles) {
+                    loadAndCacheMobile(mobile);
+                }
+                System.out.println(data.mobiles.getFirst().getEquippedItems());
                 mobileCache.putAll(data.mobiles());
                 worldMobileIndex.addAll(data.mobiles());
 

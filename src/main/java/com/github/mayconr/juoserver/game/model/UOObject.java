@@ -12,7 +12,7 @@ import java.util.Map;
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class UOObject implements Location, AttributeSupport {
+public class UOObject implements Location, AttributeSupport, TooltipSupport {
     @EqualsAndHashCode.Include @ToString.Include private int serialId;
     private int modelId;
     private int x;
@@ -79,5 +79,10 @@ public class UOObject implements Location, AttributeSupport {
     @Override
     public Object getRuntimeAttribute(String key) {
         return runtimeAttrMap.get(key);
+    }
+
+    @Override
+    public String getTooltipText() {
+        return displayName;
     }
 }

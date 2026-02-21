@@ -1,13 +1,13 @@
 package com.github.mayconr.juoserver.game.ai.session;
 
 import com.github.mayconr.juoserver.game.ai.AIContext;
-import com.github.mayconr.juoserver.game.ai.action.NpcAction;
-import com.github.mayconr.juoserver.game.ai.action.SayAction;
-import com.github.mayconr.juoserver.game.ai.action.SellListAction;
-import com.github.mayconr.juoserver.game.ai.action.WalkAction;
-import com.github.mayconr.juoserver.game.ai.behavior.Behavior;
-import com.github.mayconr.juoserver.game.ai.decision.NpcAI;
-import com.github.mayconr.juoserver.game.ai.profile.BehaviorProfile;
+import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
+import com.github.mayconr.juoserver.game.ai.actions.SayAction;
+import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
+import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
+import com.github.mayconr.juoserver.game.ai.Behavior;
+import com.github.mayconr.juoserver.game.ai.AI;
+import com.github.mayconr.juoserver.game.ai.BehaviorProfile;
 import com.github.mayconr.juoserver.game.model.TextType;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -37,7 +37,7 @@ public class AISessionImpl implements AISession, AIContext {
     private final UONpc npc;
     private final EventBus eventBus;
     private final BehaviorProfile profile;
-    private final NpcAI ai;
+    private final AI ai;
     private Behavior current;
     private World world;
     private SpeechListener speechListener;
@@ -88,12 +88,8 @@ public class AISessionImpl implements AISession, AIContext {
         current.onThink(delta);
         while (!actionQueue.isEmpty()) {
             switch (actionQueue.poll()) {
-                case SayAction say -> {
-                    eventBus.publish(new MobileSpeech(npc, say.text(), new SpeechContext(TextType.NORMAL, SpeechRange.NORMAL, 0,0, System.currentTimeMillis(), npc)));
-                }
-                case SellListAction buyList -> {
-                    world.sendBuyGump(buyList.buyer(), npc, buyList.itemsToSell());
-                }
+                case SayAction say -> eventBus.publish(new MobileSpeech(npc, say.text(), new SpeechContext(TextType.NORMAL, SpeechRange.NORMAL, 0,0, System.currentTimeMillis(), npc))); // TODO create world#speech
+                case SellListAction buyList -> world.beginVendorPurchase(buyList.buyer(), npc, buyList.itemsToSell());
                 case WalkAction walkAction -> world.move(walkAction.npc(), walkAction.direction());
             }
         }

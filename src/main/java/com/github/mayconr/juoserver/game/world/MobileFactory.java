@@ -12,7 +12,7 @@ public class MobileFactory {
     public static UOPlayer createNewPlayer(SerialGenerator serialGenerator, PlayerDetails details) {
         final var player =  new UOPlayer(new UOMobile(
                 UUID.randomUUID(),
-                serialGenerator.nextMobileMobile(),
+                serialGenerator.getNextMobile(),
                 0x190,
                 details.location().getX(),
                 details.location().getY(),
@@ -79,7 +79,7 @@ public class MobileFactory {
     public static UONpc createNpcFromTemplate(SerialGenerator serialGenerator, NpcTemplate template, Location location) {
         var npc = new UONpc(new UOMobile(
                 UUID.randomUUID(),
-                serialGenerator.nextMobileMobile(),
+                serialGenerator.getNextMobile(),
                 template.modelId(),
                 location.getX(),
                 location.getY(),

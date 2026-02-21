@@ -10,13 +10,13 @@ import java.util.UUID;
 public class ItemFactory {
 
     public static UOItem createFromTemplate(SerialGenerator serialGenerator, ItemTemplate template) {
-        return ItemFactory.createFromTemplate(serialGenerator, template, new PointInTheWorld(0,0,0));
+        return ItemFactory.createFromTemplate(serialGenerator, template, new PointInTheWorld(0,0,0), 1);
     }
 
-    public static UOItem createFromTemplate(SerialGenerator serialGenerator, ItemTemplate template, Location location) {
+    public static UOItem createFromTemplate(SerialGenerator serialGenerator, ItemTemplate template, Location location, int amount) {
         final var item = new UOItem(
                 UUID.randomUUID(),
-                serialGenerator.nextItemSerial(),
+                serialGenerator.getNextItem(),
                 template.modelId(),
                 location.getX(),
                 location.getY(),
@@ -25,7 +25,7 @@ public class ItemFactory {
                 template.displayName(),
                 template.attr(),
                 template.layer(),
-                0,
+                amount,
                 template.hue(),
                 template.movable(),
                 false,

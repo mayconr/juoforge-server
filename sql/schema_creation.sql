@@ -5,9 +5,14 @@ CREATE TABLE serial_counters (
 );
 
 INSERT INTO serial_counters (entity_type, next_serial) VALUES
-   ('MOBILE', 1),
+   ('MOBILE', 0x00000001),
    ('ITEM',   0x40000000);
-
+--Tipo	Base
+-- MOBILE	0x00000000
+-- ITEM	0x20000000
+--VIRTUAL	0x40000000
+--Reservado	0x60000000
+--
 CREATE TABLE accounts (
   id UUID PRIMARY KEY,
   username   VARCHAR(32) NOT NULL UNIQUE,

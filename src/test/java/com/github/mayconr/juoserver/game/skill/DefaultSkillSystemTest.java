@@ -2,13 +2,13 @@ package com.github.mayconr.juoserver.game.skill;
 
 import com.github.mayconr.juoserver.ServerProperties;
 import com.github.mayconr.juoserver.game.TestFactory;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.SkillContainer;
 import com.github.mayconr.juoserver.game.model.SkillValue;
+import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.rng.AlwaysFailRNG;
 import com.github.mayconr.juoserver.infrastructure.rng.AlwaysSuccessRNG;
 import com.github.mayconr.juoserver.infrastructure.rng.SeededRNG;
-import com.github.mayconr.juoserver.game.world.WorldInternal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

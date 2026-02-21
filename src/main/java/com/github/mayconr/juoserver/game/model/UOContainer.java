@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Getter
 public class UOContainer extends UOItem implements Container {
 
     private final Map<Integer, UOItem> itensInContainer = new ConcurrentHashMap<>();
+    @Getter
     private int containerGumpId;
 
     public UOContainer(UOItem item, int containerGumpId) {
