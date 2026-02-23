@@ -173,6 +173,7 @@ SELECT
     m.id AS mobile_id,
     m.serial_id,
     m.account_id,
+    CASE WHEN m.account_id IS NOT NULL THEN 'P' ELSE 'N' END AS type,
     m.name,
     m.display_name,
     m.model_id,
@@ -208,12 +209,9 @@ SELECT
     v.max_mana
 
 FROM mobiles m
- JOIN mobile_runtime r
-      ON r.mobile_id = m.id
- JOIN mobile_attributes a
-      ON a.mobile_id = m.id
- JOIN mobile_vitals v
-      ON v.mobile_id = m.id;
+         JOIN mobile_runtime r ON r.mobile_id = m.id
+         JOIN mobile_attributes a ON a.mobile_id = m.id
+         JOIN mobile_vitals v ON v.mobile_id = m.id;
 
 CREATE TABLE items (
    id UUID PRIMARY KEY,

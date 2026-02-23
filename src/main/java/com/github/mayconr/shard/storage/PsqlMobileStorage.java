@@ -5,10 +5,9 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.storage.DataNotFoundException;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -35,8 +34,9 @@ public class PsqlMobileStorage extends AbstractStorage implements MobileStorage 
     private final SaveMobileVitals saveMobileVitals;
     private final SaveMobileAttributes saveMobileAttributes;
     private final SaveMobiles saveMobiles;
+    private final SqlSessionFactory sessionFactory;
 
-    public PsqlMobileStorage(DataSource dataSource, Executor executor, ObjectMapper objectMapper) {
+    public PsqlMobileStorage(DataSource dataSource, Executor executor, ObjectMapper objectMapper, SqlSessionFactory sessionFactory) {
         super(dataSource);
         this.executor = executor;
         this.saveMobileFull = new SaveMobileFull(dataSource, executor, objectMapper);
@@ -45,6 +45,7 @@ public class PsqlMobileStorage extends AbstractStorage implements MobileStorage 
         this.saveMobileVitals = new SaveMobileVitals(dataSource, executor);
         this.saveMobileAttributes = new SaveMobileAttributes(dataSource, executor);
         this.saveMobiles = new SaveMobiles(dataSource, executor);
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
@@ -59,7 +60,11 @@ public class PsqlMobileStorage extends AbstractStorage implements MobileStorage 
 
     @Override
     public CompletableFuture<Integer> getNextMobileSerial() {
-        return getSerial.getNextSerial("MOBILE");
+        return CompletableFuture.supplyAsync(()->{
+            try (var session = sessionFactory.openSession()) {
+                return session.getMapper(MobileSqlMapper.class).getNextMobileSerial();
+            }
+        }, executor);
     }
 
     @Override
@@ -153,18 +158,8 @@ public class PsqlMobileStorage extends AbstractStorage implements MobileStorage 
     @Override
     public CompletableFuture<Boolean> mobileExists(String name) {
         return CompletableFuture.supplyAsync(()->{
-            try (Connection conn = dataSource.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(MOBILE_EXISTS)) {
-                 ps.setString(1, name);
-
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        return rs.getBoolean(1);
-                    }
-                    return false;
-                }
-            } catch (SQLException exception) {
-                throw new RuntimeException("Error executing query", exception);
+            try (var session = sessionFactory.openSession()) {
+                return session.getMapper(MobileSqlMapper.class).mobileExists(name);
             }
         }, executor);
     }

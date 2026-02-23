@@ -52,7 +52,7 @@ public class CreateCharacter extends AbstractPacket {
         this.loginCount = buf.readInt();
         this.profession = buf.readByte();
         buf.readBytes(15); // unknown2
-        this.gender = Gender.byCode(buf.readByte());
+        this.gender = Gender.fromCode(buf.readByte());
         this.strength = buf.readByte();
         this.dexterity = buf.readByte();
         this.intelligence = buf.readByte();

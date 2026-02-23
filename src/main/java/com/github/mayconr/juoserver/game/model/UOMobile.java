@@ -82,6 +82,10 @@ public class UOMobile extends UOObject implements Container {
     // Skills
     private SkillContainer skills;
 
+    public UOMobile(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> persistentAttrMap) {
+        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
+    }
+
     public UOMobile(UOMobile other) {
         super(
                 other.getSerialId(),

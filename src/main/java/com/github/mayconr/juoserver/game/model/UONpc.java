@@ -10,7 +10,7 @@ import java.util.Optional;
 @Setter
 @Getter
 public class UONpc extends UOMobile {
-    private final NpcType type;
+    private NpcType type;
     private int speechHue;
     private int speechFont;
     private BehaviorDefinition behavior;
