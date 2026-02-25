@@ -149,17 +149,23 @@ CREATE TABLE mobile_runtime (
 );
 
 CREATE TABLE mobile_skills (
-      id UUID PRIMARY KEY,
-      mobile_id UUID NOT NULL,
-      skill_id INT NOT NULL,
-      skill_base DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-      skill_cap DOUBLE PRECISION NOT NULL DEFAULT 100.0,
-      skill_lock INT NOT NULL DEFAULT 0,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      CONSTRAINT uq_mobile_skill UNIQUE (mobile_id, skill_id)
-);
+   mobile_id UUID NOT NULL,
+   skill_id SMALLINT NOT NULL,
 
+   skill_base DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+   skill_cap  DOUBLE PRECISION NOT NULL DEFAULT 100.0,
+   skill_lock SMALLINT NOT NULL DEFAULT 0,
+
+   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+   PRIMARY KEY (mobile_id, skill_id),
+
+   CONSTRAINT fk_mobile_skills_mobile
+       FOREIGN KEY (mobile_id)
+           REFERENCES mobiles(id)
+           ON DELETE CASCADE
+);
 
 CREATE VIEW v_account_mobiles_login as
 SELECT id AS mobile_id,
@@ -217,6 +223,12 @@ CREATE TABLE items (
    id UUID PRIMARY KEY,
    serial_id INT NOT NULL,
 
+-- ownership forte (ao deletar o mobile, deleta os itens dele)
+   owner_mobile_id UUID,
+
+-- hierarquia forte (ao deletar o container, deleta o conteúdo)
+   parent_item_id UUID,
+
    name VARCHAR(64) NOT NULL,
    display_name VARCHAR(64) NOT NULL,
 
@@ -231,16 +243,25 @@ CREATE TABLE items (
 
    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-   CONSTRAINT uk_item_serial UNIQUE (serial_id)
+   CONSTRAINT uk_item_serial UNIQUE (serial_id),
+
+   CONSTRAINT fk_items_owner
+       FOREIGN KEY (owner_mobile_id)
+           REFERENCES mobiles(id)
+           ON DELETE CASCADE,
+
+   CONSTRAINT fk_items_parent
+       FOREIGN KEY (parent_item_id)
+           REFERENCES items(id)
+           ON DELETE CASCADE
 );
 
 CREATE INDEX idx_items_name ON items (name);
+CREATE INDEX idx_items_owner_mobile_id ON items(owner_mobile_id);
+CREATE INDEX idx_items_parent_item_id  ON items(parent_item_id);
 
 CREATE TABLE item_state (
     item_id UUID PRIMARY KEY,
-
-    owner_mobile_id UUID,
-    parent_item_id UUID,
 
     x INT,
     y INT,
@@ -248,44 +269,41 @@ CREATE TABLE item_state (
 
     attr JSONB NOT NULL DEFAULT '{}',
 
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_item_state_item
         FOREIGN KEY (item_id)
             REFERENCES items(id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_item_state_owner
-        FOREIGN KEY (owner_mobile_id)
-            REFERENCES mobiles(id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_item_state_parent
-        FOREIGN KEY (parent_item_id)
-            REFERENCES items(id)
             ON DELETE CASCADE
+            DEFERRABLE INITIALLY DEFERRED
 );
 
-CREATE INDEX idx_item_state_equipped_mobile
-    ON item_state (owner_mobile_id);
+CREATE OR REPLACE VIEW v_item_full AS
+SELECT
+    i.id AS item_id,
+    i.serial_id,
+    i.name,
+    i.display_name,
+    i.model_id,
+    i.hue,
+    i.layer,
+    i.unit_weight,
+    i.amount,
+    i.flags,
 
-CREATE VIEW v_item_full AS
-SELECT i.id AS item_id,
-       i.serial_id,
-       i.name,
-       i.display_name,
-       i.model_id,
-       i.hue,
-       i.layer,
-       i.unit_weight,
-       i.amount,
-       i.flags,
-       s.owner_mobile_id,
-       s.parent_item_id,
-       s.x,
-       s.y,
-       s.z,
-       s.attr,
-       s.updated_at
-FROM item_state s
-         JOIN items i ON i.id = s.item_id;
+    i.owner_mobile_id,
+    i.parent_item_id,
+
+    COALESCE(s.x, 0) AS x,
+    COALESCE(s.y, 0) AS y,
+    COALESCE(s.z, 0) AS z,
+
+    s.attr,
+    s.updated_at,
+
+    CASE
+        WHEN i.flags ? 'CONTAINER' THEN 'C'
+        ELSE 'O'
+        END AS type
+FROM items i
+JOIN item_state s ON s.item_id = i.id;

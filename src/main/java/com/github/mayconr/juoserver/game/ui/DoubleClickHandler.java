@@ -1,14 +1,17 @@
 package com.github.mayconr.juoserver.game.ui;
 
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
+import com.github.mayconr.juoserver.game.item.trigger.Trigger;
+import com.github.mayconr.juoserver.game.model.Container;
+import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.ContainerOpened;
 import com.github.mayconr.juoserver.game.model.event.PaperdollOpened;
 import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
-import com.github.mayconr.juoserver.game.item.trigger.Trigger;
-import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
-import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.DoubleClick;
 import com.github.mayconr.juoserver.network.packet.OpenPaperdoll;
@@ -64,11 +67,6 @@ public class DoubleClickHandler {
     }
 
     private void otherMobileDoubleClick(UOPlayer player, UOMobile mobile) {
-        if (mobile instanceof UONpc npc && NpcType.MOUNT.equals(npc.getType())) {
-            //mountService.handleMount(npc);
-            return;
-        }
-
         eventBus.publish(new PaperdollOpened(player, mobile, OpenPaperdoll.Flag.NORMAL));
     }
 

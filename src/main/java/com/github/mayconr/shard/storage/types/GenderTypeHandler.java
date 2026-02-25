@@ -3,12 +3,15 @@ package com.github.mayconr.shard.storage.types;
 import com.github.mayconr.juoserver.game.model.Gender;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
+@MappedTypes(Gender.class)
 public class GenderTypeHandler extends BaseTypeHandler<Gender> {
 
     @Override

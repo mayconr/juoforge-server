@@ -3,12 +3,14 @@ package com.github.mayconr.shard.storage.types;
 import com.github.mayconr.juoserver.game.model.Direction;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@MappedTypes(Direction.class)
 public class DirectionTypeHandler extends BaseTypeHandler<Direction> {
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, Direction parameter, JdbcType jdbcType) throws SQLException {

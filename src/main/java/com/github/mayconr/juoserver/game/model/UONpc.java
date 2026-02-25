@@ -5,20 +5,23 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Setter
 @Getter
 public class UONpc extends UOMobile {
-    private NpcType type;
     private int speechHue;
     private int speechFont;
     private BehaviorDefinition behavior;
     private final List<NpcRole> roles = new ArrayList<>();
 
-    public UONpc(UOMobile mobile, NpcType type) {
+    public UONpc(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> persistentAttrMap) {
+        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
+    }
+
+    public UONpc(UOMobile mobile) {
         super(mobile);
-        this.type = type;
     }
 
     public void addRole(NpcRole role) {

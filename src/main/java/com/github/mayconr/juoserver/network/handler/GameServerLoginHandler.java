@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.handler;
 
-import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
+import com.github.mayconr.juoserver.game.model.AccountMobile;
 import com.github.mayconr.juoserver.game.model.CharacterListFlag;
 import com.github.mayconr.juoserver.game.model.SessionCreationContext;
 import com.github.mayconr.juoserver.game.model.UOCity;
@@ -48,10 +48,10 @@ public class GameServerLoginHandler extends SimpleChannelInboundHandler<GameServ
                 });
     }
 
-    private void handleMobiles(SessionOutbound outbound, List<AccountLoginMobile> mobiles) {
-        final var mobileSlots = new HashMap<Integer, AccountLoginMobile>();
+    private void handleMobiles(SessionOutbound outbound, List<AccountMobile> mobiles) {
+        final var mobileSlots = new HashMap<Integer, AccountMobile>();
         int mobileCounter = 0;
-        for (AccountLoginMobile mobile : mobiles) {
+        for (AccountMobile mobile : mobiles) {
             mobileSlots.put(mobileCounter++, mobile);
         }
 

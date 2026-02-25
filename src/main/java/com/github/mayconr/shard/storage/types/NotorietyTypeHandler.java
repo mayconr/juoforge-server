@@ -3,12 +3,14 @@ package com.github.mayconr.shard.storage.types;
 import com.github.mayconr.juoserver.game.model.Notoriety;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@MappedTypes(Notoriety.class)
 public class NotorietyTypeHandler extends BaseTypeHandler<Notoriety> {
 
     @Override

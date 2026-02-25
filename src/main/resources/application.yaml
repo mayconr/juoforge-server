@@ -9,6 +9,7 @@ logging:
     com.github.mayconr.juoserver.game.skill: DEBUG
     com.github.mayconr.juoserver.game.npc: DEBUG
     com.github.mayconr.juoserver.game.world: DEBUG
+    com.github.mayconr.shard.storage: DEBUG
 
 
 server:

@@ -34,13 +34,12 @@ public class CachedRealmStorage implements RealmStorage {
         this.itemSerialSupplier = itemSerialSupplier;
         this.mobileSerialSupplier = mobileSerialSupplier;
 
-        mobileStorage.loadNPCs()
-            .thenCombine(itemStorage.loadGroundItems(), InitialData::new)
+        mobileStorage.findAllNpcs()
+            .thenCombine(itemStorage.findAllGroundItems(), InitialData::new)
             .thenAccept(data->{
                 for (UOMobile mobile : data.mobiles) {
                     loadAndCacheMobile(mobile);
                 }
-                System.out.println(data.mobiles.getFirst().getEquippedItems());
                 mobileCache.putAll(data.mobiles());
                 worldMobileIndex.addAll(data.mobiles());
 
@@ -57,7 +56,7 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     private CompletableFuture<UOMobile> loadAndCacheMobile(UOMobile mobile) {
-        return itemStorage.loadEquippedItems(mobile)
+        return itemStorage.findAllEquippedItems(mobile)
                 .thenApply(itemCache::putAll)
                 .thenApply(items -> {
                     items.forEach(mobile::equipItem);
@@ -116,12 +115,12 @@ public class CachedRealmStorage implements RealmStorage {
 
     @Override
     public CompletableFuture<Integer> getNextItemSerial() {
-        return itemStorage.getNextItemSerial();
+        return itemStorage.findNextItemSerial();
     }
 
     @Override
     public CompletableFuture<Integer> getNextMobileSerial() {
-        return mobileStorage.getNextMobileSerial();
+        return mobileStorage.findNextMobileSerial();
     }
 
     @Override

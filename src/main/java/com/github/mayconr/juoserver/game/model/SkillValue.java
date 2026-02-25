@@ -1,43 +1,42 @@
 package com.github.mayconr.juoserver.game.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-
-import java.util.UUID;
 
 @Data
-@AllArgsConstructor
-@RequiredArgsConstructor
-@EqualsAndHashCode
 public class SkillValue {
-    @EqualsAndHashCode.Include
-    private final UUID id;
+
     private final int skillId;
     private double base;   // real skill
     private double value;  // effective skill (buff/debuff)
     private double cap;
     private SkillLock lock;
 
-    public static SkillValue of(UUID id, int skillId, double base, double cap, SkillLock lock) {
-        return new SkillValue(id, skillId, base, base, cap, lock);
+    public SkillValue(int skillId, double base, double cap, SkillLock lock) {
+        this.skillId = skillId;
+        this.base = base;
+        this.value = base;
+        this.cap = cap;
+        this.lock = lock;
     }
 
-    public static SkillValue of(UUID id, SkillValue value) {
-        return new SkillValue(id, value.skillId, value.base, value.value, value.cap, value.lock);
+    public static SkillValue of(int skillId, double base, double cap, SkillLock lock) {
+        return new SkillValue(skillId, base, cap, lock);
+    }
+
+    public static SkillValue of(SkillValue value) {
+        return new SkillValue(value.skillId, value.base, value.cap, value.lock);
     }
 
     public static SkillValue of(int skillId, double base, double cap) {
-        return new SkillValue(UUID.randomUUID(), skillId, base, base, cap, SkillLock.UP);
+        return new SkillValue(skillId, base, cap, SkillLock.UP);
     }
 
     public static SkillValue of(int skillId, SkillLock lock) {
-        return new SkillValue(UUID.randomUUID(), skillId, 0, 0, 0, lock);
+        return new SkillValue(skillId, 0, 0, lock);
     }
 
     public static SkillValue zero(int skillId) {
-        return new SkillValue(UUID.randomUUID(), skillId, 0,0,0, SkillLock.UP);
+        return new SkillValue(skillId, 0,0, SkillLock.UP);
     }
 
     public void increase(double amount) {

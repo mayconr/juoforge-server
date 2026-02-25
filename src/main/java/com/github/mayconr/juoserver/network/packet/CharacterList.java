@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.packet;
 
-import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
+import com.github.mayconr.juoserver.game.model.AccountMobile;
 import com.github.mayconr.juoserver.game.model.CharacterListFlag;
 import com.github.mayconr.juoserver.game.model.UOCity;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
@@ -15,12 +15,12 @@ import java.util.Map;
 public class CharacterList extends AbstractPacket {
     public static final int CODE = (byte) 0xA9;
 
-    private final List<AccountLoginMobile> mobiles;
+    private final List<AccountMobile> mobiles;
     private final Map<Integer, UOCity> cities;
     private final CharacterListFlag[] flags;
 
     public CharacterList(
-            List<AccountLoginMobile> mobiles, Map<Integer, UOCity> cities, CharacterListFlag... flags) {
+            List<AccountMobile> mobiles, Map<Integer, UOCity> cities, CharacterListFlag... flags) {
         super(CODE, calculateLength(mobiles.size(), cities.size()));
         this.mobiles = mobiles;
         this.cities = cities;
@@ -42,7 +42,7 @@ public class CharacterList extends AbstractPacket {
         buf.writeByte(CODE);
         buf.writeShort(getLength());
         buf.writeByte(mobiles.size());
-        for (AccountLoginMobile mobile : mobiles) {
+        for (AccountMobile mobile : mobiles) {
             buf.writeBytes(padString(mobile.name(), 30, StandardCharsets.UTF_8));
             buf.writeBytes(padString("password", 30, StandardCharsets.UTF_8));
         }

@@ -2,7 +2,6 @@
   {
     "name": "banker",
     "displayName": "Gary the banker",
-    "type": "HUMAN",
     "modelId": 400 ,
     "notoriety": "INNOCENT",
     "hue": 33770,
@@ -19,7 +18,6 @@
   {
     "name": "blacksmith",
     "displayName": "Jay the blacksmith",
-    "type": "HUMAN",
     "modelId": 400 ,
     "notoriety": "INNOCENT",
     "hue": 33770,

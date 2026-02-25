@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.game.ui.gump.GumpContext;
-import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
+import com.github.mayconr.juoserver.game.model.AccountMobile;
 import com.github.mayconr.juoserver.game.model.SessionCreationContext;
 import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.player.SessionAttributes;
@@ -12,7 +12,7 @@ import io.netty.util.AttributeKey;
 import java.util.Map;
 
 public class AttributeKeys {
-    public static final AttributeKey<Map<Integer, AccountLoginMobile>> CHARACTERS_SLOT = AttributeKey.valueOf("CHARACTERS_SLOT");
+    public static final AttributeKey<Map<Integer, AccountMobile>> CHARACTERS_SLOT = AttributeKey.valueOf("CHARACTERS_SLOT");
     public static final SessionAttributes.Key<UOAccount> ACCOUNT_KEY = new SessionAttributes.Key<>("ACCOUNT_KEY");
     public static final SessionAttributes.Key<SessionCreationContext> SESSION_CREATION_CONTEXT = new SessionAttributes.Key<>("CHARACTERS_SLOT_KEY");
     public static final SessionAttributes.Key<PlayerSession> PLAYER_SESSION_KEY = new SessionAttributes.Key<>("PLAYER_SESSION_KEY");

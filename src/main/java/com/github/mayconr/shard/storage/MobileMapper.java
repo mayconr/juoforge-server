@@ -1,176 +1,301 @@
 package com.github.mayconr.shard.storage;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.shard.storage.types.*;
+import org.apache.ibatis.annotations.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-class MobileMapper {
-    public static UOMobile mapMobile(ResultSet rs) throws SQLException {
-        // --- Core identity ---
-        UUID id = rs.getObject("mobile_id", UUID.class);
-        int serialId = rs.getInt("serial_id");
-        int modelId = rs.getInt("model_id");
-        String name = rs.getString("name");
-        String displayName = rs.getString("display_name");
+public interface MobileMapper {
 
-        Map<String, Object> attr;
-        try {
-            attr = new ObjectMapper().readValue(rs.getString("attr"), new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            attr = Collections.emptyMap();
-        }
+    @Select("SELECT next_serial FROM serial_counters WHERE entity_type = 'MOBILE' LIMIT 1")
+    Integer findNextMobileSerial();
 
-        int x = rs.getInt("x");
-        int y = rs.getInt("y");
-        int z = rs.getInt("z");
+    @Update("""
+        UPDATE serial_counters
+        SET
+            next_serial = #{serial},
+            updated_at  = NOW()
+        WHERE entity_type = 'MOBILE'
+    """)
+    int updateMobileSerial(long serial);
 
-        int dirCode = rs.getInt("direction");
-        Direction direction = rs.wasNull() ? Direction.SOUTH : Direction.fromCode(dirCode);
+    @Select("SELECT EXISTS (SELECT 1 FROM mobiles WHERE LOWER(name) = LOWER(#{name}))")
+    boolean mobileExists(String name);
 
-        int hue = rs.getInt("hue");
+    @Select("SELECT * FROM v_mobile_full WHERE serial_id = #{serialId}")
+    @ConstructorArgs({
+            @Arg(column = "serial_id",   javaType = int.class),
+            @Arg(column = "model_id", javaType = int.class),
+            @Arg(column = "x", javaType = int.class),
+            @Arg(column = "y", javaType = int.class),
+            @Arg(column = "z", javaType = int.class),
+            @Arg(column = "name", javaType = String.class),
+            @Arg(column = "display_name", javaType = String.class),
+            @Arg(column = "attr", javaType = Map.class, typeHandler = AttributesTypeHandler.class),
+    })
+    @Results(id = "MobileMapping", value = {
+            @Result(property = "hue", column = "hue"),
+            @Result(property = "id", column = "mobile_id", typeHandler = UUIDTypeHandler.class),
+            @Result(property = "race", column = "race", typeHandler = RaceTypeHandler.class),
+            @Result(property = "gender", column = "gender", typeHandler = GenderTypeHandler.class),
+            @Result(property = "notoriety", column = "notoriety", typeHandler = NotorietyTypeHandler.class),
+            @Result(property = "status", column = "status", typeHandler = CharacterStatusTypeHandler.class),
+            @Result(property = "direction", column = "direction", typeHandler =  DirectionTypeHandler.class),
+            @Result(property = "running", column = "running"),
+            @Result(property = "hitpoints", column = "hitpoints"),
+            @Result(property = "maxHitpoints", column = "max_hitpoints"),
+            @Result(property = "stamina", column = "stamina"),
+            @Result(property = "maxStamina", column = "max_stamina"),
+            @Result(property = "mana", column = "mana"),
+            @Result(property = "maxMana", column = "max_mana"),
+            @Result(property = "followers", column = "followers"),
+            @Result(property = "maxFollowers", column = "max_followers"),
+            @Result(property = "statCap", column = "stat_cap"),
+            @Result(property = "luck", column = "luck"),
+            @Result(property = "tithingPoints", column = "tithing_points"),
+            @Result(property = "strength", column = "strength"),
+            @Result(property = "dexterity", column = "dexterity"),
+            @Result(property = "intelligence", column = "intelligence"),
+    })
+    @TypeDiscriminator(
+            column = "type",
+            javaType = String.class,
+            cases = {
+                    @Case(value = "P", type = UOPlayer.class),
+                    @Case(value = "N", type = UONpc.class)
+            }
+    )
+    UOMobile findMobileBySerialId(int serialId);
 
-        int statusCode = rs.getInt("status");
-        CharacterStatus status =
-                rs.wasNull() ? CharacterStatus.NORMAL : CharacterStatus.fromCode(statusCode);
+    @Select("SELECT * FROM v_mobile_full WHERE mobile_id = #{id}")
+    @ResultMap("MobileMapping")
+    UOMobile findMobileById(UUID id);
 
-        int notorietyCode = rs.getInt("notoriety");
-        Notoriety notoriety = rs.wasNull() ? Notoriety.INNOCENT : Notoriety.fromCode(notorietyCode);
+    @Select("SELECT * FROM v_mobile_full WHERE account_id is null")
+    @ResultMap("MobileMapping")
+    List<UOMobile> findAllNpcs();
 
-        boolean running = rs.getBoolean("running");
+    @Select("SELECT * FROM v_account_mobiles_login WHERE account_id = #{accountId}")
+    @ConstructorArgs({
+            @Arg(column = "serial_id",   javaType = int.class),
+            @Arg(column = "mobile_name", javaType = String.class)
+    })
+    List<AccountMobile> findAccountMobilesByAccountId(UUID accountId);
 
-        int raceCode = rs.getInt("race");
-        Race race = rs.wasNull() ? Race.HUMAN : Race.fromCode(raceCode);
+    @Select("SELECT * FROM mobile_skills WHERE mobile_id = #{mobileId}")
+    @ConstructorArgs({
+        @Arg(column = "skill_id",   javaType = int.class),
+        @Arg(column = "skill_base",   javaType = double.class),
+        @Arg(column = "skill_cap",   javaType = double.class),
+        @Arg(column = "skill_lock",   javaType = SkillLock.class, typeHandler = SkillLockTypeHandler.class),
+    })
+    List<SkillValue> findSkillsByMobileId(UUID mobileId);
 
-        int genderCode = rs.getInt("gender");
-        Gender gender = rs.wasNull() ? Gender.HUMAN_MALE : Gender.fromCode(genderCode);
+    @Insert("""
+        INSERT INTO mobiles (
+            id,
+            serial_id,
+            name,
+            display_name,
+            model_id,
+            hue,
+            race,
+            gender,
+            notoriety,
+            status,
+            account_id
+        )
+        VALUES (
+            #{id, jdbcType=OTHER},
+            #{serialId},
+            #{name},
+            #{displayName},
+            #{modelId},
+            #{hue},
+            #{race},
+            #{gender},
+            #{notoriety},
+            #{status},
+            #{accountId, jdbcType=OTHER}
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET
+            name         = EXCLUDED.name,
+            display_name = EXCLUDED.display_name,
+            model_id     = EXCLUDED.model_id,
+            hue          = EXCLUDED.hue,
+            race         = EXCLUDED.race,
+            gender       = EXCLUDED.gender,
+            notoriety    = EXCLUDED.notoriety,
+            status       = EXCLUDED.status
+    """)
+    int upsertPlayer(UOPlayer player);
 
-        // --- Attributes ---
-        int strength = rs.getInt("strength");
-        int dexterity = rs.getInt("dexterity");
-        int intelligence = rs.getInt("intelligence");
+    @Insert("""
+        INSERT INTO mobiles (
+            id,
+            serial_id,
+            name,
+            display_name,
+            model_id,
+            hue,
+            race,
+            gender,
+            notoriety,
+            status
+        )
+        VALUES (
+            #{id, jdbcType=OTHER},
+            #{serialId},
+            #{name},
+            #{displayName},
+            #{modelId},
+            #{hue},
+            #{race},
+            #{gender},
+            #{notoriety},
+            #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET
+            name         = EXCLUDED.name,
+            display_name = EXCLUDED.display_name,
+            model_id     = EXCLUDED.model_id,
+            hue          = EXCLUDED.hue,
+            race         = EXCLUDED.race,
+            gender       = EXCLUDED.gender,
+            notoriety    = EXCLUDED.notoriety,
+            status       = EXCLUDED.status
+    """)
+    int upsertNpc(UONpc npc);
 
-        int statCap = rs.getInt("stat_cap");
+    @Delete("""
+        DELETE FROM mobiles
+        WHERE id = #{id};
+    """)
+    int deleteById(UUID id);
 
-        int followers = rs.getInt("followers");
-        int maxFollowers = rs.getInt("max_followers");
+    @Insert("""
+        INSERT INTO mobile_runtime (
+            mobile_id,
+            x,
+            y,
+            z,
+            direction,
+            running,
+            hitpoints,
+            stamina,
+            mana,
+            attr,
+            updated_at
+        )
+        VALUES (
+            #{id, jdbcType=OTHER},
+            #{x},
+            #{y},
+            #{z},
+            #{direction},
+            #{running},
+            #{hitpoints},
+            #{stamina},
+            #{mana},
+            #{persistentAttrMap, typeHandler=com.github.mayconr.shard.storage.types.AttributesTypeHandler}::jsonb,
+            NOW()
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+            x          = EXCLUDED.x,
+            y          = EXCLUDED.y,
+            z          = EXCLUDED.z,
+            direction  = EXCLUDED.direction,
+            running    = EXCLUDED.running,
+            hitpoints  = EXCLUDED.hitpoints,
+            stamina    = EXCLUDED.stamina,
+            mana       = EXCLUDED.mana,
+            attr       = EXCLUDED.attr,
+            updated_at = NOW()
+    """)
+    int upsertMobileRuntime(UOMobile mobile);
 
-        int luck = rs.getInt("luck");
-        int tithingPoints = rs.getInt("tithing_points");
+    @Insert("""
+        INSERT INTO mobile_vitals (
+            mobile_id,
+            max_hitpoints,
+            max_stamina,
+            max_mana
+        )
+        VALUES (
+            #{id, jdbcType=OTHER},
+            #{maxHitpoints},
+            #{maxStamina},
+            #{maxMana}
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+            max_hitpoints = EXCLUDED.max_hitpoints,
+            max_stamina   = EXCLUDED.max_stamina,
+            max_mana      = EXCLUDED.max_mana
+    """)
+    int upsertMobileVitals(UOMobile mobile);
 
-        // --- Vitals (runtime snapshot) ---
-        int hitpoints = rs.getInt("hitpoints");
-        int stamina = rs.getInt("stamina");
-        int mana = rs.getInt("mana");
+    @Insert("""
+        INSERT INTO mobile_attributes (
+            mobile_id,
+            strength,
+            dexterity,
+            intelligence,
+            stat_cap,
+            followers,
+            max_followers,
+            luck,
+            tithing_points
+        )
+        VALUES (
+            #{id, jdbcType=OTHER},
+            #{strength},
+            #{dexterity},
+            #{intelligence},
+            #{statCap},
+            #{followers},
+            #{maxFollowers},
+            #{luck},
+            #{tithingPoints}
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+            strength       = EXCLUDED.strength,
+            dexterity      = EXCLUDED.dexterity,
+            intelligence   = EXCLUDED.intelligence,
+            stat_cap       = EXCLUDED.stat_cap,
+            followers      = EXCLUDED.followers,
+            max_followers  = EXCLUDED.max_followers,
+            luck           = EXCLUDED.luck,
+            tithing_points = EXCLUDED.tithing_points
+    """)
+    int upsertMobileAttributes(UOMobile mobile);
 
-        // --- Max vitals (DB) ---
-        int maxHitpoints = rs.getInt("max_hitpoints");
-        int maxStamina = rs.getInt("max_stamina");
-        int maxMana = rs.getInt("max_mana");
-
-        int gold = 0;
-        int weight = 0;
-        int maxWeight = strength * 3;
-
-        int physicalResist = 0;
-        int maxPhysicalResist = 70;
-        int fireResist = 0;
-        int maxFireResist = 70;
-        int coldResist = 0;
-        int maxColdResist = 70;
-        int poisonResist = 0;
-        int maxPoisonResist = 70;
-        int energyResist = 0;
-        int maxEnergyResist = 70;
-
-        int damageMin = 1;
-        int damageMax = 4;
-
-        int defenseChanceIncrease = 0;
-        int maxDefenseChanceIncrease = 45;
-        int hitChanceIncrease = 0;
-        int swingSpeedIncrease = 0;
-        int weaponDamageIncrease = 0;
-        int lowerReagentCost = 0;
-        int spellDamageIncrease = 0;
-        int reflectPhysicalDamage = 0;
-        int enhancePotions = 0;
-        int fasterCastRecovery = 0;
-        int fasterCasting = 0;
-        int lowerManaCost = 0;
-
-        return new UOMobile(
-                id,
-                serialId,
-                modelId,
-                x,
-                y,
-                z,
-                name,
-                displayName,
-                attr,
-                direction,
-                hue,
-                status,
-                notoriety,
-                running,
-                race,
-                gender,
-                hitpoints,
-                maxHitpoints,
-                strength,
-                dexterity,
-                intelligence,
-                stamina,
-                maxStamina,
-                mana,
-                maxMana,
-                gold,
-                weight,
-                maxWeight,
-                statCap,
-                followers,
-                maxFollowers,
-                physicalResist,
-                maxPhysicalResist,
-                fireResist,
-                maxFireResist,
-                coldResist,
-                maxColdResist,
-                poisonResist,
-                maxPoisonResist,
-                energyResist,
-                maxEnergyResist,
-                luck,
-                damageMin,
-                damageMax,
-                tithingPoints,
-                defenseChanceIncrease,
-                maxDefenseChanceIncrease,
-                hitChanceIncrease,
-                swingSpeedIncrease,
-                weaponDamageIncrease,
-                lowerReagentCost,
-                spellDamageIncrease,
-                reflectPhysicalDamage,
-                enhancePotions,
-                fasterCastRecovery,
-                fasterCasting,
-                lowerManaCost);
-    }
-
-    public static SkillValue mapMobileSkills(ResultSet rs) throws SQLException {
-        final var id = rs.getObject("id", UUID.class);
-        final var skillId = rs.getInt("skill_id");
-        final var base = rs.getDouble("skill_base");
-        final var cap = rs.getDouble("skill_cap");
-        final var lock = SkillLock.fromCode(rs.getInt("skill_lock"));
-        return SkillValue.of(id, skillId, base, cap, lock);
-    }
+    @Insert("""
+        INSERT INTO mobile_skills (
+            mobile_id,
+            skill_id,
+            skill_base,
+            skill_cap,
+            skill_lock
+        ) VALUES (
+            #{mobile.id, jdbcType=OTHER},
+            #{skill.skillId, jdbcType=SMALLINT},
+            #{skill.base, jdbcType=DOUBLE},
+            #{skill.cap, jdbcType=DOUBLE},
+            #{skill.lock, jdbcType=SMALLINT}
+        )
+        ON CONFLICT (mobile_id, skill_id)
+        DO UPDATE SET
+            skill_base = EXCLUDED.skill_base,
+            skill_cap  = EXCLUDED.skill_cap,
+            skill_lock = EXCLUDED.skill_lock
+        """)
+    void upsertSkill(@Param("mobile") UOMobile mobile, @Param("skill") SkillValue skill);
 }

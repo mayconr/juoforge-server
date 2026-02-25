@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
-import com.github.mayconr.juoserver.game.model.AccountLoginMobile;
+import com.github.mayconr.juoserver.game.model.AccountMobile;
 import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 
@@ -11,11 +11,11 @@ import java.util.concurrent.CompletableFuture;
 
 public interface MobileStorage {
 
-    CompletableFuture<Integer> getNextMobileSerial();
+    CompletableFuture<Integer> findNextMobileSerial();
 
     CompletableFuture<Void> setNextMobileSerial(int serial);
 
-    CompletableFuture<List<AccountLoginMobile>> findPlayersByAccount(UOAccount uoAccount);
+    CompletableFuture<List<AccountMobile>> findPlayersByAccount(UOAccount uoAccount);
 
     CompletableFuture<UOMobile> findMobileById(UUID id);
 
@@ -23,7 +23,7 @@ public interface MobileStorage {
 
     CompletableFuture<Boolean> mobileExists(String name);
 
-    CompletableFuture<List<UOMobile>> loadNPCs();
+    CompletableFuture<List<UOMobile>> findAllNpcs();
 
     /**
      * Persists the full state of a {@link UOMobile}, including its core attributes and

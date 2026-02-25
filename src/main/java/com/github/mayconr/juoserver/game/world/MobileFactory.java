@@ -135,7 +135,7 @@ public class MobileFactory {
                 0,
                 0,
                 0
-        ), template.type());
+        ));
         npc.setBehavior(template.behavior());
         if (template.roles() != null) {
             for (String role : template.roles()) {

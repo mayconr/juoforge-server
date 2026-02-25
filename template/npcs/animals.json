@@ -2,7 +2,6 @@
   {
     "name": "horse",
     "displayName": "horse",
-    "type": "MOUNT",
     "modelId": 200,
     "notoriety": "INNOCENT",
     "hue": 0,
