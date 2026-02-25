@@ -1,3 +1,3 @@
 package com.github.mayconr.juoserver.game.model;
 
-public record AccountMobile(int serialId, String name) {}
+public record AccountMobile(Integer serialId, String name) {}

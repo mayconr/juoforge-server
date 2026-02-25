@@ -24,11 +24,12 @@ public class PsqlMobileStorage implements MobileStorage {
     }
 
     @Override
-    public CompletableFuture<List<UOMobile>> findAllNpcs() {
+    public CompletableFuture<List<UONpc>> findAllNpcs() {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try (var session = sessionFactory.openSession()) {
-                        return session.getMapper(MobileMapper.class).findAllNpcs();
+                        var npc = session.getMapper(MobileMapper.class).findAllNpcs();
+                        return npc;
                     }
                 });
     }
@@ -113,9 +114,11 @@ public class PsqlMobileStorage implements MobileStorage {
 
                    // Update mobile
                    if (mobile instanceof UOPlayer player) {
+                       mobileMapper.upsertMobile(player);
                        mobileMapper.upsertPlayer(player);
                    }
                    if (mobile instanceof UONpc npc) {
+                       mobileMapper.upsertMobile(npc);
                        mobileMapper.upsertNpc(npc);
                    }
 
@@ -160,10 +163,12 @@ public class PsqlMobileStorage implements MobileStorage {
 
                     for (UOMobile mobile : mobiles) {
                         if (mobile instanceof UOPlayer player) {
+                            mapper.upsertMobile(player);
                             mapper.upsertPlayer(player);
                             continue;
                         }
                         if (mobile instanceof UONpc npc) {
+                            mapper.upsertMobile(npc);
                             mapper.upsertNpc(npc);
                         }
                     }

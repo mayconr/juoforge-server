@@ -15,6 +15,7 @@ import com.github.mayconr.shard.command.Test;
 import com.github.mayconr.shard.storage.*;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
@@ -24,6 +25,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -70,29 +73,29 @@ public class ShardImplConfiguration {
     }
 
     @Bean
-    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) {
-        var env = new Environment("dev", new JdbcTransactionFactory(),  dataSource);
-        var config = new org.apache.ibatis.session.Configuration(env);
+    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws IOException {
+        try (Reader reader = Resources.getResourceAsReader("mybatis-config.xml")) {
+            var factoryBuilder = new SqlSessionFactoryBuilder();
+            SqlSessionFactory factory = factoryBuilder.build(reader);
 
-        config.getTypeHandlerRegistry()
-                .register("com.github.mayconr.shard.storage.types");
+            // 2) Usa a MESMA Configuration que veio do XML
+            var cfg = factory.getConfiguration();
 
-        config.addMapper(MobileMapper.class);
-        config.addMapper(AccountMapper.class);
-        config.addMapper(ItemMapper.class);
+            // 3) Força o Environment com o DataSource do Spring
+            var env = new Environment("dev", new JdbcTransactionFactory(), dataSource);
+            cfg.setEnvironment(env);
 
+            // 4) (Opcional) registra package de TypeHandlers via código
+            // Se você já colocou <typeHandlers><package .../> no mybatis-config.xml, pode remover isso.
+            //cfg.getTypeHandlerRegistry().register("com.github.mayconr.shard.storage.types");
 
-        /*types.register(GenderTypeHandler.class);
-        types.register(RaceTypeHandler.class);
-        types.register(Notoriety.class, new NotorietyTypeHandler());
-        types.register(CharacterStatus.class, new CharacterStatusTypeHandler());
-        types.register(Direction.class, new DirectionTypeHandler());
-        types.register(UUID.class, JdbcType.OTHER, new UUIDTypeHandler());
-        types.register(new SkillLockTypeHandler());
-        types.register(LayerTypeHandler.class);*/
+            // 5) Registra as interfaces @Mapper (o XML já estará carregado via <mappers>)
+            //cfg.addMapper(MobileMapper.class);
+            cfg.addMapper(AccountMapper.class);
+            cfg.addMapper(ItemMapper.class);
 
-        var builder = new SqlSessionFactoryBuilder();
-        return builder.build(config);
+            return factory;
+        }
     }
 
     @Bean
@@ -132,6 +135,7 @@ public class ShardImplConfiguration {
             bus.register(new Mount(world, world));
             bus.register(new Unmount(world));
             bus.register(new CreateStack(world));
+            bus.register(new Region(world));
         };
     }
 }

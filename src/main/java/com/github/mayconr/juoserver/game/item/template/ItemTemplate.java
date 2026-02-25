@@ -1,6 +1,5 @@
 package com.github.mayconr.juoserver.game.item.template;
 
-import com.github.mayconr.juoserver.game.economy.stock.StockType;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
@@ -14,7 +13,7 @@ public record ItemTemplate(String name,
                            int modelId,
                            boolean movable,
                            int hue,
-                           StockType stockType,
+                           String stockType,
                            int basePrice,
                            List<ItemFlag> flags,
                            Map<String, Object> attr)

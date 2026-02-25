@@ -30,7 +30,9 @@ public class Goto extends AbstractCommand {
                                         Row(
                                                 2,
                                                 Button(1209, 1210, 100, "Britain"),
-                                                Button(1209, 1210, 101, "Minoc")))));
+                                                Button(1209, 1210, 101, "Minoc"),
+                                                Button(1209, 1210, 102, "Moonglow")
+                                                ))));
         worldActions.sendGump(
                 event.player(),
                 gump,
@@ -38,6 +40,7 @@ public class Goto extends AbstractCommand {
                     switch (e.getButtonId()) {
                         case 100 -> worldActions.teleport(c.player(), new PointInTheWorld(1466, 1715, 0));
                         case 101 -> worldActions.teleport(c.player(), new PointInTheWorld(2516, 531, 0));
+                        case 102 -> worldActions.teleport(c.player(), new PointInTheWorld(4427, 1140, 0));
                     }
                 });
     }

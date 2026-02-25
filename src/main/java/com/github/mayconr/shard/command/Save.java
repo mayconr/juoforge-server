@@ -23,16 +23,19 @@ public class Save extends AbstractCommand {
                 }).whenComplete((unused, throwable) -> {
                     if (throwable!= null) {
                         log.error("unable to dele", throwable);
+                        return;
                     }
+
+                    realmStorage.saveItems()
+                            .thenAccept(items->{
+                                realmStorage.saveItemStates();
+                            }).whenComplete((unused2, throwabl2) -> {
+                                if (throwabl2 != null) {
+                                    log.info("erro ",throwable);
+                                }
+                            });
                 });
 
-        realmStorage.saveItems()
-                .thenAccept(items->{
-                    realmStorage.saveItemStates();
-                }).whenComplete((unused, throwable) -> {
-                    if (throwable != null) {
-                        log.info("erro ",throwable);
-                    }
-                });
+
     }
 }

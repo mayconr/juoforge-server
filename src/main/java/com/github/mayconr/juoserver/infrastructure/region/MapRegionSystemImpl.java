@@ -27,7 +27,7 @@ public class MapRegionSystemImpl implements MapRegionSystem {
     }
 
     @Override
-    public Optional<RegionNode> resolveRegion(Location location) {
+    public Optional<RegionNode> getRegion(Location location) {
         return regions.values().stream()
                 .filter(region -> region.contains(location))
                 .max(Comparator.comparingInt(this::depth));

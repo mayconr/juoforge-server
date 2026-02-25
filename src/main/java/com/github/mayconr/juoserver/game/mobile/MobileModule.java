@@ -6,7 +6,6 @@ import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
-import com.github.mayconr.juoserver.game.model.event.NpcCreated;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -26,6 +25,10 @@ public class MobileModule implements WorldModule, MobileCommands, MobileQueries 
     private final NpcTemplateRegistry npcTemplateRegistry;
     private final Wallet wallet;
     private final EventBus eventBus;
+
+    public void initialize(MountHandler.MountItemFactory mountItemFactory) {
+        mountHandler.initialize(mountItemFactory);
+    }
 
     @Override
     public void update(double delta) {
@@ -52,8 +55,8 @@ public class MobileModule implements WorldModule, MobileCommands, MobileQueries 
             if (template == null) {
                 throw  new IllegalStateException("NPC [" + npcName + "] is not a mount item");
             }
-            var npc = mobileHandler.createNpc(template, player);
-            eventBus.publish(new NpcCreated(npc));
+
+            mobileHandler.createNpc(template, player);
 
             if (log.isDebugEnabled()) {
                 log.debug("Created mount NPC [{}]", npcName);

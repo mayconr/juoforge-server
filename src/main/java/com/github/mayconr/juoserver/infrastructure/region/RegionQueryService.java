@@ -56,5 +56,5 @@ public interface RegionQueryService {
      * @return an {@link Optional} containing the resolved region if any,
      *         otherwise empty if no region contains the location
      */
-    Optional<RegionNode> resolveRegion(Location location);
+    Optional<RegionNode> getRegion(Location location);
 }

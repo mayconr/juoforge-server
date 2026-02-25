@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+    <mapper namespace="com.github.mayconr.shard.storage.MobileMapper">
+
+    <!-- =========================
+         ResultMaps
+         ========================= -->
+
+    <!-- Base mapping para UOMobile; o discriminator escolhe UOPlayer/UONpc -->
+    <resultMap id="MobileBaseMap" type="com.github.mayconr.juoserver.game.model.UOMobile">
+
+        <!-- Constructor do UOMobile (de acordo com seus @ConstructorArgs) -->
+        <constructor>
+            <arg column="serial_id"   javaType="int"/>
+            <arg column="model_id"    javaType="int"/>
+            <arg column="x"           javaType="int"/>
+            <arg column="y"           javaType="int"/>
+            <arg column="z"           javaType="int"/>
+            <arg column="name"        javaType="java.lang.String"/>
+            <arg column="display_name" javaType="java.lang.String"/>
+            <arg column="attr"        javaType="java.util.Map" typeHandler="com.github.mayconr.shard.storage.types.AttributesTypeHandler"/>
+        </constructor>
+
+        <!-- ID e campos simples -->
+        <id property="id" column="mobile_id"
+            typeHandler="com.github.mayconr.shard.storage.types.UUIDTypeHandler"/>
+
+        <result property="hue" column="hue"/>
+
+        <result property="race" column="race"
+                typeHandler="com.github.mayconr.shard.storage.types.RaceTypeHandler"/>
+
+        <result property="gender" column="gender"
+                typeHandler="com.github.mayconr.shard.storage.types.GenderTypeHandler"/>
+
+        <result property="notoriety" column="notoriety"
+                typeHandler="com.github.mayconr.shard.storage.types.NotorietyTypeHandler"/>
+
+        <result property="status" column="status"
+                typeHandler="com.github.mayconr.shard.storage.types.CharacterStatusTypeHandler"/>
+
+        <result property="direction" column="direction"
+                typeHandler="com.github.mayconr.shard.storage.types.DirectionTypeHandler"/>
+
+        <result property="running" column="running"/>
+
+        <result property="hitpoints" column="hitpoints"/>
+        <result property="maxHitpoints" column="max_hitpoints"/>
+
+        <result property="stamina" column="stamina"/>
+        <result property="maxStamina" column="max_stamina"/>
+
+        <result property="mana" column="mana"/>
+        <result property="maxMana" column="max_mana"/>
+
+        <result property="followers" column="followers"/>
+        <result property="maxFollowers" column="max_followers"/>
+
+        <result property="statCap" column="stat_cap"/>
+        <result property="luck" column="luck"/>
+        <result property="tithingPoints" column="tithing_points"/>
+
+        <result property="strength" column="strength"/>
+        <result property="dexterity" column="dexterity"/>
+        <result property="intelligence" column="intelligence"/>
+
+        <result property="type" column="type"/>
+
+        <!-- Discriminator: escolhe implementação concreta -->
+        <discriminator javaType="java.lang.String" column="type">
+
+            <case value="P" resultMap="PlayerMap" />
+            <case value="N" resultMap="NpcMap"/>
+        </discriminator>
+    </resultMap>
+
+    <resultMap id="PlayerMap"
+               type="com.github.mayconr.juoserver.game.model.UOPlayer"
+               extends="MobileBaseMap">
+        <!-- player-only -->
+        <result property="accountId" column="account_id"
+                typeHandler="com.github.mayconr.shard.storage.types.UUIDTypeHandler"/>
+    </resultMap>
+
+    <resultMap id="NpcMap"
+               type="com.github.mayconr.juoserver.game.model.UONpc"
+               extends="MobileBaseMap">
+
+        <!-- NPC-only -->
+        <result property="roles" column="roles"
+                typeHandler="com.github.mayconr.shard.storage.types.RolesJsonTypeHandler"/>
+
+        <association property="behavior"
+                     javaType="com.github.mayconr.juoserver.game.model.BehaviorDefinition">
+            <constructor>
+                <arg column="behavior_profile" javaType="java.lang.String"/>
+                <arg column="ai"               javaType="java.lang.String"/>
+            </constructor>
+        </association>
+    </resultMap>
+
+    <resultMap id="AccountMobileMap" type="com.github.mayconr.juoserver.game.model.AccountMobile">
+        <constructor>
+            <arg column="serial_id"   javaType="int"/>
+            <arg column="mobile_name" javaType="java.lang.String"/>
+        </constructor>
+    </resultMap>
+
+    <resultMap id="SkillValueMap" type="com.github.mayconr.juoserver.game.model.SkillValue">
+        <constructor>
+            <arg column="skill_id"   javaType="int"/>
+            <arg column="skill_base" javaType="double"/>
+            <arg column="skill_cap"  javaType="double"/>
+            <arg column="skill_lock" javaType="com.github.mayconr.juoserver.game.model.SkillLock"
+                 typeHandler="com.github.mayconr.shard.storage.types.SkillLockTypeHandler"/>
+        </constructor>
+    </resultMap>
+
+
+    <!-- =========================
+         Serial counter
+         ========================= -->
+    <select id="findNextMobileSerial" resultType="java.lang.Integer">
+        SELECT next_serial
+        FROM serial_counters
+        WHERE entity_type = 'MOBILE'
+        LIMIT 1
+    </select>
+
+    <update id="updateMobileSerial">
+        UPDATE serial_counters
+        SET
+        next_serial = #{serial},
+        updated_at  = NOW()
+        WHERE entity_type = 'MOBILE'
+    </update>
+
+
+    <!-- =========================
+         Existence / Queries
+         ========================= -->
+    <select id="mobileExists" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1
+        FROM mobiles
+        WHERE LOWER(name) = LOWER(#{name})
+        )
+    </select>
+
+    <select id="findMobileBySerialId" resultMap="MobileBaseMap">
+        SELECT * FROM v_mobile_full
+        WHERE serial_id = #{serialId}
+    </select>
+
+    <select id="findMobileById" resultMap="MobileBaseMap">
+        SELECT * FROM v_mobile_full
+        WHERE mobile_id = #{id, jdbcType=OTHER}
+    </select>
+
+    <select id="findAllNpcs" resultMap="MobileBaseMap">
+        SELECT * FROM v_mobile_full
+        WHERE type = 'N'
+    </select>
+
+    <select id="findAccountMobilesByAccountId" resultMap="AccountMobileMap">
+        SELECT * FROM v_account_mobiles_login
+        WHERE account_id = #{accountId, jdbcType=OTHER}
+    </select>
+
+    <select id="findSkillsByMobileId" resultMap="SkillValueMap">
+        SELECT *
+        FROM mobile_skills
+        WHERE mobile_id = #{mobileId, jdbcType=OTHER}
+    </select>
+
+
+    <!-- =========================
+         Upserts: mobiles / player / npc
+         ========================= -->
+
+    <insert id="upsertMobile">
+        INSERT INTO mobiles (
+        id,
+        serial_id,
+        type,
+        name,
+        display_name,
+        model_id,
+        hue,
+        race,
+        gender,
+        notoriety,
+        status
+        )
+        VALUES (
+        #{id, jdbcType=OTHER},
+        #{serialId},
+        #{type},
+        #{name},
+        #{displayName},
+        #{modelId},
+        #{hue},
+        #{race},
+        #{gender},
+        #{notoriety},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET
+        serial_id    = EXCLUDED.serial_id,
+        type         = EXCLUDED.type,
+        name         = EXCLUDED.name,
+        display_name = EXCLUDED.display_name,
+        model_id     = EXCLUDED.model_id,
+        hue          = EXCLUDED.hue,
+        race         = EXCLUDED.race,
+        gender       = EXCLUDED.gender,
+        notoriety    = EXCLUDED.notoriety,
+        status       = EXCLUDED.status
+    </insert>
+
+    <insert id="upsertPlayer">
+        INSERT INTO mobile_player (
+        mobile_id,
+        account_id
+        )
+        VALUES (
+        #{id, jdbcType=OTHER},
+        #{accountId, jdbcType=OTHER}
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+        account_id = EXCLUDED.account_id
+    </insert>
+
+    <insert id="upsertNpc">
+        INSERT INTO mobile_npc (
+        mobile_id,
+        ai,
+        behavior_profile,
+        roles
+        )
+        VALUES (
+        #{id, jdbcType=OTHER},
+        #{behavior.ai},
+        #{behavior.profile},
+        #{roles, typeHandler=com.github.mayconr.shard.storage.types.RolesJsonTypeHandler}::jsonb
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+        ai               = EXCLUDED.ai,
+        behavior_profile = EXCLUDED.behavior_profile,
+        roles            = EXCLUDED.roles
+    </insert>
+
+
+    <!-- =========================
+         Delete
+         ========================= -->
+    <delete id="deleteById">
+        DELETE FROM mobiles
+        WHERE id = #{id, jdbcType=OTHER}
+    </delete>
+
+
+    <!-- =========================
+         Upserts: runtime/vitals/attributes/skills
+         ========================= -->
+    <insert id="upsertMobileRuntime">
+        INSERT INTO mobile_runtime (
+        mobile_id,
+        x,
+        y,
+        z,
+        direction,
+        running,
+        hitpoints,
+        stamina,
+        mana,
+        attr,
+        updated_at
+        )
+        VALUES (
+        #{id, jdbcType=OTHER},
+        #{x},
+        #{y},
+        #{z},
+        #{direction},
+        #{running},
+        #{hitpoints},
+        #{stamina},
+        #{mana},
+        #{persistentAttrMap, typeHandler=com.github.mayconr.shard.storage.types.AttributesTypeHandler}::jsonb,
+        NOW()
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+        x          = EXCLUDED.x,
+        y          = EXCLUDED.y,
+        z          = EXCLUDED.z,
+        direction  = EXCLUDED.direction,
+        running    = EXCLUDED.running,
+        hitpoints  = EXCLUDED.hitpoints,
+        stamina    = EXCLUDED.stamina,
+        mana       = EXCLUDED.mana,
+        attr       = EXCLUDED.attr,
+        updated_at = NOW()
+    </insert>
+
+    <insert id="upsertMobileVitals">
+        INSERT INTO mobile_vitals (
+        mobile_id,
+        max_hitpoints,
+        max_stamina,
+        max_mana
+        )
+        VALUES (
+        #{id, jdbcType=OTHER},
+        #{maxHitpoints},
+        #{maxStamina},
+        #{maxMana}
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+        max_hitpoints = EXCLUDED.max_hitpoints,
+        max_stamina   = EXCLUDED.max_stamina,
+        max_mana      = EXCLUDED.max_mana
+    </insert>
+
+    <insert id="upsertMobileAttributes">
+        INSERT INTO mobile_attributes (
+        mobile_id,
+        strength,
+        dexterity,
+        intelligence,
+        stat_cap,
+        followers,
+        max_followers,
+        luck,
+        tithing_points
+        )
+        VALUES (
+        #{id, jdbcType=OTHER},
+        #{strength},
+        #{dexterity},
+        #{intelligence},
+        #{statCap},
+        #{followers},
+        #{maxFollowers},
+        #{luck},
+        #{tithingPoints}
+        )
+        ON CONFLICT (mobile_id) DO UPDATE
+        SET
+        strength       = EXCLUDED.strength,
+        dexterity      = EXCLUDED.dexterity,
+        intelligence   = EXCLUDED.intelligence,
+        stat_cap       = EXCLUDED.stat_cap,
+        followers      = EXCLUDED.followers,
+        max_followers  = EXCLUDED.max_followers,
+        luck           = EXCLUDED.luck,
+        tithing_points = EXCLUDED.tithing_points
+    </insert>
+
+    <insert id="upsertSkill">
+        INSERT INTO mobile_skills (
+        mobile_id,
+        skill_id,
+        skill_base,
+        skill_cap,
+        skill_lock
+        )
+        VALUES (
+        #{mobile.id, jdbcType=OTHER},
+        #{skill.skillId, jdbcType=SMALLINT},
+        #{skill.base, jdbcType=DOUBLE},
+        #{skill.cap, jdbcType=DOUBLE},
+        #{skill.lock, jdbcType=SMALLINT}
+        )
+        ON CONFLICT (mobile_id, skill_id)
+        DO UPDATE SET
+        skill_base = EXCLUDED.skill_base,
+        skill_cap  = EXCLUDED.skill_cap,
+        skill_lock = EXCLUDED.skill_lock
+    </insert>
+
+</mapper>

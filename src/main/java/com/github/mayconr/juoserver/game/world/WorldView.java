@@ -1,9 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
-import com.github.mayconr.juoserver.game.economy.stock.StockType;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.region.RegionQueryService;
 
@@ -19,7 +18,7 @@ public interface WorldView extends RegionQueryService {
 
     List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> filter);
 
-    List<ItemTemplate> getItemsTemplate(StockType stockType);
+    List<ItemTemplate> getItemsTemplate(String stockType);
 
     List<UOMobile> getMobilesInRange(Location location, int radius);
 
@@ -40,4 +39,6 @@ public interface WorldView extends RegionQueryService {
     boolean isInRange(Location object1, Location object2, int radius);
 
     Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
+
+    Optional<RegionNode> getRegionNode(Location location);
 }

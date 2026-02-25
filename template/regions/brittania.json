@@ -1,6 +1,6 @@
 [
   {
-    "name": "province-britannia",
+    "name": "world-britannia",
     "displayName" : "Britannia",
     "parentName": null,
     "type": "PROVINCE",
@@ -18,7 +18,7 @@
   {
     "name": "city-britain",
     "displayName": "Britain",
-    "parentName": "province-britannia",
+    "parentName": "world-britannia",
     "type": "CITY",
     "area": {
       "type": "rectangle",

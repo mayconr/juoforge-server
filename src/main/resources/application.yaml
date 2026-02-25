@@ -10,6 +10,7 @@ logging:
     com.github.mayconr.juoserver.game.npc: DEBUG
     com.github.mayconr.juoserver.game.world: DEBUG
     com.github.mayconr.shard.storage: DEBUG
+    com.github.mayconr.juoserver.game.economy: DEBUG
 
 
 server:

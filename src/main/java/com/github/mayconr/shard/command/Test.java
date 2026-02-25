@@ -1,8 +1,6 @@
 package com.github.mayconr.shard.command;
 
 import com.github.mayconr.juoserver.game.model.event.Prompt;
-import com.github.mayconr.juoserver.game.model.CursorType;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.game.world.WorldView;
 
@@ -19,7 +17,7 @@ public class Test extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        System.out.println(worldView.resolveRegion(event.player()));
+        System.out.println(worldView.getRegion(event.player()));
 
     }
 }

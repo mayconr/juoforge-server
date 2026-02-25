@@ -14,7 +14,7 @@ public class UOPlayer extends UOMobile {
     private boolean connected;
     private VendorSession vendorSession;
 
-    public UOPlayer(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> persistentAttrMap) {
+    public UOPlayer(Integer serialId, Integer modelId, Integer x, Integer y, Integer z, String name, String displayName, Map<String, Object> persistentAttrMap) {
         super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
     }
 

@@ -1,6 +1,5 @@
 package com.github.mayconr.juoserver.game.item.template;
 
-import com.github.mayconr.juoserver.game.economy.stock.StockType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -13,7 +12,7 @@ public class CachedItemTemplateRegistry implements ItemTemplateRegistry {
     private final Map<String, ItemTemplate> byName;
     private final Map<Integer, List<ItemTemplate>> byModelId;
     private final Map<String, ItemTemplate> mountByNpcName;
-    private final Map<StockType, List<ItemTemplate>> byStockType;
+    private final Map<String, List<ItemTemplate>> byStockType;
 
     public CachedItemTemplateRegistry(Map<String, ItemTemplate> templates) {
         this.byName = Map.copyOf(templates);
@@ -70,7 +69,7 @@ public class CachedItemTemplateRegistry implements ItemTemplateRegistry {
     }
 
     @Override
-    public List<ItemTemplate> getItemTemplates(StockType stockType) {
+    public List<ItemTemplate> getItemTemplates(String stockType) {
         return byStockType.get(stockType);
     }
 }

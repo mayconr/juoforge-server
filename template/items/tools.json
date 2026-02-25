@@ -6,6 +6,8 @@
     "modelId": 3717,
     "movable": true,
     "hue": 0,
+    "stockType": "MINING_TOOL",
+    "basePrice": 10,
     "flags": ["WEAPON", "WEARABLE"],
     "attr": {}
   },

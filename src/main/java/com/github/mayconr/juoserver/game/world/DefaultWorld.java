@@ -13,7 +13,6 @@ import com.github.mayconr.juoserver.game.economy.EconomyModule;
 import com.github.mayconr.juoserver.game.economy.StockHandler;
 import com.github.mayconr.juoserver.game.economy.VendorHandler;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
-import com.github.mayconr.juoserver.game.economy.stock.StockType;
 import com.github.mayconr.juoserver.game.economy.template.RegionStockTemplate;
 import com.github.mayconr.juoserver.game.interaction.InteractionModule;
 import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
@@ -110,7 +109,6 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void initialize() {
-        storage.initialize(serialGenerator::getCurrentItem, serialGenerator::getCurrentMobile);
         serialGenerator.initialize();
         fileReader.loadFiles();
 
@@ -163,7 +161,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.combatModule = new CombatModule(combatService, vitalsService);
 
         // Mobile Module
-        final var mountHandler = new MountHandler(eventBus, storage, policyService, itemTemplateRegistry, serialGenerator);
+        final var mountHandler = new MountHandler(eventBus, storage, policyService, itemTemplateRegistry);
         final var npcHandler = new MobileHandler(serialGenerator, storage, eventBus);
         final var movementRules = new MobileMovementRules(storage);
         final var movementHandler = new MovementHandler(eventBus, movementRules);
@@ -179,9 +177,10 @@ public class DefaultWorld implements WorldInternal, World {
 
         // Module Initialization
         this.economyModule.initialize(itemTemplateRegistry::get);
+        this.mobileModule.initialize((player, item)->itemModule.createEquippedItem(player, item));
 
         // Events Registration
-        eventBus.register(NpcCreated.class, this::handleNpcCreated);
+        eventBus.register(NpcCreated.class, created->handleNpcCreated(created.npc()));
         eventBus.register(PlayerSessionCreated.class, this::handleSessionCreated);
         eventBus.register(PlayerSessionClosed.class, this::handleSessionClosed);
         eventBus.register(MobileMoved.class, new RangeDetection(this, eventBus, properties));
@@ -192,19 +191,17 @@ public class DefaultWorld implements WorldInternal, World {
                 event->wallet.isGold(event.item()));
         eventBus.register(ItemCreatedInContainer.class, event->mobileModule.recalculateGold(((UOItem) event.container()).getOwner()),
                 event->wallet.isGold(event.item()) && event.container() instanceof UOItem item && item.isEquipped());
+
+        // Load world data
+        this.storage.initialize(serialGenerator::getCurrentItem, serialGenerator::getCurrentMobile, data->{
+            for (UONpc npc : data.npcs()) {
+                this.handleNpcCreated(npc);
+            }
+        });
     }
 
-    /**
-     * Handles the NPC creation event.
-     *
-     * <p>Attaches an AI instance to the newly created NPC using the aiModule.
-     * If an AI is successfully created, it is immediately activated via
-     * {@code wakeup} with the current context.</p>
-     *
-     * @param npcCreated event containing the newly created NPC
-     */
-    private void handleNpcCreated(NpcCreated npcCreated) {
-        var ai = aiModule.attach(npcCreated.npc());
+    private void handleNpcCreated(UONpc npc) {
+        var ai = aiModule.attach(npc);
         if (ai != null) {
             ai.wakeup(this);
         }
@@ -485,7 +482,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void beginVendorPurchase(UOPlayer player, UOMobile vendor, List<StockEntry> items) {
-        var region = regionService.resolveRegion(player)
+        var region = regionService.getRegion(player)
                 .orElseThrow(() -> new RuntimeException("Region not found"));
         economyModule.beginVendorPurchase(player, vendor, region, items);
     }
@@ -552,12 +549,12 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public Optional<RegionNode> resolveRegion(Location location) {
-        return regionService.resolveRegion(location);
+    public Optional<RegionNode> getRegion(Location location) {
+        return regionService.getRegion(location);
     }
 
     @Override
-    public List<ItemTemplate> getItemsTemplate(StockType stockType) {
+    public List<ItemTemplate> getItemsTemplate(String stockType) {
         return itemTemplateRegistry.getItemTemplates(stockType);
     }
 
@@ -589,5 +586,10 @@ public class DefaultWorld implements WorldInternal, World {
     @Override
     public ConsumeResult consumeItem(Container container, String itemName, int amount, boolean searchNestedContainers) {
         return itemModule.consumeItem(container, itemName, amount, searchNestedContainers);
+    }
+
+    @Override
+    public Optional<RegionNode> getRegionNode(Location location) {
+        return regionService.getRegion(location);
     }
 }

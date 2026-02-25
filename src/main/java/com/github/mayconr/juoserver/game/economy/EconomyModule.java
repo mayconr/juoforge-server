@@ -13,12 +13,14 @@ import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
 import com.github.mayconr.juoserver.network.packet.VendorBuyRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+@Slf4j
 @RequiredArgsConstructor
 public final class EconomyModule implements WorldModule, EconomyCommands, EconomyQueries {
 
@@ -57,13 +59,29 @@ public final class EconomyModule implements WorldModule, EconomyCommands, Econom
     }
 
     @Override
-    public StockPool getStockPool(String regionName) {
+    public Optional<StockPool> getStockPool(String regionName) {
         return stockHandler.getStockPool(regionName);
     }
 
     @Override
     public Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode) {
         var pool = stockHandler.getStockPool(regionNode.getName());
-        return Optional.ofNullable(pool.getStockEntry(template));
+        var region = regionNode;
+
+        while (pool.isEmpty()) {
+            region = region.getParent().orElse(null);
+            if (region == null) break;
+            pool = stockHandler.getStockPool(region.getName());
+        }
+
+        if (log.isDebugEnabled()) {
+            if (region != null) {
+                log.debug("Stock pool for initial region {} found in {}", regionNode.getName(), region.getName());
+            } else {
+                log.debug("Stock pool not found region {}", regionNode.getName());
+            }
+        }
+
+        return pool.map(stockPool -> stockPool.getStockEntry(template));
     }
 }

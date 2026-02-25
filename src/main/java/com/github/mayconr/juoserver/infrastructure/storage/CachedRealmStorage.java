@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
@@ -30,21 +31,23 @@ public class CachedRealmStorage implements RealmStorage {
     private Supplier<Integer> mobileSerialSupplier;
 
     @Override
-    public void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier) {
+    public void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> initialDataConsumer) {
         this.itemSerialSupplier = itemSerialSupplier;
         this.mobileSerialSupplier = mobileSerialSupplier;
 
         mobileStorage.findAllNpcs()
             .thenCombine(itemStorage.findAllGroundItems(), InitialData::new)
             .thenAccept(data->{
-                for (UOMobile mobile : data.mobiles) {
+                for (UOMobile mobile : data.npcs()) {
                     loadAndCacheMobile(mobile);
                 }
-                mobileCache.putAll(data.mobiles());
-                worldMobileIndex.addAll(data.mobiles());
+                for (UOItem item : data.items()) {
+                    itemCache.put(item);
+                    worldItemIndex.add(item);
+                }
 
-                itemCache.putAll(data.items());
-                worldItemIndex.addAll(data.items());
+                // World initialized
+                initialDataConsumer.accept(data);
             })
             .whenComplete(this::logging);
     }
@@ -110,8 +113,6 @@ public class CachedRealmStorage implements RealmStorage {
         }
         return Optional.empty();
     }
-
-    private record InitialData(List<UOMobile> mobiles, List<UOItem> items) { }
 
     @Override
     public CompletableFuture<Integer> getNextItemSerial() {

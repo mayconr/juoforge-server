@@ -6,11 +6,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface RealmStorage {
 
-    void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier);
+    void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> updateMobile);
 
     CompletableFuture<UOMobile> loadMobile(int serialId);
 

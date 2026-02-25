@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.infrastructure.storage;
 import com.github.mayconr.juoserver.game.model.AccountMobile;
 import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UONpc;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +24,7 @@ public interface MobileStorage {
 
     CompletableFuture<Boolean> mobileExists(String name);
 
-    CompletableFuture<List<UOMobile>> findAllNpcs();
+    CompletableFuture<List<UONpc>> findAllNpcs();
 
     /**
      * Persists the full state of a {@link UOMobile}, including its core attributes and

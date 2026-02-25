@@ -22,6 +22,7 @@ public class UOMobile extends UOObject implements Container {
     private boolean running;
     private Race race;
     private Gender gender;
+    private String type;
 
     // vitals
     private int hitpoints;

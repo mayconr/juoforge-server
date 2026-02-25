@@ -15,7 +15,7 @@ public interface EconomyQueries {
      * @param regionName the region identifier
      * @return the region stock pool
      */
-    StockPool getStockPool(String regionName);
+    Optional<StockPool> getStockPool(String regionName);
 
     Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
 }

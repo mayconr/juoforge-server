@@ -6,12 +6,13 @@ import lombok.Data;
 public class SkillValue {
 
     private final int skillId;
+    // GETTERS
     private double base;   // real skill
     private double value;  // effective skill (buff/debuff)
     private double cap;
     private SkillLock lock;
 
-    public SkillValue(int skillId, double base, double cap, SkillLock lock) {
+    public SkillValue(Integer skillId, Double base, Double cap, SkillLock lock) {
         this.skillId = skillId;
         this.base = base;
         this.value = base;
@@ -32,11 +33,11 @@ public class SkillValue {
     }
 
     public static SkillValue of(int skillId, SkillLock lock) {
-        return new SkillValue(skillId, 0, 0, lock);
+        return new SkillValue(skillId, 0d, 0d, lock);
     }
 
     public static SkillValue zero(int skillId) {
-        return new SkillValue(skillId, 0,0, SkillLock.UP);
+        return new SkillValue(skillId, 0d,0d, SkillLock.UP);
     }
 
     public void increase(double amount) {
@@ -72,19 +73,6 @@ public class SkillValue {
 
     private void recalcValue() {
         this.value = Math.max(0, base);
-    }
-
-    // GETTERS
-    public double getBase() {
-        return base;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public double getCap() {
-        return cap;
     }
 
     public boolean isCapped() {

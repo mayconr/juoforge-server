@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UONpc;
@@ -7,9 +8,6 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
 import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.game.model.policy.Mount;
-import com.github.mayconr.juoserver.game.world.SerialGenerator;
-import com.github.mayconr.juoserver.game.item.ItemFactory;
-import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -24,9 +22,16 @@ public class MountHandler {
     private final RealmStorage storage;
     private final PolicyService policyService;
     private final ItemTemplateRegistry itemTemplateRegistry;
-    private final SerialGenerator serialGenerator;
+    private MountItemFactory mountItemFactory;
+
+    public void initialize(MountItemFactory mountItemFunction) {
+        this.mountItemFactory = mountItemFunction;
+    }
 
     public UOItem mount(UOPlayer player, UONpc npc) {
+        if (mountItemFactory == null) {
+            throw new IllegalStateException("MountHandler is not initialized");
+        }
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
             throw new IllegalStateException("Player " + player.getName() + " already mounted");
         }
@@ -38,7 +43,7 @@ public class MountHandler {
                 return null;
             }
 
-            final var item = ItemFactory.createFromTemplate(serialGenerator, template);
+            final var item = mountItemFactory.create(player, template.name());
 
             player.equipItem(Layer.MOUNT, item);
             player.setLocation(npc);
@@ -63,11 +68,11 @@ public class MountHandler {
         player.unequipItem(item);
         storage.deleteItem(item);
 
-        //final var npc = world.createNpc(npcName, player);
-        //npc.setDirection(player.getDirection());
-
         eventBus.publish(new ItemUnequipped(player, item));
         return item;
     }
 
+    public interface MountItemFactory {
+        UOItem create(UOPlayer player, String name);
+    }
 }

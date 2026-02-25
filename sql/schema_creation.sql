@@ -21,46 +21,58 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE mobiles (
-    id UUID PRIMARY KEY,
+ id UUID PRIMARY KEY,
 
-    serial_id INT NOT NULL,
+ serial_id INT NOT NULL,
 
-    account_id UUID,
+ type CHAR(1) NOT NULL, -- 'P' = Player | 'N' = NPC
 
-    name VARCHAR(32) NOT NULL,
-    display_name VARCHAR(64),
+ name VARCHAR(32) NOT NULL,
+ display_name VARCHAR(64),
 
-    model_id INT NOT NULL,
-    hue INT NOT NULL,
+ model_id INT NOT NULL,
+ hue INT NOT NULL,
 
-    race SMALLINT NOT NULL,
-    gender SMALLINT NOT NULL,
-    notoriety SMALLINT,
-    status SMALLINT,
+ race SMALLINT NOT NULL,
+ gender SMALLINT NOT NULL,
+ notoriety SMALLINT,
+ status SMALLINT,
 
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT fk_mobiles_account
-     FOREIGN KEY (account_id)
-         REFERENCES accounts(id)
-         ON DELETE CASCADE,
+ CONSTRAINT ck_mobile_type
+     CHECK (type IN ('P', 'N')),
 
-    CONSTRAINT uk_character_serial
+ CONSTRAINT uk_character_serial
      UNIQUE (serial_id)
 );
 CREATE UNIQUE INDEX idx_mobiles_serial
     ON mobiles(serial_id);
 
-CREATE INDEX idx_mobiles_account
-    ON mobiles(account_id);
-
-CREATE UNIQUE INDEX idx_players_unique_name
-    ON mobiles (LOWER(name))
-    WHERE account_id IS NOT NULL;
-
 ALTER TABLE mobiles
     ADD CONSTRAINT chk_mobile_serial_range
         CHECK (serial_id BETWEEN 1 AND 1073741823);
+
+CREATE TABLE mobile_player (
+   mobile_id UUID PRIMARY KEY
+       REFERENCES mobiles(id)
+           ON DELETE CASCADE,
+
+   account_id UUID NOT NULL
+       REFERENCES accounts(id)
+           ON DELETE CASCADE
+);
+
+CREATE TABLE mobile_npc (
+    mobile_id UUID PRIMARY KEY
+        REFERENCES mobiles(id)
+            ON DELETE CASCADE,
+
+    ai VARCHAR(64) NOT NULL,
+    behavior_profile VARCHAR(64) NOT NULL,
+
+    roles JSONB NOT NULL DEFAULT '[]'::jsonb
+);
 
 CREATE TABLE mobile_attributes (
    mobile_id UUID PRIMARY KEY,
@@ -167,19 +179,21 @@ CREATE TABLE mobile_skills (
            ON DELETE CASCADE
 );
 
-CREATE VIEW v_account_mobiles_login as
-SELECT id AS mobile_id,
-       serial_id,
-       account_id,
-       name AS mobile_name
-FROM mobiles m;
-
-CREATE VIEW v_mobile_full AS
+CREATE OR REPLACE VIEW v_account_mobiles_login AS
 SELECT
     m.id AS mobile_id,
     m.serial_id,
-    m.account_id,
-    CASE WHEN m.account_id IS NOT NULL THEN 'P' ELSE 'N' END AS type,
+    mp.account_id,
+    m.name AS mobile_name
+FROM mobiles m
+JOIN mobile_player mp ON mp.mobile_id = m.id;
+
+CREATE OR REPLACE VIEW v_mobile_full AS
+SELECT
+    m.id AS mobile_id,
+    m.serial_id,
+    mp.account_id,
+    m.type,
     m.name,
     m.display_name,
     m.model_id,
@@ -212,12 +226,19 @@ SELECT
 
     v.max_hitpoints,
     v.max_stamina,
-    v.max_mana
+    v.max_mana,
+
+    -- NPC specific (NULL para players)
+    n.ai,
+    n.behavior_profile,
+    n.roles
 
 FROM mobiles m
-         JOIN mobile_runtime r ON r.mobile_id = m.id
-         JOIN mobile_attributes a ON a.mobile_id = m.id
-         JOIN mobile_vitals v ON v.mobile_id = m.id;
+JOIN mobile_runtime r      ON r.mobile_id = m.id
+JOIN mobile_attributes a   ON a.mobile_id = m.id
+JOIN mobile_vitals v       ON v.mobile_id = m.id
+LEFT JOIN mobile_player mp ON mp.mobile_id = m.id
+LEFT JOIN mobile_npc n     ON n.mobile_id = m.id;
 
 CREATE TABLE items (
    id UUID PRIMARY KEY,

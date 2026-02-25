@@ -1,7 +1,5 @@
 package com.github.mayconr.juoserver.game.item.template;
 
-import com.github.mayconr.juoserver.game.economy.stock.StockType;
-
 import java.util.List;
 
 public interface ItemTemplateRegistry {
@@ -12,6 +10,6 @@ public interface ItemTemplateRegistry {
 
     ItemTemplate getMountByNpcName(String name);
 
-    List<ItemTemplate> getItemTemplates(StockType stockType);
+    List<ItemTemplate> getItemTemplates(String stockType);
 
 }
