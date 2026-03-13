@@ -1,0 +1,11 @@
+package com.github.mayconr.shard.actions;
+
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
+import com.github.mayconr.juoserver.game.model.event.GuildButtonPressed;
+
+public class GuildButton implements EventHandler<GuildButtonPressed> {
+    @Override
+    public void handle(GuildButtonPressed event) {
+        System.out.println("guild "+event);
+    }
+}

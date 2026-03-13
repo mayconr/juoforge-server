@@ -1,0 +1,32 @@
+[
+  {
+    "name" : "moonglow-initial-stock",
+    "region": "moonglow-city",
+    "initialStock": [
+      {
+        "itemName": "iron_ore",
+        "maxStock": 20,
+        "amount": 10,
+        "elasticity": 0.8
+      },
+      {
+        "itemName": "gold_ore",
+        "maxStock": 15,
+        "amount": 5,
+        "elasticity": 1.2
+      },
+      {
+        "itemName": "dull_copper_ore",
+        "maxStock": 15,
+        "amount": 10,
+        "elasticity": 1.2
+      },
+      {
+        "itemName": "pickaxe",
+        "maxStock": 3,
+        "amount": 2,
+        "elasticity": 1.2
+      }
+    ]
+  }
+]

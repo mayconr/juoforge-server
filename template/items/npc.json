@@ -1,0 +1,34 @@
+[
+  {
+    "name": "vendor_buy_restock",
+    "displayName": "vendor restock",
+    "layer": "SHOP_BUY_RESTOCK",
+    "modelId": 3701,
+    "movable": true,
+    "hue": 0,
+    "flags": ["CONTAINER"],
+    "attr": {}
+  },
+  {
+    "name": "vendor_buy",
+    "displayName": "vendor buy",
+    "layer": "SHOP_BUY",
+    "modelId": 3701,
+    "movable": true,
+    "hue": 0,
+    "flags": ["CONTAINER"],
+    "attr": {}
+  },
+  {
+    "name": "vendor_sell",
+    "displayName": "vendor sell",
+    "layer": "SHOP_SELL",
+    "modelId": 3701,
+    "movable": true,
+    "hue": 0,
+    "flags": ["CONTAINER"],
+    "attr": {
+      "gumpId": 48
+    }
+  }
+]

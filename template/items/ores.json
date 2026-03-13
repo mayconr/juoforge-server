@@ -1,0 +1,74 @@
+[
+  {
+    "name": "iron_ore",
+    "displayName": "iron ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 0,
+    "stockType": "ORE",
+    "basePrice": 10,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "dull_copper_ore",
+    "displayName": "dull copper ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 46,
+    "stockType": "ORE",
+    "basePrice": 15,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "shadow_ore",
+    "displayName": "shadow ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 922,
+    "stockType": "ORE",
+    "basePrice": 20,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "copper_ore",
+    "displayName": "copper ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 47,
+    "stockType": "ORE",
+    "basePrice": 30,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "bronze_ore",
+    "displayName": "bronze ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 52,
+    "stockType": "ORE",
+    "basePrice": 40,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  },
+  {
+    "name": "gold_ore",
+    "displayName": "gold ore",
+    "layer": "INVALID",
+    "modelId": 6585,
+    "movable": true,
+    "hue": 153,
+    "stockType": "ORE",
+    "basePrice": 50,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  }
+]

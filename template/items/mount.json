@@ -1,0 +1,38 @@
+[
+  {
+    "name": "horse_item",
+    "displayName": "Horse",
+    "layer": "MOUNT",
+    "modelId": 16032,
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {
+      "npcName" : "horse"
+    }
+  },
+  {
+    "name": "llama_item",
+    "displayName": "Llama",
+    "layer": "MOUNT",
+    "modelId": 16038, // 0x3EA6
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {
+      "npcName" : "llama"
+    }
+  },
+  {
+    "name": "ethereal_giant_beetle_item",
+    "displayName": "Ethereal Giant Beetle",
+    "layer": "MOUNT",
+    "modelId": 16023, // 0x3E97
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {
+      "npcName" : "ethereal_giant_beetle"
+    }
+  }
+]

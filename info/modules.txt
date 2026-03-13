@@ -1,0 +1,185 @@
+Nova Estrutura Semântica
+1️⃣ CoreEngineModule
+
+Responsável por infraestrutura da engine.
+
+Inclui:
+
+SerialGenerator
+
+RealmStorage
+
+GameLoop
+
+UOFileReader
+
+Esse módulo:
+
+Não depende de gameplay
+
+Não conhece Player/NPC
+
+2️⃣ WorldStateModule
+
+Responsável por leitura estrutural do mundo.
+
+Inclui:
+
+MapRegionService
+
+ItemTemplateRegistry
+
+EconomySystem (parte estrutural)
+
+Load/unload
+
+Container loading
+
+isMobile()
+
+Esse módulo:
+
+Fornece dados
+
+Não executa gameplay ativo
+
+3️⃣ CharacterModule
+
+Unifica Player + NPC como “mobile domain”.
+
+Inclui:
+
+PlayerCreationService
+
+PlayerRemovalService
+
+PlayerLoginService
+
+NpcService
+
+StatusService
+
+VitalsService
+
+MountService
+
+Motivo:
+Player e NPC são ambos UOMobile.
+Separar demais fragmenta regras de mobile.
+
+4️⃣ ItemModule
+
+Responsável por todo lifecycle de item.
+
+Inclui:
+
+ItemCreationService
+
+ItemEquipService
+
+ItemDropService
+
+TooltipService
+
+DoubleClickService
+
+SingleClickService
+
+Esse módulo:
+
+Controla estado de itens
+
+Controla interação com itens
+
+Decide regras de equip/drop
+
+5️⃣ CombatModule
+
+Responsável por regras ativas de combate.
+
+Inclui:
+
+CombatService
+
+regen()
+
+toggleWarMode()
+
+attack()
+
+Esse módulo:
+
+Pode rodar dentro do GameLoop
+
+Trabalha com Vitals
+
+6️⃣ SkillModule
+
+Responsável por skill usage + gain.
+
+Inclui:
+
+SkillSystem
+
+SkillService
+
+tryGainSkill()
+
+skillGained()
+
+Separado de Combat porque:
+Skill é mecânica transversal (craft, mining, etc.)
+
+7️⃣ EconomyModule
+
+Responsável por economia dinâmica.
+
+Inclui:
+
+EconomySystem
+
+VendorService
+
+RegionStockPool
+
+Isso separa economia de NPC genérico.
+
+8️⃣ InteractionModule
+
+Responsável por input e ações do jogador.
+
+Inclui:
+
+MovementService
+
+SpeechService
+
+TargetService
+
+ActionService
+
+AnimationService
+
+MessageService
+
+Esse módulo:
+
+É a porta de entrada do gameplay
+
+Converte eventos em comandos
+
+9️⃣ UiModule
+
+Responsável apenas por UI server-side.
+
+Inclui:
+
+GumpSystem
+
+sendGump()
+
+gumpResponse()
+
+sendBuyGump()
+
+playerStatusRequested()

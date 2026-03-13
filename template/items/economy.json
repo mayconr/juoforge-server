@@ -1,0 +1,12 @@
+[
+  {
+    "name": "gold_coin",
+    "displayName": "gold coins",
+    "layer": null,
+    "modelId": 3823,
+    "movable": true,
+    "hue": 0,
+    "flags": ["STACKABLE"],
+    "attr": {}
+  }
+]

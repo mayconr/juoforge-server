@@ -1,0 +1,18 @@
+[
+  {
+    "name": "horse",
+    "displayName": "horse",
+    "modelId": 200,
+    "notoriety": "INNOCENT",
+    "hue": 0,
+    "behavior": {
+      "profile" : "ANIMAL",
+      "ai" : "PASSIVE_ANIMAL"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
+    },
+    "equippedItems": []
+  }
+]

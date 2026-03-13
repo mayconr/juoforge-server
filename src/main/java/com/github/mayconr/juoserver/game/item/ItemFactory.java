@@ -1,0 +1,38 @@
+package com.github.mayconr.juoserver.game.item;
+
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.world.SerialGenerator;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public class ItemFactory {
+
+    public static UOItem createFromTemplate(SerialGenerator serialGenerator, ItemTemplate template, Location location, int amount) {
+        final var item = new UOItem(
+                UUID.randomUUID(),
+                serialGenerator.getNextItem(),
+                template.modelId(),
+                location.getX(),
+                location.getY(),
+                location.getZ(),
+                template.name(),
+                template.displayName(),
+                template.attr(),
+                template.layer(),
+                amount,
+                template.hue(),
+                template.movable(),
+                false,
+                Direction.NORTH,
+                null,
+                template.flags()
+        );
+        if (template.flags().contains(ItemFlag.CONTAINER)) {
+            return new UOContainer(item, Optional.ofNullable(template.attr().get("gumpId"))
+                    .map(Integer.class::cast).orElse(0));
+        }
+        return item;
+    }
+}

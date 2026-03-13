@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!-- (Opcional) aliases -->
+    <typeAliases>
+        <!-- use o seu package real -->
+        <package name="com.github.mayconr.shard.storage"/>
+    </typeAliases>
+
+    <!-- (Opcional) typeHandlers -->
+    <typeHandlers>
+        <package name="com.github.mayconr.shard.storage.types"/>
+    </typeHandlers>
+
+    <mappers>
+        <!-- caminho classpath do XML do mapper -->
+        <mapper resource="mappers/MobileMapper.xml"/>
+        <!-- adicione os outros mappers aqui -->
+    </mappers>
+
+</configuration>

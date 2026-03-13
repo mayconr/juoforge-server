@@ -1,0 +1,24 @@
+[
+  {
+    "name": "pickaxe",
+    "displayName": "pickaxe",
+    "layer": "ONE_HANDED",
+    "modelId": 3717,
+    "movable": true,
+    "hue": 0,
+    "stockType": "MINING_TOOL",
+    "basePrice": 10,
+    "flags": ["WEAPON", "WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "axe",
+    "displayName": "axe",
+    "layer": "ONE_HANDED",
+    "modelId": 3909,
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEAPON", "WEARABLE"],
+    "attr": {}
+  }
+]

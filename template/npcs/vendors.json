@@ -1,0 +1,54 @@
+[
+  {
+    "name": "banker",
+    "displayName": "Gary the banker",
+    "modelId": 400 ,
+    "notoriety": "INNOCENT",
+    "hue": 33770,
+    "behavior": {
+      "profile" : "BANKER",
+      "ai" : "DIALOGUE_REACTIVE"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
+    },
+    "equippedItems" : ["vendor_sell","vendor_buy_restock","vendor_buy", "hat"]
+  },
+  {
+    "name": "blacksmith",
+    "displayName": "Jay the blacksmith",
+    "modelId": 400 ,
+    "notoriety": "INNOCENT",
+    "hue": 33770,
+    "behavior": {
+      "profile" : "VENDOR",
+      "ai" : "DIALOGUE_REACTIVE"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["buy"],
+      "behavior.stockType": "ORE"
+    },
+    "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat", "robe", "long_hair", "short_beard", "backpack"],
+    "roles": ["vendor"]
+  },
+  {
+    "name": "miner",
+    "displayName": "Olaf the miner",
+    "modelId": 400 ,
+    "notoriety": "INNOCENT",
+    "hue": 33770,
+    "behavior": {
+      "profile" : "VENDOR",
+      "ai" : "DIALOGUE_REACTIVE"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["buy"],
+      "behavior.stockType": "MINING_TOOL"
+    },
+    "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat", "robe", "long_hair", "short_beard", "backpack", "pickaxe"],
+    "roles": ["vendor"]
+  }
+]

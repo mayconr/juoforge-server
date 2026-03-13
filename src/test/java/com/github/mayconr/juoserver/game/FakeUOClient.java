@@ -2,8 +2,8 @@ package com.github.mayconr.juoserver.game;
 
 import java.util.Objects;
 
-import com.github.mayconr.juoserver.game.packet.Packet;
-import com.github.mayconr.juoserver.game.server.Huffman;
+import com.github.mayconr.juoserver.network.packet.Packet;
+import com.github.mayconr.juoserver.infrastructure.server.Huffman;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

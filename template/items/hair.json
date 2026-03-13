@@ -1,0 +1,152 @@
+[
+  {
+    "name": "hair",
+    "displayName": "hair",
+    "layer": "HAIR",
+    "modelId": 8251,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "long_hair",
+    "displayName": "long hair",
+    "layer": "HAIR",
+    "modelId": 8252,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "ponytail",
+    "displayName": "ponytail",
+    "layer": "HAIR",
+    "modelId": 8253,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "long_beard",
+    "displayName": "long beard",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8254,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "short_beard",
+    "displayName": "short beard",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8255,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "goatee",
+    "displayName": "goatee",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8256,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "mustache",
+    "displayName": "mustache",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8257,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "curly",
+    "displayName": "curly",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8263,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "vandyke",
+    "displayName": "vandyke",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8269,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "recending",
+    "displayName": "recending",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8264,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "pigtails",
+    "displayName": "pigtails",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8265,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "short_beard2",
+    "displayName": "short beard",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8267,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "topknot",
+    "displayName": "topknot",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8266,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "pageboy",
+    "displayName": "pageboy",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8261,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+  {
+    "name": "mohawke",
+    "displayName": "mohawke",
+    "layer": "FACIAL_HAIR",
+    "modelId": 8260,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  }
+]

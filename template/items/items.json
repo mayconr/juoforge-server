@@ -1,0 +1,55 @@
+[
+  {
+    "name": "spear",
+    "displayName": "a Spear",
+    "layer": "TWO_HANDED",
+    "modelId": 3939,
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEARABLE","WEAPON"],
+    "attr": {}
+  },
+  {
+    "name": "robe",
+    "displayName": "a Robe",
+    "layer": "OUTER_TORSO",
+    "modelId": 7935,
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  },
+
+  {
+    "name": "mochila",
+    "displayName": "mochila",
+    "layer": null,
+    "modelId": 3701,
+    "movable": false,
+    "hue": 0,
+    "flags": ["WEARABLE", "CONTAINER"],
+    "attr": {
+      "gumpId": 60
+    }
+  },
+  {
+    "name": "sword",
+    "displayName": "a sword",
+    "layer": "ONE_HANDED",
+    "modelId": 526,
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEARABLE","WEAPON"],
+    "attr": {}
+  },
+  {
+    "name": "hat",
+    "displayName": "hat",
+    "layer": "HEAD",
+    "modelId": 5907,
+    "movable": true,
+    "hue": 0,
+    "flags": ["WEARABLE"],
+    "attr": {}
+  }
+]

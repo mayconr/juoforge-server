@@ -1,0 +1,50 @@
+[
+  {
+    "name": "world-britannia",
+    "displayName" : "Britannia",
+    "parentName": null,
+    "type": "PROVINCE",
+    "area": {
+      "type": "rectangle",
+      "x": 0,
+      "y": 0,
+      "width": 6144,
+      "height": 4096
+    },
+    "properties": {
+      "taxRate": 0.05
+    }
+  },
+  {
+    "name": "city-britain",
+    "displayName": "Britain",
+    "parentName": "world-britannia",
+    "type": "CITY",
+    "area": {
+      "type": "rectangle",
+      "x": 1250,
+      "y": 1400,
+      "width": 500,
+      "height": 500
+    },
+    "properties": {
+      "taxRate": 0.10
+    }
+  },
+  {
+    "name": "city-starting",
+    "displayName": "Britain",
+    "parentName": "city-britain",
+    "type": "STARTING_LOCATION",
+    "area": {
+      "type": "rectangle",
+      "x": 1438,
+      "y": 1697,
+      "width": 5,
+      "height": 5
+    },
+    "properties": {
+      "cliloc": 1014006
+    }
+  }
+]
