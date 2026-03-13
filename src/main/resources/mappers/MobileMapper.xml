@@ -265,6 +265,11 @@
         WHERE id = #{id, jdbcType=OTHER}
     </delete>
 
+    <delete id="deleteBySerialId">
+        DELETE FROM mobiles
+        WHERE serial_id = #{serialId}
+    </delete>
+
 
     <!-- =========================
          Upserts: runtime/vitals/attributes/skills

@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.ServerProperties;
+import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.ai.BehaviorProfileRegistry;
 import com.github.mayconr.juoserver.game.ai.NpcAiRegistry;
@@ -20,10 +20,7 @@ import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
 import com.github.mayconr.juoserver.game.interaction.speech.SpeechHandler;
 import com.github.mayconr.juoserver.game.interaction.target.TargetHandler;
 import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
-import com.github.mayconr.juoserver.game.item.ContainerHandler;
-import com.github.mayconr.juoserver.game.item.ItemDropHandler;
-import com.github.mayconr.juoserver.game.item.ItemHandler;
-import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.item.*;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
@@ -37,6 +34,9 @@ import com.github.mayconr.juoserver.game.mobile.npc.MobileHandler;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
+import com.github.mayconr.juoserver.game.player.PlayerCreationHandler;
+import com.github.mayconr.juoserver.game.player.PlayerModule;
+import com.github.mayconr.juoserver.game.player.PlayerVitalsHandler;
 import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillHandler;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
@@ -44,18 +44,16 @@ import com.github.mayconr.juoserver.game.ui.*;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.DefaultGumpSystem;
 import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
-import com.github.mayconr.juoserver.game.world.bootstrap.ShardConfiguration;
-import com.github.mayconr.juoserver.game.world.module.player.PlayerCreationHandler;
-import com.github.mayconr.juoserver.game.world.module.player.PlayerLoginHandler;
-import com.github.mayconr.juoserver.game.world.module.player.PlayerModule;
-import com.github.mayconr.juoserver.game.world.module.player.PlayerRemovalHandler;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderSystem;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
-import com.github.mayconr.juoserver.infrastructure.region.MapRegionSystem;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
+import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
@@ -89,7 +87,7 @@ public class DefaultWorld implements WorldInternal, World {
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
     private final GameLoop gameLoop;
-    private final MapRegionSystem regionService;
+    private final RegionSystem regionSystem;
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final UOFileReaderSystem fileReader;
     private final PolicyService policyService;
@@ -97,14 +95,12 @@ public class DefaultWorld implements WorldInternal, World {
     private final RNG rng;
     private final NpcTemplateRegistry npcTemplateRegistry;
 
-    // Factories
-    private final ShardConfiguration configuration;
-
     // Properties
-    private final ServerProperties properties;
+    private final JuoforgeConfiguration configuration;
 
     public void update(double delta) {
         aiModule.update(delta);
+        playerModule.update(delta);
     }
 
     @Override
@@ -112,18 +108,18 @@ public class DefaultWorld implements WorldInternal, World {
         serialGenerator.initialize();
         fileReader.loadFiles();
 
-        final var wallet = configuration.wallet().apply(this);
+        final var wallet = configuration.world().wallet().apply(this);
 
         // Economy Module
-        final var pricingStrategy = configuration.pricingStrategy().get();
+        final var pricingStrategy = configuration.world().pricingStrategy().get();
         final var vendorHandler = new VendorHandler(eventBus, serialGenerator, pricingStrategy);
         final var stockHandler = new StockHandler();
         final var templateLoader = new JsonTemplateLoader<>(Path.of("template/stock"), RegionStockTemplate.class);
         this.economyModule = new EconomyModule(vendorHandler, stockHandler, wallet, templateLoader);
 
         // AI Module
-        final var aiFactory = new NpcAiRegistry(configuration.aiList());
-        final var profileRegistry = new BehaviorProfileRegistry(configuration.behaviorProfileList());
+        final var aiFactory = new NpcAiRegistry(configuration.world().aiList());
+        final var profileRegistry = new BehaviorProfileRegistry(configuration.world().behaviorProfileList());
         final var aiSessionHandler = new AISessionHandler(eventBus, profileRegistry, aiFactory);
         this.aiModule = new AIModule(eventBus, aiSessionHandler);
 
@@ -138,7 +134,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.uiModule = new UIModule(tooltipHandler, doubleClickHandler, singleClickHandler, skillUIHandler, gumpSystem, messageHandler, statusHandler);
 
         // Skill Module
-        final var skillSystem = new DefaultSkillSystem(properties, rng, eventBus);
+        final var skillSystem = new DefaultSkillSystem(configuration, rng, eventBus);
         final var skillHandler = new SkillHandler(eventBus, storage);
         this.skillModule = new SkillModule(skillHandler, skillSystem);
 
@@ -149,13 +145,12 @@ public class DefaultWorld implements WorldInternal, World {
         this.itemModule = new ItemModule(itemHandler, itemDropHandler, containerHandler);
 
         // Player Module
-        final var playerCreationHandler = new PlayerCreationHandler(serialGenerator, storage, itemTemplateRegistry, properties, policyService);
-        final var playerLoginHandler = new PlayerLoginHandler(eventBus, storage);
-        final var playerRemovalHandler = new PlayerRemovalHandler(storage, eventBus);
-        this.playerModule = new PlayerModule(playerCreationHandler, playerLoginHandler, playerRemovalHandler);
+        final var playerCreationHandler = new PlayerCreationHandler(serialGenerator, storage, configuration, policyService);
+        final var vitals = new PlayerVitalsHandler(this);
+        this.playerModule = new PlayerModule(playerCreationHandler, vitals, storage, eventBus);
 
         // Combat Module
-        final var vitalsService = new VitalsHandler(eventBus, properties);
+        final var vitalsService = new VitalsHandler(eventBus, configuration);
         final var combatSystem = new DefaultCombatSystem(null);
         final var combatService = new CombatHandler(eventBus, combatSystem, storage);
         this.combatModule = new CombatModule(combatService, vitalsService);
@@ -177,13 +172,14 @@ public class DefaultWorld implements WorldInternal, World {
 
         // Module Initialization
         this.economyModule.initialize(itemTemplateRegistry::get);
-        this.mobileModule.initialize((player, item)->itemModule.createEquippedItem(player, item));
+        this.mobileModule.initialize((player, name) -> itemModule.createEquippedItem(ItemCreationRequest.byName(name).build(), player));
+        this.playerModule.initialize(itemModule::createUnloadedItem);
 
         // Events Registration
         eventBus.register(NpcCreated.class, created->handleNpcCreated(created.npc()));
-        eventBus.register(PlayerSessionCreated.class, this::handleSessionCreated);
+        eventBus.register(PlayerSessionStatusChanged.class, this::handleSessionStateChanged);
         eventBus.register(PlayerSessionClosed.class, this::handleSessionClosed);
-        eventBus.register(MobileMoved.class, new RangeDetection(this, eventBus, properties));
+        eventBus.register(MobileMoved.class, new RangeDetection(this, eventBus, configuration));
         eventBus.register(MobileDeleted.class, this::handleMobileKilled);
 
         // Update Mobile Gold
@@ -207,15 +203,10 @@ public class DefaultWorld implements WorldInternal, World {
         }
     }
 
-    /**
-     * Handles the player session creation event.
-     *
-     * <p>Spawns the associated player into the game world.</p>
-     *
-     * @param event session creation event
-     */
-    private void handleSessionCreated(PlayerSessionCreated event) {
-        playerModule.spawn(event.session().getPlayer());
+    private void handleSessionStateChanged(PlayerSessionStatusChanged event) {
+        switch (event.newState()) {
+            case ACTIVE -> playerModule.spawn(event.session().getPlayer());
+        }
     }
 
     /**
@@ -226,13 +217,26 @@ public class DefaultWorld implements WorldInternal, World {
      * @param event session closure event
      */
     private void handleSessionClosed(PlayerSessionClosed event) {
-        playerModule.despawn(event.session().getPlayer());
+        final var player = event.session().getPlayer();
+        if (player != null) {
+            playerModule.despawn(player);
+        }
     }
 
     private void handleMobileKilled(MobileDeleted mobileDeleted) {
         if (mobileDeleted.mobile() instanceof UONpc npc) {
             aiModule.detach(npc);
         }
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
+    }
+
+    @Override
+    public JuoforgeConfiguration configuration() {
+        return configuration;
     }
 
     @Override
@@ -251,15 +255,6 @@ public class DefaultWorld implements WorldInternal, World {
     @Override
     public boolean isMobile(int serialId) {
         return UOMobile.isMobile(serialId);
-    }
-
-    @Override
-    public void deleteMobile(UOMobile mobile) {
-        switch (mobile) {
-            case UONpc npc -> mobileModule.deleteNpc(npc);
-            case UOPlayer player -> playerModule.deletePlayer(player);
-            default -> throw new IllegalStateException("Unexpected value: " + mobile);
-        }
     }
 
     @Override
@@ -396,7 +391,7 @@ public class DefaultWorld implements WorldInternal, World {
 
         final var npc = mobileModule.createNpc(template, location);
         for (String equippedItem : template.equippedItems()) {
-            final var item = itemModule.createItemAtLocation(equippedItem, 1, npc);
+            final var item = itemModule.createItemAtLocation(ItemCreationRequest.byName(equippedItem).build(), npc);
             if (item == null) {
                 log.error("Unable to create item [{}]", equippedItem);
                 continue;
@@ -436,18 +431,8 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public void login(UOPlayer player) {
-        playerModule.spawn(player);
-    }
-
-    @Override
-    public void logout(UOPlayer player) {
-        playerModule.despawn(player);
-    }
-
-    @Override
-    public CompletableFuture<UOPlayer> createPlayer(CreateCharacter character, Map<Integer, UOCity> cities, UOAccount account) {
-        return playerModule.createNewPlayer(character, cities, account);
+    public CompletableFuture<UOPlayer> createPlayerMobile(CreateCharacter character, Map<Integer, RegionNode> startingLocations, UOAccount account) {
+        return playerModule.createPlayerMobile(character, startingLocations, account);
     }
 
     @Override
@@ -482,7 +467,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void beginVendorPurchase(UOPlayer player, UOMobile vendor, List<StockEntry> items) {
-        var region = regionService.getRegion(player)
+        var region = regionSystem.getRegion(player)
                 .orElseThrow(() -> new RuntimeException("Region not found"));
         economyModule.beginVendorPurchase(player, vendor, region, items);
     }
@@ -498,7 +483,7 @@ public class DefaultWorld implements WorldInternal, World {
 
         final List<UOItem> items = new ArrayList<>();
         for (var item : result.items()) {
-            items.add(itemModule.createItemInContainer(item.template().name(), item.amount(), player.getBackpack()));
+            items.add(itemModule.createItemInContainer(ItemCreationRequest.byTemplate(item.template()).build(), player.getBackpack()));
         }
         eventBus.publish(new VendorPurchaseCompleted(player, items));
     }
@@ -539,18 +524,13 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public void registerRegion(RegionNode region) {
-        regionService.registerRegion(region);
-    }
-
-    @Override
     public Optional<RegionNode> getRegion(String name) {
-        return regionService.getRegion(name);
+        return regionSystem.getRegion(name);
     }
 
     @Override
     public Optional<RegionNode> getRegion(Location location) {
-        return regionService.getRegion(location);
+        return regionSystem.getRegion(location);
     }
 
     @Override
@@ -569,16 +549,16 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public UOItem createItem(String name, ItemOptions options) {
+    public UOItem createItem(ItemCreationRequest request, ItemOptions options) {
         switch (options.target()) {
             case ItemOptions.EquipTarget equipTarget -> {
-                return itemModule.createEquippedItem(equipTarget.mobile(), name);
+                return itemModule.createEquippedItem(request, equipTarget.mobile());
             }
             case ItemOptions.WorldLocationTarget worldLocation ->  {
-                return itemModule.createItemAtLocation(name, options.amount(), worldLocation.location());
+                return itemModule.createItemAtLocation(request, worldLocation.location());
             }
             case ItemOptions.ContainerTarget container -> {
-                return itemModule.createItemInContainer(name, options.amount(), container.container());
+                return itemModule.createItemInContainer(request, container.container());
             }
         }
     }
@@ -589,7 +569,46 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public Optional<RegionNode> getRegionNode(Location location) {
-        return regionService.getRegion(location);
+    public <T extends GameEvent> void on(Class<T> type, EventHandler<T> listener) {
+        eventBus.register(type, listener);
+    }
+
+    @Override
+    public <T extends GameEvent> void on(Class<T> type, EventHandler<T> listener, Predicate<T> predicate) {
+        eventBus.register(type, listener, predicate);
+    }
+
+    @Override
+    public <T extends GameEvent> void on(EventRegistry<T> registry) {
+        eventBus.register(registry);
+    }
+
+    @Override
+    public boolean roll(double chance) {
+        return rng.roll(chance);
+    }
+
+    @Override
+    public void removeMobile(UOMobile mobile) {
+        switch (mobile) {
+            case UONpc npc -> mobileModule.removeNpc(npc);
+            case UOPlayer player -> log.info("Remove a player is not allowed yet {}", player.getId());
+            default -> throw new IllegalStateException("Unexpected value: " + mobile);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Void> deletePlayerMobile(int serialId) {
+        return playerModule.deletePlayerMobile(serialId);
+    }
+
+    @Override
+    public List<RegionNode> getRegionsByType(RegionType type) {
+        return regionSystem.getRegionsByType(type);
+    }
+
+    @Override
+    public CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount uoAccount) {
+        return storage.getPlayerMobiles(uoAccount);
     }
 }

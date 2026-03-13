@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
+import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
@@ -20,7 +21,7 @@ public interface WorldActions {
 
     void teleport(UOMobile mobile, Location location);
 
-    void deleteMobile(UOMobile mobile);
+    void removeMobile(UOMobile mobile);
 
     void sendAnimation(UOMobile mobile, AnimationOptions options);
 
@@ -30,7 +31,7 @@ public interface WorldActions {
 
     void moveItem(UOItem item, Location location);
 
-    UOItem createItem(String name, ItemOptions options);
+    UOItem createItem(ItemCreationRequest request, ItemOptions options);
 
     ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers);
 

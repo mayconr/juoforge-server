@@ -1,13 +1,17 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.network.packet.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public interface WorldInternal extends WorldActions, WorldView, CombatInternal, UiInternal, SessionInternal {
+public interface WorldInternal extends WorldActions, WorldView, CombatInternal, UiInternal {
 
     void initialize();
 
@@ -17,7 +21,7 @@ public interface WorldInternal extends WorldActions, WorldView, CombatInternal, 
 
     CompletableFuture<UOMobile> loadMobile(int serialId);
 
-    CompletableFuture<UOPlayer> createPlayer(CreateCharacter character, Map<Integer, UOCity> cities, UOAccount account);
+    CompletableFuture<UOPlayer> createPlayerMobile(CreateCharacter character, Map<Integer, RegionNode> startingLocations, UOAccount account);
 
     boolean isMobile(int serialId);
 
@@ -40,5 +44,14 @@ public interface WorldInternal extends WorldActions, WorldView, CombatInternal, 
     void useSkill(UOPlayer player, int skillId);
 
     void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills);
+
+    CompletableFuture<Void> deletePlayerMobile(int serialId);
+
+    List<RegionNode> getRegionsByType(RegionType type);
+
+    // Temporary
+    EventBus eventBus();
+
+    JuoforgeConfiguration configuration();
 
 }

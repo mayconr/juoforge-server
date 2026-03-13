@@ -1,6 +1,6 @@
 package com.github.mayconr.shard.skills.crafting;
 
-import com.github.mayconr.juoserver.infrastructure.rng.RNG;
+import com.github.mayconr.juoserver.game.world.World;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 public class CraftingConfiguration {
 
     @Bean
-    public ResourceRoller resourceRoller(RNG rng) {
-        return new DefaultResourceRoller(rng);
+    public ResourceRoller resourceRoller(World world) {
+        return new DefaultResourceRoller(world);
     }
 
 }

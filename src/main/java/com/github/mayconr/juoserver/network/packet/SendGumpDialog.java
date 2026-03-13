@@ -75,14 +75,14 @@ public class SendGumpDialog extends AbstractPacket {
 
     @Override
     public void writesTo(ByteBuf buf) {
-        // Garantia explícita de BIG-ENDIAN
+        // Garantia explÃ­cita de BIG-ENDIAN
         buf = buf.order(ByteOrder.BIG_ENDIAN);
 
         // opcode + tamanho
         buf.writeByte(CODE);
         buf.writeShort(getLength());
 
-        // cabeçalho
+        // cabeÃ§alho
         buf.writeInt(mobile.getSerialId()); // serial UO do player
         buf.writeInt(gumpId);
         buf.writeInt(x);
@@ -97,7 +97,7 @@ public class SendGumpDialog extends AbstractPacket {
         buf.writeShort(texts.size());
         for (String s : texts) {
             byte[] utf16 = s.getBytes(StandardCharsets.UTF_16BE);
-            buf.writeShort(utf16.length / 2); // número real de chars
+            buf.writeShort(utf16.length / 2); // nÃºmero real de chars
             buf.writeBytes(utf16);
         }
     }

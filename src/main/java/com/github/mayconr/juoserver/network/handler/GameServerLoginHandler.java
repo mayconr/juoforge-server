@@ -1,74 +1,42 @@
 package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.game.model.AccountMobile;
-import com.github.mayconr.juoserver.game.model.CharacterListFlag;
-import com.github.mayconr.juoserver.game.model.SessionCreationContext;
-import com.github.mayconr.juoserver.game.model.UOCity;
-import com.github.mayconr.juoserver.game.player.SessionOutbound;
-import com.github.mayconr.juoserver.network.packet.CharacterList;
-import com.github.mayconr.juoserver.network.packet.GameServerLogin;
-import com.github.mayconr.juoserver.network.packet.LoginReject;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
+import com.github.mayconr.juoserver.network.packet.GameServerLogin;
+import com.github.mayconr.juoserver.network.packet.LoginReject;
+import com.github.mayconr.juoserver.network.session.PlayerSession;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @ChannelHandler.Sharable
-public class GameServerLoginHandler extends SimpleChannelInboundHandler<GameServerLogin> {
+public class GameServerLoginHandler extends PlayerSessionChannelInboundHandler<GameServerLogin> {
 
-    private final AccountStorage accountStorage;
     private final MobileStorage mobileStorage;
-    private final RealmStorage storage;
+    private final AccountStorage accountStorage;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, GameServerLogin msg) throws Exception {
-        final var outbound = new SessionOutbound(ctx, ctx.channel(), ctx.executor());
-
+    protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, GameServerLogin msg) {
         accountStorage.findByUsername(msg.getUsername())
-                .thenApply(account -> {
-                    ctx.channel().attr(AttributeKeys.SESSION_OUTBOUND_KEY).set(outbound);
-                    outbound.attr().set(AttributeKeys.ACCOUNT_KEY, account);
-                    return account;
-                })
-                .thenCompose(mobileStorage::findPlayersByAccount)
-                .thenAccept(mobiles->handleMobiles(outbound, mobiles))
-                .exceptionally(throwable -> {
-                    log.warn("Account not found for {}", msg.getUsername());
-                    outbound.writeAndFlush(new LoginReject(LoginReject.Reason.COULD_NOT_ATTACH_SERVER));
-                    return null;
+                .thenCompose(account-> mobileStorage.findPlayersByAccount(account)
+                        .thenApply(mobiles->new SessionInfo(account, mobiles)))
+                .thenAccept(sessionInfo -> {
+                    session.authenticate(sessionInfo.account(), sessionInfo.players);
+                }).whenComplete((u, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Unable to authenticate session for {}", msg.getUsername(), throwable);
+                        session.reject(LoginReject.Reason.COULD_NOT_ATTACH_SERVER);
+                    }
                 });
     }
 
-    private void handleMobiles(SessionOutbound outbound, List<AccountMobile> mobiles) {
-        final var mobileSlots = new HashMap<Integer, AccountMobile>();
-        int mobileCounter = 0;
-        for (AccountMobile mobile : mobiles) {
-            mobileSlots.put(mobileCounter++, mobile);
-        }
+    record SessionInfo(UOAccount account, List<AccountMobile> players) {}
 
-        final var citySlots = new HashMap<Integer, UOCity>();
-        int cityCounter = 0;
-        for (UOCity city : storage.getCities()) {
-            citySlots.put(cityCounter++, city);
-        }
-
-        outbound.attr().set(AttributeKeys.SESSION_CREATION_CONTEXT, new SessionCreationContext(mobileSlots, citySlots));
-
-        outbound.writeAndFlush(new CharacterList(
-                mobiles,
-                citySlots,
-                CharacterListFlag.ENABLE_AOS_COMMON,
-                CharacterListFlag.SAMURAI_NINJA_CLASSES,
-                CharacterListFlag.ENABLE_NPC_POPUP,
-                CharacterListFlag.ELVEN_RACE));
-    }
 }

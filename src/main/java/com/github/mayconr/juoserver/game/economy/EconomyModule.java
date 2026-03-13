@@ -59,28 +59,13 @@ public final class EconomyModule implements WorldModule, EconomyCommands, Econom
     }
 
     @Override
-    public Optional<StockPool> getStockPool(String regionName) {
-        return stockHandler.getStockPool(regionName);
+    public Optional<StockPool> getStockPool(RegionNode regionNode) {
+        return stockHandler.getStockPool(regionNode);
     }
 
     @Override
     public Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode) {
-        var pool = stockHandler.getStockPool(regionNode.getName());
-        var region = regionNode;
-
-        while (pool.isEmpty()) {
-            region = region.getParent().orElse(null);
-            if (region == null) break;
-            pool = stockHandler.getStockPool(region.getName());
-        }
-
-        if (log.isDebugEnabled()) {
-            if (region != null) {
-                log.debug("Stock pool for initial region {} found in {}", regionNode.getName(), region.getName());
-            } else {
-                log.debug("Stock pool not found region {}", regionNode.getName());
-            }
-        }
+        var pool = stockHandler.getStockPool(regionNode);
 
         return pool.map(stockPool -> stockPool.getStockEntry(template));
     }

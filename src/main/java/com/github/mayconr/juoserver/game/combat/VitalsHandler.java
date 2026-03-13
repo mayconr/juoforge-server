@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.combat;
 
-import com.github.mayconr.juoserver.ServerProperties;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.event.VitalsChanged;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +15,7 @@ public class VitalsHandler {
     public static final String MOBILE_STAMINA_ACCUMULATOR = "mobile.staminaAccumulator";
     public static final String MOBILE_MANA_ACCUMULATOR = "mobile.manaAccumulator";
     private final EventBus eventBus;
-    private final ServerProperties properties;
+    private final JuoforgeConfiguration configuration;
 
     public void regen(UOMobile mobile, double interval) {
         // Mutable variables
@@ -25,7 +25,7 @@ public class VitalsHandler {
         double manaAcc = mobile.getPersistentAttribute(MOBILE_MANA_ACCUMULATOR, 0.0);
 
         final double min = 0.1;
-        final int saturationFactor = properties.vitals().saturationFactor();
+        final int saturationFactor = configuration.settings().vitals().saturationFactor();
 
         final double hpRegenBase = (min + ((double) mobile.getStrength() / (mobile.getStrength() + saturationFactor)));
         hpAcc += hpRegenBase * interval;

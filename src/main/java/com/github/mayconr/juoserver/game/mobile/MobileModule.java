@@ -70,7 +70,7 @@ public class MobileModule implements WorldModule, MobileCommands, MobileQueries 
     }
 
     @Override
-    public void deleteNpc(UONpc npc) {
+    public void removeNpc(UONpc npc) {
         mobileHandler.deleteMobile(npc);
     }
 

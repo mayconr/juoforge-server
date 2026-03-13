@@ -13,7 +13,7 @@ public interface MobileCommands {
 
     UONpc createNpc(NpcTemplate template, Location location);
 
-    void deleteNpc(UONpc npc);
+    void removeNpc(UONpc npc);
 
     void move(UOMobile mobile, Direction direction);
 

@@ -18,11 +18,9 @@ import com.github.mayconr.shard.skills.SkillLockedHandler;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import static com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI.*;
 
-@Component
 @Slf4j
 public class Test {
 

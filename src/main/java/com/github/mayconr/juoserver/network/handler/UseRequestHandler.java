@@ -1,11 +1,11 @@
 package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.player.SessionOutbound;
-import com.github.mayconr.juoserver.game.player.PlayerSession;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.UseRequest;
+import com.github.mayconr.juoserver.network.session.PlayerSession;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -15,7 +15,7 @@ public class UseRequestHandler extends PlayerSessionChannelInboundHandler<UseReq
     private final WorldInternal  world;
 
     @Override
-    protected void channelRead0(PlayerSession session, SessionOutbound outbound, UseRequest msg) {
+    protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, UseRequest msg) {
         switch (msg.getType()) {
             case SKILL -> {
                 String[] parts = msg.getValue().split(" ");
@@ -27,6 +27,5 @@ public class UseRequestHandler extends PlayerSessionChannelInboundHandler<UseReq
             case ACTION -> System.out.println("Action");
             case OPEN_DOOR -> System.out.println("open door");
         }
-
     }
 }

@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.player.PlayerDetails;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -68,9 +69,6 @@ public class MobileFactory {
                 0,
                 0
         ), details.account().getId());
-        for (UOItem item : details.equippedItems()) {
-            player.equipItem(item);
-        }
         player.setSkills(new SkillContainer(details.skills()));
         player.setType("P");
         return player;

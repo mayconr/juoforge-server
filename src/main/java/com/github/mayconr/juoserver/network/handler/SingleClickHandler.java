@@ -1,11 +1,10 @@
 package com.github.mayconr.juoserver.network.handler;
 
-import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.player.SessionOutbound;
-import com.github.mayconr.juoserver.game.player.PlayerSession;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.SingleClickRequest;
+import com.github.mayconr.juoserver.network.session.PlayerSession;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -15,7 +14,7 @@ public class SingleClickHandler extends PlayerSessionChannelInboundHandler<Singl
     private final WorldInternal  world;
 
     @Override
-    protected void channelRead0(PlayerSession session, SessionOutbound outbound, SingleClickRequest msg) {
-        world.singleClick((UOPlayer) session.getPlayer(), msg);
+    protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, SingleClickRequest msg) {
+        world.singleClick(session.getPlayer(), msg);
     }
 }

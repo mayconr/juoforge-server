@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.skills.crafting.lumberjacking;
 
+import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.ItemOptions.ContainerTarget;
 import com.github.mayconr.juoserver.game.world.WorldActions;
@@ -42,7 +43,7 @@ public class LumberjackSwingTask implements GameTask {
         var item = resourceRoller.rollResource(WoodType.values(), 50);
 
         if (item != null) {
-            final var woodItem = worldActions.createItem(item.name().toLowerCase(), ItemOptions.builder().target(new ContainerTarget(player)).build());
+            final var woodItem = worldActions.createItem(ItemCreationRequest.byName(item.name().toLowerCase()).build(), ItemOptions.builder().target(new ContainerTarget(player)).build());
             if (log.isDebugEnabled()) {
                 log.debug("Wood [{}] created in [{}-{}] backpack", woodItem.getName(), player.getSerialId(), player.getName());
             }

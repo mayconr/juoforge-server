@@ -37,7 +37,7 @@ public class AISessionHandler {
     }
 
     public void detach(UONpc npc) {
-        sessions.compute(npc.getSerialId(), (k,v)->{
+        sessions.compute(npc.getSerialId(), (k, v)->{
             if (v != null) {
                 v.kill();
                 log.info("Detaching AI [{}] for NPC [{}]", npc.getBehavior().ai(), npc.getName());

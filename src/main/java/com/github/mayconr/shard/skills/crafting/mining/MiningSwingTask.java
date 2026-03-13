@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.skills.crafting.mining;
 
+import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.ItemOptions.ContainerTarget;
 import com.github.mayconr.juoserver.game.world.WorldActions;
@@ -46,7 +47,7 @@ public class MiningSwingTask implements GameTask {
             worldActions.sendMessage(player, "You loosen some rocks but find nothing of value.", MessageOptions.standard());
             return;
         }
-        final var oreItem = worldActions.createItem(ore.name().toLowerCase(), ItemOptions.builder().target(new ContainerTarget(player)).build());
+        final var oreItem = worldActions.createItem(ItemCreationRequest.byName(ore.name().toLowerCase()).build(), ItemOptions.builder().target(new ContainerTarget(player)).build());
 
         if (log.isDebugEnabled()) {
             log.debug("Ore [{}] created in [{}-{}] backpack", oreItem.getName(), player.getSerialId(), player.getName());

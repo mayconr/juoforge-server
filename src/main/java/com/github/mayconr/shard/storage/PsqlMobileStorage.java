@@ -24,6 +24,20 @@ public class PsqlMobileStorage implements MobileStorage {
     }
 
     @Override
+    public CompletableFuture<Void> deleteBySerialId(int serialId) {
+        return CompletableFuture.supplyAsync(()->{
+            try (var session = sessionFactory.openSession(true)) {
+                int deleted = session.getMapper(MobileMapper.class).deleteBySerialId(serialId);
+                session.commit();
+                if (deleted == 0) {
+                    log.warn("No mobile found for serialId={}", serialId);
+                }
+            }
+            return null;
+        }, executor);
+    }
+
+    @Override
     public CompletableFuture<List<UONpc>> findAllNpcs() {
         return CompletableFuture.supplyAsync(
                 () -> {
@@ -31,7 +45,7 @@ public class PsqlMobileStorage implements MobileStorage {
                         var npc = session.getMapper(MobileMapper.class).findAllNpcs();
                         return npc;
                     }
-                });
+                },executor);
     }
 
     @Override

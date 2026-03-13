@@ -4,11 +4,14 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 
 public interface ItemCommands {
-    UOItem createItemAtLocation(String name, int amount, Location location);
 
-    UOItem createEquippedItem(UOMobile mobile, String name);
+    UOItem createItemAtLocation(ItemCreationRequest request, Location location);
 
-    UOItem createItemInContainer(String name, int amount, Container container);
+    UOItem createEquippedItem(ItemCreationRequest request, UOMobile mobile);
+
+    UOItem createItemInContainer(ItemCreationRequest request, Container container);
+
+    UOItem createUnloadedItem(ItemCreationRequest request);
 
     void deleteItem(UOItem item);
 

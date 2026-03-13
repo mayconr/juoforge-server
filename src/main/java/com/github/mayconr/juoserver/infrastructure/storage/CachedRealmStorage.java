@@ -30,6 +30,7 @@ public class CachedRealmStorage implements RealmStorage {
     private Supplier<Integer> itemSerialSupplier;
     private Supplier<Integer> mobileSerialSupplier;
 
+    // Lifecycle
     @Override
     public void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> initialDataConsumer) {
         this.itemSerialSupplier = itemSerialSupplier;
@@ -52,27 +53,47 @@ public class CachedRealmStorage implements RealmStorage {
             .whenComplete(this::logging);
     }
 
+    // Serial allocation
+    @Override
+    public CompletableFuture<Integer> getNextItemSerial() {
+        return itemStorage.findNextItemSerial();
+    }
+
+    @Override
+    public CompletableFuture<Integer> getNextMobileSerial() {
+        return mobileStorage.findNextMobileSerial();
+    }
+
+    // Load and unload
     @Override
     public CompletableFuture<UOMobile> loadMobile(int serialId) {
         return mobileStorage.findMobileBySerialId(serialId)
                 .thenCompose(this::loadAndCacheMobile);
     }
 
-    private CompletableFuture<UOMobile> loadAndCacheMobile(UOMobile mobile) {
-        return itemStorage.findAllEquippedItems(mobile)
-                .thenApply(itemCache::putAll)
+    @Override
+    public CompletableFuture<UOItem> loadItem(int serialId) {
+        return itemStorage.findItemBySerialId(serialId)
+            .thenApply(item -> {
+                cacheItem(item);
+                return item;
+            })
+            .whenComplete(this::logging);
+    }
+
+    @Override
+    public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
+        return itemStorage.loadContainerItems(container)
                 .thenApply(items -> {
-                    items.forEach(mobile::equipItem);
-                    mobileCache.put(mobile);
-                    worldMobileIndex.add(mobile);
-                    return mobile;
-                }).whenComplete(this::logging);
+                    itemCache.putAll(items);
+                    return items;
+                })
+                .whenComplete(this::logging);
     }
 
     @Override
     public void unloadMobile(UOMobile mobile) {
         // TODO save mobile to database
-
         mobileCache.remove(mobile);
         for (UOItem item : mobile.getItemsInContainer()) {
             itemCache.remove(item);
@@ -84,18 +105,14 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public Optional<UOMobile> getMobileBySerialId(int serialId) {
-        return Optional.ofNullable(mobileCache.get(serialId));
+    public CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount uoAccount) {
+        return mobileStorage.findPlayersByAccount(uoAccount);
     }
 
+    // Cached lookups
     @Override
-    public CompletableFuture<UOItem> loadItem(int serialId) {
-        return itemStorage.findItemBySerialId(serialId)
-            .thenApply(item->{
-                cacheItem(item);
-                return item;
-            })
-            .whenComplete(this::logging);
+    public Optional<UOMobile> getMobileBySerialId(int serialId) {
+        return Optional.ofNullable(mobileCache.get(serialId));
     }
 
     @Override
@@ -114,65 +131,22 @@ public class CachedRealmStorage implements RealmStorage {
         return Optional.empty();
     }
 
+    // Cache and indexing
     @Override
-    public CompletableFuture<Integer> getNextItemSerial() {
-        return itemStorage.findNextItemSerial();
+    public void cacheMobile(UOMobile mobile) {
+        mobileCache.put(mobile);
+        worldMobileIndex.add(mobile);
     }
 
     @Override
-    public CompletableFuture<Integer> getNextMobileSerial() {
-        return mobileStorage.findNextMobileSerial();
-    }
-
-    @Override
-    public CompletableFuture<UOMobile> findMobileBySerialId(int serialId) {
-        var cached = mobileCache.get(serialId);
-        if (cached != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Mobile [{}-{}] recovered from cache", serialId, cached.getName());
-            }
-
-            return CompletableFuture.completedFuture(cached);
+    public void cacheItem(UOItem item) {
+        itemCache.put(item);
+        if (item.isOnTheGround()) {
+            worldItemIndex.add(item);
         }
-
-        return mobileStorage.findMobileBySerialId(serialId)
-                .thenCompose(this::loadAndCacheMobile);
     }
 
-    @Override
-    public CompletableFuture<UOItem> findItemBySerialId(int serialId) {
-        UOItem cached = itemCache.get(serialId);
-        if (cached != null) {
-            return CompletableFuture.completedFuture(cached);
-        }
-
-        return itemStorage.findItemBySerialId(serialId)
-                .thenApply(item->{
-                    cacheItem(item);
-                    return item;
-                })
-                .whenComplete(this::logging);
-    }
-
-    @Override
-    public CompletableFuture<Container> findContainerBySerialId(int serialId) {
-        if (UOMobile.isMobile(serialId)) {
-            return findMobileBySerialId(serialId)
-                    .thenApply(mobile-> (Container) mobile);
-        }
-        if (UOItem.isItem(serialId)) {
-            return findItemBySerialId(serialId).thenApply(item -> (Container) item);
-        }
-        return CompletableFuture.failedFuture(new IllegalArgumentException("Serial ["+serialId+"] is not valid"));
-    }
-
-    @Override
-    public List<UOCity> getCities() {
-        return List.of(
-                new UOCity("Vesper", "Vesper", new PointInTheWorld(2893, 686, 0)),
-                new UOCity("Britain", "Britannia", new PointInTheWorld(1478, 1711, 0)));
-    }
-
+    // Spatial queries
     @Override
     public List<UOMobile> getMobilesInRange(Location location, int radius) {
         var serials = worldMobileIndex.getNearbySerials(location, radius);
@@ -182,13 +156,14 @@ public class CachedRealmStorage implements RealmStorage {
         }
 
         List<UOMobile> result = new ArrayList<>(serials.size());
-
         for (int serial : serials) {
             UOMobile mobile = mobileCache.get(serial);
-            if (mobile == null) continue;
-
-            if (!isInRange(mobile, location, radius)) continue;
-
+            if (mobile == null) {
+                continue;
+            }
+            if (!isInRange(mobile, location, radius)) {
+                continue;
+            }
             result.add(mobile);
         }
 
@@ -196,51 +171,32 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
+    public List<UOItem> getItemsInRange(Location location) {
+        return worldItemIndex.getSerialsInRange(location)
+                .stream()
+                .map(itemCache::get)
+                .toList();
+    }
+
+    @Override
+    public boolean isInRange(Location location1, Location location2, int radius) {
+        int dx = Math.abs(location1.getX() - location2.getX());
+        int dy = Math.abs(location1.getY() - location2.getY());
+
+        if (Math.max(dx, dy) > radius) {
+            return false;
+        }
+
+        int dz = Math.abs(location1.getZ() - location2.getZ());
+        return dz <= 8;
+    }
+
+    // State mutation
+    @Override
     public void updateMobileLocation(UOMobile mobile, Location oldLoc, Location newLoc) {
         synchronized (this) {
             worldMobileIndex.remove(mobile, oldLoc);
             worldMobileIndex.add(mobile, newLoc);
-        }
-    }
-
-    @Override
-    public void deleteMobile(UOMobile mobile) {
-        mobileCache.remove(mobile);
-        worldMobileIndex.remove(mobile);
-
-        // add player to be deleted from database
-        dirtyMobiles.add(mobile);
-        log.info("Mobile [{}-{}] added to be removed", mobile.getSerialId(), mobile.getName());
-    }
-
-    @Override
-    public CompletableFuture<Boolean> mobileExists(String name) {
-        return mobileStorage.mobileExists(name);
-    }
-
-    @Override
-    public CompletableFuture<UOPlayer> insertNewPlayer(int mobileSerialId, int itemSerialId, UOMobile mobile) {
-        return mobileStorage.saveMobileFull(mobileSerialId, itemSerialId, mobile)
-                .thenApply(mob->(UOPlayer) this.cacheMobile(mobile))
-                .thenApply(mob->{
-                    for (UOItem item : mob.getEquippedItems().values()) {
-                        cacheItem(item);
-                    }
-                    return mob;
-                }).whenComplete(this::logging);
-    }
-
-    @Override
-    public void cacheNpc(UONpc npc) {
-        mobileCache.put(npc);
-        worldMobileIndex.add(npc);
-    }
-
-    @Override
-    public void cacheItem(UOItem item) {
-        itemCache.put(item);
-        if (item.isOnTheGround()) {
-            worldItemIndex.add(item);
         }
     }
 
@@ -256,21 +212,17 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public List<UOItem> getItemsInRange(Location location) {
-        return worldItemIndex.getSerialsInRange(location)
-                .stream()
-                .map(itemCache::get)
-                .toList();
+    public void deleteMobile(UOMobile mobile) {
+        mobileCache.remove(mobile);
+        worldMobileIndex.remove(mobile);
+
+        dirtyMobiles.add(mobile);
+        log.info("Mobile [{}-{}] added to be removed", mobile.getSerialId(), mobile.getName());
     }
 
     @Override
-    public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
-        return itemStorage.loadContainerItems(container)
-                .thenApply(items->{
-                    itemCache.putAll(items);
-                    return items;
-                })
-                .whenComplete(this::logging);
+    public CompletableFuture<Void> deleteMobile(int serialId) {
+        return mobileStorage.deleteBySerialId(serialId);
     }
 
     @Override
@@ -280,21 +232,20 @@ public class CachedRealmStorage implements RealmStorage {
         dirtyItems.add(item);
     }
 
+    // Existence and creation
     @Override
-    public boolean isInRange(Location location1, Location location2, int radius) {
-        int dx = Math.abs(location1.getX() - location2.getX());
-        int dy = Math.abs(location1.getY() - location2.getY());
-
-        // Range 2D (tile distance / Chebyshev)
-        if (Math.max(dx, dy) > radius) {
-            return false;
-        }
-
-        // (Z)
-        int dz = Math.abs(location1.getZ() - location2.getZ());
-        return dz <= 8;
+    public CompletableFuture<Boolean> mobileExists(String name) {
+        return mobileStorage.mobileExists(name);
     }
 
+    @Override
+    public CompletableFuture<UOPlayer> insertPlayerMobile(int mobileSerialId, int itemSerialId, UOPlayer player) {
+        return mobileStorage.saveMobileFull(mobileSerialId, itemSerialId, player)
+                .thenApply(mobile -> (UOPlayer) mobile)
+                .whenComplete(this::logging);
+    }
+
+    // Persistence
     @Override
     public CompletableFuture<Collection<UOMobile>> saveMobileRuntime() {
         return mobileStorage.saveRuntime(mobileCache.getMobiles())
@@ -335,16 +286,22 @@ public class CachedRealmStorage implements RealmStorage {
                 }).whenComplete(this::logging);
     }
 
-    private UOMobile cacheMobile(UOMobile mobile) {
-        mobileCache.put(mobile);
-        worldMobileIndex.add(mobile);
-        return mobile;
-    }
-
     private <T> void logging(T data, Throwable throwable) {
         if (throwable != null) {
             log.error("Unable to save mobiles", throwable);
         }
+    }
+
+    private CompletableFuture<UOMobile> loadAndCacheMobile(UOMobile mobile) {
+        return itemStorage.findAllEquippedItems(mobile)
+                .thenApply(itemCache::putAll)
+                .thenApply(items -> {
+                    items.forEach(mobile::equipItem);
+                    mobileCache.put(mobile);
+                    worldMobileIndex.add(mobile);
+                    return mobile;
+                })
+                .whenComplete(this::logging);
     }
 
 }

@@ -49,12 +49,12 @@ public class TooltipRequest extends AbstractPacket {
         buf.writeShort(getLength());
         buf.writeShort(0x0001);
 
-        buf.writeInt(support.getSerialId());
+        buf.writeInt(support.getTooltipId());
         buf.writeShort(0);
-        buf.writeInt(Objects.hashCode(support.getSerialId()));
+        buf.writeInt(Objects.hashCode(support.getTooltipId()));
 
+        // Loop items
         buf.writeInt(Clilocs.PREFIX_NAME_SUFFIX.getCode());
-
         final String text = support.getTooltipText();
         buf.writeShort(text.length() * 2);
         if (!text.isEmpty()) {

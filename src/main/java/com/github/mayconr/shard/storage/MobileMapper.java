@@ -34,6 +34,8 @@ public interface MobileMapper {
 
     int deleteById(@Param("id") UUID id);
 
+    int deleteBySerialId(@Param("serialId") Integer serialId);
+
     int upsertMobileRuntime(UOMobile mobile);
 
     int upsertMobileVitals(UOMobile mobile);

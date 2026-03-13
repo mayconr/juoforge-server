@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.model;
 
+import lombok.Getter;
+
+@Getter
 public enum Clilocs {
     /** ~1_PREFIX~ ~2_NAME~ ~3_SUFFIX~ */
     PREFIX_NAME_SUFFIX(0x1005BD),
@@ -13,7 +16,4 @@ public enum Clilocs {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
 }

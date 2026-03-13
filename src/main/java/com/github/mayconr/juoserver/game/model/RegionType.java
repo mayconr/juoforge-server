@@ -6,5 +6,6 @@ public enum RegionType {
     DISTRICT,
     BUILDING,
     DUNGEON,
-    DUNGEON_LEVEL
+    DUNGEON_LEVEL,
+    STARTING_LOCATION
 }

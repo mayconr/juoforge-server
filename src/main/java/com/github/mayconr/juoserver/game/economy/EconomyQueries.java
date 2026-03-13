@@ -12,10 +12,10 @@ public interface EconomyQueries {
     /**
      * Returns the stock pool associated with the given region.
      *
-     * @param regionName the region identifier
+     * @param regionNode the region identifier
      * @return the region stock pool
      */
-    Optional<StockPool> getStockPool(String regionName);
+    Optional<StockPool> getStockPool(RegionNode regionNode);
 
     Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
 }

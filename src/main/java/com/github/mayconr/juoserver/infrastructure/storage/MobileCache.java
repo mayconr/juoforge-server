@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.infrastructure.storage;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,7 +27,7 @@ public class MobileCache {
     }
 
     public void remove(UOMobile mobile) {
-        mobiles.remove(mobile.getSerialId());
+        mobiles.remove(Objects.requireNonNull(mobile,"mobile is null").getSerialId());
     }
 
     public Collection<UOMobile> getMobiles() {

@@ -85,4 +85,9 @@ public class UOObject implements Location, AttributeSupport, TooltipSupport {
     public String getTooltipText() {
         return displayName;
     }
+
+    @Override
+    public int getTooltipId() {
+        return serialId;
+    }
 }

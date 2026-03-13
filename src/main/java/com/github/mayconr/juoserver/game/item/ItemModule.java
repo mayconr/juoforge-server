@@ -21,18 +21,23 @@ public class ItemModule implements WorldModule, ItemCommands, ItemQueries {
     }
 
     @Override
-    public UOItem createItemAtLocation(String name, int amount, Location location) {
-        return itemHandler.createItemAtLocation(name, amount, location);
+    public UOItem createItemAtLocation(ItemCreationRequest request, Location location) {
+        return itemHandler.createItemAtLocation(request, location);
     }
 
     @Override
-    public UOItem createEquippedItem(UOMobile mobile, String name) {
-        return itemHandler.createEquippedItem(mobile, name);
+    public UOItem createEquippedItem(ItemCreationRequest request, UOMobile mobile) {
+        return itemHandler.createEquippedItem(request, mobile);
     }
 
     @Override
-    public UOItem createItemInContainer(String name, int amount, Container container) {
-        return itemHandler.createItemInContainer(name, amount, container);
+    public UOItem createItemInContainer(ItemCreationRequest request, Container container) {
+        return itemHandler.createItemInContainer(request, container);
+    }
+
+    @Override
+    public UOItem createUnloadedItem(ItemCreationRequest request) {
+        return itemHandler.createUnloadedItem(request);
     }
 
     @Override

@@ -1,11 +1,10 @@
 package com.github.mayconr.juoserver.network.handler;
 
-import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.player.SessionOutbound;
-import com.github.mayconr.juoserver.game.player.PlayerSession;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.SendSkill;
+import com.github.mayconr.juoserver.network.session.PlayerSession;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 
 @ChannelHandler.Sharable
@@ -15,7 +14,7 @@ public class SendSkillHandler extends PlayerSessionChannelInboundHandler<SendSki
     private final WorldInternal  world;
 
     @Override
-    protected void channelRead0(PlayerSession session, SessionOutbound outbound, SendSkill msg) {
-        world.sendSkillsLock((UOPlayer) session.getPlayer(), msg.getSkills());
+    protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, SendSkill msg) {
+        world.sendSkillsLock(session.getPlayer(), msg.getSkills());
     }
 }

@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.game.model;
 import lombok.Builder;
 
 @Builder
-public record ItemOptions(int amount, ItemSpawnTarget target) {
+public record ItemOptions(ItemSpawnTarget target) {
 
     public sealed interface ItemSpawnTarget permits ContainerTarget, WorldLocationTarget, EquipTarget{
     }

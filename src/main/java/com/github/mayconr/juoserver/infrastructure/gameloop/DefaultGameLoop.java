@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.gameloop;
 
-import com.github.mayconr.juoserver.ServerProperties;
+import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +14,7 @@ public class DefaultGameLoop implements GameLoop {
     private final List<GameTask> gameTasks = new ArrayList<>();
     private volatile boolean running = true;
 
-    private final ServerProperties properties;
+    private final JuoforgeConfiguration configuration;
 
     @Override
     public void addTask(GameTask task) {
@@ -69,7 +69,7 @@ public class DefaultGameLoop implements GameLoop {
                         }
                     }
 
-                    Thread.sleep(1000 / properties.gameLoop().tps());
+                    Thread.sleep(1000 / configuration.settings().gameLoop().tps());
                     currentTick++;
 
                 } catch (InterruptedException e) {

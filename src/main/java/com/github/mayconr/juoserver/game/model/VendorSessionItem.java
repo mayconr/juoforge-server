@@ -5,9 +5,9 @@ import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 
 import java.util.Optional;
 
-public record VendorSessionItem(int serialId, int price, StockEntry entry) implements TooltipSupport{
+public record VendorSessionItem(int serialId, int price, StockEntry entry) implements TooltipSupport {
     @Override
-    public int getSerialId() {
+    public int getTooltipId() {
         return serialId;
     }
 

@@ -1,18 +1,18 @@
 package com.github.mayconr.juoserver.game.skill;
 
-import com.github.mayconr.juoserver.ServerProperties;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import com.github.mayconr.juoserver.game.model.SkillGainContext;
 import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.event.SkillGained;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class DefaultSkillSystem implements SkillSystem {
 
-    private final ServerProperties properties;
+    private final JuoforgeConfiguration properties;
     private final RNG rng;
     private final EventBus eventBus;
 
@@ -32,9 +32,9 @@ public class DefaultSkillSystem implements SkillSystem {
     }
 
     public double calculateChance(SkillValue skill, double difficulty) {
-        final var minGainChance = properties.skills().minGainChance();
-        final var maxGainChance = properties.skills().maxGainChance();
-        final var balanceOffset = properties.skills().balanceOffset();
+        final var minGainChance = properties.settings().skills().minGainChance();
+        final var maxGainChance = properties.settings().skills().maxGainChance();
+        final var balanceOffset = properties.settings().skills().balanceOffset();
 
         final var rawChance =
                 (difficulty - skill.getBase() + balanceOffset) / 100.0;

@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
 public class GlobalRegister implements SmartInitializingSingleton {
 
     private final ApplicationContext context;

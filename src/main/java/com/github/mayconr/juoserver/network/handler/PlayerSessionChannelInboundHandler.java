@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.network.handler;
 
-import com.github.mayconr.juoserver.game.player.SessionOutbound;
-import com.github.mayconr.juoserver.game.player.PlayerSession;
+import com.github.mayconr.juoserver.infrastructure.server.ClientConnectedHandlerAdapter;
+import com.github.mayconr.juoserver.network.session.PlayerSession;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,22 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class PlayerSessionChannelInboundHandler<T> extends SessionChannelInboundHandler<T> {
 
     @Override
-    protected void channelRead0(SessionOutbound outbound, T msg) {
-        channelRead0(outbound.attr().get(AttributeKeys.PLAYER_SESSION_KEY), outbound.getCtx(), msg);
-        // TODO remover acima
-
-        channelRead0(outbound.attr().get(AttributeKeys.PLAYER_SESSION_KEY), outbound, msg);
+    public void channelRead0(ChannelHandlerContext ctx, T msg) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("Received packet from server: {}", msg);
+        }
+        channelRead0(ctx.channel().attr(ClientConnectedHandlerAdapter.PLAYER_SESSION_KEY).get(), ctx, msg);
     }
 
-    /**
-     * Use {@link #channelRead0(PlayerSession, SessionOutbound, Object)}
-     * @param session
-     * @param ctx
-     * @param msg
-     */
-    @Deprecated
-    protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, T msg) {};
+    protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, T msg) {}
 
-    protected void channelRead0(PlayerSession session, SessionOutbound outbound, T msg) {};
 
 }

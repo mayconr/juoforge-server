@@ -1,7 +1,6 @@
 package com.github.mayconr.juoserver.game.model;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Collection;

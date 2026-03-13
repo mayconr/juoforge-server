@@ -1,11 +1,9 @@
 package com.github.mayconr.juoserver.infrastructure.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
-import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerStartup {
 
@@ -23,11 +21,11 @@ public class ServerStartup {
         this.childNioEventLoopGroup = childNioEventLoopGroup;
     }
 
-    public void initialize() throws InterruptedException {
+    public void bind(int port) {
         try {
             LOGGER.info("Server initializing...");
-            var future = serverBootstrap.bind(9000);
-            LOGGER.info("Server initialized on port 9000!");
+            var future = serverBootstrap.bind(port);
+            LOGGER.info("Server initialized on port "+port+"!");
             future.channel()
                     .closeFuture()
                     .addListener(

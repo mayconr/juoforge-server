@@ -1,15 +1,8 @@
 package com.github.mayconr.shard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.*;
 import com.github.mayconr.juoserver.game.world.World;
-import com.github.mayconr.juoserver.game.world.bootstrap.ShardConfiguration;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
-import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.shard.command.*;
 import com.github.mayconr.shard.command.Test;
 import com.github.mayconr.shard.storage.*;
@@ -32,18 +25,6 @@ import java.util.concurrent.Executors;
 
 @Configuration
 public class ShardImplConfiguration {
-
-    @Bean
-    public ShardConfiguration getShardConfiguration(ItemTemplateRegistry itemTemplateRegistry) {
-        return ShardConfiguration.builder()
-                .build();
-    }
-
-    @Bean
-    public ServerStartup teste(ServerStartup startup) throws InterruptedException {
-        startup.initialize();
-        return startup;
-    }
 
     // Database
     @Bean
@@ -87,7 +68,7 @@ public class ShardImplConfiguration {
 
             // 4) (Opcional) registra package de TypeHandlers via código
             // Se você já colocou <typeHandlers><package .../> no mybatis-config.xml, pode remover isso.
-            //cfg.getTypeHandlerRegistry().register("com.github.mayconr.shard.storage.types");
+            //cfg.getTypeHandlerRegistry().register("com.github.mayconr.world.storage.types");
 
             // 5) Registra as interfaces @Mapper (o XML já estará carregado via <mappers>)
             //cfg.addMapper(MobileMapper.class);
@@ -104,38 +85,38 @@ public class ShardImplConfiguration {
     }
 
     @Bean
-    public AccountStorage accountStorage(SqlSessionFactory sessionFactory, Executor databaseExecutor) {
-        return new PsqlAccountStorage(sessionFactory, databaseExecutor);
+    public World world(Executor databaseExecutor, SqlSessionFactory sessionFactory) {
+        var worldConfig = WorldConfiguration.builder()
+                .storage(s-> s
+                        .mobile(new PsqlMobileStorage(databaseExecutor, sessionFactory))
+                        .item(new PsqlItemStorage(databaseExecutor, sessionFactory))
+                        .account(new PsqlAccountStorage(sessionFactory, databaseExecutor)))
+                .build();
+        var config = new JuoforgeConfiguration(EngineSettings.defaults(), worldConfig);
+        var world = new WorldBootstrap(config).start();
+        var network = new NetworkBootstrap(world).build();
+        network.bind(9000);
+        return world;
     }
 
     @Bean
-    public MobileStorage mobileStorage(Executor databaseExecutor, SqlSessionFactory sessionFactory) {
-        return new PsqlMobileStorage(databaseExecutor, sessionFactory);
-    }
-
-    @Bean
-    public ItemStorage itemStorage(Executor databaseExecutor, SqlSessionFactory sessionFactory) {
-        return new PsqlItemStorage(databaseExecutor, sessionFactory);
-    }
-
-    @Bean
-    public ApplicationRunner configure(
-            EventBus bus, World world, RealmStorage worldStorage) {
+    public ApplicationRunner configure(World world) {
         return args -> {
-            bus.register(new Goto(world));
-            bus.register(new Save(worldStorage));
-            bus.register(new CreateNpc(world));
-            bus.register(new CreateItem(world));
-            bus.register(new TeleTo(world));
-            bus.register(new Kill(world, world));
-            bus.register(new Destroy(world));
-            bus.register(new Test(world, world));
-            bus.register(new CreateEquippedItem(world));
-            bus.register(new CreateContainerItem(world));
-            bus.register(new Mount(world, world));
-            bus.register(new Unmount(world));
-            bus.register(new CreateStack(world));
-            bus.register(new Region(world));
+            world.on(new Goto(world));
+            //world.on(new Save(worldStorage));
+            world.on(new CreateNpc(world));
+            world.on(new CreateItem(world));
+            world.on(new TeleTo(world));
+            world.on(new Kill(world, world));
+            world.on(new Destroy(world));
+            world.on(new Test(world, world));
+            world.on(new CreateEquippedItem(world));
+            world.on(new CreateContainerItem(world));
+            world.on(new Mount(world, world));
+            world.on(new Unmount(world));
+            world.on(new CreateStack(world));
+            world.on(new Region(world));
+            world.on(new Where(world));
         };
     }
 }

@@ -1,7 +1,6 @@
 package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.network.packet.PingPong;
-
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

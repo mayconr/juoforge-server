@@ -22,12 +22,12 @@ public class Kill extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        worldActions.sendTarget((UOPlayer) event.player(), CursorType.NEUTRAL, result->{
+        worldActions.sendTarget(event.player(), CursorType.NEUTRAL, result->{
             if (TargetType.OBJECT.equals(result.type()) && UOPlayer.isMobile(result.serialId())) {
                 final var mobile = worldView.getMobileBySerialId(result.serialId())
                         .orElseThrow(IllegalArgumentException::new);
-                worldActions.deleteMobile(mobile);
-                worldActions.sendMessage((UOPlayer) event.player(), String.format("%s has been deleted", mobile.getDisplayName()), MessageOptions.of(TextType.EMOTE,105, 0));
+                worldActions.removeMobile(mobile);
+                worldActions.sendMessage(event.player(), String.format("%s has been deleted", mobile.getDisplayName()), MessageOptions.of(TextType.EMOTE,105, 0));
             }
         });
     }

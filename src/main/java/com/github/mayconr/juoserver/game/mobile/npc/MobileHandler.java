@@ -21,7 +21,7 @@ public class MobileHandler {
 
     public UONpc createNpc(NpcTemplate template, Location location) {
         var npc = MobileFactory.createNpcFromTemplate(serialGenerator, template, location);
-        storage.cacheNpc(npc);
+        storage.cacheMobile(npc);
         eventBus.publish(new NpcCreated(npc));
         return npc;
     }

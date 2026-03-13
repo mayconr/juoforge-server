@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.command;
 
+import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
 import com.github.mayconr.juoserver.game.model.ItemOptions;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.world.World;
@@ -15,8 +16,7 @@ public class CreateStack extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.createItem(event.arguments()[0], ItemOptions.builder()
-                .amount(Integer.parseInt(event.arguments()[1]))
+        world.createItem(ItemCreationRequest.byName(event.arguments()[0]).amount(Integer.parseInt(event.arguments()[1])).build(), ItemOptions.builder()
                 .target(new ItemOptions.ContainerTarget(event.player().getBackpack()))
                 .build());
     }

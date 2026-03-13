@@ -3,7 +3,6 @@ package com.github.mayconr.juoserver.network.packet;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.model.UOObject;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
