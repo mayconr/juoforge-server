@@ -4,149 +4,160 @@
     "displayName": "hair",
     "layer": "HAIR",
     "modelId": 8251,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "long_hair",
     "displayName": "long hair",
     "layer": "HAIR",
     "modelId": 8252,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "ponytail",
     "displayName": "ponytail",
     "layer": "HAIR",
     "modelId": 8253,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "long_beard",
     "displayName": "long beard",
     "layer": "FACIAL_HAIR",
     "modelId": 8254,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "short_beard",
     "displayName": "short beard",
     "layer": "FACIAL_HAIR",
     "modelId": 8255,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "goatee",
     "displayName": "goatee",
     "layer": "FACIAL_HAIR",
     "modelId": 8256,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "mustache",
     "displayName": "mustache",
     "layer": "FACIAL_HAIR",
     "modelId": 8257,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "curly",
     "displayName": "curly",
     "layer": "FACIAL_HAIR",
     "modelId": 8263,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "vandyke",
     "displayName": "vandyke",
     "layer": "FACIAL_HAIR",
     "modelId": 8269,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "recending",
     "displayName": "recending",
     "layer": "FACIAL_HAIR",
     "modelId": 8264,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "pigtails",
     "displayName": "pigtails",
     "layer": "FACIAL_HAIR",
     "modelId": 8265,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "short_beard2",
     "displayName": "short beard",
     "layer": "FACIAL_HAIR",
     "modelId": 8267,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "topknot",
     "displayName": "topknot",
     "layer": "FACIAL_HAIR",
     "modelId": 8266,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "pageboy",
     "displayName": "pageboy",
     "layer": "FACIAL_HAIR",
     "modelId": 8261,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
   },
   {
     "name": "mohawke",
     "displayName": "mohawke",
     "layer": "FACIAL_HAIR",
     "modelId": 8260,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_mid_long",
+    "displayName": "elf mid long",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12223,
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_long_feather",
+    "displayName": "elf long feather",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12224,
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_short ",
+    "displayName": "elf short ",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12225,
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_mullet",
+    "displayName": "elf mullet ",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12226,
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_long",
+    "displayName": "elf long",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12237,
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_topknot",
+    "displayName": "elf topknot",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12238,
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_long_braid",
+    "displayName": "elf long braid",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12239,
+    "flags": ["WEARABLE"]
+  },
+  {
+    "name": "elf_spiked",
+    "displayName": "elf spiked",
+    "layer": "FACIAL_HAIR",
+    "modelId": 12241,
+    "flags": ["WEARABLE"]
   }
 ]

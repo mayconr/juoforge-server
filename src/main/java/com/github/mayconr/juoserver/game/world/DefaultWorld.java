@@ -37,6 +37,9 @@ import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.player.PlayerCreationHandler;
 import com.github.mayconr.juoserver.game.player.PlayerModule;
 import com.github.mayconr.juoserver.game.player.PlayerVitalsHandler;
+import com.github.mayconr.juoserver.game.player.template.BodyKey;
+import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
+import com.github.mayconr.juoserver.game.player.template.StartkitTemplate;
 import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillHandler;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
@@ -56,6 +59,7 @@ import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
@@ -88,11 +92,13 @@ public class DefaultWorld implements WorldInternal, World {
     private final RealmStorage storage;
     private final GameLoop gameLoop;
     private final RegionSystem regionSystem;
-    private final ItemTemplateRegistry itemTemplateRegistry;
     private final UOFileReaderSystem fileReader;
     private final PolicyService policyService;
     private final ItemUseService itemUseService;
     private final RNG rng;
+
+    // Templates
+    private final ItemTemplateRegistry itemTemplateRegistry;
     private final NpcTemplateRegistry npcTemplateRegistry;
 
     // Properties
@@ -145,7 +151,12 @@ public class DefaultWorld implements WorldInternal, World {
         this.itemModule = new ItemModule(itemHandler, itemDropHandler, containerHandler);
 
         // Player Module
-        final var playerCreationHandler = new PlayerCreationHandler(serialGenerator, storage, configuration, policyService);
+        final var bodies = new JsonTemplateLoader<>(Path.of("template/bodies"), BodyTemplate.class).load().values();
+        final var bodyTemplateRegistry = new InMemoryTemplateRegistry<>(bodies, body->new BodyKey(body.gender(), body.race()));
+        final var startkits = new JsonTemplateLoader<>(Path.of("template/startkit"), StartkitTemplate.class).load().values();
+        final var startkitTemplateRegistry = new InMemoryTemplateRegistry<>(startkits, StartkitTemplate::skillId);
+
+        final var playerCreationHandler = new PlayerCreationHandler(serialGenerator, storage, configuration, policyService, bodyTemplateRegistry, startkitTemplateRegistry);
         final var vitals = new PlayerVitalsHandler(this);
         this.playerModule = new PlayerModule(playerCreationHandler, vitals, storage, eventBus);
 

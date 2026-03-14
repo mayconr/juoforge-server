@@ -5,12 +5,14 @@ import com.github.mayconr.juoserver.game.model.TooltipSupport;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 
+@ToString
 public class TooltipRequest extends AbstractPacket {
     public static final int CODE = (byte) 0xD6;
     @Getter

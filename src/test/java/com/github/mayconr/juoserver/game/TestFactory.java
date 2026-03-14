@@ -29,7 +29,7 @@ public class TestFactory {
                 Notoriety.INNOCENT,
                 false,              // running
                 Race.HUMAN,
-                Gender.HUMAN_MALE,
+                Gender.MALE,
 
                 // stats vitais
                 100, 100,            // hp / maxHp

@@ -9,6 +9,7 @@ import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.network.packet.EnableLockedClientFeatures.ClientFeatureFlags;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import lombok.Getter;
@@ -98,33 +99,38 @@ public class NettyPlayerSession implements PlayerSession {
      */
 
     @Override
-    public void authenticate(UOAccount account, List<AccountMobile> mobiles) {
+    public void authenticate(UOAccount account) {
         if (!SessionState.CONNECTED.equals(state)) {
             throw new IllegalStateException("Session is not connected. Session state is " + state);
         }
 
         this.account = account;
-        int mobileCounter = 0;
-        for (AccountMobile mobile : mobiles) {
-            availableMobiles.put(mobileCounter++, mobile);
-        }
+        world.getPlayerMobiles(account)
+            .thenAccept(mobiles->{
+                availableStartingLocations.clear();
+                availableMobiles.clear();
 
-        final var counter = new AtomicInteger(0);
-        world.getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> {
-            availableStartingLocations.put(counter.getAndIncrement(), region);
-        });
+                int mobileCounter = 0;
+                for (AccountMobile mobile : mobiles) {
+                    availableMobiles.put(mobileCounter++, mobile);
+                }
 
-        updateAndNotifyStatus(SessionState.AUTHENTICATED);
+                final var counter = new AtomicInteger(0);
+                world.getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> availableStartingLocations.put(counter.getAndIncrement(), region));
 
-        runInEventLoop(()->{
-            channel.writeAndFlush(new CharacterList(
-                    mobiles,
-                    availableStartingLocations,
-                    CharacterListFlag.ENABLE_AOS_COMMON,
-                    CharacterListFlag.SAMURAI_NINJA_CLASSES,
-                    CharacterListFlag.ENABLE_NPC_POPUP,
-                    CharacterListFlag.ELVEN_RACE));
-        });
+                updateAndNotifyStatus(SessionState.AUTHENTICATED);
+
+                runInEventLoop(()->{
+                    channel.write(new EnableLockedClientFeatures(configuration.settings().client().unlockedFeatures(), true));
+                    channel.writeAndFlush(new CharacterList(
+                            mobiles,
+                            availableStartingLocations,
+                            CharacterListFlag.ENABLE_AOS_COMMON,
+                            CharacterListFlag.SAMURAI_NINJA_CLASSES,
+                            CharacterListFlag.ENABLE_NPC_POPUP,
+                            CharacterListFlag.ELVEN_RACE));
+                });
+            });
     }
 
     @Override

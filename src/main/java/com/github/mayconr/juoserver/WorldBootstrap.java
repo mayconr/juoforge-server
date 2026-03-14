@@ -28,7 +28,6 @@ import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
-import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
 
 import java.nio.file.Path;
 
@@ -54,23 +53,15 @@ public final class WorldBootstrap {
         ItemUseService itemUseService = new ItemUseService(itemUseRegistry);
 
         // --- Templates
-        TemplateLoader<NpcTemplate> npcTemplateLoader =
-                new JsonTemplateLoader<>(Path.of("template/npcs"), NpcTemplate.class);
-
-        TemplateLoader<RegionTemplate> regionTemplateLoader =
-                new JsonTemplateLoader<>(Path.of("template/regions"), RegionTemplate.class);
-
-        TemplateLoader<ItemTemplate> itemTemplateLoader =
-                new JsonTemplateLoader<>(Path.of("template/items"), ItemTemplate.class);
 
         NpcTemplateRegistry npcTemplateRegistry =
-                new CachedNpcTemplateRegistry(npcTemplateLoader.load());
+                new CachedNpcTemplateRegistry(new JsonTemplateLoader<>(Path.of("template/npcs"), NpcTemplate.class).load());
 
         ItemTemplateRegistry itemTemplateRegistry =
-                new CachedItemTemplateRegistry(itemTemplateLoader.load());
+                new CachedItemTemplateRegistry(new JsonTemplateLoader<>(Path.of("template/items"), ItemTemplate.class).load());
 
         // --- Region
-        RegionSystem regionSystem = new RegionSystemImpl(regionTemplateLoader);
+        RegionSystem regionSystem = new RegionSystemImpl(new JsonTemplateLoader<>(Path.of("template/regions"), RegionTemplate.class));
 
         MobileStorage mobileStorage = config.world().mobileStorage();
         ItemStorage itemStorage = config.world().itemStorage();
@@ -93,12 +84,15 @@ public final class WorldBootstrap {
                 realmStorage,
                 gameLoop,
                 regionSystem,
-                itemTemplateRegistry,
                 fileReaderSystem,
                 policyService,
                 itemUseService,
                 rng,
+
+                // Templates
+                itemTemplateRegistry,
                 npcTemplateRegistry,
+
                 config
         );
 

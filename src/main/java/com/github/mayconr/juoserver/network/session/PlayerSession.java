@@ -8,7 +8,6 @@ import com.github.mayconr.juoserver.network.packet.DeleteCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
 
 import java.net.SocketAddress;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -55,9 +54,8 @@ public interface PlayerSession {
      * Marks the session as authenticated.
      *
      * @param account the authenticated account
-     * @param mobiles the list of characters associated with the account
      */
-    void authenticate(UOAccount account, List<AccountMobile> mobiles);
+    void authenticate(UOAccount account);
 
     /**
      * Selects a character from the account character list.
