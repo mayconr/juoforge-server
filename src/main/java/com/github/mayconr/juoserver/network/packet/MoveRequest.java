@@ -2,15 +2,16 @@ package com.github.mayconr.juoserver.network.packet;
 
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
-
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
+import lombok.ToString;
 
+@ToString
 @Getter
 public class MoveRequest extends AbstractPacket {
 
     public static final int CODE = (byte) 0x02;
-    private Direction direction;
+    private final Direction direction;
     private final boolean running;
     private final int sequence;
     private final int fastWalkPreventKey;

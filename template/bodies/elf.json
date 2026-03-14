@@ -1,0 +1,18 @@
+[
+  {
+    "name": "elf_male",
+    "race": "ELF",
+    "gender": "MALE",
+    "modelId": 605,
+    "ghostModelId": 607,
+    "defaultSkinHueRange": [1102, 1130]
+  },
+  {
+    "name": "elf_female",
+    "race": "ELF",
+    "gender": "FEMALE",
+    "modelId": 606,
+    "ghostModelId": 608,
+    "defaultSkinHueRange": [1102, 1130]
+  }
+]

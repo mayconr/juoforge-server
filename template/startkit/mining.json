@@ -1,0 +1,14 @@
+[
+  {
+    "name" : "anatomy_miner",
+    "item" : "pickaxe",
+    "amount" : 1,
+    "skillId": 45
+  },
+  {
+    "name" : "anatomy_hat",
+    "item" : "hat",
+    "amount" : 1,
+    "skillId": 45
+  }
+]
