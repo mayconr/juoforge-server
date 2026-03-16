@@ -1,271 +1,117 @@
 @startuml
+title Juoforge - Core Class Diagram / Onboarding Prompt
 
-' =========================
-' API
-' =========================
-package "API" {
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
 
-     interface WorldActions {
-            + sendBroadcastMessage(message : String)
-            + createNpc(name : String, location : Location) : UONpc
-            + sendTarget(player : UOPlayer,type : CursorType,consumer : Consumer<TargetResult>)
-            + sendMessage(player : UOPlayer,text : String,options : MessageOptions)
-            + teleport(mobile : UOMobile, location : Location)
-            + deleteMobile(mobile : UOMobile)
-            + sendAnimation(mobile : UOMobile,options : AnimationOptions)
-            + deleteItem(serial : int)
-            + deleteItem(item : UOItem)
-            + moveItem(item : UOItem, location : Location)
-            + createContainerItem(name : String,container : Container) : UOItem
-            + createItemAtLocation(name : String,location : Location) : UOItem
-            + createEquippedItem(mobile : UOMobile,name : String) : UOItem
-            + scheduleTask(task : GameTask)
-            + tryGainSkill(mobile : UOMobile,skillId : int,difficulty : double,context : SkillGainContext)
-            + isInRange(object1 : Location,object2 : Location,radius : int) : boolean
-            + mount(player : UOPlayer, npc : UONpc)
-            + unmount(player : UOPlayer)
-            + sendGump(player : UOPlayer,gumpUI : DeclarativeGumpUI,handler : GumpHandler)
-        }
-    interface WorldView {
-            + getMobileBySerialId(serial : int): Optional<UOMobile>
-            + getItemsInRange(location : Location, radius : int): List<UOItem>
-            + getMobilesInRange(location : Location, radius : int): List<UOMobile>
-            + getItemBySerialId(serial : int): Optional<UOItem>
-            + getContainerBySerialId(serial : int): Optional<Container>
-            + getStatics(x : int, y : int): List<Static>
-            + getStatics(location : Location): List<Static>
-            + getLandTile(x : int, y : int): LandTile
-            + getLandTile(location : Location): LandTile
-            + getOnlinePlayers(): List<UOPlayer>
-        }
-    interface MovementInternal {
-            + move(player : UOPlayer,moveRequest : MoveRequest)
-            + move(player : UOPlayer,location : Location)
-        }
-     interface SpeechInternal {
-            + speech(player : UOPlayer,request : UnicodeSpeachRequest)
-        }
-    interface ItemInternal {
-            + equipItem(player : UOPlayer,equipItem : EquipItemRequest)
-            + unequipItem(player : UOPlayer,pickedUpItem : UnequipItem)
-            + dropItemOnTheGround(player : UOPlayer,dropItem : DropItem)
-            + removeItemFromTheGround(item : UOItem)
-            + dropItemInContainer(player : UOPlayer,dropItem : DropItem)
-        }
-    interface ClickInternal {
-            + doubleClick(player : UOPlayer,doubleClick : DoubleClick)
-            + singleClick(player : UOPlayer,singleClick : SingleClickRequest)
-        }
-    interface SkillInternal {
-            + useSkill(player : UOPlayer,skillId : int)
-            + sendSkillsLock(player : UOPlayer,skills : Collection<SkillValue>)
-        }
-    interface CombatInternal {
-            + toggleWarMode(player : UOPlayer,type : WarModeType)
-            + attack(player : UOPlayer,request : AttackRequest)
-            + regen(mobile : UOMobile, interval : double)
-        }
-    interface EconomySystemInternal {
-            + getStockPool(regionName : String): RegionStockPool
-            + getPrice(template : ItemTemplate,regionName : String) : double
-        }
-     interface ItemTemplateRegistryInternal {
-            + getItemTemplates(stockType : StockType) : List<ItemTemplate>
-        }
-    interface UiInternal {
-        + tooltipRequest(player : UOPlayer, serials : List<Integer>)
-        + resolveTarget(player : UOPlayer, target : Target)
-        + sendBuyGump(player : UOPlayer,vendor : UOMobile,items : List<RegionStockEntry>)
-        + gumpResponse(player : UOPlayer, gumpSelection : GumpSelection)
-        + playerStatusRequested(sendTo : UOPlayer,getPlayerStatus : GetPlayerStatus)
-    }
-    interface SessionInternal {
-        + login(player : UOPlayer)
-        + logout(player : UOPlayer)
-    }
-    interface WorldInternal {
-        + initialize()
-        + loadMobile(serialId : int) : CompletableFuture<UOMobile>
-        + unloadMobile(serialId : int) : CompletableFuture<UOMobile>
-        + loadItem(serialId : int) : CompletableFuture<UOItem>
-        + unloadItem(serialId : int) : CompletableFuture<UOItem>
-        + createPlayer(character : CreateCharacter,cities : Map<Integer, UOCity>,account : UOAccount) : CompletableFuture<UOPlayer>
-        + isMobile(serialId : int) : boolean
-        + loadContainerItems(container : Container): CompletableFuture<List<UOItem>>
-        + skillGained(mobile : UOMobile, value : SkillValue)
-        + handleAction(player : UOPlayer, request : ActionRequest)
-    }
+hide empty methods
+hide empty fields
 
-    WorldActions <|-- WorldInternal
-    WorldView <|-- WorldInternal
-    MovementInternal <|-- WorldInternal
-    SpeechInternal <|-- WorldInternal
-    ItemInternal <|-- WorldInternal
-    ClickInternal <|-- WorldInternal
-    SkillInternal <|-- WorldInternal
-    CombatInternal <|-- WorldInternal
-    EconomySystemInternal <|-- WorldInternal
-    ItemTemplateRegistryInternal <|-- WorldInternal
-    UiInternal <|-- WorldInternal
-    SessionInternal <|-- WorldInternal
+package "Runtime Core" {
+  class World
+  class RealmStorage
+  class EventBus
+  class RegionSystem
+  class UOFileReaderSystem
+  class PolicyService
+  class ItemUseService
+  class SerialGenerator
+  class GameLoop
+  class RNG
+  class JuoforgeConfiguration
 }
 
-' =========================
-' WORLD IMPLEMENTATION
-' =========================
-package "World" {
-
-    class DefaultWorld {
-        - serialGenerator : SerialGenerator
-        - storage : RealmStorage
-        - gameLoop : GameLoop
-
-        - skillSystem : SkillSystem
-        - gumpSystem : GumpSystem
-        - regionService : MapRegionService
-        - economySystem : EconomySystem
-        - itemTemplateRegistry : ItemTemplateRegistry
-
-        --
-
-        - messageService : MessageService
-        - itemCreationService : ItemCreationService
-        - playerCreationService : PlayerCreationService
-        - fileReader : UOFileReader
-        - animationService : AnimationService
-        - npcService : NpcService
-        - movementService : MovementService
-        - speechService : SpeechService
-        - itemEquipService : ItemEquipService
-        - playerRemovalService : PlayerRemovalService
-        - skillService : SkillService
-        - statusService : StatusService
-        - tooltipService : TooltipService
-        - itemDropService : ItemDropService
-        - playerLoginService : PlayerLoginService
-        - targetService : TargetService
-        - doubleClickService : DoubleClickService
-        - singleClickService : SingleClickService
-        - combatService : CombatService
-        - vendorService : VendorService
-        - actionService : ActionService
-        - mountService : MountService
-        - vitalsService : VitalsService
-    }
-
-    WorldInternal <|.. DefaultWorld
+package "Gameplay Modules" {
+  class EconomyModule
+  class AIModule
+  class UIModule
+  class SkillModule
+  class ItemModule
+  class PlayerModule
+  class CombatModule
+  class MobileModule
+  class InteractionModule
 }
 
-' =========================
-' CORE INFRASTRUCTURE
-' =========================
-package "Core Infrastructure" {
-    class SerialGenerator
-    class RealmStorage
-    class GameLoop
-    class UOFileReader
+package "Networking / Session" {
+  class PlayerSession
+  class Channel
+  class Packet
+  class PacketHandler
 }
 
-' =========================
-' SYSTEMS (Global Mechanics)
-' =========================
-package "Systems" {
-    class SkillSystem
-    class GumpSystem
-    class EconomySystem
-    class MapRegionService
-    class ItemTemplateRegistry
-}
+World *-- EventBus : system
+World *-- RealmStorage : system
+World *-- RegionSystem : system
+World *-- UOFileReaderSystem : system
+World *-- PolicyService : system
+World *-- ItemUseService : system
+World *-- SerialGenerator : system
+World *-- GameLoop : system
+World *-- RNG : system
+World *-- JuoforgeConfiguration : config
 
-' =========================
-' PLAYER RESPONSIBILITY
-' =========================
-package "Player Domain" {
-    class PlayerCreationService
-    class PlayerRemovalService
-    class PlayerLoginService
-    class StatusService
-    class VitalsService
-}
+World *-- EconomyModule : module
+World *-- AIModule : module
+World *-- UIModule : module
+World *-- SkillModule : module
+World *-- ItemModule : module
+World *-- PlayerModule : module
+World *-- CombatModule : module
+World *-- MobileModule : module
+World *-- InteractionModule : module
 
-' =========================
-' ITEM RESPONSIBILITY
-' =========================
-package "Item Domain" {
-    class ItemCreationService
-    class ItemEquipService
-    class ItemDropService
-    class TooltipService
-    class DoubleClickService
-    class SingleClickService
-}
+PlayerSession --> World : uses
+PlayerSession --> JuoforgeConfiguration : uses
+PlayerSession --> Channel : owns connection
 
-' =========================
-' NPC RESPONSIBILITY
-' =========================
-package "NPC Domain" {
-    class NpcService
-    class VendorService
-}
+PacketHandler --> Packet : receives
+PacketHandler --> PlayerSession : delegates
+PlayerSession --> World : orchestrates actions
 
-' =========================
-' COMBAT RESPONSIBILITY
-' =========================
-package "Combat Domain" {
-    class CombatService
-}
+note right of World
+World is the main application aggregate.
+It centralizes:
+- shared systems
+- module access
+- orchestration of gameplay actions
+- global runtime dependencies
 
-' =========================
-' INTERACTION RESPONSIBILITY
-' =========================
-package "Interaction Domain" {
-    class MovementService
-    class SpeechService
-    class TargetService
-    class ActionService
-    class MountService
-    class AnimationService
-    class MessageService
-}
+Use World as the primary entry point
+for domain/game operations triggered
+by sessions, loops, or services.
+end note
 
-' =========================
-' DEPENDENCIES
-' =========================
-DefaultWorld --> SerialGenerator
-DefaultWorld --> RealmStorage
-DefaultWorld --> GameLoop
-DefaultWorld --> UOFileReader
+note right of PlayerSession
+PlayerSession is the connection-scoped
+application facade for one client.
 
-DefaultWorld --> SkillSystem
-DefaultWorld --> GumpSystem
-DefaultWorld --> EconomySystem
-DefaultWorld --> MapRegionService
-DefaultWorld --> ItemTemplateRegistry
+Responsibilities:
+- receive intents from packet handlers
+- validate / normalize client actions
+- coordinate session state
+- invoke World services/modules
+- write responses to Channel
+end note
 
-DefaultWorld --> PlayerCreationService
-DefaultWorld --> PlayerRemovalService
-DefaultWorld --> PlayerLoginService
-DefaultWorld --> StatusService
-DefaultWorld --> VitalsService
+note bottom of PacketHandler
+Assumption:
+There is one handler per packet type.
 
-DefaultWorld --> ItemCreationService
-DefaultWorld --> ItemEquipService
-DefaultWorld --> ItemDropService
-DefaultWorld --> TooltipService
-DefaultWorld --> DoubleClickService
-DefaultWorld --> SingleClickService
+Flow:
+1. handler receives packet
+2. handler parses / validates payload
+3. handler calls PlayerSession
+4. PlayerSession applies session rules
+5. PlayerSession invokes World
+6. World delegates to the proper module/system
+end note
 
-DefaultWorld --> NpcService
-DefaultWorld --> VendorService
-
-DefaultWorld --> CombatService
-
-DefaultWorld --> MovementService
-DefaultWorld --> SpeechService
-DefaultWorld --> TargetService
-DefaultWorld --> ActionService
-DefaultWorld --> MountService
-DefaultWorld --> AnimationService
-DefaultWorld --> MessageService
+note bottom of JuoforgeConfiguration
+Shared configuration object used by
+runtime services, sessions and world setup.
+end note
 
 @enduml
