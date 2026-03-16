@@ -1,13 +1,13 @@
 package com.github.mayconr.shard.skills.crafting.mining;
 
+import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.Location;
-import com.github.mayconr.juoserver.game.model.MessageOptions;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
-import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
 import com.github.mayconr.juoserver.game.model.TargetType;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.game.world.WorldView;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
@@ -31,10 +31,10 @@ public class UseMiningTool implements ItemUseTrigger {
         final var initialLocation = new PointInTheWorld(player);
 
         if (!ctx.player().isItemEquipped(ctx.item())) {
-            worldActions.sendMessage(player, "Pickaxe must be eqquiped", MessageOptions.standard());
+            worldActions.sendMessage(player, new PlainTextMessageContent("Pickaxe must be eqquiped"));
         }
 
-        worldActions.sendMessage(player, "Select a region to mining!", MessageOptions.standard());
+        worldActions.sendMessage(player, new PlainTextMessageContent("Select a region to mining!"));
         worldActions.sendTarget(player, CursorType.NEUTRAL, result-> handleMining(initialLocation, result));
     }
 
@@ -50,7 +50,7 @@ public class UseMiningTool implements ItemUseTrigger {
 
         // is landTile mineralizable
         if (!MineableLandTile.isMineable(mapTile.id())) {
-            worldActions.sendMessage(player, "Location cannot be mining!", MessageOptions.standard());
+            worldActions.sendMessage(player, new PlainTextMessageContent("Location cannot be mining!"));
             return;
         }
 

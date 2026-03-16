@@ -20,19 +20,14 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class InteractionModule implements WorldModule, InteractionCommands {
 
-    private final SpeechHandler speechHandler;
     private final TargetHandler targetHandler;
     private final ActionHandler actionHandler;
     private final AnimationHandler animationHandler;
+    private final SpeechHandler speechHandler;
 
     @Override
     public void update(double delta) {
 
-    }
-
-    @Override
-    public void speech(UOPlayer player, UnicodeSpeachRequest request) {
-        speechHandler.speech(player, request);
     }
 
     @Override
@@ -53,5 +48,10 @@ public class InteractionModule implements WorldModule, InteractionCommands {
     @Override
     public void sendAnimation(UOMobile mobile, AnimationOptions options) {
         animationHandler.sendAnimation(mobile, options);
+    }
+
+    @Override
+    public void speech(UOPlayer player, UnicodeSpeachRequest request) {
+        speechHandler.speech(player, request);
     }
 }

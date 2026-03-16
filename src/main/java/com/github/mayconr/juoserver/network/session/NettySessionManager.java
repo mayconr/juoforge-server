@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.network.session;
 
 import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import com.github.mayconr.juoserver.game.model.event.*;
+import com.github.mayconr.juoserver.game.model.event.message.MessageSent;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;

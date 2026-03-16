@@ -1,0 +1,62 @@
+[
+  {
+    "name": "SYSTEM",
+    "type": "SYSTEM",
+    "hue": 946,
+    "font": 3
+  },
+  {
+    "name": "BROADCAST",
+    "type": "BROADCAST",
+    "hue": 33,
+    "font": 3
+  },
+  {
+    "name": "NORMAL",
+    "type": "NORMAL",
+    "hue": 1153,
+    "font": 3
+  },
+  {
+    "name": "SPELL",
+    "type": "SPELL",
+    "hue": 1260,
+    "font": 3
+  },
+  {
+    "name": "ERROR",
+    "type": "SYSTEM",
+    "hue": 38,
+    "font": 3
+  },
+  {
+    "name": "SUCCESS",
+    "type": "SYSTEM",
+    "hue": 72,
+    "font": 3
+  },
+  {
+    "name": "WHISPER",
+    "type": "WHISPER",
+    "hue": 946,
+    "font": 3
+  },
+  {
+    "name": "YELL",
+    "type": "YELL",
+    "hue": 33,
+    "font": 3
+  },
+  {
+    "name": "EMOTE",
+    "type": "EMOTE",
+    "hue": 902,
+    "font": 3
+  },
+  {
+    "name": "NPC_BLACKSMITH",
+    "type": "NORMAL",
+    "hue": 60,
+    "font": 3
+  }
+]

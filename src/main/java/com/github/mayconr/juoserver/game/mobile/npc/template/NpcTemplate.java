@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.mobile.npc.template;
 
 import com.github.mayconr.juoserver.game.model.BehaviorDefinition;
 import com.github.mayconr.juoserver.game.model.Notoriety;
+import com.github.mayconr.juoserver.game.model.Speech;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 
 import java.util.List;

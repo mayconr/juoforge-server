@@ -2,11 +2,12 @@ package com.github.mayconr.juoserver.game.ai.behaviors;
 
 import com.github.mayconr.juoserver.game.ai.AIContext;
 import com.github.mayconr.juoserver.game.ai.Behavior;
-import com.github.mayconr.juoserver.game.ai.actions.SayAction;
+import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +43,7 @@ public class VendorBehavior implements Behavior {
         }
 
         if (entries.isEmpty()) {
-            context.enqueue(new SayAction("I have nothing to sell"));
+            context.enqueue(new SpeechAction(new PlainTextMessageContent("I have nothing to sell"), player));
         } else {
             context.enqueue(new SellListAction(player, entries));
         }

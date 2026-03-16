@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.ai.session;
 
 import com.github.mayconr.juoserver.game.ai.AIContext;
 import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
-import com.github.mayconr.juoserver.game.ai.actions.SayAction;
+import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.ai.Behavior;
@@ -14,6 +14,7 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
 import com.github.mayconr.juoserver.game.model.event.SpeechContext;
 import com.github.mayconr.juoserver.game.model.event.SpeechRange;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.WorldView;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -88,7 +89,7 @@ public class AISessionImpl implements AISession, AIContext {
         current.onThink(delta);
         while (!actionQueue.isEmpty()) {
             switch (actionQueue.poll()) {
-                case SayAction say -> eventBus.publish(new MobileSpeech(npc, say.text(), new SpeechContext(TextType.NORMAL, SpeechRange.NORMAL, 0,0, System.currentTimeMillis(), npc))); // TODO create world#speech
+                case SpeechAction say -> world.printTextAbove(npc, say.content(), say.speechTo());
                 case SellListAction buyList -> world.beginVendorPurchase(buyList.buyer(), npc, buyList.itemsToSell());
                 case WalkAction walkAction -> world.move(walkAction.npc(), walkAction.direction());
             }
