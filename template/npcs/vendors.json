@@ -28,7 +28,8 @@
     "attr": {
       "behavior.radius": 3,
       "behavior.supports": ["buy"],
-      "behavior.stockType": "ORE"
+      "behavior.stockType": "ORE",
+      "speech.messageStyle": "NPC_BLACKSMITH"
     },
     "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat", "robe", "long_hair", "short_beard", "backpack"],
     "roles": ["vendor"]

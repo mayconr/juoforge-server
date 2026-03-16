@@ -3,9 +3,10 @@ package com.github.mayconr.juoserver.game.ai.behaviors;
 import com.github.mayconr.juoserver.game.ai.Behavior;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.ai.AIContext;
-import com.github.mayconr.juoserver.game.ai.actions.SayAction;
+import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 
-public class TalkBehavior implements Behavior {
+public class SpeechBehavior implements Behavior {
 
     private AIContext context;
 
@@ -26,10 +27,10 @@ public class TalkBehavior implements Behavior {
         String normalized = text.toLowerCase();
 
         if (normalized.contains("hi") || normalized.contains("hello")) {
-            context.enqueue(new SayAction("Hello, " + player.getName() + "!"));
+            context.enqueue(new SpeechAction(new PlainTextMessageContent("Hello, " + player.getName() + "!"), player));
         }
         else {
-            context.enqueue(new SayAction("I didn't understand you!"));
+            context.enqueue(new SpeechAction(new PlainTextMessageContent("I didn't understand you!"), player));
         }
 
         talkCooldown = COOLDOWN_TIME;
@@ -44,7 +45,7 @@ public class TalkBehavior implements Behavior {
 
         // speak something randomly
         if (talkCooldown <= 0 && Math.random() < 0.001) {
-            context.enqueue(new SayAction("Beautiful day, isn't it?"));
+            context.enqueue(new SpeechAction(new PlainTextMessageContent("Beautiful day, isn't it?"), null));
             talkCooldown = COOLDOWN_TIME;
         }
     }

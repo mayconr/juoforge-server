@@ -13,8 +13,6 @@ import java.util.function.Consumer;
 
 public interface InteractionCommands {
 
-    void speech(UOPlayer player, UnicodeSpeachRequest request);
-
     void sendTarget(UOPlayer player, CursorType type, Consumer<TargetResult> consumer);
 
     void resolveTarget(UOPlayer player, Target target);
@@ -22,4 +20,6 @@ public interface InteractionCommands {
     void handleAction(UOPlayer player, ActionRequest request);
 
     void sendAnimation(UOMobile mobile, AnimationOptions options);
+
+    void speech(UOPlayer player, UnicodeSpeachRequest request);
 }

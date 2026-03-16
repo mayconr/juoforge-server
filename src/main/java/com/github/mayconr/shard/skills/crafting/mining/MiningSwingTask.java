@@ -3,6 +3,7 @@ package com.github.mayconr.shard.skills.crafting.mining;
 import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.ItemOptions.ContainerTarget;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.shard.skills.Skills;
@@ -38,13 +39,13 @@ public class MiningSwingTask implements GameTask {
             options = AnimationOptions.simpleForward(AnimationType.ATTACK_WITH_SWORD_SIDE, 20);
         }
         worldActions.sendAnimation(player, options);
-        worldActions.tryGain(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
+        worldActions.tryGainSkill(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
 
         final var skill = player.getSkills().get(Skills.MINING.getId());
         final var ore = resourceRoller.rollResource(OreType.values(), skill.getValue());
 
         if (ore == null) {
-            worldActions.sendMessage(player, "You loosen some rocks but find nothing of value.", MessageOptions.standard());
+            worldActions.sendMessage(player, new PlainTextMessageContent("You loosen some rocks but find nothing of value."));
             return;
         }
         final var oreItem = worldActions.createItem(ItemCreationRequest.byName(ore.name().toLowerCase()).build(), ItemOptions.builder().target(new ContainerTarget(player)).build());
@@ -61,6 +62,6 @@ public class MiningSwingTask implements GameTask {
 
     @Override
     public void onDone(long currentTick, double delta) {
-        worldActions.sendMessage(player, "You are done of mining", MessageOptions.standard());
+        worldActions.sendMessage(player, new PlainTextMessageContent("You are done of mining"));
     }
 }

@@ -1,11 +1,10 @@
 package com.github.mayconr.juoserver.game.ui;
 
-import com.github.mayconr.juoserver.game.model.MessageOptions;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.ui.gump.GumpSystem;
+import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.network.packet.DoubleClick;
 import com.github.mayconr.juoserver.network.packet.GumpSelection;
 import com.github.mayconr.juoserver.network.packet.SingleClickRequest;
@@ -21,7 +20,6 @@ public class UIModule implements WorldModule, UICommands {
     private final SingleClickHandler singleClickHandler;
     private final SkillUIHandler skillUIHandler;
     private final GumpSystem gumpSystem;
-    private final MessageHandler messageHandler;
     private final StatusHandler statusHandler;
 
     @Override
@@ -57,11 +55,6 @@ public class UIModule implements WorldModule, UICommands {
     @Override
     public void onGumpSelection(UOPlayer player, GumpSelection gumpSelection) {
         gumpSystem.onGumpSelection(player, gumpSelection);
-    }
-
-    @Override
-    public void sendMessage(UOPlayer player, String text, MessageOptions options) {
-        messageHandler.sendMessage(player, text, options);
     }
 
     @Override

@@ -1,11 +1,10 @@
 package com.github.mayconr.shard.command;
 
-import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.model.CursorType;
-import com.github.mayconr.juoserver.game.model.MessageOptions;
-import com.github.mayconr.juoserver.game.model.TextType;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.TargetType;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.Prompt;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.game.world.WorldView;
 
@@ -26,8 +25,8 @@ public class Kill extends AbstractCommand {
             if (TargetType.OBJECT.equals(result.type()) && UOPlayer.isMobile(result.serialId())) {
                 final var mobile = worldView.getMobileBySerialId(result.serialId())
                         .orElseThrow(IllegalArgumentException::new);
-                worldActions.removeMobile(mobile);
-                worldActions.sendMessage(event.player(), String.format("%s has been deleted", mobile.getDisplayName()), MessageOptions.of(TextType.EMOTE,105, 0));
+                worldActions.deleteMobile(mobile);
+                worldActions.sendMessage(event.player(), new PlainTextMessageContent(String.format("%s has been deleted", mobile.getDisplayName())));
             }
         });
     }

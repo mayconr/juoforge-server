@@ -2,6 +2,7 @@ package com.github.mayconr.shard.command;
 
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
+import com.github.mayconr.juoserver.game.model.event.message.LocalizedMessageContent;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 
@@ -18,6 +19,8 @@ public class Goto extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
+        worldActions.sendMessage(event.player(), new LocalizedMessageContent("test"));
+
         DeclarativeGumpUI gump =
                 new DeclarativeGumpUI(
                         Page(

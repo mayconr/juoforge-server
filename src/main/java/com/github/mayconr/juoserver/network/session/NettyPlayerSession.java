@@ -4,12 +4,17 @@ import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked.StackDestination;
+import com.github.mayconr.juoserver.game.model.event.message.LocalizedMessageContent;
+import com.github.mayconr.juoserver.game.model.event.message.MessageSent;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.player.exception.PlayerNameAlreadyExistsException;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.network.packet.*;
-import com.github.mayconr.juoserver.network.packet.EnableLockedClientFeatures.ClientFeatureFlags;
+import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.network.session.i18n.ResourceBundleMessageLocalizer;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import lombok.Getter;
@@ -29,6 +34,7 @@ import java.util.function.Predicate;
 @Slf4j
 public class NettyPlayerSession implements PlayerSession {
 
+    private final MessageLocalizer localizer = new ResourceBundleMessageLocalizer("messages");
     private final Channel channel;
     private final ChannelGroup channelGroup;
     private final JuoforgeConfiguration configuration;
@@ -36,13 +42,16 @@ public class NettyPlayerSession implements PlayerSession {
     private final WorldInternal world;
 
     private SocketAddress remoteAddress;
+    private String clientVersion;
+    private ClientLocale locale = ClientLocale.PT_BR;
+
     @Getter
     private UOPlayer player;
     private UOAccount account;
     private final Map<Integer, AccountMobile> availableMobiles = new HashMap<>();
     private final Map<Integer, RegionNode> availableStartingLocations = new HashMap<>();
     private int mobileSerialId;
-    private String clientVersion;
+
     private SessionState state;
 
     public NettyPlayerSession(Channel channel, ChannelGroup channelGroup, JuoforgeConfiguration configuration, EventBus eventBus, WorldInternal world) {
@@ -383,17 +392,34 @@ public class NettyPlayerSession implements PlayerSession {
      */
 
     public void onMessageSent(MessageSent event) {
-        if (player.equals(event.player())) {
-            var speakerId = 0;
-            var speakerName = "";
-            var speakerModel = 0;
-            var options = event.options();
-            if (options.object() != null) {
-                speakerId = options.object().getSerialId();
-                speakerName = options.object().getDisplayName();
-                speakerModel = options.object().getModelId();
+        var speakerId = 0;
+        var speakerName = "";
+        var speakerModel = 0;
+        var style = event.messageStyle();
+
+        if (event.messageSource() != null) {
+            speakerId = event.messageSource().getSerialId();
+            speakerName = event.messageSource().getDisplayName();
+            speakerModel = event.messageSource().getModelId();
+        }
+
+        final String text = switch (event.messageContent()) {
+            case PlainTextMessageContent plain -> plain.text();
+            case LocalizedMessageContent localized -> localizer.localize(localized, locale);
+        };
+        final var speech = new SendSpeech(style.type(), style.hue(), speakerId, speakerModel, style.font(), speakerName, text);
+
+        if (style.type().equals(TextType.BROADCAST)) {
+            channel.writeAndFlush(speech);
+        } else {
+            if (event.messageTarget() != null) {
+                if (player.equals(event.messageTarget())) {
+                    channel.writeAndFlush(speech);
+                }
+            } else {
+                // TODO send to all in range
+                channel.writeAndFlush(speech);
             }
-            channel.writeAndFlush(new SendSpeech(options.type(), options.hue(), speakerId, speakerModel, options.font(), speakerName, event.text()));
         }
     }
 
