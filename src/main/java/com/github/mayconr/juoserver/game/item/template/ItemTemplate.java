@@ -23,5 +23,6 @@ public record ItemTemplate(String name,
             implements BaseTemplate {
     public ItemTemplate {
         attr = attr == null ? Map.of() : Map.copyOf(attr);
+        flags = flags == null ? Collections.emptyList() : flags;
     }
 }

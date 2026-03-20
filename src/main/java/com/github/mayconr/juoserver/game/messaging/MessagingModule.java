@@ -12,6 +12,8 @@ import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+
 @Slf4j
 @RequiredArgsConstructor
 public class MessagingModule implements WorldModule, MessagingOperations {
@@ -27,7 +29,20 @@ public class MessagingModule implements WorldModule, MessagingOperations {
     public void update(double delta) {}
 
     @Override
+    public void send(UOPlayer player, String message) {
+        if (LocalizationKey.isLocalizationKey(message)) {
+            internalSend(player, MessageContent.localized(LocalizationKey.extractKey(message), Map.of()));
+        } else {
+            internalSend(player, MessageContent.plain(message));
+        }
+    }
+
+    @Override
     public void send(UOPlayer player, MessageContent message) {
+        internalSend(player, message);
+    }
+
+    private void internalSend(UOPlayer player, MessageContent message) {
         final var style = templateRegistry.get(SYSTEM_STYLE_KEY)
                 .getFirst();
         eventBus.publish(new MessageSent(message, null, player, style));
@@ -46,7 +61,7 @@ public class MessagingModule implements WorldModule, MessagingOperations {
     private void internalPrintTextAbove(UOObject source, MessageContent message, UOPlayer player) {
         MessageStyleTemplate style;
         if (source instanceof UOMobile mobile) {
-            final var styleName = mobile.getPersistentAttribute(SPEECH_MESSAGE_STYLE, NORMAL_STYLE_KEY);
+            final var styleName = mobile.persistentAttributes().getOrDefault(SPEECH_MESSAGE_STYLE, NORMAL_STYLE_KEY);
             style = templateRegistry.get(styleName).getFirst();
         } else {
             style = templateRegistry.get(SYSTEM_STYLE_KEY)

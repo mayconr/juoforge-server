@@ -1,12 +1,13 @@
 package com.github.mayconr.juoserver.game.item;
 
-import com.github.mayconr.juoserver.game.item.exxception.ItemTemplateNotFoundException;
+import com.github.mayconr.juoserver.game.item.exception.ItemTemplateNotFoundException;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,41 +26,57 @@ public class ItemHandler {
     private final RealmStorage storage;
     private final EventBus eventBus;
 
-    public UOItem createItemAtLocation(ItemCreationRequest request, Location location) {
+    UOItem createItem(ItemRequest request, ItemTarget target) {
         final var item = internalCreateItem(request);
 
-        item.setLocation(location);
+        // General properties
         item.setAmount(request.amount());
         item.setHue(request.hue());
 
+        final GameEvent event = switch (target) {
+            case EquipItemTarget equipItemTarget -> {
+                final var mobile = equipItemTarget.mobile();
+                mobile.equipItem(item);
+                yield new EquippedItemCreated(mobile, item);
+            }
+            case GroundItemTarget worldLocation -> {
+                item.setLocation(worldLocation.location());
+                yield new GroundedItemCreated(item);
+            }
+            case ContainerItemTarget containerItemTarget -> handleContainerItem(item, containerItemTarget);
+        };
+
         storage.cacheItem(item);
-        eventBus.publish(new GroundedItemCreated(item));
+        eventBus.publish(event);
+
         return item;
     }
 
-    public UOItem createEquippedItem(ItemCreationRequest request, UOMobile mobile) {
-        final var item = internalCreateItem(request);
+    private GameEvent handleContainerItem(UOItem item, ContainerItemTarget target) {
+        final var container = target.container();
 
-        mobile.equipItem(item);
+        UOItem updatedItem = item;
 
-        storage.cacheItem(item);
-        eventBus.publish(new EquippedItemCreated(mobile, item));
-        return item;
+        // search for another similar and try to stack
+        if (item.hasFlag(ItemFlag.STACKABLE) && target.options().tryStack()) {
+            for (UOItem containerItem : container.getItemsInContainer()) {
+                if (containerItem.getName().equals(item.getName())) {
+                    containerItem.increaseAmount(item.getAmount());
+                    updatedItem = containerItem;
+                    break;
+                }
+            }
+        }
+
+        // Item is stackable, but is unable to stack. Should add to container
+        if (updatedItem.equals(item)) {
+            container.addItemToContainer(updatedItem);
+        }
+
+        return new ItemCreatedInContainer(container, updatedItem);
     }
 
-    public UOItem createItemInContainer(ItemCreationRequest request, Container container) {
-        final var item = internalCreateItem(request);
-
-        item.setAmount(request.amount());
-        item.setHue(request.hue());
-        container.addItemToContainer(item);
-
-        storage.cacheItem(item);
-        eventBus.publish(new ItemCreatedInContainer(container, item));
-        return item;
-    }
-
-    public UOItem createUnloadedItem(ItemCreationRequest request) {
+    public UOItem createUnloadedItem(ItemRequest request) {
         final var amount = request.amount() == 0 ? 1 : request.amount();
         final var hue = request.hue();
         final var location = new PointInTheWorld(0,0,0);
@@ -77,7 +94,7 @@ public class ItemHandler {
         }
     }
 
-    private UOItem internalCreateItem(ItemCreationRequest request) {
+    private UOItem internalCreateItem(ItemRequest request) {
         final var template = supplierFactory(request).get();
         if (template == null) {
             throw new ItemTemplateNotFoundException("Template does not exist");
@@ -92,7 +109,7 @@ public class ItemHandler {
                 0,
                 template.name(),
                 template.displayName(),
-                template.attr(),
+                new DefaultAttributeMap(template.attr()),
                 template.layer(),
                 1,
                 template.hue(),
@@ -109,7 +126,7 @@ public class ItemHandler {
         return item;
     }
 
-    private Supplier<ItemTemplate> supplierFactory(ItemCreationRequest request) {
+    private Supplier<ItemTemplate> supplierFactory(ItemRequest request) {
         if (request.modelId() != null) {
             return ()->itemTemplateRegistry.get(request.modelId())
                     .getFirst();

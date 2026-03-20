@@ -21,7 +21,7 @@
             <arg column="z"           javaType="int"/>
             <arg column="name"        javaType="java.lang.String"/>
             <arg column="display_name" javaType="java.lang.String"/>
-            <arg column="attr"        javaType="java.util.Map" typeHandler="com.github.mayconr.shard.storage.types.AttributesTypeHandler"/>
+            <arg column="attr"        javaType="com.github.mayconr.juoserver.game.model.AttributeMap" typeHandler="com.github.mayconr.shard.storage.types.AttributesTypeHandler"/>
         </constructor>
 
         <!-- ID e campos simples -->

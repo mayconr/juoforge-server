@@ -46,7 +46,7 @@ public class MobileModule implements WorldModule, MobileCommands, MobileQueries 
     public void unmount(UOPlayer player) {
         var item = mountHandler.unmount(player);
         if (item != null) {
-            final var npcName = (String) item.getPersistentAttribute("npcName");
+            final var npcName = (String) item.persistentAttributes().get("npcName");
             if (npcName == null) {
                 log.debug("Item [{}] is not a mount item", item.getName());
                 return;

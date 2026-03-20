@@ -1,15 +1,16 @@
 package com.github.mayconr.shard.command;
 
+import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
-import com.github.mayconr.juoserver.game.world.WorldActions;
+import com.github.mayconr.juoserver.game.world.World;
 
 public class Unmount extends AbstractCommand{
 
-    private final WorldActions world;
+    private final World world;
 
-    public Unmount(WorldActions world) {
+    public Unmount(ServerRuntime runtime) {
         super("unmount");
-        this.world = world;
+        this.world = runtime.world();
     }
 
     @Override

@@ -1,23 +1,27 @@
 package com.github.mayconr.shard.skills.crafting.mining;
 
-import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
+import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.ItemOptions.ContainerTarget;
+import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
+import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
+import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.skills.Skills;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.function.Function;
 
 @Slf4j
 @RequiredArgsConstructor
 public class MiningSwingTask implements GameTask {
     private static final int SWING_INTERVAL_TICKS = 30; // ex: 1s se tick=100ms
 
-    private final WorldActions worldActions;
-    private final ResourceRoller resourceRoller;
+    private final World world;
+    private final Function<Double, Ore> resourceRoller;
     private final UOPlayer player;
     private long nextTick = 0;
     private int swingsLeft = 5;
@@ -38,20 +42,27 @@ public class MiningSwingTask implements GameTask {
         } else {
             options = AnimationOptions.simpleForward(AnimationType.ATTACK_WITH_SWORD_SIDE, 20);
         }
-        worldActions.sendAnimation(player, options);
-        worldActions.tryGainSkill(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
+        world.sendAnimation(player, options);
+        world.tryGainSkill(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
 
         final var skill = player.getSkills().get(Skills.MINING.getId());
-        final var ore = resourceRoller.rollResource(OreType.values(), skill.getValue());
+        final var ore = resourceRoller.apply(skill.getValue());
 
         if (ore == null) {
-            worldActions.sendMessage(player, new PlainTextMessageContent("You loosen some rocks but find nothing of value."));
+            world.sendMessage(player, new PlainTextMessageContent("You loosen some rocks but find nothing of value."));
             return;
         }
-        final var oreItem = worldActions.createItem(ItemCreationRequest.byName(ore.name().toLowerCase()).build(), ItemOptions.builder().target(new ContainerTarget(player)).build());
+        final var itemRequest = ItemRequest.byName(ore.itemName())
+                .amount(2)
+                .build();
+        final var oreItem = world.createItem(itemRequest, ContainerItemTarget.of(player, cfg->{
+            cfg.tryStack(true);
+        }));
+
+        world.sendMessage(player, MessageContent.plain("you finished "+oreItem.getAmount()));
 
         if (log.isDebugEnabled()) {
-            log.debug("Ore [{}] created in [{}-{}] backpack", oreItem.getName(), player.getSerialId(), player.getName());
+            log.debug("Ore [{}] created in [{}-{}] backpackItem", oreItem.getName(), player.getSerialId(), player.getName());
         }
     }
 
@@ -62,6 +73,6 @@ public class MiningSwingTask implements GameTask {
 
     @Override
     public void onDone(long currentTick, double delta) {
-        worldActions.sendMessage(player, new PlainTextMessageContent("You are done of mining"));
+        world.sendMessage(player, new PlainTextMessageContent("You are done of mining"));
     }
 }

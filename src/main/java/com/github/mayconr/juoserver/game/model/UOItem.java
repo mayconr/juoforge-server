@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
 public class UOItem extends UOObject {
 
     public static final int OBJECTS_MIN_SERIAL_ID = 0x3FFFFFFF + 1;
@@ -26,7 +25,7 @@ public class UOItem extends UOObject {
     private UOMobile owner;
     private List<ItemFlag> flags;
 
-    public UOItem(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight) {
+    public UOItem(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight) {
         super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
         this.id = id;
         this.layer = layer;
@@ -50,7 +49,7 @@ public class UOItem extends UOObject {
             int z,
             String name,
             String displayName,
-            Map<String, Object> attr,
+            AttributeMap attr,
             Layer layer,
             int amount,
             int hue,
@@ -80,7 +79,7 @@ public class UOItem extends UOObject {
                 other.getZ(),
                 other.getName(),
                 other.getDisplayName(),
-                other.getPersistentAttrMap()
+                other.persistentAttributes()
         );
         this.id = other.id;
         this.layer = other.layer;

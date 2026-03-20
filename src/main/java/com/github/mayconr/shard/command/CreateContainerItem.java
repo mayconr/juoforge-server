@@ -1,23 +1,22 @@
 package com.github.mayconr.shard.command;
 
-import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
-import com.github.mayconr.juoserver.game.model.ItemOptions;
+import com.github.mayconr.juoserver.ServerRuntime;
+import com.github.mayconr.juoserver.game.item.ItemRequest;
+import com.github.mayconr.juoserver.game.model.ContainerItemTarget;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.world.World;
 
 public class CreateContainerItem extends AbstractCommand{
 
     private final World world;
-    
-    public CreateContainerItem(World world) {
+
+    public CreateContainerItem(ServerRuntime  serverRuntime) {
         super("createContainerItem");
-        this.world = world;
+        this.world = serverRuntime.world();
     }
 
     @Override
     public void handle(Prompt event) {
-        world.createItem(ItemCreationRequest.byName(event.arguments()[0]).build(), ItemOptions.builder()
-                .target(new ItemOptions.ContainerTarget(event.player()))
-                .build());
+        world.createItem(ItemRequest.byName(event.arguments()[0]).build(), ContainerItemTarget.of(event.player()));
     }
 }

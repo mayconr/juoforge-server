@@ -10,14 +10,16 @@ public class PlayerVitalsHandler {
     private final WorldInternal world;
 
     public void update(UOPlayer player, double delta) {
-        double regenAccumulator = player.getRuntimeAttribute("REGEN_ACCUMULATOR", 0d) + delta;
+        var attributes = player.runtimeAttributes();
+
+        double regenAccumulator = attributes.getOrDefault("REGEN_ACCUMULATOR", 0d) + delta;
 
         if (regenAccumulator > 10) {
             world.regen(player, delta);
             regenAccumulator -= 10;
         }
 
-        player.setRuntimeAttribute("REGEN_ACCUMULATOR", regenAccumulator);
+        attributes.set("REGEN_ACCUMULATOR", regenAccumulator);
     }
 
 }

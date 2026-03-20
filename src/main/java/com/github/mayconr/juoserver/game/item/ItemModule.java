@@ -16,27 +16,15 @@ public class ItemModule implements WorldModule, ItemCommands, ItemQueries {
     private final ContainerHandler containerHandler;
 
     @Override
-    public void update(double delta) {
+    public void update(double delta) {}
 
+    @Override
+    public UOItem createItem(ItemRequest request, ItemTarget target) {
+        return itemHandler.createItem(request, target);
     }
 
     @Override
-    public UOItem createItemAtLocation(ItemCreationRequest request, Location location) {
-        return itemHandler.createItemAtLocation(request, location);
-    }
-
-    @Override
-    public UOItem createEquippedItem(ItemCreationRequest request, UOMobile mobile) {
-        return itemHandler.createEquippedItem(request, mobile);
-    }
-
-    @Override
-    public UOItem createItemInContainer(ItemCreationRequest request, Container container) {
-        return itemHandler.createItemInContainer(request, container);
-    }
-
-    @Override
-    public UOItem createUnloadedItem(ItemCreationRequest request) {
+    public UOItem createUnloadedItem(ItemRequest request) {
         return itemHandler.createUnloadedItem(request);
     }
 

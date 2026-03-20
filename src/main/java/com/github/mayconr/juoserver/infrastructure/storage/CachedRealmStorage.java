@@ -24,6 +24,8 @@ public class CachedRealmStorage implements RealmStorage {
     private final ItemCache itemCache = new ItemCache();
     private final WorldItemIndex worldItemIndex = new WorldItemIndex();
 
+    private final AccountStorage accountStorage;
+
     private final List<UOMobile> dirtyMobiles = new ArrayList<>();
     private final List<UOItem> dirtyItems = new ArrayList<>();
 
@@ -304,4 +306,8 @@ public class CachedRealmStorage implements RealmStorage {
                 .whenComplete(this::logging);
     }
 
+    @Override
+    public CompletableFuture<UOAccount> getAccountByUsername(String username) {
+        return accountStorage.getByUsername(username);
+    }
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "marker",
+    "displayName": "marker",
+    "modelId": 1293,
+    "movable" : false
+  },
+  {
+    "name": "marker_flag",
+    "displayName": "marker_flag",
+    "modelId": 4455,
+    "movable" : false
+  }
+]

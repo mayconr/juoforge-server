@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class UseLumberjackTool implements ItemUseTrigger {
+public class LumberjackToolTrigger implements ItemUseTrigger {
 
     private final WorldActions worldActions;
     private final WorldView worldView;

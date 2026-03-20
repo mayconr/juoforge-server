@@ -7,6 +7,8 @@ import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 public interface MessagingOperations {
     void send(UOPlayer player, MessageContent message);
 
+    void send(UOPlayer player, String message);
+
     void printTextAbove(UOObject source, MessageContent message);
 
     /**

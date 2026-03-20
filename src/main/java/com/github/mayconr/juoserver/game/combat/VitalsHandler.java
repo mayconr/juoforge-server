@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.combat;
 
-import com.github.mayconr.juoserver.JuoforgeConfiguration;
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.event.VitalsChanged;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -15,17 +15,19 @@ public class VitalsHandler {
     public static final String MOBILE_STAMINA_ACCUMULATOR = "mobile.staminaAccumulator";
     public static final String MOBILE_MANA_ACCUMULATOR = "mobile.manaAccumulator";
     private final EventBus eventBus;
-    private final JuoforgeConfiguration configuration;
+    private final GamePlaySettings settings;
 
     public void regen(UOMobile mobile, double interval) {
+        var attributes  = mobile.persistentAttributes();
+
         // Mutable variables
         boolean dirty = false;
-        double hpAcc = mobile.getPersistentAttribute(MOBILE_HP_ACCUMULATOR, 0.0);
-        double staminaAcc = mobile.getPersistentAttribute(MOBILE_STAMINA_ACCUMULATOR, 0.0);
-        double manaAcc = mobile.getPersistentAttribute(MOBILE_MANA_ACCUMULATOR, 0.0);
+        double hpAcc = attributes.getOrDefault(MOBILE_HP_ACCUMULATOR, 0.0);
+        double staminaAcc = attributes.getOrDefault(MOBILE_STAMINA_ACCUMULATOR, 0.0);
+        double manaAcc = attributes.getOrDefault(MOBILE_MANA_ACCUMULATOR, 0.0);
 
         final double min = 0.1;
-        final int saturationFactor = configuration.settings().vitals().saturationFactor();
+        final int saturationFactor = settings.vitals().saturationFactor();
 
         final double hpRegenBase = (min + ((double) mobile.getStrength() / (mobile.getStrength() + saturationFactor)));
         hpAcc += hpRegenBase * interval;
@@ -67,9 +69,9 @@ public class VitalsHandler {
             dirty = true;
         }
 
-        mobile.setPersistentAttribute(MOBILE_HP_ACCUMULATOR, hpAcc);
-        mobile.setPersistentAttribute(MOBILE_STAMINA_ACCUMULATOR, staminaAcc);
-        mobile.setPersistentAttribute(MOBILE_MANA_ACCUMULATOR, manaAcc);
+        attributes.set(MOBILE_HP_ACCUMULATOR, hpAcc);
+        attributes.set(MOBILE_STAMINA_ACCUMULATOR, staminaAcc);
+        attributes.set(MOBILE_MANA_ACCUMULATOR, manaAcc);
 
         if (dirty) {
             eventBus.publish(new VitalsChanged(mobile));

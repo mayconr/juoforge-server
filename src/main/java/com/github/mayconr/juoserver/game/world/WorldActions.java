@@ -2,20 +2,8 @@ package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
-import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
-import com.github.mayconr.juoserver.game.model.AnimationOptions;
-import com.github.mayconr.juoserver.game.model.ConsumeResult;
-import com.github.mayconr.juoserver.game.model.Container;
-import com.github.mayconr.juoserver.game.model.CursorType;
-import com.github.mayconr.juoserver.game.model.Direction;
-import com.github.mayconr.juoserver.game.model.ItemOptions;
-import com.github.mayconr.juoserver.game.model.Location;
-import com.github.mayconr.juoserver.game.model.SkillGainContext;
-import com.github.mayconr.juoserver.game.model.UOItem;
-import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.model.UONpc;
-import com.github.mayconr.juoserver.game.model.UOObject;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.item.ItemRequest;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
@@ -32,7 +20,7 @@ public interface WorldActions {
 
     UONpc createNpc(String name, Location location);
 
-    UOItem createItem(ItemCreationRequest request, ItemOptions options);
+    UOItem createItem(ItemRequest request, ItemTarget target);
 
     void deleteMobile(UOMobile mobile);
 
@@ -46,7 +34,7 @@ public interface WorldActions {
 
     void move(UOMobile mobile, Direction direction);
 
-    void teleport(UOMobile mobile, Location location);
+    void move(UOMobile mobile, Location location);
 
     void moveItem(UOItem item, Location location);
 
@@ -59,6 +47,8 @@ public interface WorldActions {
     // =========================
 
     void sendMessage(UOPlayer player, MessageContent content);
+
+    void sendMessage(UOPlayer player, String message);
 
     void printTextAbove(UOObject source, MessageContent content);
 

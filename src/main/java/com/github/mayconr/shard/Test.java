@@ -143,7 +143,7 @@ public class Test {
     }
 
     public HandlerResult move(Prompt prompt) {
-        world.teleport(prompt.player(), new PointInTheWorld(2516, 555, 0));
+        world.move(prompt.player(), new PointInTheWorld(2516, 555, 0));
         return HandlerResult.CONTINUE;
     }
 

@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.command;
 
+import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
@@ -14,16 +15,14 @@ public class Where extends AbstractCommand{
 
     private final World world;
 
-    public Where(World world) {
+    public Where(ServerRuntime runtime) {
         super("where");
-        this.world = world;
+        this.world = runtime.world();
     }
 
     @Override
     public void handle(Prompt event) {
         var message = "You are here "+event.player().getX()+" - "+ event.player().getY()+" - "+event.player().getZ();
-
-        //world.sendMessage(event.player(), new PlainTextMessageContent(message), MessageOptions.standard());
 
         world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
             world.getMobileBySerialId(result.serialId()).ifPresent(mobile -> {

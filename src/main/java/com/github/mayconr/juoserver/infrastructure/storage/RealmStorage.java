@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 
 public interface RealmStorage {
 
+    CompletableFuture<UOAccount> getAccountByUsername(String username);
+
     // Lifecycle
     void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> updateMobile);
 

@@ -1,0 +1,40 @@
+[
+  {
+    "name": "moonglow-mine-exit",
+    "displayName" : "Moonglow Mine Exit",
+    "parentName": "world-britannia",
+    "type": "TELEPORT",
+    "area": {
+      "type": "rectangle",
+      "x": 5753,
+      "y": 324,
+      "width": 1,
+      "height": 1
+    },
+    "properties": {
+      "teleport.kind": "MINE",
+      "teleport.destination.x" : 4341,
+      "teleport.destination.y" : 1093,
+      "teleport.destination.z" : 0
+    }
+  },
+  {
+    "name": "moonglow-mine-entrance",
+    "displayName" : "Moonglow Mine Entrance",
+    "parentName": "world-britannia",
+    "type": "TELEPORT",
+    "area": {
+      "type": "rectangle",
+      "x": 4343,
+      "y": 1091,
+      "width": 4,
+      "height": 1
+    },
+    "properties": {
+      "teleport.kind": "MINE",
+      "teleport.destination.x" : 5753,
+      "teleport.destination.y" : 337,
+      "teleport.destination.z" : 5
+    }
+  }
+]

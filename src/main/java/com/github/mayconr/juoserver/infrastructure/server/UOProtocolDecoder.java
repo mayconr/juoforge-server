@@ -1,17 +1,16 @@
 package com.github.mayconr.juoserver.infrastructure.server;
 
+import com.github.mayconr.juoserver.network.packet.*;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
-
-import com.github.mayconr.juoserver.network.packet.*;
-import io.netty.buffer.ByteBufUtil;
-import lombok.extern.slf4j.Slf4j;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
 
 @Slf4j
 public class UOProtocolDecoder extends ByteToMessageDecoder {
@@ -45,6 +44,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(ActionRequest.CODE, ActionRequest.class);
         packetsClass.put(SendSkill.CODE, SendSkill.class);
         packetsClass.put(VendorBuyRequest.CODE, VendorBuyRequest.class);
+        packetsClass.put(MovementResyncAck.CODE, MovementResyncAck.class);
     }
 
     @Override

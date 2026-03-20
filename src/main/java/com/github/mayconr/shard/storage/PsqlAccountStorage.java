@@ -17,7 +17,7 @@ public class PsqlAccountStorage implements AccountStorage {
     private final Executor executor;
 
     @Override
-    public CompletableFuture<UOAccount> findByUsername(String username) {
+    public CompletableFuture<UOAccount> getByUsername(String username) {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try (var session = sessionFactory.openSession()) {

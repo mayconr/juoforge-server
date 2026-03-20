@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.infrastructure.template;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -27,6 +28,11 @@ public class InMemoryTemplateRegistry<K, T> implements TemplateRegistry<K, T> {
     @Override
     public List<T> get(K key) {
         return indexed.getOrDefault(key, List.of());
+    }
+
+    @Override
+    public Optional<T> getFisrt(K key) {
+        return indexed.get(key).stream().findFirst();
     }
 
     @Override

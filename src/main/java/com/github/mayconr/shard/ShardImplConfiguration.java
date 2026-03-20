@@ -1,10 +1,16 @@
 package com.github.mayconr.shard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.mayconr.juoserver.*;
+import com.github.mayconr.juoserver.NetworkBootstrap;
+import com.github.mayconr.juoserver.WorldBootstrap;
+import com.github.mayconr.juoserver.game.model.event.MobileRegionChanged;
 import com.github.mayconr.juoserver.game.world.World;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
+import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.command.*;
-import com.github.mayconr.shard.command.Test;
+import com.github.mayconr.shard.skills.crafting.DefaultResourceRoller;
+import com.github.mayconr.shard.skills.crafting.mining.*;
 import com.github.mayconr.shard.storage.*;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -13,15 +19,16 @@ import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Predicate;
 
 @Configuration
 public class ShardImplConfiguration {
@@ -86,37 +93,42 @@ public class ShardImplConfiguration {
 
     @Bean
     public World world(Executor databaseExecutor, SqlSessionFactory sessionFactory) {
-        var worldConfig = WorldConfiguration.builder()
-                .storage(s-> s
-                        .mobile(new PsqlMobileStorage(databaseExecutor, sessionFactory))
-                        .item(new PsqlItemStorage(databaseExecutor, sessionFactory))
-                        .account(new PsqlAccountStorage(sessionFactory, databaseExecutor)))
-                .build();
-        var config = new JuoforgeConfiguration(EngineSettings.defaults(), worldConfig);
-        var world = new WorldBootstrap(config).start();
-        var network = new NetworkBootstrap(world).build();
-        network.bind(9000);
-        return world;
+
+        var bootstrap = new WorldBootstrap(cfg -> {
+            cfg.mobileStorage(new PsqlMobileStorage(databaseExecutor, sessionFactory));
+            cfg.itemStorage(new PsqlItemStorage(databaseExecutor, sessionFactory));
+            cfg.accountStorage(new PsqlAccountStorage(sessionFactory, databaseExecutor));
+
+            // Item trigger
+            cfg.addItemTrigger(runtime->{
+                final TemplateRegistry<String, Ore> oreRegistry = runtime.getTemplateRegistry("oreByName", Ore.class);
+                final var oreResourceRoller = new OreResourceRoller(runtime.world(), oreRegistry);
+                final var service = new MiningUseService(oreResourceRoller, runtime, new MiningTargetValidator());
+                return new MiningToolTrigger(service);
+            });
+
+            // Listeners
+            cfg.addEventListener(Goto::new);
+            cfg.addEventListener(runtime->new CreateNpc(runtime.world()));
+            cfg.addEventListener(runtime->new CreateStack(runtime.world()));
+            cfg.addEventListener(runtime->new CreateItem(runtime.world()));
+            cfg.addEventListener(runtime->new TeleTo(runtime.world()));
+            cfg.addEventListener(runtime->new Kill(runtime.world()));
+            cfg.addEventListener(runtime->new Destroy(runtime.world()));
+            cfg.addEventListener(runtime->new CreateEquippedItem(runtime.world()));
+            cfg.addEventListener(CreateContainerItem::new);
+            cfg.addEventListener(Mount::new);
+            cfg.addEventListener(Unmount::new);
+            cfg.addEventListener(Region::new);
+            cfg.addEventListener(Where::new);
+            cfg.addEventListener(Bounds::new);
+            cfg.addCustomTemplate("oreByName", Ore.class, Ore::name, Path.of("template/skills/mining"));
+
+        }).start();
+
+        var network = new NetworkBootstrap(bootstrap).build();
+        network.bindAsync(9000);
+        return bootstrap.world();
     }
 
-    @Bean
-    public ApplicationRunner configure(World world) {
-        return args -> {
-            world.on(new Goto(world));
-            //world.on(new Save(worldStorage));
-            world.on(new CreateNpc(world));
-            world.on(new CreateItem(world));
-            world.on(new TeleTo(world));
-            world.on(new Kill(world, world));
-            world.on(new Destroy(world));
-            world.on(new Test(world, world));
-            world.on(new CreateEquippedItem(world));
-            world.on(new CreateContainerItem(world));
-            world.on(new Mount(world, world));
-            world.on(new Unmount(world));
-            world.on(new CreateStack(world));
-            world.on(new Region(world));
-            world.on(new Where(world));
-        };
-    }
 }

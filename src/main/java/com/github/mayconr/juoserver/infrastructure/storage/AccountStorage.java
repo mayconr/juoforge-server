@@ -6,6 +6,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface AccountStorage {
 
-    CompletableFuture<UOAccount> findByUsername(String username);
+    CompletableFuture<UOAccount> getByUsername(String username);
 
 }

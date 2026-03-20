@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.DefaultWorldCfg.TemplateData;
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.item.template.CachedItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
@@ -11,10 +13,12 @@ import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.World;
-import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderSystem;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderImpl;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.gameloop.DefaultGameLoop;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
@@ -23,25 +27,45 @@ import com.github.mayconr.juoserver.infrastructure.region.RegionSystemImpl;
 import com.github.mayconr.juoserver.infrastructure.region.RegionTemplate;
 import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
-import com.github.mayconr.juoserver.infrastructure.storage.CachedRealmStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.*;
+import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
+import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
+@Slf4j
+@RequiredArgsConstructor
 public final class WorldBootstrap {
 
-    private final JuoforgeConfiguration config;
+    public static final String GAMEPLAY_CONFIG = "GAMEPLAY_CONFIG_BY_NAME";
+    private final ShardBootstrap shardBootstrap;
 
-    public WorldBootstrap(JuoforgeConfiguration config) {
-        this.config = config;
-    }
+    public ServerRuntime start() {
+        final var configuration = new DefaultWorldCfg();
 
-    public World start() {
+        configuration.addCustomTemplate(GAMEPLAY_CONFIG, GamePlaySettings.class, GamePlaySettings::name, Path.of("template/config/gameplay.json"));
+
+        // Initial configuration
+        shardBootstrap.configure(configuration);
+
+        // --- Templates
+        final Map<String, TemplateRegistry> registryMap = new HashMap<>();
+        for (TemplateData data : configuration.templateList()) {
+            var templates = data.templateLoader().loadAll();
+            registryMap.put(data.templateName(), new InMemoryTemplateRegistry<>(templates, data.keyExtractor()));
+        }
+
+        // Core Templates
+        final GamePlaySettings settings = (GamePlaySettings) registryMap.get(GAMEPLAY_CONFIG).get("DEFAULT").getFirst();
+
         // --- Core infra
         EventBus eventBus = new DefaultEventBus();
+
         RNG rng = new DefaultRNG();
 
         // --- Policy
@@ -63,28 +87,29 @@ public final class WorldBootstrap {
         // --- Region
         RegionSystem regionSystem = new RegionSystemImpl(new JsonTemplateLoader<>(Path.of("template/regions"), RegionTemplate.class));
 
-        MobileStorage mobileStorage = config.world().mobileStorage();
-        ItemStorage itemStorage = config.world().itemStorage();
-        RealmStorage realmStorage = new CachedRealmStorage(mobileStorage, itemStorage);
+        MobileStorage mobileStorage = configuration.mobileStorage();
+        ItemStorage itemStorage = configuration.itemStorage();
+        AccountStorage accountStorage = configuration.accountStorage();
+        RealmStorage storage = new CachedRealmStorage(mobileStorage, itemStorage, accountStorage);
 
         // --- Serial
-        SerialGenerator serialGenerator = new SerialGenerator(realmStorage);
+        SerialGenerator serialGenerator = new SerialGenerator(storage);
 
         // --- Game loop (ciclo de vida explícito)
-        DefaultGameLoop gameLoop = new DefaultGameLoop(config);
+        DefaultGameLoop gameLoop = new DefaultGameLoop(settings);
         Runtime.getRuntime().addShutdownHook(new Thread(gameLoop::stop));
         gameLoop.start();
 
         // --- World
-        var fileReaderSystem = new UOFileReaderSystem(config);
+        var uoFileReader = new UOFileReaderImpl(settings);
 
         DefaultWorld world = new DefaultWorld(
                 eventBus,
                 serialGenerator,
-                realmStorage,
+                storage,
                 gameLoop,
                 regionSystem,
-                fileReaderSystem,
+                uoFileReader,
                 policyService,
                 itemUseService,
                 rng,
@@ -93,7 +118,8 @@ public final class WorldBootstrap {
                 itemTemplateRegistry,
                 npcTemplateRegistry,
 
-                config
+                settings,
+                configuration
         );
 
         world.initialize();
@@ -103,6 +129,29 @@ public final class WorldBootstrap {
             @Override public boolean isDone() { return false; }
         });
 
-        return world;
+        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, uoFileReader, gameLoop);
+        for (var factory : configuration.itemTriggerList()) {
+            itemUseRegistry.register(factory.apply(runtime));
+        }
+        for (var factory : configuration.eventListenerList()) {
+            eventBus.register(factory.apply(runtime));
+        }
+
+        return runtime;
     }
+
+    private record InternalServerRuntime(World world,
+                                         Map<String, TemplateRegistry> registryMap,
+                                         GamePlaySettings settings,
+                                         EventBus eventBus,
+                                         RealmStorage storage,
+                                         UOFileReader fileReader,
+                                         GameLoop gameLoop) implements ServerRuntime {
+
+            @Override
+            public <K, V> TemplateRegistry<K, V> getTemplateRegistry(String templateName, Class<V> clazz) {
+                return registryMap.get(templateName);
+            }
+        }
+
 }

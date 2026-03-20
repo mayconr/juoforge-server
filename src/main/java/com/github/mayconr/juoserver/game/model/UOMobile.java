@@ -86,7 +86,7 @@ public class UOMobile extends UOObject implements Container {
     // Skills
     private SkillContainer skills;
 
-    public UOMobile(int serialId, int modelId, int x, int y, int z, String name, String displayName, Map<String, Object> persistentAttrMap) {
+    public UOMobile(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap) {
         super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
     }
 
@@ -99,7 +99,7 @@ public class UOMobile extends UOObject implements Container {
                 other.getZ(),
                 other.getName(),
                 other.getDisplayName(),
-                other.getPersistentAttrMap());
+                other.persistentAttributes());
         this.id = other.id;
         this.direction = other.getDirection();
         this.hue = other.getHue();
@@ -175,7 +175,7 @@ public class UOMobile extends UOObject implements Container {
             int z,
             String name,
             String displayName,
-            Map<String, Object> attrMap,
+            AttributeMap attrMap,
             Direction direction,
             int hue,
             CharacterStatus status,
@@ -284,7 +284,6 @@ public class UOMobile extends UOObject implements Container {
         this.fasterCastRecovery = fasterCastRecovery;
         this.fasterCasting = fasterCasting;
         this.lowerManaCost = lowerManaCost;
-
         this.skills = new SkillContainer();
     }
 

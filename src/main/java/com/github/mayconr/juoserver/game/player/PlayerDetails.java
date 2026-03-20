@@ -1,7 +1,6 @@
 package com.github.mayconr.juoserver.game.player;
 
-import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
-import com.github.mayconr.juoserver.game.model.Gender;
+import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOAccount;
@@ -15,7 +14,7 @@ public record PlayerDetails(UOAccount account,
                             BodyTemplate bodyTemplate,
                             Status status,
                             Location location,
-                            List<ItemCreationRequest> startkit,
+                            List<ItemRequest> startkit,
                             List<SkillValue> skills) {
 
     public record Status(int strength, int dexterity, int intelligence) { }

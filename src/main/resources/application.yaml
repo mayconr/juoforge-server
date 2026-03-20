@@ -16,7 +16,7 @@ logging:
 
 server:
   mobile:
-    backpack: backpack
+    backpack: backpackItem
   vitals:
     saturationFactor: 100
   gameLoop:

@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.storage;
 
+import com.github.mayconr.juoserver.game.model.AttributeMap;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
@@ -40,7 +41,7 @@ public interface ItemMapper {
             @Arg(column = "z", javaType = int.class),
             @Arg(column = "name", javaType = String.class),
             @Arg(column = "display_name", javaType = String.class),
-            @Arg(column = "attr", javaType = Map.class, typeHandler = AttributesTypeHandler.class),
+            @Arg(column = "attr", javaType = AttributeMap.class, typeHandler = AttributesTypeHandler.class),
             @Arg(column = "item_id", javaType = UUID.class, typeHandler = UUIDTypeHandler.class),
             @Arg(column = "layer", javaType = Layer.class, typeHandler = LayerTypeHandler.class),
             @Arg(column = "amount", javaType = int.class),

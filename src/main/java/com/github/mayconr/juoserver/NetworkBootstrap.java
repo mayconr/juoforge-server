@@ -1,7 +1,8 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.game.world.World;
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.server.ClientConnectedHandlerAdapter;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
 import com.github.mayconr.juoserver.infrastructure.server.UOChannelInitializer;
@@ -16,19 +17,20 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 public class NetworkBootstrap {
+    private final EventBus eventBus;
     private final WorldInternal worldInternal;
-    private final JuoforgeConfiguration configuration;
+    private final GamePlaySettings settings;
 
-
-    public NetworkBootstrap(World world) {
-        this.worldInternal = (WorldInternal) world;
-        this.configuration = worldInternal.configuration();
+    public NetworkBootstrap(ServerRuntime runtime) {
+        this.eventBus = runtime.eventBus();
+        this.worldInternal = (WorldInternal) runtime.world();
+        this.settings = runtime.settings();
     }
 
     public ServerStartup build() {
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-        SessionManager sessionManager = new NettySessionManager(worldInternal, channelGroup, configuration, worldInternal.eventBus());
+        SessionManager sessionManager = new NettySessionManager(worldInternal, channelGroup, settings, eventBus);
 
         NioEventLoopGroup parentGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup childGroup = new NioEventLoopGroup(1);
@@ -36,7 +38,6 @@ public class NetworkBootstrap {
         ClientConnectedHandlerAdapter connectedHandler = new ClientConnectedHandlerAdapter(channelGroup, sessionManager);
 
         var packetHandlers = new DefaultPacketHandlerFactory().create(
-                configuration,
                 worldInternal
         );
 

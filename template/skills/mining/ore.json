@@ -1,0 +1,12 @@
+[
+  {
+    "name": "iron",
+    "itemName" : "iron_ore",
+    "minSkill" : 0
+  },
+  {
+    "name": "dull_copper",
+    "itemName" : "dull_copper_ore",
+    "minSkill" : 30
+  }
+]
