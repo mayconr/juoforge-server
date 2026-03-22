@@ -14,6 +14,7 @@ package "Runtime Core" {
   class RealmStorage
   class EventBus
   class RegionSystem
+  class RegionTransitionService
   class UOFileReaderSystem
   class PolicyService
   class ItemUseService
@@ -33,6 +34,7 @@ package "Gameplay Modules" {
   class CombatModule
   class MobileModule
   class InteractionModule
+  class RegionModule
 }
 
 package "Networking / Session" {
@@ -45,6 +47,7 @@ package "Networking / Session" {
 World *-- EventBus : system
 World *-- RealmStorage : system
 World *-- RegionSystem : system
+World *-- RegionTransitionService : system
 World *-- UOFileReaderSystem : system
 World *-- PolicyService : system
 World *-- ItemUseService : system
@@ -62,6 +65,13 @@ World *-- PlayerModule : module
 World *-- CombatModule : module
 World *-- MobileModule : module
 World *-- InteractionModule : module
+World *-- RegionModule : module
+
+RegionTransitionService --> RegionSystem : queries
+RegionTransitionService --> EventBus : publishes events
+
+RegionModule --> RegionSystem : queries
+RegionModule --> EventBus : listens events
 
 PlayerSession --> World : uses
 PlayerSession --> JuoforgeConfiguration : uses
@@ -82,6 +92,41 @@ It centralizes:
 Use World as the primary entry point
 for domain/game operations triggered
 by sessions, loops, or services.
+end note
+
+note right of RegionSystem
+Pure spatial lookup system.
+
+Responsibilities:
+- resolve region by location
+- resolve region by name
+- provide region indexing
+
+No gameplay logic.
+end note
+
+note right of RegionTransitionService
+Detects region transitions when
+mobiles move.
+
+Responsibilities:
+- compare previous and new region
+- publish region events
+- remain gameplay agnostic
+end note
+
+note right of RegionModule
+Gameplay logic reacting to regions.
+
+Examples:
+- dungeon entrances
+- safe zones
+- guard zones
+- region effects
+- PvP rules
+
+Listens to region events and
+applies gameplay behavior.
 end note
 
 note right of PlayerSession

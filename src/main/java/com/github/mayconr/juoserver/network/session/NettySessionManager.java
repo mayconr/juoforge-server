@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.session;
 
-import com.github.mayconr.juoserver.JuoforgeConfiguration;
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageSent;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
@@ -23,14 +23,14 @@ public class NettySessionManager implements SessionManager {
     private final Set<PlayerSession> sessionMap = new HashSet<>();
     private final WorldInternal world;
     private final ChannelGroup channelGroup;
-    private final JuoforgeConfiguration configuration;
+    private final GamePlaySettings settings;
     private final EventBus eventBus;
 
     record Event<T extends GameEvent>(Class<T> eventClass, EventHandler<T> handler) { }
 
     @Override
     public PlayerSession createSession(Channel channel) {
-        final var session = new NettyPlayerSession(channel, channelGroup, configuration, eventBus, world);
+        final var session = new NettyPlayerSession(channel, channelGroup, settings, eventBus, world);
 
         sessionMap.add(session);
 

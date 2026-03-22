@@ -13,4 +13,9 @@ public enum WoodType implements CraftingResource {
     YEW(85);
 
     private final double minSkill;
+
+    @Override
+    public double minSkill() {
+        return minSkill;
+    }
 }

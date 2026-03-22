@@ -7,5 +7,6 @@ public enum RegionType {
     BUILDING,
     DUNGEON,
     DUNGEON_LEVEL,
-    STARTING_LOCATION
+    STARTING_LOCATION,
+    TELEPORT;
 }

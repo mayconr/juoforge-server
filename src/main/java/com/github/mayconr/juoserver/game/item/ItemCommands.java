@@ -5,13 +5,9 @@ import com.github.mayconr.juoserver.network.packet.DropItem;
 
 public interface ItemCommands {
 
-    UOItem createItemAtLocation(ItemCreationRequest request, Location location);
+    UOItem createItem(ItemRequest request, ItemTarget target);
 
-    UOItem createEquippedItem(ItemCreationRequest request, UOMobile mobile);
-
-    UOItem createItemInContainer(ItemCreationRequest request, Container container);
-
-    UOItem createUnloadedItem(ItemCreationRequest request);
+    UOItem createUnloadedItem(ItemRequest request);
 
     void deleteItem(UOItem item);
 

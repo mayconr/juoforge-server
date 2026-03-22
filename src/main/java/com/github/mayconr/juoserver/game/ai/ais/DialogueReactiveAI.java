@@ -30,7 +30,8 @@ public class DialogueReactiveAI implements AI {
     @Override
     public Behavior decide(AIContext ctx, BehaviorProfile profile) {
         final var npc = ctx.npc();
-        final var supports = (List<String>) npc.getPersistentAttrMap().getOrDefault("behavior.supports", List.of());
+        final var attributes = npc.persistentAttributes();
+        final var supports = (List) attributes.getOrDefault("behavior.supports", List.of());
 
         if (supports.contains(ctx.get(ContextKeys.LAST_SPEECH, String.class))) {
             return profile.service();

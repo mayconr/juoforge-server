@@ -4,7 +4,6 @@ import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.player.PlayerDetails;
 
-import java.util.Collections;
 import java.util.UUID;
 
 public class MobileFactory {
@@ -19,7 +18,7 @@ public class MobileFactory {
                 details.location().getZ(),
                 details.name(),
                 details.name(),
-                Collections.emptyMap(),
+                new DefaultAttributeMap(),
                 Direction.NORTH,
                 details.skinColor(),
                 CharacterStatus.NORMAL,
@@ -84,7 +83,7 @@ public class MobileFactory {
                 location.getZ(),
                 template.name(),
                 template.displayName(),
-                template.attr(),
+                new DefaultAttributeMap(template.attr()),
                 Direction.NORTH,
                 template.hue(),
                 CharacterStatus.NORMAL,

@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.model.event;
 
-import java.util.ArrayList;
-
-import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
+
+import java.util.ArrayList;
 
 public record Prompt(UOPlayer player, String name, String[] arguments) implements GameEvent {
 

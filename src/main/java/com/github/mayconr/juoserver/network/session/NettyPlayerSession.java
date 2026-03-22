@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.session;
 
-import com.github.mayconr.juoserver.JuoforgeConfiguration;
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked.StackDestination;
@@ -12,6 +12,7 @@ import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.network.packet.EnableLockedClientFeatures.ClientFeatureFlag;
 import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
 import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
 import com.github.mayconr.juoserver.network.session.i18n.ResourceBundleMessageLocalizer;
@@ -29,7 +30,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 
 @Slf4j
 public class NettyPlayerSession implements PlayerSession {
@@ -37,7 +37,7 @@ public class NettyPlayerSession implements PlayerSession {
     private final MessageLocalizer localizer = new ResourceBundleMessageLocalizer("messages");
     private final Channel channel;
     private final ChannelGroup channelGroup;
-    private final JuoforgeConfiguration configuration;
+    private final GamePlaySettings settings;
     private final EventBus eventBus;
     private final WorldInternal world;
 
@@ -54,10 +54,10 @@ public class NettyPlayerSession implements PlayerSession {
 
     private SessionState state;
 
-    public NettyPlayerSession(Channel channel, ChannelGroup channelGroup, JuoforgeConfiguration configuration, EventBus eventBus, WorldInternal world) {
+    public NettyPlayerSession(Channel channel, ChannelGroup channelGroup, GamePlaySettings settings, EventBus eventBus, WorldInternal world) {
         this.channel = channel;
         this.channelGroup = channelGroup;
-        this.configuration = configuration;
+        this.settings = settings;
         this.eventBus = eventBus;
         this.world = world;
         this.state = SessionState.CONNECTED;
@@ -108,38 +108,47 @@ public class NettyPlayerSession implements PlayerSession {
      */
 
     @Override
-    public void authenticate(UOAccount account) {
+    public void authenticate(String username) {
         if (!SessionState.CONNECTED.equals(state)) {
             throw new IllegalStateException("Session is not connected. Session state is " + state);
         }
 
-        this.account = account;
-        world.getPlayerMobiles(account)
-            .thenAccept(mobiles->{
-                availableStartingLocations.clear();
-                availableMobiles.clear();
+        world.getAccountByUsername(username)
+                .thenCompose(world::getPlayerMobiles)
+                .thenAccept(mobiles->{
+                    availableStartingLocations.clear();
+                    availableMobiles.clear();
 
-                int mobileCounter = 0;
-                for (AccountMobile mobile : mobiles) {
-                    availableMobiles.put(mobileCounter++, mobile);
-                }
+                    int mobileCounter = 0;
+                    for (AccountMobile mobile : mobiles) {
+                        availableMobiles.put(mobileCounter++, mobile);
+                    }
 
-                final var counter = new AtomicInteger(0);
-                world.getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> availableStartingLocations.put(counter.getAndIncrement(), region));
+                    final var counter = new AtomicInteger(0);
+                    world.getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> availableStartingLocations.put(counter.getAndIncrement(), region));
 
-                updateAndNotifyStatus(SessionState.AUTHENTICATED);
+                    updateAndNotifyStatus(SessionState.AUTHENTICATED);
 
-                runInEventLoop(()->{
-                    channel.write(new EnableLockedClientFeatures(configuration.settings().client().unlockedFeatures(), true));
-                    channel.writeAndFlush(new CharacterList(
-                            mobiles,
-                            availableStartingLocations,
-                            CharacterListFlag.ENABLE_AOS_COMMON,
-                            CharacterListFlag.SAMURAI_NINJA_CLASSES,
-                            CharacterListFlag.ENABLE_NPC_POPUP,
-                            CharacterListFlag.ELVEN_RACE));
+                    runInEventLoop(()->{
+                        int unlockedFeatures = 0;
+                        for (ClientFeatureFlag flag : settings.client().unlockedFeatures()) {
+                            unlockedFeatures |= flag.mask();
+                        }
+
+                        channel.write(new EnableLockedClientFeatures(unlockedFeatures, true));
+                        channel.writeAndFlush(new CharacterList(
+                                mobiles,
+                                availableStartingLocations,
+                                CharacterListFlag.ENABLE_AOS_COMMON,
+                                CharacterListFlag.SAMURAI_NINJA_CLASSES,
+                                CharacterListFlag.ENABLE_NPC_POPUP,
+                                CharacterListFlag.ELVEN_RACE));
+                    });
+                }).whenComplete((unused, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Error while trying to connect to server", throwable);
+                    }
                 });
-            });
     }
 
     @Override
@@ -212,6 +221,14 @@ public class NettyPlayerSession implements PlayerSession {
                 });
     }
 
+    @Override
+    public void resync(MovementResyncAck resyncAck) {
+        runInEventLoop(()->{
+            channel.write(new MovementResyncAck(resyncAck.getSequence(), resyncAck.getNotoriety()));
+            channel.writeAndFlush(new DrawGamePlayer(player));
+        });
+    }
+
     /*
      * =======================
      * Mobile and World Events
@@ -222,17 +239,17 @@ public class NettyPlayerSession implements PlayerSession {
         if (!player.equals(moved.mobile())) {
             final var mobile = moved.mobile();
 
-            if (world.isInRange(player, mobile, configuration.settings().world().lightOfSight())) {
+            if (world.isInRange(player, mobile, settings.world().lightOfSight())) {
                 channel.writeAndFlush(new DrawMobile(mobile));
             }
             return;
         }
 
         // handle player movement
-        var mobiles = world.getMobilesInRange(player, configuration.settings().world().lightOfSight());
-        var items  = world.getItemsInRange(player, configuration.settings().world().lightOfSight());
+        var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight());
+        var items  = world.getItemsInRange(player, settings.world().lightOfSight());
 
-        channel.write(new MovementAck(moved.sequence(), player.getNotoriety()));
+        channel.write(new MovementResyncAck(moved.sequence(), player.getNotoriety()));
 
         for (UOMobile mobile : mobiles) {
             if (!mobile.equals(player)) {
@@ -284,8 +301,8 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onPlayerLoggedIn(PlayerLoggedIn event) {
         if (player.equals(event.player())) {
-            final var mobiles = world.getMobilesInRange(player, configuration.settings().world().lightOfSight());
-            final var items = world.getItemsInRange(player, configuration.settings().world().lightOfSight());
+            final var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight());
+            final var items = world.getItemsInRange(player, settings.world().lightOfSight());
 
             channel.write(new LoginConfirm(player, 7168, 4096));
             channel.write(new SeasonalInformation(Season.Summer, true));
@@ -346,6 +363,7 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onItemStacked(ItemStacked event) {
+
         channelGroup.write(new DeleteObject(event.dropped()));
         if (StackDestination.GROUND.equals(event.destination())) {
             channelGroup.writeAndFlush(new ObjectInfo(event.target()));
@@ -558,10 +576,6 @@ public class NettyPlayerSession implements PlayerSession {
             current = current.getCause();
         }
         return current;
-    }
-
-    private Predicate<UOPlayer> lineOfSightMobilesFilter() {
-        return mobile->world.getMobilesInRange(player, configuration.settings().world().lightOfSight()).contains(mobile);
     }
 
     private void runInEventLoop(Runnable runnable) {

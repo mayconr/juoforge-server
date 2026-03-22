@@ -1,10 +1,9 @@
 package com.github.mayconr.juoserver.infrastructure.datafile;
 
-import com.github.mayconr.juoserver.JuoforgeConfiguration;
-import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.model.LandTile;
+import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.Static;
-import eu.janinko.andaria.ultimasdk.files.CliLocs;
 import eu.janinko.andaria.ultimasdk.files.Map;
 import eu.janinko.andaria.ultimasdk.files.Statics;
 import lombok.RequiredArgsConstructor;
@@ -19,21 +18,21 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
-public class UOFileReaderSystem {
+public class UOFileReaderImpl implements UOFileReader{
 
-    private final JuoforgeConfiguration configuration;
+    private final GamePlaySettings settings;
     private Map map;
     private Statics statics;
 
     public void loadFiles() {
         log.info("Loading files...");
         try {
-            final var mapPath = Paths.get(configuration.settings().files().dataFileRoot() + File.separator + "map0.mul");
+            final var mapPath = Paths.get(settings.files().dataFileRoot() + File.separator + "map0.mul");
             this.map = Map.open(mapPath);
             log.info("Map loaded successfully!");
 
-            Path staidx0 = Paths.get(configuration.settings().files().dataFileRoot() + File.separator + "staidx0.mul");
-            Path statics0 = Paths.get(configuration.settings().files().dataFileRoot() + File.separator + "statics0.mul");
+            Path staidx0 = Paths.get(settings.files().dataFileRoot() + File.separator + "staidx0.mul");
+            Path statics0 = Paths.get(settings.files().dataFileRoot() + File.separator + "statics0.mul");
             this.statics = Statics.open(staidx0, statics0);
             log.info("Statics loaded successfully!");
         } catch (IOException e) {

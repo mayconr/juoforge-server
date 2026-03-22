@@ -1,20 +1,16 @@
 package com.github.mayconr.juoserver.game.ai.session;
 
-import com.github.mayconr.juoserver.game.ai.AIContext;
-import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
-import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
-import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
-import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
-import com.github.mayconr.juoserver.game.ai.Behavior;
 import com.github.mayconr.juoserver.game.ai.AI;
+import com.github.mayconr.juoserver.game.ai.AIContext;
+import com.github.mayconr.juoserver.game.ai.Behavior;
 import com.github.mayconr.juoserver.game.ai.BehaviorProfile;
-import com.github.mayconr.juoserver.game.model.TextType;
+import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
+import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
+import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
+import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
-import com.github.mayconr.juoserver.game.model.event.SpeechContext;
-import com.github.mayconr.juoserver.game.model.event.SpeechRange;
-import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.WorldView;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -129,7 +125,7 @@ public class AISessionImpl implements AISession, AIContext {
         @Override
         public void handle(MobileSpeech event) {
             final var player = (UOPlayer) event.mobile();
-            final var radius = (int) npc.getPersistentAttrMap().getOrDefault("behavior.radius", 1);
+            final var radius = (int) npc.persistentAttributes().getOrDefault("behavior.radius", 1);
 
             if (!world.isInRange(npc, player, radius)) {
                 return;

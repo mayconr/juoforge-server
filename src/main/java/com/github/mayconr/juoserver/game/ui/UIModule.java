@@ -24,7 +24,6 @@ public class UIModule implements WorldModule, UICommands {
 
     @Override
     public void update(double delta) {
-
     }
 
     @Override

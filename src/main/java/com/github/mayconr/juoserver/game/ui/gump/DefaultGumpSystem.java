@@ -36,14 +36,15 @@ public class DefaultGumpSystem implements GumpSystem {
     private int generateGumpId(UOPlayer player, GumpHandler handler) {
         ReentrantLock lock = new ReentrantLock();
         if (lock.tryLock()) {
-            final var gumpIds = player.getRuntimeAttribute(PLAYER_GUMP_ID, new HashMap<>());
+            var attributes = player.runtimeAttributes();
+            final var gumpIds = attributes.getOrDefault(PLAYER_GUMP_ID, new HashMap<>());
             int gumpId = random.nextInt();
             while (gumpIds.containsKey(gumpId)) {
                 gumpId = random.nextInt();
             }
             gumpIds.put(gumpId, new GumpContext(gumpId, player, System.currentTimeMillis(), handler));
 
-            player.setRuntimeAttribute(PLAYER_GUMP_ID, gumpIds);
+            attributes.set(PLAYER_GUMP_ID, gumpIds);
 
             return gumpId;
         }
@@ -57,7 +58,7 @@ public class DefaultGumpSystem implements GumpSystem {
                 gumpSelection.getGumpId(),
                 player.getName());
 
-        var map = (Map<Integer, GumpContext>)player.getRuntimeAttribute(PLAYER_GUMP_ID);
+        var map = (Map<Integer, GumpContext>)player.runtimeAttributes().get(PLAYER_GUMP_ID);
         if (map == null) {
             log.warn("Gump Aborted: Gump response without active gumps for player {}", player.getName());
             return;
@@ -76,12 +77,12 @@ public class DefaultGumpSystem implements GumpSystem {
             return;
         }
 
-        final var last = player.getRuntimeAttribute(PLAYER_LAST_GUMP_RESPONSE, 0L);
+        final var last = player.runtimeAttributes().getOrDefault(PLAYER_LAST_GUMP_RESPONSE, 0L);
         if (last != null && now - last < 100) { // TODO add to property
             log.warn("Gump Aborted: spam attempt");
             return;
         }
-        player.setRuntimeAttribute(PLAYER_LAST_GUMP_RESPONSE, now);
+        player.runtimeAttributes().set(PLAYER_LAST_GUMP_RESPONSE, now);
 
         // Text Entry validation
         for (String text : gumpSelection.getTextEntries()) {

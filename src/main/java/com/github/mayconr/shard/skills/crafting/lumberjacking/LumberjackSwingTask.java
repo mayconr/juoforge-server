@@ -1,8 +1,7 @@
 package com.github.mayconr.shard.skills.crafting.lumberjacking;
 
-import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
+import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.ItemOptions.ContainerTarget;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.shard.skills.Skills;
@@ -40,12 +39,12 @@ public class LumberjackSwingTask implements GameTask {
 
         worldActions.tryGainSkill(player, Skills.LUMBERJACK.getId(), 100, SkillGainContext.of(player));
 
-        var item = resourceRoller.rollResource(WoodType.values(), 50);
+        var item = resourceRoller.rollResource(50);
 
         if (item != null) {
-            final var woodItem = worldActions.createItem(ItemCreationRequest.byName(item.name().toLowerCase()).build(), ItemOptions.builder().target(new ContainerTarget(player)).build());
+            final var woodItem = worldActions.createItem(ItemRequest.byName(item.toString().toLowerCase()).build(), ContainerItemTarget.of(player));
             if (log.isDebugEnabled()) {
-                log.debug("Wood [{}] created in [{}-{}] backpack", woodItem.getName(), player.getSerialId(), player.getName());
+                log.debug("Wood [{}] created in [{}-{}] backpackItem", woodItem.getName(), player.getSerialId(), player.getName());
             }
         }
     }

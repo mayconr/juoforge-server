@@ -1,30 +1,27 @@
 package com.github.mayconr.shard.command;
 
+import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.UONpc;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
-import com.github.mayconr.juoserver.game.world.WorldActions;
-import com.github.mayconr.juoserver.game.world.WorldView;
+import com.github.mayconr.juoserver.game.world.World;
 
 public class Mount extends AbstractCommand{
 
-    private final WorldActions worldActions;
-    private final WorldView worldView;
+    private final World world;
 
-    public Mount(WorldActions worldActions, WorldView worldView) {
+    public Mount(ServerRuntime runtime) {
         super("mount");
-        this.worldActions = worldActions;
-        this.worldView = worldView;
+        this.world = runtime.world();
     }
 
     @Override
     public void handle(Prompt event) {
-        worldActions.sendTarget((UOPlayer) event.player(), CursorType.NEUTRAL, result->{
-            worldView.getMobileBySerialId(result.serialId())
+        world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
+            world.getMobileBySerialId(result.serialId())
                 .ifPresent(mobile->{
                     if (mobile instanceof UONpc npc) {
-                        worldActions.mount((UOPlayer) event.player(), npc);
+                        world.mount(event.player(), npc);
                     }
                 });
         });

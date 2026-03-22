@@ -2,7 +2,6 @@ package com.github.mayconr.juoserver.game;
 
 import com.github.mayconr.juoserver.game.model.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ public class TestFactory {
                 0, 0, 0,             // x, y, z
                 "TestMobile",        // name
                 "Test Mobile",       // displayName
-                new HashMap<>(),     // attrMap
+                new DefaultAttributeMap(),     // attrMap
                 Direction.SOUTH,     // direction
                 0,                  // hue
                 CharacterStatus.NORMAL,

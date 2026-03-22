@@ -5,8 +5,6 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Setter
 @Getter
@@ -16,7 +14,7 @@ public class UONpc extends UOMobile {
     private BehaviorDefinition behavior;
     private final List<String> roles = new ArrayList<>();
 
-    public UONpc(Integer serialId, Integer modelId, Integer x, Integer y, Integer z, String name, String displayName, Map<String, Object> persistentAttrMap) {
+    public UONpc(Integer serialId, Integer modelId, Integer x, Integer y, Integer z, String name, String displayName, AttributeMap persistentAttrMap) {
         super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
     }
 

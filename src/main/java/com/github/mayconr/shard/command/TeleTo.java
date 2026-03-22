@@ -1,25 +1,24 @@
 package com.github.mayconr.shard.command;
 
-import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.world.WorldActions;
+import com.github.mayconr.juoserver.game.model.event.Prompt;
+import com.github.mayconr.juoserver.game.world.World;
 
 public class TeleTo extends AbstractCommand {
+    private final World world;
 
-    private final WorldActions worldActions;
-
-    public TeleTo(WorldActions worldActions) {
+    public TeleTo(World world) {
         super("teleto");
-        this.worldActions = worldActions;
+        this.world = world;
     }
 
     @Override
     public void handle(Prompt event) {
         if (event.player() instanceof  UOPlayer player) {
-            worldActions.sendTarget(player, CursorType.HARMFUL, res->{
+            world.sendTarget(player, CursorType.HARMFUL, res->{
                 if (res.isStatics()) {
-                    worldActions.teleport(event.player(), res.location());
+                    world.move(event.player(), res.location());
                 }
             });
         }

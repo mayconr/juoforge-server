@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.player;
 
-import com.github.mayconr.juoserver.JuoforgeConfiguration;
-import com.github.mayconr.juoserver.game.item.ItemCreationRequest;
-import com.github.mayconr.juoserver.game.item.exxception.ItemTemplateNotFoundException;
+import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.item.ItemRequest;
+import com.github.mayconr.juoserver.game.item.exception.ItemTemplateNotFoundException;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.policy.CreateCharacterPolicy;
 import com.github.mayconr.juoserver.game.player.exception.PlayerNameAlreadyExistsException;
@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 
-import static com.github.mayconr.juoserver.game.item.ItemCreationRequest.byModelId;
-import static com.github.mayconr.juoserver.game.item.ItemCreationRequest.byName;
+import static com.github.mayconr.juoserver.game.item.ItemRequest.byModelId;
+import static com.github.mayconr.juoserver.game.item.ItemRequest.byName;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,12 +35,12 @@ public class PlayerCreationHandler {
     public static final int NO_SKILL_ASSIGNED = -1;
 
     public interface PlayerItemFactory {
-        UOItem create(ItemCreationRequest request);
+        UOItem create(ItemRequest request);
     }
 
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
-    private final JuoforgeConfiguration configuration;
+    private final GamePlaySettings settings;
     private final PolicyService policyService;
     private final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateRegistry;
     private final TemplateRegistry<Integer, StartkitTemplate> startkitTemplateRegistry;
@@ -100,16 +100,15 @@ public class PlayerCreationHandler {
         return startingRegion;
     }
 
-    private List<ItemCreationRequest> createStartKit(CreateCharacter character) {
-        var settings = configuration.settings();
+    private List<ItemRequest> createStartKit(CreateCharacter character) {
 
-        var kit = new ArrayList<ItemCreationRequest>();
+        var kit = new ArrayList<ItemRequest>();
         kit.add(byName("shirt").hue(character.getShirtColor()).build());
         kit.add(byName("pants").hue(character.getPantsColor()).build());
         kit.add(byName("shoes").build());
         kit.add(byModelId(character.getHairStyle()).hue(character.getHairColor()).build());
         kit.add(byModelId(character.getBeardStyle()).hue(character.getBeardColor()).build());
-        kit.add(byName(settings.mobile().backpack()).build());
+        kit.add(byName(settings.mobile().backpackItem()).build());
 
         for (var template : startkitTemplateRegistry.get(NO_SKILL_ASSIGNED)) {
             kit.add(byName(template.item()).amount(template.amount()).build());
@@ -129,9 +128,9 @@ public class PlayerCreationHandler {
 
     private List<SkillValue> createInitialSkills(CreateCharacter character) {
         return List.of(
-                SkillValue.of(character.getSkill1(), character.getSkill1Value(), configuration.settings().skills().cap()),
-                SkillValue.of(character.getSkill2(), character.getSkill2Value(), configuration.settings().skills().cap()),
-                SkillValue.of(character.getSkill3(), character.getSkill3Value(), configuration.settings().skills().cap())
+                SkillValue.of(character.getSkill1(), character.getSkill1Value(), settings.skills().cap()),
+                SkillValue.of(character.getSkill2(), character.getSkill2Value(), settings.skills().cap()),
+                SkillValue.of(character.getSkill3(), character.getSkill3Value(), settings.skills().cap())
         );
     }
 
@@ -152,7 +151,7 @@ public class PlayerCreationHandler {
         return storage.insertPlayerMobile(mobileSerialId, itemSerialId, player);
     }
 
-    private void createAndEquipStarterItems(UOPlayer player, List<ItemCreationRequest> starterItems) {
+    private void createAndEquipStarterItems(UOPlayer player, List<ItemRequest> starterItems) {
         for (var itemRequest : starterItems) {
             try {
                 final var item = itemFactory.create(itemRequest);

@@ -1,0 +1,32 @@
+[
+  {
+    "name" : "DEFAULT",
+    "vitals" : {
+      "saturationFactor" : 100
+    },
+    "gameLoop" : {
+      "tps" : 20
+    },
+    "skills" : {
+      "minGainChance" : 0.0,
+      "maxGainChance" : 0.50,
+      "balanceOffset" : 50.0,
+      "cap" : 50
+    },
+    "mobile" : {
+      "backpackItem" : "backpack"
+    },
+    "world" : {
+      "lightOfSight" : 24
+    },
+    "files" : {
+      "dataFileRoot" : "C:\\Program Files (x86)\\Electronic Arts\\Ultima Online Classic"
+    },
+    "client": {
+      "unlockedFeatures" : ["AOS"]
+    },
+    "economy" : {
+      "goldCoinItem" : "gold_coin"
+    }
+  }
+]

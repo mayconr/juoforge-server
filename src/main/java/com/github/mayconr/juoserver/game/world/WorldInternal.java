@@ -1,8 +1,6 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.JuoforgeConfiguration;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.network.packet.*;
 
@@ -49,9 +47,6 @@ public interface WorldInternal extends WorldActions, WorldView, CombatInternal, 
 
     List<RegionNode> getRegionsByType(RegionType type);
 
-    // Temporary
-    EventBus eventBus();
-
-    JuoforgeConfiguration configuration();
+    CompletableFuture<UOAccount> getAccountByUsername(String username);
 
 }

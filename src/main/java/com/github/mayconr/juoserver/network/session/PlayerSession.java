@@ -1,11 +1,11 @@
 package com.github.mayconr.juoserver.network.session;
 
 import com.github.mayconr.juoserver.game.model.AccountMobile;
-import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import com.github.mayconr.juoserver.network.packet.DeleteCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
+import com.github.mayconr.juoserver.network.packet.MovementResyncAck;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
@@ -50,12 +50,7 @@ public interface PlayerSession {
      */
     void setClientVersion(String version);
 
-    /**
-     * Marks the session as authenticated.
-     *
-     * @param account the authenticated account
-     */
-    void authenticate(UOAccount account);
+    void authenticate(String username);
 
     /**
      * Selects a character from the account character list.
@@ -99,4 +94,6 @@ public interface PlayerSession {
     CompletableFuture<UOPlayer> createCharacter(CreateCharacter character);
 
     void deleteCharacter(DeleteCharacter deleteCharacter);
+
+    void resync(MovementResyncAck movementResyncAck);
 }

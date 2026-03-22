@@ -2,8 +2,8 @@ package com.github.mayconr.juoserver.game.ai.behaviors;
 
 import com.github.mayconr.juoserver.game.ai.AIContext;
 import com.github.mayconr.juoserver.game.ai.Behavior;
-import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
+import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -33,7 +33,7 @@ public class VendorBehavior implements Behavior {
         final var region = world.getRegion(context.npc())
                 .orElseThrow(() -> new RuntimeException("Region not found for npc ["+npc.getId()+"]"));
 
-        final var stockType = (String) npc.getPersistentAttribute("behavior.stockType");
+        final var stockType = (String) npc.persistentAttributes().get("behavior.stockType");
         final var templates = world.getItemsTemplate(stockType);
 
         final List<StockEntry> entries = new ArrayList<>();
