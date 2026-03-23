@@ -13,7 +13,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class MobileHandler {
+public class NpcCreationService {
 
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;

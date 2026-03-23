@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @RequiredArgsConstructor
@@ -16,11 +17,13 @@ public class ItemModule implements WorldModule, ItemCommands, ItemQueries {
     private final ContainerHandler containerHandler;
 
     @Override
-    public void update(double delta) {}
+    public UOItem createItem(ItemRequest request, ItemTarget target) {
+        return itemHandler.createItem(request, target, opt->{});
+    }
 
     @Override
-    public UOItem createItem(ItemRequest request, ItemTarget target) {
-        return itemHandler.createItem(request, target);
+    public UOItem createItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> options) {
+        return itemHandler.createItem(request, target, options);
     }
 
     @Override

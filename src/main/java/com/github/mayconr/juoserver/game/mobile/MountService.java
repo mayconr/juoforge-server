@@ -1,13 +1,13 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
-import com.github.mayconr.juoserver.game.model.Layer;
-import com.github.mayconr.juoserver.game.model.UOItem;
-import com.github.mayconr.juoserver.game.model.UONpc;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
 import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.game.model.policy.Mount;
+import com.github.mayconr.juoserver.game.world.ModuleContext;
+import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -16,20 +16,21 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MountHandler {
+public class MountService implements WorldModule {
 
     private final EventBus eventBus;
     private final RealmStorage storage;
     private final PolicyService policyService;
     private final ItemTemplateRegistry itemTemplateRegistry;
-    private MountItemFactory mountItemFactory;
+    private ModuleContext.ItemFacade items;
 
-    public void initialize(MountItemFactory mountItemFunction) {
-        this.mountItemFactory = mountItemFunction;
+    @Override
+    public void initialize(ModuleContext context) {
+        this.items = context.items();
     }
 
     public UOItem mount(UOPlayer player, UONpc npc) {
-        if (mountItemFactory == null) {
+        if (items == null) {
             throw new IllegalStateException("MountHandler is not initialized");
         }
         if (player.getEquippedItems().get(Layer.MOUNT) != null) {
@@ -43,7 +44,7 @@ public class MountHandler {
                 return null;
             }
 
-            final var item = mountItemFactory.create(player, template.name());
+            final var item = items.create(ItemRequest.byName(template.name()), EquipItemTarget.of(player));
 
             player.equipItem(Layer.MOUNT, item);
             player.setLocation(npc);

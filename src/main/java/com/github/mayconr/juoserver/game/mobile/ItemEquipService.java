@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ItemEquipHandler {
+public class ItemEquipService {
 
     private final RealmStorage storage;
     private final EventBus eventBus;

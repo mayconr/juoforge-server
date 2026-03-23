@@ -16,6 +16,6 @@ public class CreateStack extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.createItem(ItemRequest.byName(event.arguments()[0]).amount(Integer.parseInt(event.arguments()[1])).build(), ContainerItemTarget.of(event.player().getBackpack()));
+        world.createItem(ItemRequest.byName(event.arguments()[0]).withAmount(Integer.parseInt(event.arguments()[1])), ContainerItemTarget.of(event.player().getBackpack()));
     }
 }

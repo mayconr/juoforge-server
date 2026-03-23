@@ -26,6 +26,7 @@ public class UOMobile extends UOObject implements Container {
     private Race race;
     private Gender gender;
     private String type;
+    private boolean alive;
 
     // vitals
     private int hitpoints;
@@ -88,6 +89,7 @@ public class UOMobile extends UOObject implements Container {
 
     public UOMobile(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap) {
         super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
+        this.alive = true;
     }
 
     public UOMobile(UOMobile other) {
@@ -108,6 +110,8 @@ public class UOMobile extends UOObject implements Container {
         this.running = other.isRunning();
         this.race = other.getRace();
         this.gender = other.getGender();
+        this.type = other.getType();
+        this.alive = other.isAlive();
 
         this.hitpoints = other.getHitpoints();
         this.maxHitpoints = other.getMaxHitpoints();

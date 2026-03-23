@@ -11,7 +11,7 @@ logging:
     com.github.mayconr.juoserver.game.world: DEBUG
     com.github.mayconr.shard.storage: DEBUG
     com.github.mayconr.juoserver.game.economy: DEBUG
-    com.github.mayconr.juoserver.network.handler: DEBUG
+    com.github.mayconr.juoserver.network.handler: INFO
 
 
 server:

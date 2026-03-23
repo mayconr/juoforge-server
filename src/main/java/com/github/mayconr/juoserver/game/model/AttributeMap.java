@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.model;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -19,9 +20,15 @@ public interface AttributeMap {
 
     <T> T compute(String key, BiFunction<String, T, T> remappingFunction);
 
-    void clear();
-
     <T> T computeIfPresent(String key, BiFunction<String, T, T> remappingFunction);
+
+    <T> void add(String key, T value);
+
+    <T> List<T> getList(String key);
+
+    <T> boolean removeFromList(String key, T value);
+
+    void clear();
 
     Map<String, Object> toMap();
 }

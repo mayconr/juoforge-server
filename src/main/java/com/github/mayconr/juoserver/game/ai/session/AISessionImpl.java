@@ -8,6 +8,7 @@ import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
+import com.github.mayconr.juoserver.game.model.GameMath;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
@@ -63,6 +64,8 @@ public class AISessionImpl implements AISession, AIContext {
     @Override
     public void kill() {
         awake = false;
+
+        // Unregister listeners
         eventBus.unregister(MobileSpeech.class, speechListener);
     }
 
@@ -127,7 +130,7 @@ public class AISessionImpl implements AISession, AIContext {
             final var player = (UOPlayer) event.mobile();
             final var radius = (int) npc.persistentAttributes().getOrDefault("behavior.radius", 1);
 
-            if (!world.isInRange(npc, player, radius)) {
+            if (!GameMath.isInRange(npc, player, radius)) {
                 return;
             }
 

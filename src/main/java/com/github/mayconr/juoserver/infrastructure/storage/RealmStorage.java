@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface RealmStorage {
@@ -45,11 +46,9 @@ public interface RealmStorage {
     void cacheItem(UOItem npc);
 
     // Spatial queries
-    List<UOMobile> getMobilesInRange(Location location, int radius);
+    List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);
 
     List<UOItem> getItemsInRange(Location location);
-
-    boolean isInRange(Location location1, Location location2, int radius);
 
     // State mutation
     void updateMobileLocation(UOMobile mobile, Location oldLoc, Location newLoc);

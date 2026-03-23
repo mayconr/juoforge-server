@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
@@ -70,6 +73,70 @@ public class DefaultAttributeMap implements AttributeMap {
                 key,
                 (k, oldValue) -> remappingFunction.apply(k, (T) oldValue)
         );
+    }
+
+    @Override
+    public <T> void add(String key, T value) {
+        attributes.compute(key, (k, v) -> {
+
+            List<T> list;
+
+            if (v == null) {
+                list = new ArrayList<>();
+            } else if (v instanceof List<?> existing) {
+                list = (List<T>) existing;
+            } else {
+                throw new IllegalStateException("Attribute " + key + " is not a list");
+            }
+
+            list.add(value);
+
+            return list;
+        });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getList(String key) {
+        Object value = attributes.get(key);
+
+        if (value == null) {
+            return Collections.emptyList();
+        }
+
+        if (!(value instanceof List<?> list)) {
+            throw new IllegalStateException("Attribute " + key + " is not a List");
+        }
+
+        return Collections.unmodifiableList((List<T>) list);
+    }
+
+    @Override
+    public <T> boolean removeFromList(String key, T value) {
+        Object result = attributes.computeIfPresent(key, (k, v) -> {
+
+            if (!(v instanceof List<?> list)) {
+                throw new IllegalStateException(
+                        "Attribute " + key + " is not a List"
+                );
+            }
+
+            List<T> typedList = (List<T>) list;
+
+            boolean removed = typedList.remove(value);
+
+            if (!removed) {
+                return typedList;
+            }
+
+            if (typedList.isEmpty()) {
+                return null;
+            }
+
+            return typedList;
+        });
+
+        return result != null;
     }
 
     @Override

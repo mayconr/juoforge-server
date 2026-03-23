@@ -85,4 +85,14 @@ public interface WorldActions {
     // =========================
 
     void scheduleTask(GameTask task);
+
+    // =========================
+    // Vitals
+    // =========================
+
+    void applyDamage(DamageRequest request);
+
+    void kill(UOMobile target, UOMobile source, DamageSourceKind kind);
+
+    void resurrect(UOMobile mobile);
 }

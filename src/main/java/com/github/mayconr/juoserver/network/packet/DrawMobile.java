@@ -5,6 +5,7 @@ import java.util.Map;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
@@ -32,26 +33,38 @@ public class DrawMobile extends AbstractPacket {
     public void writesTo(ByteBuf buf) {
         buf.writeByte(CODE);
         buf.writeShort(getLength());
+
+        boolean isDead = mobile instanceof UOPlayer player && !player.isAlive();
+
         buf.writeInt(mobile.getSerialId());
-        buf.writeShort(mobile.getModelId());
+        int modelId = mobile.getModelId();
+        if (mobile instanceof  UOPlayer player && isDead) {
+            modelId = player.getDeathModelId();
+        }
+        buf.writeShort(modelId);
         buf.writeShort(mobile.getX());
         buf.writeShort(mobile.getY());
         buf.writeByte(mobile.getZ());
         buf.writeByte(mobile.getDirection().getCode() | (mobile.isRunning() ? 0x80 : 0));
-        buf.writeShort(mobile.getHue());
+
+        int hue = mobile.getHue();
+        if (isDead) {
+            hue = 0;
+        }
+        buf.writeShort(hue);
         buf.writeByte(mobile.getStatus().getCode());
         buf.writeByte(mobile.getNotoriety().getCode());
         for (Map.Entry<Layer, UOItem> entry : mobile.getEquippedItems().entrySet()) {
             final Layer layer = entry.getKey();
             final UOItem item = entry.getValue();
 
-            int modelId = item.getModelId() & 0x7FFF;
+            int itemModelId = item.getModelId() & 0x7FFF;
             boolean writeHue = item.getHue() != 0;
             if (writeHue) {
-                modelId |= 0x8000;
+                itemModelId |= 0x8000;
             }
             buf.writeInt(item.getSerialId());
-            buf.writeShort(modelId);
+            buf.writeShort(itemModelId);
             buf.writeByte(layer.getCode());
             if (writeHue) {
                 buf.writeShort(item.getHue());

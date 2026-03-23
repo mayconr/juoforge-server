@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
@@ -150,7 +151,7 @@ public class CachedRealmStorage implements RealmStorage {
 
     // Spatial queries
     @Override
-    public List<UOMobile> getMobilesInRange(Location location, int radius) {
+    public List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter) {
         var serials = worldMobileIndex.getNearbySerials(location, radius);
 
         if (serials.isEmpty()) {
@@ -163,9 +164,15 @@ public class CachedRealmStorage implements RealmStorage {
             if (mobile == null) {
                 continue;
             }
-            if (!isInRange(mobile, location, radius)) {
+
+            if (!GameMath.isInRange(mobile, location, radius)) {
                 continue;
             }
+
+            if (!filter.test(mobile)) {
+                continue;
+            }
+
             result.add(mobile);
         }
 
@@ -178,19 +185,6 @@ public class CachedRealmStorage implements RealmStorage {
                 .stream()
                 .map(itemCache::get)
                 .toList();
-    }
-
-    @Override
-    public boolean isInRange(Location location1, Location location2, int radius) {
-        int dx = Math.abs(location1.getX() - location2.getX());
-        int dy = Math.abs(location1.getY() - location2.getY());
-
-        if (Math.max(dx, dy) > radius) {
-            return false;
-        }
-
-        int dz = Math.abs(location1.getZ() - location2.getZ());
-        return dz <= 8;
     }
 
     // State mutation

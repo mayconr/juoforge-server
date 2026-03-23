@@ -122,6 +122,9 @@ public class ShardImplConfiguration {
             cfg.addEventListener(Region::new);
             cfg.addEventListener(Where::new);
             cfg.addEventListener(Bounds::new);
+            cfg.addEventListener(ApplyDamage::new);
+            cfg.addEventListener(Resurrect::new);
+            cfg.addEventListener(r->new Save(r.storage()));
             cfg.addCustomTemplate("oreByName", Ore.class, Ore::name, Path.of("template/skills/mining"));
 
         }).start();
