@@ -17,8 +17,8 @@ public class UOContainer extends UOItem implements Container {
     @Getter
     private final int containerGumpId;
 
-    public UOContainer(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap, id, layer, amount, hue, flags, unitWeight);
+    public UOContainer(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight, int corpseId) {
+        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap, id, layer, amount, hue, flags, unitWeight, corpseId);
         this.containerGumpId = persistentAttrMap.getOrDefault("gumpId", 0);
     }
 

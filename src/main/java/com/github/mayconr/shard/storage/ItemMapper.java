@@ -47,7 +47,8 @@ public interface ItemMapper {
             @Arg(column = "amount", javaType = int.class),
             @Arg(column = "hue", javaType = int.class),
             @Arg(column = "flags", javaType = List.class, typeHandler = ItemFlagTypeHandler.class),
-            @Arg(column = "unit_weight", javaType = int.class)
+            @Arg(column = "unit_weight", javaType = int.class),
+            @Arg(column = "corpse_id", javaType = int.class)
     })
     @TypeDiscriminator(
             column = "type",
@@ -85,7 +86,8 @@ public interface ItemMapper {
         layer,
         unit_weight,
         amount,
-        flags
+        flags,
+        corpse_id
     )
     VALUES (
         #{id},
@@ -99,7 +101,8 @@ public interface ItemMapper {
         #{layer},
         #{unitWeight},
         #{amount},
-        #{flags, typeHandler=com.github.mayconr.shard.storage.types.ItemFlagTypeHandler}::jsonb
+        #{flags, typeHandler=com.github.mayconr.shard.storage.types.ItemFlagTypeHandler}::jsonb,
+        #{corpseId}
     )
     ON CONFLICT (id) DO UPDATE
     SET
@@ -113,7 +116,8 @@ public interface ItemMapper {
         layer            = EXCLUDED.layer,
         unit_weight      = EXCLUDED.unit_weight,
         amount           = EXCLUDED.amount,
-        flags            = EXCLUDED.flags
+        flags            = EXCLUDED.flags,
+        corpse_id        = EXCLUDED.corpse_id
     """)
     void upsert(UOItem item);
 

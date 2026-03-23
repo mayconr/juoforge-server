@@ -24,8 +24,9 @@ public class UOItem extends UOObject {
     private Container container;
     private UOMobile owner;
     private List<ItemFlag> flags;
+    private int corpseId;
 
-    public UOItem(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight) {
+    public UOItem(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight, int corpseId) {
         super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
         this.id = id;
         this.layer = layer;
@@ -33,6 +34,7 @@ public class UOItem extends UOObject {
         this.hue = hue;
         this.flags = flags;
         this.unitWeight = unitWeight;
+        this.corpseId = corpseId;
         /*this.movable = movable;
         this.hidden = hidden;
         this.direction = direction;
@@ -92,6 +94,7 @@ public class UOItem extends UOObject {
         this.owner = other.owner;
         this.flags = other.flags;
         this.unitWeight = other.unitWeight;
+        this.corpseId = other.corpseId;
     }
 
     public static boolean isItem(int serialId) {

@@ -259,6 +259,7 @@ CREATE TABLE items (
 
    unit_weight INT NOT NULL,
    amount INT NOT NULL DEFAULT 1,
+   corpse_id INT,
 
    flags JSONB NOT NULL DEFAULT '{}',
 
@@ -311,6 +312,7 @@ SELECT
     i.unit_weight,
     i.amount,
     i.flags,
+    i.corpse_id,
 
     i.owner_mobile_id,
     i.parent_item_id,

@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.world.transition;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.model.GameMath;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.event.MobileEnteredLineOfSight;
 import com.github.mayconr.juoserver.game.model.event.MobileLeftLineOfSight;
@@ -21,8 +22,9 @@ public class VisibilityTransitionServiceImpl implements VisibilityTransitionServ
     @Override
     public void handle(MobileMoved event) {
         var mobile = event.mobile();
-        var oldView = storage.getMobilesInRange(event.result().from(), settings.world().lightOfSight());
-        var newView = storage.getMobilesInRange(event.result().to(), settings.world().lightOfSight());
+
+        var oldView = storage.getMobilesInRange(event.result().from(), settings.world().lightOfSight(), UOMobile::isAlive);
+        var newView = storage.getMobilesInRange(event.result().to(), settings.world().lightOfSight(), UOMobile::isAlive);
 
         detectEnteredVisibleArea(mobile, oldView, newView);
         detectLeftVisibleArea(mobile, oldView, newView);

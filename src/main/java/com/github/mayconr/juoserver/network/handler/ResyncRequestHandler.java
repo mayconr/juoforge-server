@@ -2,8 +2,10 @@ package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.network.packet.MovementResyncAck;
 import com.github.mayconr.juoserver.network.session.PlayerSession;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
+@ChannelHandler.Sharable
 public class ResyncRequestHandler extends PlayerSessionChannelInboundHandler<MovementResyncAck> {
 
     @Override

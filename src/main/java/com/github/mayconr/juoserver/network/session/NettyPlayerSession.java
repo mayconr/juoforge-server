@@ -114,6 +114,10 @@ public class NettyPlayerSession implements PlayerSession {
         }
 
         world.getAccountByUsername(username)
+                .thenApply(account->{
+                    this.account = account;
+                    return this.account;
+                })
                 .thenCompose(world::getPlayerMobiles)
                 .thenAccept(mobiles->{
                     availableStartingLocations.clear();
@@ -165,6 +169,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     @Override
     public CompletableFuture<UOPlayer> createCharacter(CreateCharacter character) {
+        System.out.println(account);
         return world.createPlayerMobile(character, availableStartingLocations, account)
                 .exceptionally(throwable -> {
                     var error = unwrap(throwable);
@@ -239,14 +244,14 @@ public class NettyPlayerSession implements PlayerSession {
         if (!player.equals(moved.mobile())) {
             final var mobile = moved.mobile();
 
-            if (world.isInRange(player, mobile, settings.world().lightOfSight())) {
+            if (GameMath.isInRange(player, mobile, settings.world().lightOfSight())) {
                 channel.writeAndFlush(new DrawMobile(mobile));
             }
             return;
         }
 
         // handle player movement
-        var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight());
+        var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight(), UOMobile::isAlive);
         var items  = world.getItemsInRange(player, settings.world().lightOfSight());
 
         channel.write(new MovementResyncAck(moved.sequence(), player.getNotoriety()));
@@ -301,7 +306,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onPlayerLoggedIn(PlayerLoggedIn event) {
         if (player.equals(event.player())) {
-            final var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight());
+            final var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight(), UOMobile::isAlive);
             final var items = world.getItemsInRange(player, settings.world().lightOfSight());
 
             channel.write(new LoginConfirm(player, 7168, 4096));
@@ -353,7 +358,7 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onItemDroppedOnTheGround(ItemDroppedOnTheGround event) {
-        channelGroup.writeAndFlush(new ObjectInfo(event.item()));
+        channel.writeAndFlush(new ObjectInfo(event.item()));
     }
 
     public void onItemDroppedInContainer(ItemDroppedInContainer event) {
@@ -374,20 +379,26 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onItemCreated(GroundedItemCreated event) {
-        runInEventLoop(()->channel.writeAndFlush(new ObjectInfo(event.item())),  20, TimeUnit.MILLISECONDS);
+        if (event.render()) {
+            runInEventLoop(()->channel.writeAndFlush(new ObjectInfo(event.item())),  20, TimeUnit.MILLISECONDS);
+        }
     }
 
     public void onItemCreated(EquippedItemCreated event) {
-        channelGroup.writeAndFlush(new DrawMobile(event.mobile()));
+        if (event.render()) {
+            channelGroup.writeAndFlush(new DrawMobile(event.mobile()));
+        }
     }
 
     public void onItemCreated(ItemCreatedInContainer event) {
-        if (event.container() instanceof UOPlayer pl && pl.equals(player)) {
-            channel.writeAndFlush(new AddItemToContainer(pl, event.item()));
-            return;
-        }
+        if (event.render()) {
+            if (event.container() instanceof UOPlayer pl && pl.equals(player)) {
+                channel.writeAndFlush(new AddItemToContainer(pl, event.item()));
+                return;
+            }
 
-        channelGroup.writeAndFlush(new AddItemToContainer(event.container(), event.item()));
+            channel.writeAndFlush(new AddItemToContainer(event.container(), event.item()));
+        }
     }
 
     public void onItemDeleted(ItemDeleted event) {
@@ -555,6 +566,34 @@ public class NettyPlayerSession implements PlayerSession {
         if (player.equals(event.mobile())) {
             channel.writeAndFlush(new StatusBarInfo(player));
         }
+    }
+
+    public void onMobileDamaged(MobileDamagedEvent event) {
+        if (player.equals(event.source()) || player.equals(event.target())) {
+            runInEventLoop(()->{
+                channel.write(new Damage(event.target(), event.totalDamage()));
+                channel.writeAndFlush(new StatusBarInfo(event.target()));
+            });
+        }
+    }
+
+    public void onMobileDeath(MobileDeathEvent event) {
+        runInEventLoop(()->{
+            if (player.equals(event.target())) {
+                channel.write(new StatusBarInfo(player));
+                channel.write(new DrawMobile(player));
+                channel.writeAndFlush(new DeathScreen(DeathScreenType.SERVER));
+            } else {
+                channel.write(new DeathAction(event.target(), event.corpse().getSerialId()));
+                channel.writeAndFlush(new ObjectInfo(event.corpse()));
+            }
+        });
+    }
+
+    public void onMobileResurrect(MobileResurrectEvent event) {
+        channel.write(new StatusBarInfo(player));
+        channel.write(new DrawMobile(player));
+        channel.writeAndFlush(new DeathScreen(DeathScreenType.RESURRECT));
     }
 
     /*

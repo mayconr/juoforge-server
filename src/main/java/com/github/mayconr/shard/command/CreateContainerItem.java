@@ -17,6 +17,6 @@ public class CreateContainerItem extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.createItem(ItemRequest.byName(event.arguments()[0]).build(), ContainerItemTarget.of(event.player()));
+        world.createItem(ItemRequest.byName(event.arguments()[0]), ContainerItemTarget.of(event.player()));
     }
 }

@@ -87,7 +87,10 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(VitalsChanged.class, session::onVitalsChanged),
                 new Event<>(GumpSent.class, session::onGumpSent),
                 new Event<>(PlayerLoggedOut.class, session::onPlayerLoggedOut),
-                new Event<>(MobileGoldChanged.class, session::onMobileGoldChanged)
+                new Event<>(MobileGoldChanged.class, session::onMobileGoldChanged),
+                new Event<>(MobileDamagedEvent.class, session::onMobileDamaged),
+                new Event<>(MobileDeathEvent.class, session::onMobileDeath),
+                new Event<>(MobileResurrectEvent.class, session::onMobileResurrect)
         );
     }
 

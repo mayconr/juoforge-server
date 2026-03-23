@@ -20,7 +20,7 @@ public interface WorldView {
 
     List<ItemTemplate> getItemsTemplate(String stockType);
 
-    List<UOMobile> getMobilesInRange(Location location, int radius);
+    List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);
 
     Optional<UOItem> getItemBySerialId(int serial);
 
@@ -35,8 +35,6 @@ public interface WorldView {
     LandTile getLandTile(Location location);
 
     List<UOPlayer> getOnlinePlayers();
-
-    boolean isInRange(Location object1, Location object2, int radius);
 
     Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode);
 

@@ -42,7 +42,7 @@ public class LumberjackSwingTask implements GameTask {
         var item = resourceRoller.rollResource(50);
 
         if (item != null) {
-            final var woodItem = worldActions.createItem(ItemRequest.byName(item.toString().toLowerCase()).build(), ContainerItemTarget.of(player));
+            final var woodItem = worldActions.createItem(ItemRequest.byName(item.toString().toLowerCase()), ContainerItemTarget.of(player));
             if (log.isDebugEnabled()) {
                 log.debug("Wood [{}] created in [{}-{}] backpackItem", woodItem.getName(), player.getSerialId(), player.getName());
             }

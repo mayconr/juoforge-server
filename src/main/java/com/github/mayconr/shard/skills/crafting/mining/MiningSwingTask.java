@@ -5,11 +5,8 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.world.World;
-import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
-import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.skills.Skills;
-import com.github.mayconr.shard.skills.crafting.ResourceRoller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,8 +50,7 @@ public class MiningSwingTask implements GameTask {
             return;
         }
         final var itemRequest = ItemRequest.byName(ore.itemName())
-                .amount(2)
-                .build();
+                .withAmount(2);
         final var oreItem = world.createItem(itemRequest, ContainerItemTarget.of(player, cfg->{
             cfg.tryStack(true);
         }));

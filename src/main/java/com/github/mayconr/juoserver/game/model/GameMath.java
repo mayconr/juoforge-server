@@ -46,4 +46,15 @@ public class GameMath {
         return points;
     }
 
+    public static boolean isInRange(Location location1, Location location2, int radius) {
+        int dx = Math.abs(location1.getX() - location2.getX());
+        int dy = Math.abs(location1.getY() - location2.getY());
+
+        if (Math.max(dx, dy) > radius) {
+            return false;
+        }
+
+        int dz = Math.abs(location1.getZ() - location2.getZ());
+        return dz <= 8;
+    }
 }

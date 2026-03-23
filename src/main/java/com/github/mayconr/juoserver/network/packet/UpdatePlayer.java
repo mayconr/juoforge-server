@@ -19,12 +19,21 @@ public class UpdatePlayer extends AbstractPacket {
     public void writesTo(ByteBuf buf) {
         buf.writeByte(CODE);
         buf.writeInt(player.getSerialId());
-        buf.writeShort(player.getModelId());
+        int modelId = player.getModelId();
+        if (!player.isAlive()) {
+            modelId = player.getDeathModelId();
+        }
+        buf.writeShort(modelId);
         buf.writeShort(player.getX());
         buf.writeShort(player.getY());
         buf.writeByte(player.getZ());
         buf.writeByte(player.getDirection().getCode() | (player.isRunning() ? 0x80 : 0));
-        buf.writeShort(player.getHue());
+
+        int hue = player.getHue();
+        if (!player.isAlive()) {
+            hue = 0;
+        }
+        buf.writeShort(hue);
         buf.writeByte(player.getStatus().getCode());
         buf.writeByte(player.getNotoriety().getCode());
     }

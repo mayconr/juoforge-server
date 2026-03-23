@@ -5,5 +5,6 @@ public enum ItemFlag {
     WEAPON,
     WEARABLE,
     CONTAINER,
-    MOUNT
+    MOUNT,
+    CORPSE
 }

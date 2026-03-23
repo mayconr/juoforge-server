@@ -103,24 +103,24 @@ public class PlayerCreationHandler {
     private List<ItemRequest> createStartKit(CreateCharacter character) {
 
         var kit = new ArrayList<ItemRequest>();
-        kit.add(byName("shirt").hue(character.getShirtColor()).build());
-        kit.add(byName("pants").hue(character.getPantsColor()).build());
-        kit.add(byName("shoes").build());
-        kit.add(byModelId(character.getHairStyle()).hue(character.getHairColor()).build());
-        kit.add(byModelId(character.getBeardStyle()).hue(character.getBeardColor()).build());
-        kit.add(byName(settings.mobile().backpackItem()).build());
+        kit.add(byName("shirt").withHue(character.getShirtColor()));
+        kit.add(byName("pants").withHue(character.getPantsColor()));
+        kit.add(byName("shoes"));
+        kit.add(byModelId(character.getHairStyle()).withHue(character.getHairColor()));
+        kit.add(byModelId(character.getBeardStyle()).withHue(character.getBeardColor()));
+        kit.add(byName(settings.mobile().backpackItem()));
 
         for (var template : startkitTemplateRegistry.get(NO_SKILL_ASSIGNED)) {
-            kit.add(byName(template.item()).amount(template.amount()).build());
+            kit.add(byName(template.item()).withAmount(template.amount()));
         }
         for (var template : startkitTemplateRegistry.get(character.getSkill1())) {
-            kit.add(byName(template.item()).amount(template.amount()).build());
+            kit.add(byName(template.item()).withAmount(template.amount()));
         }
         for (var template : startkitTemplateRegistry.get(character.getSkill2())) {
-            kit.add(byName(template.item()).amount(template.amount()).build());
+            kit.add(byName(template.item()).withAmount(template.amount()));
         }
         for (var template : startkitTemplateRegistry.get(character.getSkill3())) {
-            kit.add(byName(template.item()).amount(template.amount()).build());
+            kit.add(byName(template.item()).withAmount(template.amount()));
         }
 
         return List.copyOf(kit);

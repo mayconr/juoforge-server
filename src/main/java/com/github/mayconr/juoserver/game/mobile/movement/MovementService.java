@@ -10,7 +10,7 @@ import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class MovementHandler {
+public class MovementService {
 
     private final EventBus eventBus;
     private final MobileMovementRules movementRules;

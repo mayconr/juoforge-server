@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -26,24 +27,28 @@ public class ItemHandler {
     private final RealmStorage storage;
     private final EventBus eventBus;
 
-    UOItem createItem(ItemRequest request, ItemTarget target) {
+    UOItem createItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> optionsConsumer) {
         final var item = internalCreateItem(request);
+
+        final var options = new ItemCreationOptions();
+        optionsConsumer.accept(options);
 
         // General properties
         item.setAmount(request.amount());
         item.setHue(request.hue());
+        item.setDirection(request.direction());
 
         final GameEvent event = switch (target) {
             case EquipItemTarget equipItemTarget -> {
                 final var mobile = equipItemTarget.mobile();
                 mobile.equipItem(item);
-                yield new EquippedItemCreated(mobile, item);
+                yield new EquippedItemCreated(mobile, item, options.renderOnCreate());
             }
             case GroundItemTarget worldLocation -> {
                 item.setLocation(worldLocation.location());
-                yield new GroundedItemCreated(item);
+                yield new GroundedItemCreated(item, options.renderOnCreate());
             }
-            case ContainerItemTarget containerItemTarget -> handleContainerItem(item, containerItemTarget);
+            case ContainerItemTarget containerItemTarget -> handleContainerItem(item, containerItemTarget, options);
         };
 
         storage.cacheItem(item);
@@ -52,7 +57,7 @@ public class ItemHandler {
         return item;
     }
 
-    private GameEvent handleContainerItem(UOItem item, ContainerItemTarget target) {
+    private GameEvent handleContainerItem(UOItem item, ContainerItemTarget target, ItemCreationOptions options) {
         final var container = target.container();
 
         UOItem updatedItem = item;
@@ -73,7 +78,7 @@ public class ItemHandler {
             container.addItemToContainer(updatedItem);
         }
 
-        return new ItemCreatedInContainer(container, updatedItem);
+        return new ItemCreatedInContainer(container, updatedItem, options.renderOnCreate());
     }
 
     public UOItem createUnloadedItem(ItemRequest request) {
@@ -132,8 +137,8 @@ public class ItemHandler {
                     .getFirst();
         }
 
-        if (request.itemName() != null) {
-            return ()->itemTemplateRegistry.get(request.itemName());
+        if (request.name() != null) {
+            return ()->itemTemplateRegistry.get(request.name());
         }
 
         if (request.template() != null) {

@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RequiredArgsConstructor
-public class AISessionHandler {
+public class AISessionManager {
 
     private final Map<Integer, AISession> sessions = new ConcurrentHashMap<>();
     private final EventBus eventBus;
@@ -37,9 +37,9 @@ public class AISessionHandler {
     }
 
     public void detach(UONpc npc) {
-        sessions.compute(npc.getSerialId(), (k, v)->{
-            if (v != null) {
-                v.kill();
+        sessions.compute(npc.getSerialId(), (key, session)->{
+            if (session != null) {
+                session.kill();
                 log.info("Detaching AI [{}] for NPC [{}]", npc.getBehavior().ai(), npc.getName());
             }
            return null;

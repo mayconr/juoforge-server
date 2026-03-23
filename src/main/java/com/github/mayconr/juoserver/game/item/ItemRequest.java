@@ -1,78 +1,53 @@
 package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.model.Direction;
 
-public record ItemRequest(ItemTemplate template, Integer modelId, String itemName, int hue, int amount) {
+public record ItemRequest(
+        ItemTemplate template,
+        Integer modelId,
+        String name,
+        int hue,
+        int amount,
+        Direction direction
+) {
     public ItemRequest {
         int count = 0;
 
         if (template != null) count++;
         if (modelId != null) count++;
-        if (itemName != null) count++;
+        if (name != null && !name.isBlank()) count++;
 
         if (count != 1) {
-            throw new IllegalArgumentException(
-                    "Exactly one of itemName, modelId or template must be provided"
-            );
+            throw new IllegalArgumentException("Exactly one of template, modelId or name must be provided");
+        }
+
+        if (amount <= 0) {
+            throw new IllegalArgumentException("amount must be greater than zero");
         }
     }
 
-    public static Builder byTemplate(ItemTemplate template) {
-        return new Builder().template(template).amount(1);
+    public static ItemRequest byTemplate(ItemTemplate template) {
+        return new ItemRequest(template, null, null, 0, 1, null);
     }
 
-    public static Builder byName(String itemName) {
-        return new Builder().itemName(itemName).amount(1);
+    public static ItemRequest byModelId(int modelId) {
+        return new ItemRequest(null, modelId, null, 0, 1, null);
     }
 
-    public static Builder byModelId(int modelId) {
-        return new Builder().modelId(modelId).amount(1);
+    public static ItemRequest byName(String name) {
+        return new ItemRequest(null, null, name, 0, 1, null);
     }
 
-    public static class Builder {
+    public ItemRequest withHue(int hue) {
+        return new ItemRequest(template, modelId, name, hue, amount, direction);
+    }
 
-        private ItemTemplate template;
-        private Integer modelId;
-        private String itemName;
-        private int hue = 0;
-        private int amount = 1;
+    public ItemRequest withAmount(int amount) {
+        return new ItemRequest(template, modelId, name, hue, amount, direction);
+    }
 
-        private Builder() {
-        }
-
-        public Builder template(ItemTemplate template) {
-            this.template = template;
-            return this;
-        }
-
-        public Builder modelId(Integer modelId) {
-            this.modelId = modelId;
-            return this;
-        }
-
-        public Builder itemName(String itemName) {
-            this.itemName = itemName;
-            return this;
-        }
-
-        public Builder hue(int hue) {
-            this.hue = hue;
-            return this;
-        }
-
-        public Builder amount(int amount) {
-            this.amount = amount;
-            return this;
-        }
-
-        public ItemRequest build() {
-            return new ItemRequest(
-                    template,
-                    modelId,
-                    itemName,
-                    hue,
-                    amount
-            );
-        }
+    public ItemRequest withDirection(Direction direction) {
+        return new ItemRequest(template, modelId, name, hue, amount, direction);
     }
 }
