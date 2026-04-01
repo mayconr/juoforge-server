@@ -79,7 +79,7 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(MessageSent.class, session::onMessageSent),
                 new Event<>(TargetSent.class, session::onTargetSent),
                 new Event<>(PaperdollOpened.class, session::onPaperdollOpened),
-                new Event<>(ContainerOpened.class, session::onContainerOpened),
+                new Event<>(ContainerOpenedEvent.class, session::onContainerOpened),
                 new Event<>(SkillLocked.class, session::onSkillLocked),
                 new Event<>(MobileStatusChanged.class, session::onMobileStatusChanged),
                 new Event<>(PlayerStartAttack.class, session::onPlayerStartAttack),

@@ -153,9 +153,9 @@ public class PsqlMobileStorage implements MobileStorage {
                    // EquippedItems
                    for (UOItem item : mobile.getEquippedItems().values()) {
                        // Update Item
-                       itemMapper.upsert(item);
+                       itemMapper.upsert(item.toData());
                        // Update item state
-                       itemMapper.upsertItemState(item);
+                       itemMapper.upsertItemState(item.toData());
                    }
 
                    session.commit();

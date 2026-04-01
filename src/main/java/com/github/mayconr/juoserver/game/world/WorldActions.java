@@ -66,7 +66,7 @@ public interface WorldActions {
     // Items / containers
     // =========================
 
-    ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers);
+    ConsumeResult consumeItem(UOContainer container, String name, int amount, boolean searchNestedContainers);
 
     // =========================
     // Skills / progression

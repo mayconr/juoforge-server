@@ -32,7 +32,7 @@ public class PsqlItemStorage implements ItemStorage {
 
     @Override
     public CompletableFuture<List<UOItem>> findAllEquippedItems(UOMobile mobile) {
-        return findInternal(mapper->mapper.findAllEquippedItems(mobile.getId()));
+        return findInternal(mapper->mapper.findAllEquippedItems(mobile.getSerialId()));
     }
 
     @Override
@@ -42,7 +42,7 @@ public class PsqlItemStorage implements ItemStorage {
 
     @Override
     public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
-        return findInternal(mapper->mapper.findAllContainerItems(container.getId()));
+        return findInternal(mapper->mapper.findAllContainerItems(container.getSerialId()));
     }
 
     @Override
@@ -65,8 +65,8 @@ public class PsqlItemStorage implements ItemStorage {
             try (var session = sessionFactory.openSession(false)) {
                 try {
                     final var mapper = session.getMapper(ItemMapper.class);
-                    mapper.upsert(item);
-                    mapper.upsertItemState(item);
+                    mapper.upsert(item.toData());
+                    mapper.upsertItemState(item.toData());
                     session.commit();
                     return item;
                 } catch (Exception e) {
@@ -84,7 +84,7 @@ public class PsqlItemStorage implements ItemStorage {
                 final var itemMapper = session.getMapper(ItemMapper.class);
 
                 for (UOItem item : items) {
-                    itemMapper.upsert(item);
+                    itemMapper.upsert(item.toData());
                 }
 
                 itemMapper.updateItemSerial(serial);
@@ -108,7 +108,7 @@ public class PsqlItemStorage implements ItemStorage {
         try (var session = sessionFactory.openSession(true)) {
             try {
                 for (UOItem item : items) {
-                    session.getMapper(ItemMapper.class).upsertItemState(item);
+                    session.getMapper(ItemMapper.class).upsertItemState(item.toData());
                 }
                 session.commit();
                 return CompletableFuture.completedFuture(items);

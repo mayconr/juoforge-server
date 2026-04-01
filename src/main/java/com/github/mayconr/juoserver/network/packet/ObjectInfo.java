@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.network.packet;
 
 import com.github.mayconr.juoserver.game.model.ItemFlag;
+import com.github.mayconr.juoserver.game.model.UOCorpse;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 import io.netty.buffer.ByteBuf;
@@ -70,8 +71,8 @@ public class ObjectInfo extends AbstractPacket {
         buf.writeShort(item.getModelId());
 
         if (hasCountOrCorpseGraphic) {
-            if (isCorpse) {
-                buf.writeShort(item.getCorpseId() & 0xFFFF);
+            if (isCorpse && item instanceof UOCorpse corpse) {
+                buf.writeShort(corpse.getCorpseId() & 0xFFFF);
             } else {
                 buf.writeShort(item.getAmount() & 0xFFFF);
             }

@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.model.Container;
+import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
@@ -16,7 +17,6 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class ContainerHandler {
 
-    private final RealmStorage realmStorage;
     private final EventBus eventBus;
 
     public List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> predicate) {
@@ -29,7 +29,7 @@ public class ContainerHandler {
         return items;
     }
 
-    public int consumeItem(Container container, String itemName, int amount, boolean searchNestedContainers) {
+    public int consumeItem(UOContainer container, String itemName, int amount, boolean searchNestedContainers) {
         if (amount <= 0) {
             return 0;
         }
@@ -43,7 +43,7 @@ public class ContainerHandler {
         return consumeInternal(container, itemName, amount, searchNestedContainers);
     }
 
-    private int countItems(Container container,
+    private int countItems(UOContainer container,
                            String itemName,
                            boolean searchNestedContainers) {
         int total = 0;
@@ -51,14 +51,14 @@ public class ContainerHandler {
             if (item.getName().equals(itemName)) {
                 total += item.getAmount();
             }
-            if (searchNestedContainers && item instanceof Container nestedContainer) {
+            if (searchNestedContainers && item instanceof UOContainer nestedContainer) {
                 total += countItems(nestedContainer, itemName, true);
             }
         }
         return total;
     }
 
-    private int consumeInternal(Container container,
+    private int consumeInternal(UOContainer container,
                                 String itemName,
                                 int amount,
                                 boolean searchNestedContainers) {
@@ -70,7 +70,7 @@ public class ContainerHandler {
                 int itemAmount = item.getAmount();
                 if (itemAmount > amount) {
                     item.setAmount(itemAmount - amount);
-                    eventBus.publish(new ItemUpdated(item));
+                    eventBus.publish(new ItemUpdated(item, container));
                     return 0;
                 } else {
                     amount -= itemAmount;
@@ -79,7 +79,7 @@ public class ContainerHandler {
                     continue;
                 }
             }
-            if (searchNestedContainers && item instanceof Container nestedContainer) {
+            if (searchNestedContainers && item instanceof UOContainer nestedContainer) {
                 amount = consumeInternal(
                         nestedContainer,
                         itemName,

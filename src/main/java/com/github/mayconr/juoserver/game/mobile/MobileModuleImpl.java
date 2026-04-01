@@ -1,11 +1,13 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcCreationService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.event.MobileDeathEvent;
 import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
 import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
@@ -16,15 +18,19 @@ import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 @Slf4j
 @RequiredArgsConstructor
 public class MobileModuleImpl implements MobileModule {
+
 
     private final MountService mountService;
     private final NpcCreationService npcCreationService;
     private final MovementService movementService;
     private final ItemEquipService itemEquipService;
     private final NpcDespawnService npcDespawnService;
+    private final DeathService deathService;
     private final NpcTemplateRegistry npcTemplateRegistry;
     private final Wallet wallet;
     private final EventBus eventBus;
@@ -32,6 +38,7 @@ public class MobileModuleImpl implements MobileModule {
     @Override
     public void initialize(ModuleContext context) {
         mountService.initialize(context);
+        deathService.initialize(context);
     }
 
     @Override
@@ -106,6 +113,11 @@ public class MobileModuleImpl implements MobileModule {
     }
 
     @Override
+    public void unequipItem(UOMobile mobile, UOItem item) {
+        itemEquipService.unequipItem(mobile, item);
+    }
+
+    @Override
     public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
         itemEquipService.unequipItem(player, pickedUpItem);
     }
@@ -123,5 +135,10 @@ public class MobileModuleImpl implements MobileModule {
         mobile.setAlive(true);
 
         eventBus.publish(new MobileResurrectEvent(mobile));
+    }
+
+    @Override
+    public void die(DeathRequest request) {
+        deathService.die(request);
     }
 }

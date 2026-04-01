@@ -34,6 +34,31 @@ public class UOObject implements Location, AttributeSupport, TooltipSupport {
     private final AttributeMap persistentAttrMap;
     private final AttributeMap runtimeAttrMap;
 
+    protected UOObject(UOObjectData data) {
+        this.serialId = data.getSerialId();
+        this.modelId = data.getModelId();
+        this.x = data.getX();
+        this.y = data.getY();
+        this.z = data.getZ();
+        this.name = data.getName();
+        this.displayName = data.getDisplayName();
+        this.persistentAttrMap = data.getPersistentAttrMap();
+        this.runtimeAttrMap = new DefaultAttributeMap();
+    }
+
+    public UOObjectData toData() {
+        return UOObjectData.builder()
+                .serialId(serialId)
+                .modelId(modelId)
+                .x(x)
+                .y(y)
+                .z(z)
+                .name(name)
+                .displayName(displayName)
+                .persistentAttrMap(persistentAttrMap != null ? persistentAttrMap : new DefaultAttributeMap())
+                .build();
+    }
+
     public UOObject(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap) {
         this.serialId = serialId;
         this.modelId = modelId;

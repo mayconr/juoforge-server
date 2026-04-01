@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 public class ItemModule implements WorldModule, ItemCommands, ItemQueries {
 
     private final ItemHandler itemHandler;
-    private final ItemDropHandler itemDropHandler;
+    private final ItemDropService itemDropService;
     private final ContainerHandler containerHandler;
 
     @Override
@@ -43,17 +43,17 @@ public class ItemModule implements WorldModule, ItemCommands, ItemQueries {
 
     @Override
     public void dropItemOnTheGround(UOPlayer player, DropItem droppedItem) {
-        itemDropHandler.dropItemOnTheGround(player, droppedItem);
+        itemDropService.dropItemOnTheGround(player, droppedItem);
     }
 
     @Override
     public void dropItemInContainer(UOPlayer player, DropItem dropItem) {
-        itemDropHandler.dropItemInContainer(player, dropItem);
+        itemDropService.dropItemInContainer(player, dropItem);
     }
 
     @Override
     public void dropItemInContainer(UOPlayer player, UOItem item, Container container) {
-        itemDropHandler.dropItemInContainer(player, item, container);
+        itemDropService.dropItemInContainer(player, item, container);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ItemModule implements WorldModule, ItemCommands, ItemQueries {
     }
 
     @Override
-    public ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers) {
+    public ConsumeResult consumeItem(UOContainer container, String name, int amount, boolean searchNestedContainers) {
         int remaining = containerHandler.consumeItem(container, name, amount, searchNestedContainers);
         return new ConsumeResult(remaining > -1, remaining);
     }

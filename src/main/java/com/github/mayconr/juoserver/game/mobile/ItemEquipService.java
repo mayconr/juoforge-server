@@ -44,15 +44,24 @@ public class ItemEquipService {
     public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
         final var item = storage.getItemBySerialId(pickedUpItem.getSerialId())
                 .orElseThrow(()->new IllegalStateException("Item not found " + pickedUpItem.getSerialId()));
-        // TODO verify distance of item and player
+        unequipItem(player, item);
+    }
+
+    public boolean unequipItem(UOMobile mobile, UOItem item) {
         if (item.isMovable()) {
-            if (item.getContainer() != null) {
+            /*if (item.getContainer() != null) {
                 item.getContainer().removeItemFromContainer(item);
-            }
-            if (player.isItemEquipped(item)) {
-                player.unequipItem(item);
-                eventBus.publish(new ItemUnequipped(player, item));
+            }*/
+            if (mobile.isItemEquipped(item)) {
+                mobile.unequipItem(item);
+                if (mobile instanceof UOPlayer player) {
+                    eventBus.publish(new ItemUnequipped(player, item));
+                }
+                return true;
             }
         }
+        return false;
     }
+
+
 }

@@ -38,7 +38,7 @@ public interface RealmStorage {
 
     Optional<UOItem> getItemBySerialId(int serialId);
 
-    Optional<Container> getContainerBySerialId(int serialId);
+    Optional<UOContainer> getContainerBySerialId(int serialId);
 
     // Cache and indexing
     void cacheMobile(UOMobile mobile);

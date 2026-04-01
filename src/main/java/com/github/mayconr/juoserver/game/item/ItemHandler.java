@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -105,30 +104,18 @@ public class ItemHandler {
             throw new ItemTemplateNotFoundException("Template does not exist");
         }
 
-        final var item = new UOItem(
-                UUID.randomUUID(),
-                serialGenerator.getNextItem(),
-                template.modelId(),
-                0,
-                0,
-                0,
-                template.name(),
-                template.displayName(),
-                new DefaultAttributeMap(template.attr()),
-                template.layer(),
-                1,
-                template.hue(),
-                template.movable(),
-                false,
-                Direction.NORTH,
-                null,
-                template.flags()
-        );
-        if (template.flags().contains(ItemFlag.CONTAINER)) {
-            return new UOContainer(item, Optional.ofNullable(template.attr().get("gumpId"))
-                    .map(Integer.class::cast).orElse(0));
+        final var itemData = templateToDataBuilder(template).build();
+        final var flags = template.flags();
+
+        if (flags.contains(ItemFlag.CORPSE)) {
+            return new UOCorpse(itemData);
         }
-        return item;
+
+        if (flags.contains(ItemFlag.CONTAINER)) {
+            return new UOContainer(itemData);
+        }
+
+        return new UOItem(itemData);
     }
 
     private Supplier<ItemTemplate> supplierFactory(ItemRequest request) {
@@ -148,6 +135,28 @@ public class ItemHandler {
         throw new ItemTemplateNotFoundException("Template not found");
     }
 
+    private UOItemData.UOItemDataBuilder<?, ?> templateToDataBuilder(ItemTemplate template) {
+        return UOItemData.builder()
+                .id(UUID.randomUUID())
+                .serialId(serialGenerator.getNextItem())
+                .modelId(template.modelId())
+                .x(0)
+                .y(0)
+                .z(0)
+                .name(template.name())
+                .displayName(template.displayName())
+                .persistentAttrMap(new DefaultAttributeMap(template.attr()))
+                .layer(template.layer())
+                .amount(1)
+                .hue(template.hue())
+                .movable(template.movable())
+                .hidden(false)
+                .direction(Direction.NORTH)
+                .ownerSerialId(0)
+                .flags(template.flags())
+                .containerGumpId(template.containerGumpId());
+    }
+
     public void deleteItem(UOItem item) {
         storage.deleteItem(item);
         eventBus.publish(new ItemDeleted(item));
@@ -155,6 +164,6 @@ public class ItemHandler {
 
     public void moveItem(UOItem item, Location location) {
         item.setLocation(location);
-        eventBus.publish(new ItemUpdated(item));
+        eventBus.publish(new ItemUpdated(item, null));
     }
 }

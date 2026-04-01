@@ -245,10 +245,10 @@ CREATE TABLE items (
    serial_id INT NOT NULL,
 
 -- ownership forte (ao deletar o mobile, deleta os itens dele)
-   owner_mobile_id UUID,
+   owner_serial_id int,
 
 -- hierarquia forte (ao deletar o container, deleta o conteúdo)
-   parent_item_id UUID,
+   container_serial_id int,
 
    name VARCHAR(64) NOT NULL,
    display_name VARCHAR(64) NOT NULL,
@@ -259,6 +259,7 @@ CREATE TABLE items (
 
    unit_weight INT NOT NULL,
    amount INT NOT NULL DEFAULT 1,
+   container_gump_id int,
    corpse_id INT,
 
    flags JSONB NOT NULL DEFAULT '{}',
@@ -268,19 +269,19 @@ CREATE TABLE items (
    CONSTRAINT uk_item_serial UNIQUE (serial_id),
 
    CONSTRAINT fk_items_owner
-       FOREIGN KEY (owner_mobile_id)
-           REFERENCES mobiles(id)
+       FOREIGN KEY (owner_serial_id)
+           REFERENCES mobiles(serial_id)
            ON DELETE CASCADE,
 
    CONSTRAINT fk_items_parent
-       FOREIGN KEY (parent_item_id)
-           REFERENCES items(id)
+       FOREIGN KEY (container_serial_id)
+           REFERENCES items(serial_id)
            ON DELETE CASCADE
 );
 
 CREATE INDEX idx_items_name ON items (name);
-CREATE INDEX idx_items_owner_mobile_id ON items(owner_mobile_id);
-CREATE INDEX idx_items_parent_item_id  ON items(parent_item_id);
+CREATE INDEX idx_items_owner_serial_id ON items(owner_serial_id);
+CREATE INDEX idx_items_container_serial_id  ON items(container_serial_id);
 
 CREATE TABLE item_state (
     item_id UUID PRIMARY KEY,
@@ -313,9 +314,10 @@ SELECT
     i.amount,
     i.flags,
     i.corpse_id,
+    i.container_gump_id,
 
-    i.owner_mobile_id,
-    i.parent_item_id,
+    i.owner_serial_id,
+    i.container_serial_id,
 
     COALESCE(s.x, 0) AS x,
     COALESCE(s.y, 0) AS y,

@@ -237,6 +237,7 @@ public class UOMobile extends UOObject implements Container {
         this.running = running;
         this.race = race;
         this.gender = gender;
+        this.alive = true;
 
         this.hitpoints = hitpoints;
         this.maxHitpoints = maxHitpoints;
@@ -300,12 +301,13 @@ public class UOMobile extends UOObject implements Container {
 
     public void equipItem(Layer layer, UOItem item) {
         equippedItems.put(layer, item);
-        item.setOwner(this);
+        item.setLocation(0, 0, 0);
+        item.setOwnerSerialId(this.getSerialId());
     }
 
     public void unequipItem(UOItem item) {
         equippedItems.remove(item.getLayer());
-        item.setOwner(null);
+        item.setOwnerSerialId(0);
     }
 
     public boolean isItemEquipped(UOItem item) {
@@ -339,7 +341,7 @@ public class UOMobile extends UOObject implements Container {
 
     @Override
     public void removeItemFromContainer(UOItem item) {
-        item.setContainer(null);
+        item.setOwnerSerialId(0);
         backpack.removeItemFromContainer(item);
     }
 

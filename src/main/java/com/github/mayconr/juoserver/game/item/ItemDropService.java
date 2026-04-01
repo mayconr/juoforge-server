@@ -1,11 +1,12 @@
 package com.github.mayconr.juoserver.game.item;
 
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.ItemDroppedInContainer;
 import com.github.mayconr.juoserver.game.model.event.ItemDroppedOnTheGround;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked;
 import com.github.mayconr.juoserver.game.model.policy.DropItemGroundPolicy;
+import com.github.mayconr.juoserver.game.world.ModuleContext;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.DropItem;
@@ -14,11 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ItemDropHandler {
+public class ItemDropService {
 
     private final EventBus eventBus;
     private final RealmStorage storage;
     private final PolicyService policyService;
+
+    private ModuleContext.ItemFacade items;
 
     public void dropItemOnTheGround(UOPlayer player, DropItem droppedItem) {
         final var item = storage.getItemBySerialId(droppedItem.getSerialId())
@@ -108,12 +111,14 @@ public class ItemDropHandler {
         storage.deleteItem(dropped);
 
         if (target.isInContainer()) {
-            eventBus.publish(new ItemStacked(player, target, dropped, ItemStacked.StackDestination.CONTAINER));
+            final var container = storage.getContainerBySerialId(target.getContainerSerialId())
+                    .orElseThrow(()->new IllegalStateException("Invalid container " + target.getContainerSerialId()));
+            eventBus.publish(new ItemStacked(player, target, dropped, ItemStacked.StackDestination.CONTAINER, container));
             return;
         }
 
         if (target.isOnTheGround()) {
-            eventBus.publish(new ItemStacked(player, target, dropped, ItemStacked.StackDestination.GROUND));
+            eventBus.publish(new ItemStacked(player, target, dropped, ItemStacked.StackDestination.GROUND, null));
         }
     }
 

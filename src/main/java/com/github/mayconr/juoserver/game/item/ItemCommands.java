@@ -23,5 +23,5 @@ public interface ItemCommands {
 
     void dropItemInContainer(UOPlayer player, UOItem item, Container container);
 
-    ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers);
+    ConsumeResult consumeItem(UOContainer container, String name, int amount, boolean searchNestedContainers);
 }

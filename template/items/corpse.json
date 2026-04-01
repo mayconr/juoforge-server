@@ -5,7 +5,7 @@
     "modelId": 8198,
     "flags": ["CONTAINER","CORPSE"],
     "attr": {
-      "gumpId": 9
+      "container.gumpId": 9
     }
   }
 ]

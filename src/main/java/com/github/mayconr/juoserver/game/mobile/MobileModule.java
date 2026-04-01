@@ -26,9 +26,13 @@ public interface MobileModule extends WorldModule {
 
     void equipItem(UOMobile mobile, UOItem item);
 
+    void unequipItem(UOMobile mobile, UOItem item);
+
     void unequipItem(UOPlayer player, UnequipItem pickedUpItem);
 
     void scheduleDespawn(UONpc npc, int secs);
 
     void resurrect(UOMobile mobile);
+
+    void die(DeathRequest request);
 }

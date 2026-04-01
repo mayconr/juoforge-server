@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.model.event.ContainerOpened;
+import com.github.mayconr.juoserver.game.model.event.ContainerOpenedEvent;
 import com.github.mayconr.juoserver.game.model.event.PaperdollOpened;
 import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -92,7 +92,7 @@ public class DoubleClickHandler {
         storage.loadContainerItems(container)
             .thenAccept(containerItems -> {
                 container.addItemsToContainer(containerItems);
-                eventBus.publish(new ContainerOpened(player, container));
+                eventBus.publish(new ContainerOpenedEvent(player, container));
             });
     }
 }

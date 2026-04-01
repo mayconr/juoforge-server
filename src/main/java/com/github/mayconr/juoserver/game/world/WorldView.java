@@ -24,7 +24,7 @@ public interface WorldView {
 
     Optional<UOItem> getItemBySerialId(int serial);
 
-    Optional<Container> getContainerBySerialId(int serial);
+    Optional<UOContainer> getContainerBySerialId(int serial);
 
     List<Static> getStatics(int x, int y);
 

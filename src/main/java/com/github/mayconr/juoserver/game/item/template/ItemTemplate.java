@@ -18,7 +18,10 @@ public record ItemTemplate(String name,
                            String stockType,
                            int basePrice,
                            List<ItemFlag> flags,
-                           Map<String, Object> attr)
+                           Map<String, Object> attr,
+
+                           // Cotainer
+                           int containerGumpId)
 
             implements BaseTemplate {
     public ItemTemplate {

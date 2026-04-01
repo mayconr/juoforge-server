@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -374,7 +375,7 @@ public class NettyPlayerSession implements PlayerSession {
             channelGroup.writeAndFlush(new ObjectInfo(event.target()));
         }
         if (StackDestination.CONTAINER.equals(event.destination())) {
-            channelGroup.writeAndFlush(new AddItemToContainer(event.target().getContainer(), event.target()));
+            channelGroup.writeAndFlush(new AddItemToContainer(event.container(), event.target()));
         }
     }
 
@@ -408,7 +409,7 @@ public class NettyPlayerSession implements PlayerSession {
     public void onItemUpdated(ItemUpdated event) {
         channel.write(new ObjectRevision(event.item()));
         if (event.item().isInContainer()) {
-            channel.writeAndFlush(new AddItemToContainer(event.item().getContainer(), event.item()));
+            channel.writeAndFlush(new AddItemToContainer(event.container(), event.item()));
             return;
         }
         channel.writeAndFlush(new ObjectInfo(event.item()));
@@ -464,7 +465,7 @@ public class NettyPlayerSession implements PlayerSession {
         }
     }
 
-    public void onContainerOpened(ContainerOpened event) {
+    public void onContainerOpened(ContainerOpenedEvent event) {
         if (player.equals(event.player())) {
             final var container = event.container();
 
@@ -585,7 +586,11 @@ public class NettyPlayerSession implements PlayerSession {
                 channel.writeAndFlush(new DeathScreen(DeathScreenType.SERVER));
             } else {
                 channel.write(new DeathAction(event.target(), event.corpse().getSerialId()));
-                channel.writeAndFlush(new ObjectInfo(event.corpse()));
+                channel.write(new ObjectInfo(event.corpse()));
+                List<CorpseClothing.Entry> items = new ArrayList<>();
+                var containerItems = ((Container) event.corpse()).getItemsInContainer();
+                containerItems.forEach(item->items.add(new CorpseClothing.Entry(item.getLayer(), item)));
+                channel.writeAndFlush(new CorpseClothing(event.corpse(), items));
             }
         });
     }

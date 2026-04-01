@@ -26,6 +26,7 @@ public class DefaultModuleContext implements ModuleContext {
             public UOItem create(ItemRequest request, ItemTarget target) {
                 return itemModule.createItem(request, target);
             }
+
         };
     }
 

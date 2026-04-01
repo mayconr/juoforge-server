@@ -124,12 +124,12 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public Optional<Container> getContainerBySerialId(int serialId) {
+    public Optional<UOContainer> getContainerBySerialId(int serialId) {
         if (UOMobile.isMobile(serialId)) {
-            return getMobileBySerialId(serialId).map(Container.class::cast);
+            return getMobileBySerialId(serialId).map(UOMobile::getBackpack);
         }
         if (UOItem.isItem(serialId)) {
-            return getItemBySerialId(serialId).map(Container.class::cast);
+            return getItemBySerialId(serialId).map(UOContainer.class::cast);
         }
         return Optional.empty();
     }
