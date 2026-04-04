@@ -1,10 +1,8 @@
 package com.github.mayconr.juoserver.game.model;
 
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
+import lombok.Data;
 
-@Getter
-@SuperBuilder(toBuilder = true)
+@Data
 public class UOObjectData {
 
     private int serialId;

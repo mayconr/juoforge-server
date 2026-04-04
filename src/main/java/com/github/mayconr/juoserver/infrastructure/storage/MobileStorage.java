@@ -16,8 +16,6 @@ public interface MobileStorage {
 
     CompletableFuture<Void> setNextMobileSerial(int serial);
 
-    CompletableFuture<List<AccountMobile>> findPlayersByAccount(UOAccount uoAccount);
-
     CompletableFuture<UOMobile> findMobileById(UUID id);
 
     CompletableFuture<Void> deleteBySerialId(int serialId);

@@ -324,11 +324,6 @@ SELECT
     COALESCE(s.z, 0) AS z,
 
     s.attr,
-    s.updated_at,
-
-    CASE
-        WHEN i.flags ? 'CONTAINER' THEN 'C'
-        ELSE 'O'
-        END AS type
+    s.updated_at
 FROM items i
 JOIN item_state s ON s.item_id = i.id;

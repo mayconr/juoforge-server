@@ -42,7 +42,7 @@ public class ItemEquipService {
     }
 
     public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
-        final var item = storage.getItemBySerialId(pickedUpItem.getSerialId())
+        final var item = storage.getItem(pickedUpItem.getSerialId())
                 .orElseThrow(()->new IllegalStateException("Item not found " + pickedUpItem.getSerialId()));
         unequipItem(player, item);
     }

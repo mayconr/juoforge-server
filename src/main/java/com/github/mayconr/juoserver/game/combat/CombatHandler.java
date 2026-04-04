@@ -34,7 +34,7 @@ public class CombatHandler {
     }
 
     public void attack(UOPlayer player, AttackRequest request) {
-        final var opponent = storage.getMobileBySerialId(request.getOpponentSerialId())
+        final var opponent = storage.getMobile(request.getOpponentSerialId())
                 .orElseThrow(() -> new IllegalArgumentException("Opponent not found"));
         combatSystem.requestAttack(player.getSerialId(), request.getOpponentSerialId());
         // TODO validate (range, LOS, cooldown, warmode, stamina, flags)

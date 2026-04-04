@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class UOItem extends UOObject {
+public class UOItem extends UOObject<UOItemData> {
 
     public static final int OBJECTS_MIN_SERIAL_ID = 0x3FFFFFFF + 1;
     private UUID id;
@@ -38,46 +38,25 @@ public class UOItem extends UOObject {
     }
 
     @Override
-    public UOItemData toData() {
-        UOObjectData base = super.toData();
-
-        return UOItemData.builder()
-                .serialId(base.getSerialId())
-                .modelId(base.getModelId())
-                .x(base.getX())
-                .y(base.getY())
-                .z(base.getZ())
-                .name(base.getName())
-                .displayName(base.getDisplayName())
-                .persistentAttrMap(base.getPersistentAttrMap())
-
-                .id(id)
-                .layer(layer)
-                .amount(amount)
-                .hue(hue)
-                .movable(movable)
-                .hidden(hidden)
-                .direction(direction)
-                .containerSerialId(containerSerialId)
-                .flags(flags)
-                .unitWeight(unitWeight)
-                .ownerSerialId(ownerSerialId)
-                .build();
+    protected UOItemData createData() {
+        return new UOItemData();
     }
 
-    public UOItem(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
-        this.id = id;
-        this.layer = layer;
-        this.amount = amount;
-        this.hue = hue;
-        this.flags = flags;
-        this.unitWeight = unitWeight;
-        /*this.movable = movable;
-        this.hidden = hidden;
-        this.direction = direction;
-        this.owner = owner;
-        this.flags = flags;*/
+    @Override
+    protected void populateData(UOItemData data) {
+        super.populateData(data);
+
+        data.setId(id);
+        data.setLayer(layer);
+        data.setAmount(amount);
+        data.setHue(hue);
+        data.setMovable(movable);
+        data.setHidden(hidden);
+        data.setDirection(direction);
+        data.setContainerSerialId(containerSerialId);
+        data.setFlags(flags);
+        data.setUnitWeight(unitWeight);
+        data.setOwnerSerialId(ownerSerialId);
     }
 
     public static boolean isItem(int serialId) {
@@ -94,6 +73,37 @@ public class UOItem extends UOObject {
 
     public boolean isEquipped() {
         return ownerSerialId != null && containerSerialId == null;
+    }
+
+    public void dropOnTheGround(Location location) {
+        ownerSerialId = null;
+        containerSerialId = null;
+        setLocation(location);
+    }
+
+    public void equip(UOMobile mobile) {
+        containerSerialId = null;
+        setLocation(0,0,0);
+        ownerSerialId = mobile.getSerialId();
+    }
+
+    public void unequip() {
+        containerSerialId = null;
+    }
+
+    public void addToContainer(UOContainer container) {
+        ownerSerialId = null;
+        containerSerialId = container.getSerialId();
+    }
+
+    public void addToContainer(UOContainer container, Location locationInContainer) {
+        ownerSerialId = null;
+        setLocation(locationInContainer);
+        containerSerialId = container.getSerialId();
+    }
+
+    public void removeFromContainer() {
+        containerSerialId = null;
     }
 
     public boolean hasFlag(ItemFlag flag) {

@@ -10,7 +10,7 @@
          ========================= -->
 
     <!-- Base mapping para UOMobile; o discriminator escolhe UOPlayer/UONpc -->
-    <resultMap id="MobileBaseMap" type="com.github.mayconr.juoserver.game.model.UOMobile">
+    <resultMap id="MobileBaseMap" type="UOMobile">
 
         <!-- Constructor do UOMobile (de acordo com seus @ConstructorArgs) -->
         <constructor>
@@ -102,13 +102,6 @@
         </association>
     </resultMap>
 
-    <resultMap id="AccountMobileMap" type="com.github.mayconr.juoserver.game.model.AccountMobile">
-        <constructor>
-            <arg column="serial_id"   javaType="int"/>
-            <arg column="mobile_name" javaType="java.lang.String"/>
-        </constructor>
-    </resultMap>
-
     <resultMap id="SkillValueMap" type="com.github.mayconr.juoserver.game.model.SkillValue">
         <constructor>
             <arg column="skill_id"   javaType="int"/>
@@ -163,11 +156,6 @@
     <select id="findAllNpcs" resultMap="MobileBaseMap">
         SELECT * FROM v_mobile_full
         WHERE type = 'N'
-    </select>
-
-    <select id="findAccountMobilesByAccountId" resultMap="AccountMobileMap">
-        SELECT * FROM v_account_mobiles_login
-        WHERE account_id = #{accountId, jdbcType=OTHER}
     </select>
 
     <select id="findSkillsByMobileId" resultMap="SkillValueMap">

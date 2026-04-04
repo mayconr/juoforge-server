@@ -423,17 +423,17 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public Optional<UOMobile> getMobileBySerialId(int serial) {
-        return storage.getMobileBySerialId(serial);
+        return storage.getMobile(serial);
     }
 
     @Override
     public Optional<UOItem> getItemBySerialId(int serial) {
-        return storage.getItemBySerialId(serial);
+        return storage.getItem(serial);
     }
 
     @Override
     public Optional<UOContainer> getContainerBySerialId(int serial) {
-        return storage.getContainerBySerialId(serial);
+        return storage.getContainer(serial);
     }
 
     @Override
@@ -453,7 +453,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount uoAccount) {
-        return storage.getPlayerMobiles(uoAccount);
+        return storage.getAccountMobiles(uoAccount);
     }
 
     /*
@@ -609,7 +609,7 @@ public class DefaultWorld implements WorldInternal, World {
             throw new IllegalArgumentException("Serial [" + serial + "] is not an item");
         }
 
-        final var item = storage.getItemBySerialId(serial)
+        final var item = storage.getItem(serial)
                 .orElseThrow(() -> new IllegalArgumentException("Item [" + serial + "] not found"));
 
         itemModule.deleteItem(item);

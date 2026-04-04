@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 @Setter
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class UOMobile extends UOObject implements Container {
+public class UOMobile extends UOObject<UOMobileData> implements Container {
 
     private static final int MOBILES_MAX_SERIAL_ID = 0x3FFFFFFF;
 
@@ -292,6 +292,11 @@ public class UOMobile extends UOObject implements Container {
         this.skills = new SkillContainer();
     }
 
+    @Override
+    protected UOMobileData createData() {
+        return null;
+    }
+
     public void equipItem(UOItem item) {
         if (Layer.BACKPACK.equals(item.getLayer())) {
             this.backpack = (UOContainer) item;
@@ -301,13 +306,12 @@ public class UOMobile extends UOObject implements Container {
 
     public void equipItem(Layer layer, UOItem item) {
         equippedItems.put(layer, item);
-        item.setLocation(0, 0, 0);
-        item.setOwnerSerialId(this.getSerialId());
+        item.equip(this);
     }
 
     public void unequipItem(UOItem item) {
+        item.unequip();
         equippedItems.remove(item.getLayer());
-        item.setOwnerSerialId(0);
     }
 
     public boolean isItemEquipped(UOItem item) {
@@ -340,14 +344,21 @@ public class UOMobile extends UOObject implements Container {
     }
 
     @Override
+    public void addItemToContainer(UOItem item, Location locationInContainer) {
+        if (backpack == null) {
+            throw new IllegalStateException("Backpack does not exist for player " + getName());
+        }
+        backpack.addItemToContainer(item, locationInContainer);
+    }
+
+    @Override
     public void removeItemFromContainer(UOItem item) {
-        item.setOwnerSerialId(0);
         backpack.removeItemFromContainer(item);
     }
 
     @Override
-    public Collection<UOItem> getItemsInContainer() {
-        return backpack.getItemsInContainer();
+    public Collection<UOItem> getContainerItems() {
+        return backpack.getContainerItems();
     }
 
     @Override

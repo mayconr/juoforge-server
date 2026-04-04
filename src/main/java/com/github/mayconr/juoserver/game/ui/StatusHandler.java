@@ -13,7 +13,7 @@ public class StatusHandler {
     private final RealmStorage storage;
 
     public void sendStatusGump(UOPlayer player, int requestedStatusSerial) {
-        final var requestedMobile = storage.getMobileBySerialId(requestedStatusSerial)
+        final var requestedMobile = storage.getMobile(requestedStatusSerial)
                 .orElseThrow(()->new IllegalArgumentException("Serial id nao encontrado "+ requestedStatusSerial));
 
         eventBus.publish(new StatusGumpRequested(player, requestedMobile));

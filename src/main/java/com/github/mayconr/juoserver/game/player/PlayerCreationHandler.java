@@ -141,7 +141,7 @@ public class PlayerCreationHandler {
         }
 
         final var player = MobileFactory.createNewPlayer(serialGenerator, details);
-        storage.cacheMobile(player);
+        storage.cache(player);
 
         createAndEquipStarterItems(player, details.startkit());
 
@@ -164,7 +164,7 @@ public class PlayerCreationHandler {
                 } else {
                     player.addItemToContainer(item);
                 }
-                storage.cacheItem(item);
+                storage.cache(item);
             } catch (ItemTemplateNotFoundException exception) {
                 log.warn("Unable to create item, due to: {}", exception.getMessage());
             }

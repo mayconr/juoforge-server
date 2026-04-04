@@ -1,6 +1,9 @@
 package com.github.mayconr.shard.storage;
 
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.SkillValue;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -21,8 +24,6 @@ public interface MobileMapper {
     UOMobile findMobileById(@Param("id") UUID id);
 
     List<UONpc> findAllNpcs();
-
-    List<AccountMobile> findAccountMobilesByAccountId(@Param("accountId") UUID accountId);
 
     List<SkillValue> findSkillsByMobileId(@Param("mobileId") UUID mobileId);
 

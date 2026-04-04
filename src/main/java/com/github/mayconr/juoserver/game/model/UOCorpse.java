@@ -3,7 +3,8 @@ package com.github.mayconr.juoserver.game.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -21,39 +22,11 @@ public class UOCorpse extends UOContainer {
     }
 
     @Override
-    public UOItemData toData() {
-        UOItemData base = super.toData();
+    protected void populateData(UOItemData data) {
+        super.populateData(data);
 
-        return UOItemData.builder()
-                .serialId(base.getSerialId())
-                .modelId(base.getModelId())
-                .x(base.getX())
-                .y(base.getY())
-                .z(base.getZ())
-                .name(base.getName())
-                .displayName(base.getDisplayName())
-                .persistentAttrMap(base.getPersistentAttrMap())
-
-                .id(base.getId())
-                .layer(base.getLayer())
-                .amount(base.getAmount())
-                .hue(base.getHue())
-                .unitWeight(base.getUnitWeight())
-                .movable(base.isMovable())
-                .hidden(base.isHidden())
-                .direction(base.getDirection())
-                .containerGumpId(base.getContainerGumpId())
-                .ownerSerialId(base.getOwnerSerialId())
-                .flags(base.getFlags())
-
-                .corpseId(corpseId)
-                .equippedItems(new EnumMap<>(equippedItems))
-                .build();
-    }
-
-    public UOCorpse(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight, int corpseId, int corpseOwnerId) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap, id, layer, amount, hue, flags, unitWeight);
-        this.corpseId = corpseId;
+        data.setCorpseId(corpseId);
+        data.setEquippedItems(new EnumMap<>(equippedItems));
     }
 
     public void addEquippedItem(UOItem item) {

@@ -470,8 +470,8 @@ public class NettyPlayerSession implements PlayerSession {
             final var container = event.container();
 
             channel.write(new DrawContainer(container));
-            if (!container.getItemsInContainer().isEmpty()) {
-                channel.write(AddMultipleItemsToContainer.ofUOItem(container, container.getItemsInContainer()));
+            if (!container.getContainerItems().isEmpty()) {
+                channel.write(AddMultipleItemsToContainer.ofUOItem(container, container.getContainerItems()));
             }
             channel.flush();
         }
@@ -588,7 +588,7 @@ public class NettyPlayerSession implements PlayerSession {
                 channel.write(new DeathAction(event.target(), event.corpse().getSerialId()));
                 channel.write(new ObjectInfo(event.corpse()));
                 List<CorpseClothing.Entry> items = new ArrayList<>();
-                var containerItems = ((Container) event.corpse()).getItemsInContainer();
+                var containerItems = ((Container) event.corpse()).getContainerItems();
                 containerItems.forEach(item->items.add(new CorpseClothing.Entry(item.getLayer(), item)));
                 channel.writeAndFlush(new CorpseClothing(event.corpse(), items));
             }

@@ -58,20 +58,6 @@ public class PsqlMobileStorage implements MobileStorage {
     }
 
     @Override
-    public CompletableFuture<List<AccountMobile>> findPlayersByAccount(UOAccount uoAccount) {
-        return CompletableFuture.supplyAsync(
-                () -> {
-                    try (var session = sessionFactory.openSession()) {
-                        return session.getMapper(MobileMapper.class).findAccountMobilesByAccountId(uoAccount.getId());
-                    }
-                }).whenComplete((accountMobiles, throwable) -> {
-                    if (throwable != null) {
-                        log.warn(throwable.getMessage(), throwable);
-                    }
-        });
-    }
-
-    @Override
     public CompletableFuture<UOMobile> findMobileById(UUID id) {
         return findMobileInternal(mapper->mapper.findMobileById(id));
     }

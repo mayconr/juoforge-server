@@ -5,11 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Map;
-
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class UOObject implements Location, AttributeSupport, TooltipSupport {
+public abstract class UOObject<T extends UOObjectData> implements Location, AttributeSupport, TooltipSupport {
     @Getter
     @EqualsAndHashCode.Include @ToString.Include private int serialId;
     @Getter
@@ -46,18 +44,27 @@ public class UOObject implements Location, AttributeSupport, TooltipSupport {
         this.runtimeAttrMap = new DefaultAttributeMap();
     }
 
-    public UOObjectData toData() {
-        return UOObjectData.builder()
-                .serialId(serialId)
-                .modelId(modelId)
-                .x(x)
-                .y(y)
-                .z(z)
-                .name(name)
-                .displayName(displayName)
-                .persistentAttrMap(persistentAttrMap != null ? persistentAttrMap : new DefaultAttributeMap())
-                .build();
+    public T toData() {
+        T data = createData();
+
+        populateData(data);
+
+        return data;
     }
+
+    protected abstract T createData();
+
+    protected void populateData(T data) {
+        data.setSerialId(serialId);
+        data.setModelId(modelId);
+        data.setX(x);
+        data.setY(y);
+        data.setZ(z);
+        data.setName(name);
+        data.setDisplayName(displayName);
+        data.setPersistentAttrMap(persistentAttrMap);
+    }
+
 
     public UOObject(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap) {
         this.serialId = serialId;

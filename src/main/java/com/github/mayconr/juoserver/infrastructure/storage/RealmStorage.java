@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 
 import java.util.Collection;
@@ -25,25 +26,40 @@ public interface RealmStorage {
     // Load and unload
     CompletableFuture<UOMobile> loadMobile(int serialId);
 
+    /**
+     * Loads an item from the database by its serial id and stores it in the cache.
+     *
+     * @param serialId the unique serial identifier of the item
+     * @return a CompletableFuture containing the loaded {@link UOItem}
+     */
     CompletableFuture<UOItem> loadItem(int serialId);
+
+    UOItem loadItem(int serialId, ItemTemplate template);
 
     CompletableFuture<List<UOItem>> loadContainerItems(Container container);
 
     void unloadMobile(UOMobile mobile);
 
-    CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount uoAccount);
+    CompletableFuture<List<AccountMobile>> getAccountMobiles(UOAccount uoAccount);
 
     // Cached lookups
-    Optional<UOMobile> getMobileBySerialId(int serialId);
+    Optional<UOMobile> getMobile(int serialId);
 
-    Optional<UOItem> getItemBySerialId(int serialId);
+    /**
+     * Retrieves an item from the cache by its serial id.
+     * This method does not perform any database access.
+     *
+     * @param serialId the unique serial identifier of the item
+     * @return an Optional containing the cached {@link UOItem} if present, otherwise empty
+     */
+    Optional<UOItem> getItem(int serialId);
 
-    Optional<UOContainer> getContainerBySerialId(int serialId);
+    Optional<UOContainer> getContainer(int serialId);
 
     // Cache and indexing
-    void cacheMobile(UOMobile mobile);
+    void cache(UOMobile mobile);
 
-    void cacheItem(UOItem npc);
+    void cache(UOItem item);
 
     // Spatial queries
     List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);

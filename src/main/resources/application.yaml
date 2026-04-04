@@ -13,20 +13,3 @@ logging:
     com.github.mayconr.juoserver.game.economy: DEBUG
     com.github.mayconr.juoserver.network.handler: INFO
 
-
-server:
-  mobile:
-    backpack: backpackItem
-  vitals:
-    saturationFactor: 100
-  gameLoop:
-    tps: 20
-  skills:
-    minGainChance: 0
-    maxGainChance: 0.5 # 50%
-    balanceOffset: 50
-    cap: 100
-  world:
-    lightOfSight: 24
-  files:
-    dataFileRoot: C:\Program Files (x86)\Electronic Arts\Ultima Online Classic

@@ -24,7 +24,7 @@ public class ItemDropService {
     private ModuleContext.ItemFacade items;
 
     public void dropItemOnTheGround(UOPlayer player, DropItem droppedItem) {
-        final var item = storage.getItemBySerialId(droppedItem.getSerialId())
+        final var item = storage.getItem(droppedItem.getSerialId())
                 .orElseThrow(()->new IllegalStateException("Item not found " + droppedItem.getSerialId()));
 
         final var result = policyService.evaluate(DropItemGroundPolicy.class, new DropItemGroundPolicy(player, item));
@@ -33,7 +33,7 @@ public class ItemDropService {
         if (result.allowed()) {
             clearItemLocation(player, item);
 
-            item.setLocation(droppedItem);
+            item.dropOnTheGround(droppedItem);
 
             storage.dropItemOnTheGround(item);
         }
@@ -44,7 +44,7 @@ public class ItemDropService {
         final int itemSerial = dropItem.getSerialId();
         final int targetSerial = dropItem.getContainerSerialId();
 
-        final var item = storage.getItemBySerialId(itemSerial)
+        final var item = storage.getItem(itemSerial)
                 .orElseThrow(() -> new IllegalStateException("Invalid item " + itemSerial));
 
         // TODO verify if user can drop the item
@@ -78,7 +78,7 @@ public class ItemDropService {
     }
 
     private void dropIntoMobile(UOPlayer player, UOItem item, Location location, int targetSerial) {
-        final var mobile = storage.getMobileBySerialId(targetSerial)
+        final var mobile = storage.getMobile(targetSerial)
                 .orElseThrow(() -> new IllegalStateException(
                         "Mobile not found for serial " + targetSerial));
 
@@ -89,21 +89,16 @@ public class ItemDropService {
     }
 
     private void dropIntoOtherItem(UOPlayer player, UOItem item, Location location, int targetSerial) {
-        final var targetItem = storage.getItemBySerialId(targetSerial)
+        final var targetItem = storage.getItem(targetSerial)
                 .orElseThrow(() -> new IllegalStateException("Invalid container " + targetSerial));
 
         if (targetItem instanceof UOContainer container) {
-            dropIntoContainer(player, item, location, container);
+            container.addItemToContainer(item, location);
+            eventBus.publish(new ItemDroppedInContainer(player, container, item));
             return;
         }
 
         stackItems(player, item, targetItem);
-    }
-
-    private void dropIntoContainer(UOPlayer player, UOItem item, Location location, UOContainer container) {
-        container.addItemToContainer(item);
-        item.setLocation(location);
-        eventBus.publish(new ItemDroppedInContainer(player, container, item));
     }
 
     private void stackItems(UOPlayer player, UOItem dropped, UOItem target) {
@@ -111,7 +106,7 @@ public class ItemDropService {
         storage.deleteItem(dropped);
 
         if (target.isInContainer()) {
-            final var container = storage.getContainerBySerialId(target.getContainerSerialId())
+            final var container = storage.getContainer(target.getContainerSerialId())
                     .orElseThrow(()->new IllegalStateException("Invalid container " + target.getContainerSerialId()));
             eventBus.publish(new ItemStacked(player, target, dropped, ItemStacked.StackDestination.CONTAINER, container));
             return;

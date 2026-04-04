@@ -6,7 +6,6 @@ import lombok.ToString;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ToString(callSuper = true)
@@ -23,38 +22,10 @@ public class UOContainer extends UOItem implements Container {
     }
 
     @Override
-    public UOItemData toData() {
-        UOItemData base = super.toData();
+    protected void populateData(UOItemData data) {
+        super.populateData(data);
 
-        return UOItemData.builder()
-                .serialId(base.getSerialId())
-                .modelId(base.getModelId())
-                .x(base.getX())
-                .y(base.getY())
-                .z(base.getZ())
-                .name(base.getName())
-                .displayName(base.getDisplayName())
-                .persistentAttrMap(base.getPersistentAttrMap())
-
-                .id(base.getId())
-                .layer(base.getLayer())
-                .amount(base.getAmount())
-                .hue(base.getHue())
-                .unitWeight(base.getUnitWeight())
-                .movable(base.isMovable())
-                .hidden(base.isHidden())
-                .direction(base.getDirection())
-                .containerSerialId(base.getContainerSerialId())
-                .ownerSerialId(base.getOwnerSerialId())
-                .flags(base.getFlags())
-
-                .containerGumpId(containerGumpId)
-                .build();
-    }
-
-    public UOContainer(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap, id, layer, amount, hue, flags, unitWeight);
-        this.containerGumpId = 0;
+        data.setContainerGumpId(containerGumpId);
     }
 
     @Override
@@ -66,19 +37,24 @@ public class UOContainer extends UOItem implements Container {
 
     @Override
     public void addItemToContainer(UOItem item) {
-        item.setOwnerSerialId(0);
-        item.setContainerSerialId(this.getSerialId());
+        item.addToContainer(this);
         itemsInContainer.put(item.getSerialId(), item);
     }
 
     @Override
-    public Collection<UOItem> getItemsInContainer() {
+    public void addItemToContainer(UOItem item, Location locationInContainer) {
+        item.addToContainer(this, locationInContainer);
+        itemsInContainer.put(item.getSerialId(), item);
+    }
+
+    @Override
+    public Collection<UOItem> getContainerItems() {
         return itemsInContainer.values();
     }
 
     @Override
     public void removeItemFromContainer(UOItem item) {
-        item.setContainerSerialId(0);
+        item.removeFromContainer();
         itemsInContainer.remove(item.getSerialId());
     }
 

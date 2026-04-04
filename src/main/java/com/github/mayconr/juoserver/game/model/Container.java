@@ -12,9 +12,11 @@ public interface Container {
 
     void addItemToContainer(UOItem item);
 
+    void addItemToContainer(UOItem item, Location locationInContainer);
+
     void removeItemFromContainer(UOItem item);
 
-    Collection<UOItem> getItemsInContainer();
+    Collection<UOItem> getContainerItems();
 
     int getSerialId();
 

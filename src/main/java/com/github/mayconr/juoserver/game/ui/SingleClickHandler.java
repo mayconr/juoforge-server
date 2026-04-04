@@ -17,7 +17,7 @@ public class SingleClickHandler {
         if (UOMobile.isMobile(serial)) {
 
         } else if (UOItem.isItem(serial)) {
-            storage.getItemBySerialId(serial)
+            storage.getItem(serial)
                     .ifPresent(item->{
                         System.out.println("single lcick");
                         //outbound.writeAndFlush(new ObjectInfo(item));

@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.NoSuchElementException;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -50,7 +49,7 @@ public class ItemHandler {
             case ContainerItemTarget containerItemTarget -> handleContainerItem(item, containerItemTarget, options);
         };
 
-        storage.cacheItem(item);
+        storage.cache(item);
         eventBus.publish(event);
 
         return item;
@@ -63,7 +62,7 @@ public class ItemHandler {
 
         // search for another similar and try to stack
         if (item.hasFlag(ItemFlag.STACKABLE) && target.options().tryStack()) {
-            for (UOItem containerItem : container.getItemsInContainer()) {
+            for (UOItem containerItem : container.getContainerItems()) {
                 if (containerItem.getName().equals(item.getName())) {
                     containerItem.increaseAmount(item.getAmount());
                     updatedItem = containerItem;
@@ -104,18 +103,7 @@ public class ItemHandler {
             throw new ItemTemplateNotFoundException("Template does not exist");
         }
 
-        final var itemData = templateToDataBuilder(template).build();
-        final var flags = template.flags();
-
-        if (flags.contains(ItemFlag.CORPSE)) {
-            return new UOCorpse(itemData);
-        }
-
-        if (flags.contains(ItemFlag.CONTAINER)) {
-            return new UOContainer(itemData);
-        }
-
-        return new UOItem(itemData);
+        return storage.loadItem(serialGenerator.getNextItem(), template);
     }
 
     private Supplier<ItemTemplate> supplierFactory(ItemRequest request) {
@@ -133,28 +121,6 @@ public class ItemHandler {
         }
 
         throw new ItemTemplateNotFoundException("Template not found");
-    }
-
-    private UOItemData.UOItemDataBuilder<?, ?> templateToDataBuilder(ItemTemplate template) {
-        return UOItemData.builder()
-                .id(UUID.randomUUID())
-                .serialId(serialGenerator.getNextItem())
-                .modelId(template.modelId())
-                .x(0)
-                .y(0)
-                .z(0)
-                .name(template.name())
-                .displayName(template.displayName())
-                .persistentAttrMap(new DefaultAttributeMap(template.attr()))
-                .layer(template.layer())
-                .amount(1)
-                .hue(template.hue())
-                .movable(template.movable())
-                .hidden(false)
-                .direction(Direction.NORTH)
-                .ownerSerialId(0)
-                .flags(template.flags())
-                .containerGumpId(template.containerGumpId());
     }
 
     public void deleteItem(UOItem item) {

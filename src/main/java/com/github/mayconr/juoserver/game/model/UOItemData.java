@@ -1,16 +1,16 @@
 package com.github.mayconr.juoserver.game.model;
 
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Getter
-@SuperBuilder(toBuilder = true)
-public class UOItemData extends UOObjectData{
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class UOItemData extends UOObjectData {
     private UUID id;
     private Layer layer;
     private int amount;

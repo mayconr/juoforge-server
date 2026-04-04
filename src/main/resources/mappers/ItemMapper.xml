@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.mayconr.shard.storage.ItemMapper">
+
+    <resultMap id="itemDataMapping" type="UOItemData">
+
+        <result property="serialId" column="serial_id"/>
+        <result property="modelId" column="model_id"/>
+        <result property="x" column="x"/>
+        <result property="y" column="y"/>
+        <result property="z" column="z"/>
+
+        <result property="name" column="name"/>
+        <result property="displayName" column="display_name"/>
+
+        <result property="persistentAttrMap"
+                column="attr"
+                typeHandler="com.github.mayconr.shard.storage.types.AttributesTypeHandler"/>
+
+        <result property="id"
+                column="item_id"
+                typeHandler="com.github.mayconr.shard.storage.types.UUIDTypeHandler"/>
+
+        <result property="layer"
+                column="layer"
+                typeHandler="com.github.mayconr.shard.storage.types.LayerTypeHandler"/>
+
+        <result property="amount" column="amount"/>
+        <result property="hue" column="hue"/>
+
+        <result property="flags"
+                column="flags"
+                typeHandler="com.github.mayconr.shard.storage.types.ItemFlagTypeHandler"/>
+
+        <result property="unitWeight" column="unit_weight"/>
+
+        <result property="ownerSerialId" column="owner_serial_id"/>
+
+        <result property="containerSerialId" column="container_serial_id"/>
+
+        <result property="containerGumpId" column="container_gump_id"/>
+
+        <result property="corpseId" column="corpse_id"/>
+
+    </resultMap>
+
+    <select id="findNextItemSerial" resultType="int">
+        SELECT next_serial
+        FROM serial_counters
+        WHERE entity_type = 'ITEM'
+        LIMIT 1
+    </select>
+
+    <update id="updateItemSerial">
+
+        UPDATE serial_counters
+        SET
+        next_serial = #{nextSerial},
+        updated_at  = NOW()
+        WHERE entity_type = 'ITEM'
+
+    </update>
+
+    <select id="findItemBySerialId"
+            resultMap="itemDataMapping">
+
+        SELECT *
+        FROM v_item_full
+        WHERE serial_id = #{serialId}
+        LIMIT 1
+
+    </select>
+
+    <select id="findAllEquippedItems"
+            resultMap="itemDataMapping">
+
+        SELECT *
+        FROM v_item_full
+        WHERE owner_serial_id = #{ownerSerialId}
+
+    </select>
+
+    <select id="findAllGroundItems"
+            resultMap="itemDataMapping">
+
+        SELECT *
+        FROM v_item_full
+        WHERE owner_serial_id IS NULL
+        AND container_serial_id IS NULL
+
+    </select>
+
+    <select id="findAllContainerItems"
+            resultMap="itemDataMapping">
+
+        SELECT *
+        FROM v_item_full
+        WHERE container_serial_id = #{containerSerialId}
+
+    </select>
+
+    <insert id="upsert">
+
+        INSERT INTO items (
+        id,
+        serial_id,
+        owner_serial_id,
+        container_serial_id,
+        name,
+        display_name,
+        model_id,
+        hue,
+        layer,
+        unit_weight,
+        amount,
+        flags,
+        container_gump_id,
+        corpse_id
+        )
+        VALUES (
+        #{id},
+        #{serialId},
+        #{ownerSerialId},
+        #{containerSerialId},
+        #{name},
+        #{displayName},
+        #{modelId},
+        #{hue},
+        #{layer},
+        #{unitWeight},
+        #{amount},
+        #{flags, typeHandler=com.github.mayconr.shard.storage.types.ItemFlagTypeHandler}::jsonb,
+        #{containerGumpId},
+        #{corpseId}
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET
+        serial_id = EXCLUDED.serial_id,
+        owner_serial_id = EXCLUDED.owner_serial_id,
+        container_serial_id = EXCLUDED.container_serial_id,
+        name = EXCLUDED.name,
+        display_name = EXCLUDED.display_name,
+        model_id = EXCLUDED.model_id,
+        hue = EXCLUDED.hue,
+        layer = EXCLUDED.layer,
+        unit_weight = EXCLUDED.unit_weight,
+        amount = EXCLUDED.amount,
+        flags = EXCLUDED.flags,
+        container_gump_id = EXCLUDED.container_gump_id,
+        corpse_id = EXCLUDED.corpse_id
+
+    </insert>
+
+    <insert id="upsertItemState">
+
+        INSERT INTO item_state (
+        item_id,
+        x,
+        y,
+        z,
+        attr,
+        updated_at
+        )
+        VALUES (
+        #{id},
+        #{x},
+        #{y},
+        #{z},
+        #{persistentAttrMap,
+        typeHandler=com.github.mayconr.shard.storage.types.AttributesTypeHandler}::jsonb,
+        NOW()
+        )
+        ON CONFLICT (item_id) DO UPDATE
+        SET
+        x = EXCLUDED.x,
+        y = EXCLUDED.y,
+        z = EXCLUDED.z,
+        attr = EXCLUDED.attr,
+        updated_at = NOW()
+
+    </insert>
+
+    <delete id="deleteById">
+
+        DELETE FROM items
+        WHERE id = #{id}
+
+    </delete>
+
+</mapper>

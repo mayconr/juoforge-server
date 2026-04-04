@@ -6,7 +6,6 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ public class ContainerHandler {
 
     public List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> predicate) {
         final List<UOItem> items = new ArrayList<>();
-        for (UOItem item : container.getItemsInContainer()) {
+        for (UOItem item : container.getContainerItems()) {
             if (predicate.test(item)) {
                 items.add(item);
             }
@@ -47,7 +46,7 @@ public class ContainerHandler {
                            String itemName,
                            boolean searchNestedContainers) {
         int total = 0;
-        for (UOItem item : container.getItemsInContainer()) {
+        for (UOItem item : container.getContainerItems()) {
             if (item.getName().equals(itemName)) {
                 total += item.getAmount();
             }
@@ -63,7 +62,7 @@ public class ContainerHandler {
                                 int amount,
                                 boolean searchNestedContainers) {
 
-        Iterator<UOItem> iterator = container.getItemsInContainer().iterator();
+        Iterator<UOItem> iterator = container.getContainerItems().iterator();
         while (iterator.hasNext() && amount > 0) {
             UOItem item = iterator.next();
             if (item.getName().equals(itemName)) {

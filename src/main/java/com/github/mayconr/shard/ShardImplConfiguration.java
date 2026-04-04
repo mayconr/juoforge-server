@@ -2,6 +2,7 @@ package com.github.mayconr.shard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.NetworkBootstrap;
+import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.WorldBootstrap;
 import com.github.mayconr.juoserver.game.model.event.MobileRegionChanged;
 import com.github.mayconr.juoserver.game.world.World;
@@ -79,8 +80,7 @@ public class ShardImplConfiguration {
 
             // 5) Registra as interfaces @Mapper (o XML já estará carregado via <mappers>)
             //cfg.addMapper(MobileMapper.class);
-            cfg.addMapper(AccountMapper.class);
-            cfg.addMapper(ItemMapper.class);
+
 
             return factory;
         }
@@ -92,9 +92,9 @@ public class ShardImplConfiguration {
     }
 
     @Bean
-    public World world(Executor databaseExecutor, SqlSessionFactory sessionFactory) {
+    public ServerRuntime runtime(Executor databaseExecutor, SqlSessionFactory sessionFactory) {
 
-        var bootstrap = new WorldBootstrap(cfg -> {
+        var serverRuntime = new WorldBootstrap(cfg -> {
             cfg.mobileStorage(new PsqlMobileStorage(databaseExecutor, sessionFactory));
             cfg.itemStorage(new PsqlItemStorage(databaseExecutor, sessionFactory));
             cfg.accountStorage(new PsqlAccountStorage(sessionFactory, databaseExecutor));
@@ -129,9 +129,9 @@ public class ShardImplConfiguration {
 
         }).start();
 
-        var network = new NetworkBootstrap(bootstrap).build();
+        var network = new NetworkBootstrap(serverRuntime).build();
         network.bindAsync(9000);
-        return bootstrap.world();
+        return serverRuntime;
     }
 
 }

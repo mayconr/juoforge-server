@@ -51,7 +51,7 @@ public class DoubleClickHandler {
             return;
         }
 
-        storage.getMobileBySerialId(serialId)
+        storage.getMobile(serialId)
                 .ifPresent(mobile -> otherMobileDoubleClick(player, mobile));
     }
 
@@ -71,7 +71,7 @@ public class DoubleClickHandler {
     }
 
     private void itemClicked(UOPlayer player, int serialId) {
-        storage.getItemBySerialId(serialId)
+        storage.getItem(serialId)
             .ifPresent(item->{
                 // TODO check the item range
 

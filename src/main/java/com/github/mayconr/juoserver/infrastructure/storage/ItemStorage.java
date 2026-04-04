@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.infrastructure.storage;
 
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOItem;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOItemData;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,21 +10,25 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ItemStorage {
 
+    // ====== Item serial manipulation ============
+
     CompletableFuture<Integer> findNextItemSerial();
 
-    CompletableFuture<Void> setNextItemSerial(int serial);
+    // ====== Item queries ============
 
-    CompletableFuture<List<UOItem>> findAllEquippedItems(UOMobile mobile);
+    CompletableFuture<List<UOItemData>> findAllEquippedItems(int mobileSerialId);
 
-    CompletableFuture<List<UOItem>> findAllGroundItems();
+    CompletableFuture<List<UOItemData>> findAllGroundItems();
 
-    CompletableFuture<List<UOItem>> loadContainerItems(Container container);
+    CompletableFuture<List<UOItemData>> loadContainerItems(int containerSerialId);
 
-    CompletableFuture<UOItem> findItemBySerialId(int serialId);
+    CompletableFuture<UOItemData> findItemBySerialId(int itemSerialId);
+
+    // ====== Item updates ============
 
     CompletableFuture<UOItem> saveItemFull(UOItem item);
 
-    CompletableFuture<Collection<UOItem>> saveItems(int serial, Collection<UOItem> items, Collection<UOItem> dirties);
+    CompletableFuture<Collection<UOItemData>> saveItems(int serial, Collection<UOItemData> items, Collection<UOItemData> dirties);
 
-    CompletableFuture<Collection<UOItem>> saveStates(Collection<UOItem> items);
+    CompletableFuture<Collection<UOItemData>> saveStates(Collection<UOItemData> items);
 }
