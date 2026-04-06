@@ -27,7 +27,9 @@
         <result property="layer"
                 column="layer"
                 typeHandler="com.github.mayconr.shard.storage.types.LayerTypeHandler"/>
+        <result property="movable" column="movable" />
 
+        <result property="mountName" column="mount_name" />
         <result property="amount" column="amount"/>
         <result property="hue" column="hue"/>
 
@@ -114,6 +116,8 @@
         model_id,
         hue,
         layer,
+        movable,
+        mount_name,
         unit_weight,
         amount,
         flags,
@@ -130,6 +134,8 @@
         #{modelId},
         #{hue},
         #{layer},
+        #{movable},
+        #{mountName},
         #{unitWeight},
         #{amount},
         #{flags, typeHandler=com.github.mayconr.shard.storage.types.ItemFlagTypeHandler}::jsonb,
@@ -146,6 +152,8 @@
         model_id = EXCLUDED.model_id,
         hue = EXCLUDED.hue,
         layer = EXCLUDED.layer,
+        movable = EXCLUDED.movable,
+        mount_name = EXCLUDED.mount_name,
         unit_weight = EXCLUDED.unit_weight,
         amount = EXCLUDED.amount,
         flags = EXCLUDED.flags,

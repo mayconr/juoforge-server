@@ -26,7 +26,7 @@ public class ApplyDamage extends AbstractCommand {
             final var mobile = world.getMobileBySerialId(targetResult.serialId())
                     .orElseThrow(() -> new IllegalStateException("No mobile found"));
 
-            world.applyDamage(new DamageRequest(event.player(), mobile, DamageSourceKind.COMMAND, List.of(new DamageComponent(DamageType.PHYSICAL, 50))));
+            world.applyDamage(new DamageRequest(event.player(), mobile, DamageSourceKind.COMMAND, List.of(new DamageComponent(DamageType.PHYSICAL, Integer.parseInt(event.arguments()[0])))));
         });
 
     }

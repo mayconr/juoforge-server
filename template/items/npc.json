@@ -4,7 +4,7 @@
     "displayName": "vendor restock",
     "layer": "SHOP_BUY_RESTOCK",
     "modelId": 3701,
-    "movable": true,
+    "movable": false,
     "hue": 0,
     "flags": ["CONTAINER"],
     "attr": {}
@@ -14,7 +14,7 @@
     "displayName": "vendor buy",
     "layer": "SHOP_BUY",
     "modelId": 3701,
-    "movable": true,
+    "movable": false,
     "hue": 0,
     "flags": ["CONTAINER"],
     "attr": {}
@@ -24,7 +24,7 @@
     "displayName": "vendor sell",
     "layer": "SHOP_SELL",
     "modelId": 3701,
-    "movable": true,
+    "movable": false,
     "hue": 0,
     "flags": ["CONTAINER"],
     "attr": {

@@ -244,10 +244,8 @@ CREATE TABLE items (
    id UUID PRIMARY KEY,
    serial_id INT NOT NULL,
 
--- ownership forte (ao deletar o mobile, deleta os itens dele)
    owner_serial_id int,
 
--- hierarquia forte (ao deletar o container, deleta o conteúdo)
    container_serial_id int,
 
    name VARCHAR(64) NOT NULL,
@@ -256,6 +254,8 @@ CREATE TABLE items (
    model_id INT NOT NULL,
    hue INT NOT NULL,
    layer SMALLINT,
+   movable BOOLEAN,
+   mount_name VARCHAR(64),
 
    unit_weight INT NOT NULL,
    amount INT NOT NULL DEFAULT 1,
@@ -310,6 +310,8 @@ SELECT
     i.model_id,
     i.hue,
     i.layer,
+    i.movable,
+    i.mount_name,
     i.unit_weight,
     i.amount,
     i.flags,

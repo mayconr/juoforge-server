@@ -30,16 +30,11 @@ public class UOCorpse extends UOContainer {
     }
 
     public void addEquippedItem(UOItem item) {
-
         if (item.getLayer() == null) {
             throw new IllegalArgumentException("Item must have layer");
         }
-
-        equippedItems.put(item.getLayer(), item.getSerialId());
-
         super.addItemToContainer(item);
-
-        item.setContainerSerialId(0);
+        equippedItems.put(item.getLayer(), item.getSerialId());
     }
 
     public boolean removeEquippedItem(UOItem item) {

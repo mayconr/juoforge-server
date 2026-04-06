@@ -13,7 +13,7 @@
     "displayName": "shirt",
     "layer": "SHIRT",
     "modelId": 5399,
-    "movable": false,
+    "movable": true,
     "hue": 0,
     "flags": ["WEARABLE"],
     "attr": {}
@@ -23,7 +23,7 @@
     "displayName": "pants",
     "layer": "PANTS",
     "modelId": 5422,
-    "movable": false,
+    "movable": true,
     "hue": 0,
     "flags": ["WEARABLE"],
     "attr": {}
@@ -33,7 +33,7 @@
     "displayName": "shoes",
     "layer": "SHOES",
     "modelId": 5903,
-    "movable": false,
+    "movable": true,
     "hue": 0,
     "flags": ["WEARABLE"],
     "attr": {}

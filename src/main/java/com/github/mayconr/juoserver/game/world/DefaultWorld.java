@@ -30,7 +30,11 @@ import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.messaging.MessagingModule;
 import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate;
-import com.github.mayconr.juoserver.game.mobile.*;
+import com.github.mayconr.juoserver.game.mobile.ItemEquipService;
+import com.github.mayconr.juoserver.game.mobile.MobileModule;
+import com.github.mayconr.juoserver.game.mobile.MobileModuleImpl;
+import com.github.mayconr.juoserver.game.mobile.MountService;
+import com.github.mayconr.juoserver.game.mobile.death.DeathService;
 import com.github.mayconr.juoserver.game.mobile.movement.MobileMovementRules;
 import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcCreationService;
@@ -53,7 +57,10 @@ import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.DefaultGumpSystem;
 import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
-import com.github.mayconr.juoserver.game.world.transition.*;
+import com.github.mayconr.juoserver.game.world.transition.DespawnNpcOnDeath;
+import com.github.mayconr.juoserver.game.world.transition.RegionTransitionServiceImpl;
+import com.github.mayconr.juoserver.game.world.transition.TeleportTransitionServiceImpl;
+import com.github.mayconr.juoserver.game.world.transition.VisibilityTransitionServiceImpl;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderImpl;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
@@ -282,8 +289,14 @@ public class DefaultWorld implements WorldInternal, World {
         damageModule = new DamageModuleImpl(eventBus);
     }
 
+    /*
+     * ===================
+     * Module initialization
+     * ===================
+     */
+
     private void initializeModules() {
-        final var context = new DefaultModuleContext(itemModule);
+        final var context = new DefaultModuleContext(eventBus, itemModule, mobileModule);
 
         this.economyModule.initialize(itemTemplateRegistry::get);
         this.mobileModule.initialize(context);
@@ -307,13 +320,11 @@ public class DefaultWorld implements WorldInternal, World {
         final var regionTransitionService = new RegionTransitionServiceImpl(regionSystem, eventBus);
         final var teleportTransitionService = new TeleportTransitionServiceImpl(mobileModule);
         final var despawnNpcOnDeath = new DespawnNpcOnDeath(mobileModule, aiModule);
-        final var lethalDamageToDeath = new LethalDamageToDeath(mobileModule);
 
         eventBus.register(MobileMoved.class, visibilityTransitionService);
         eventBus.register(MobileMoved.class, regionTransitionService);
         eventBus.register(teleportTransitionService);
         eventBus.register(despawnNpcOnDeath);
-        eventBus.register(lethalDamageToDeath);
         eventBus.register(NpcCreated.class, created -> handleNpcCreated(created.npc()));
         eventBus.register(PlayerSessionStatusChanged.class, this::handleSessionStateChanged);
         eventBus.register(PlayerSessionClosed.class, this::handleSessionClosed);

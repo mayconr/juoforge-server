@@ -22,6 +22,7 @@ public class UOItemData extends UOObjectData {
     private List<ItemFlag> flags;
     private int unitWeight;
     private Integer ownerSerialId;
+    private String mountName;
 
     // Container
     private int containerGumpId;

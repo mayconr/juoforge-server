@@ -21,6 +21,7 @@ public class UOItem extends UOObject<UOItemData> {
     private Direction direction;
     private Integer containerSerialId;
     private Integer ownerSerialId;
+    private String mountName;
     private List<ItemFlag> flags;
 
     public UOItem(UOItemData data) {

@@ -1,7 +1,11 @@
-package com.github.mayconr.juoserver.game.mobile;
+package com.github.mayconr.juoserver.game.mobile.death;
 
 import com.github.mayconr.juoserver.game.item.ItemRequest;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.mobile.ItemEquipService;
+import com.github.mayconr.juoserver.game.model.DeathRequest;
+import com.github.mayconr.juoserver.game.model.GroundItemTarget;
+import com.github.mayconr.juoserver.game.model.UOCorpse;
+import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.MobileDeathEvent;
 import com.github.mayconr.juoserver.game.world.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -40,7 +44,7 @@ public class DeathService {
                         .withDirection(victim.getDirection())
                 ,new GroundItemTarget(victim), opt -> opt.renderOnCreate(false));
         corpse.setCorpseId(victim.getModelId());
-        corpse.setOwnerSerialId(victim.getSerialId());
+        //corpse.setOwnerSerialId(victim.getSerialId());
 
         var random = new Random();
         for (UOItem item : victim.getEquippedItems().values()) {
@@ -55,8 +59,7 @@ public class DeathService {
         victim.setAlive(false);
 
         if (killer != null) {
-            victim.persistentAttributes()
-                    .add(AttributeKeys.MOBILE_KILLED_BY, killer.getSerialId());
+            victim.registerKiller(killer);
         }
 
         eventBus.publish(new MobileDeathEvent(killer, victim, cause, corpse));

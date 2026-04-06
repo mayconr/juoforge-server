@@ -319,7 +319,6 @@ public class UOMobile extends UOObject<UOMobileData> implements Container {
     }
 
     public boolean isLayerAvailable(Layer layer) {
-        // TODO when one hand or two hand, must check both layers
         return !equippedItems.containsKey(layer);
     }
 
@@ -376,11 +375,20 @@ public class UOMobile extends UOObject<UOMobileData> implements Container {
         return equippedItems.containsKey(Layer.MOUNT);
     }
 
+    public UOItem getMountedItem() {
+        return equippedItems.get(Layer.MOUNT);
+    }
+
     public boolean isWarMode() {
         return CharacterStatus.WAR_MODE.equals(status);
     }
 
     public static boolean isMobile(int serialId) {
         return serialId <= MOBILES_MAX_SERIAL_ID;
+    }
+
+    public void registerKiller(UOObject<?> killer) {
+        persistentAttributes()
+                .add(AttributeKeys.MOBILE_KILLED_BY, killer.getSerialId());
     }
 }

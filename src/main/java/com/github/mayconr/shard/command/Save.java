@@ -31,7 +31,7 @@ public class Save extends AbstractCommand {
                                 realmStorage.saveItemStates();
                             }).whenComplete((unused2, throwabl2) -> {
                                 if (throwabl2 != null) {
-                                    log.info("erro ",throwable);
+                                    log.info("erro ", throwabl2);
                                 }
                             });
                 });

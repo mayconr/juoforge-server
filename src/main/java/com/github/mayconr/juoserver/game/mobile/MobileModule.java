@@ -26,7 +26,7 @@ public interface MobileModule extends WorldModule {
 
     void equipItem(UOMobile mobile, UOItem item);
 
-    void unequipItem(UOMobile mobile, UOItem item);
+    boolean unequipItem(UOMobile mobile, UOItem item);
 
     void unequipItem(UOPlayer player, UnequipItem pickedUpItem);
 

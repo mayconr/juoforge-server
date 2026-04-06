@@ -17,7 +17,9 @@ public record ItemTemplate(String name,
                            Map<String, Object> attr,
 
                            // Cotainer
-                           int containerGumpId)
+                           int containerGumpId,
+                           // Mount
+                           String mountName)
 
             implements BaseTemplate {
     public ItemTemplate {
@@ -45,6 +47,7 @@ public record ItemTemplate(String name,
         data.setOwnerSerialId(0);
         data.setFlags(flags);
         data.setContainerGumpId(containerGumpId);
+        data.setMountName(mountName);
         return data;
     }
 }

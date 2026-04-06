@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.model.ItemFlag;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
@@ -48,7 +49,8 @@ public class ItemEquipService {
     }
 
     public boolean unequipItem(UOMobile mobile, UOItem item) {
-        if (item.isMovable()) {
+        // items with flag WEARABLE but not movable, should not be unequipped. EX: Backpack, Hair, beard, shop etc
+        if (item.isMovable() && item.getFlags().contains(ItemFlag.WEARABLE)) {
             /*if (item.getContainer() != null) {
                 item.getContainer().removeItemFromContainer(item);
             }*/

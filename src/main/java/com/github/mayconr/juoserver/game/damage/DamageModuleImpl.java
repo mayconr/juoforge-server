@@ -1,7 +1,11 @@
 package com.github.mayconr.juoserver.game.damage;
 
+import com.github.mayconr.juoserver.game.flow.DamageFlowDefinition;
+import com.github.mayconr.juoserver.game.flow.DamageFlowDefinition.DamageContext;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.MobileDamagedEvent;
+import com.github.mayconr.juoserver.game.world.ModuleContext;
+import com.github.mayconr.juoserver.game.world.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import lombok.RequiredArgsConstructor;
 
@@ -9,9 +13,22 @@ import lombok.RequiredArgsConstructor;
 public class DamageModuleImpl implements DamageModule {
 
     private final EventBus eventBus;
+    private FlowFacade flows;
+
+    @Override
+    public void initialize(ModuleContext context) {
+        this.flows = context.flows();
+    }
 
     @Override
     public void applyDamage(DamageRequest request) {
+        var source = request.source();
+        var target = request.target();
+        var sourceKind = request.sourceKind();
+        var components = request.components();
+
+        flows.execute(new DamageContext(source, target, sourceKind, components));
+        /*
         final var target = request.target();
 
         int totalDamage = 0;
@@ -26,7 +43,7 @@ public class DamageModuleImpl implements DamageModule {
             eventBus.publish(new LethalDamageEvent(request.source(), request.target(), request.sourceKind()));
         } else {
             eventBus.publish(new MobileDamagedEvent(request.source(), target, request.sourceKind(), request.components(), totalDamage, oldHitPoints, target.getHitpoints()));
-        }
+        }*/
     }
 
     @Override

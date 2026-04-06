@@ -1,29 +1,28 @@
 package com.github.mayconr.juoserver.game.mobile;
 
-import com.github.mayconr.juoserver.game.item.ItemRequest;
+import com.github.mayconr.juoserver.game.flow.DeathFlowDefinition;
+import com.github.mayconr.juoserver.game.flow.DeathFlowDefinition.DeathContext;
+import com.github.mayconr.juoserver.game.mobile.death.DeathService;
 import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcCreationService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.MobileDeathEvent;
 import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
 import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.flow.FlowDescriptor;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Objects;
-
 @Slf4j
 @RequiredArgsConstructor
 public class MobileModuleImpl implements MobileModule {
-
 
     private final MountService mountService;
     private final NpcCreationService npcCreationService;
@@ -35,8 +34,12 @@ public class MobileModuleImpl implements MobileModule {
     private final Wallet wallet;
     private final EventBus eventBus;
 
+    private ModuleContext.FlowFacade flows;
+
     @Override
     public void initialize(ModuleContext context) {
+        this.flows = context.flows();
+
         mountService.initialize(context);
         deathService.initialize(context);
     }
@@ -113,8 +116,8 @@ public class MobileModuleImpl implements MobileModule {
     }
 
     @Override
-    public void unequipItem(UOMobile mobile, UOItem item) {
-        itemEquipService.unequipItem(mobile, item);
+    public boolean unequipItem(UOMobile mobile, UOItem item) {
+        return itemEquipService.unequipItem(mobile, item);
     }
 
     @Override
@@ -139,6 +142,7 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void die(DeathRequest request) {
-        deathService.die(request);
+        flows.execute(new DeathContext(request.victim(), request.killer(), request.cause()));
+        //deathService.die(request);
     }
 }

@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile.npc;
 
+import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -32,7 +33,13 @@ public class NpcDespawnService implements WorldModule {
                 UONpc npc = despawnEntry.npc;
 
                 if (!npc.isAlive()) {
-                    log.debug("Npc {} has been destroyed", npc.getId());
+                    log.info("Npc {} has been destroyed", npc.getId());
+                    for (UOItem equippedItem : npc.getEquippedItems().values()) {
+                        storage.deleteItem(equippedItem);
+                    }
+                    for (UOItem containerItem : npc.getContainerItems()) {
+                        storage.deleteItem(containerItem);
+                    }
                     storage.deleteMobile(npc);
                 }
 
