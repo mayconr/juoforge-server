@@ -4,15 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.NetworkBootstrap;
 import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.WorldBootstrap;
-import com.github.mayconr.juoserver.game.model.event.MobileRegionChanged;
-import com.github.mayconr.juoserver.game.world.World;
-import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
-import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.command.*;
-import com.github.mayconr.shard.skills.crafting.DefaultResourceRoller;
 import com.github.mayconr.shard.skills.crafting.mining.*;
-import com.github.mayconr.shard.storage.*;
+import com.github.mayconr.shard.storage.PsqlAccountStorage;
+import com.github.mayconr.shard.storage.PsqlItemStorage;
+import com.github.mayconr.shard.storage.PsqlMobileStorage;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.io.Resources;
@@ -29,7 +26,6 @@ import java.io.Reader;
 import java.nio.file.Path;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Predicate;
 
 @Configuration
 public class ShardImplConfiguration {
@@ -116,7 +112,6 @@ public class ShardImplConfiguration {
             cfg.addEventListener(runtime->new Kill(runtime.world()));
             cfg.addEventListener(runtime->new Destroy(runtime.world()));
             cfg.addEventListener(runtime->new CreateEquippedItem(runtime.world()));
-            cfg.addEventListener(CreateContainerItem::new);
             cfg.addEventListener(Mount::new);
             cfg.addEventListener(Unmount::new);
             cfg.addEventListener(Region::new);

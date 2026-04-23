@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -16,7 +17,9 @@ public interface WorldView {
 
     List<UOItem> getItemsInRange(Location location, int radius);
 
-    List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> filter);
+    List<UOItem> getItemsInContainer(Integer container, Predicate<UOItem> filter);
+
+    Map<Layer, UOItem> getEquippedItems(UOMobile mobile);
 
     List<ItemTemplate> getItemsTemplate(String stockType);
 

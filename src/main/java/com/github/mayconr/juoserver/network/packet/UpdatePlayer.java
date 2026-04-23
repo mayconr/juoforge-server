@@ -21,7 +21,7 @@ public class UpdatePlayer extends AbstractPacket {
         buf.writeInt(player.getSerialId());
         int modelId = player.getModelId();
         if (!player.isAlive()) {
-            modelId = player.getDeathModelId();
+            modelId = player.getGhostModelId();
         }
         buf.writeShort(modelId);
         buf.writeShort(player.getX());

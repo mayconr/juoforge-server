@@ -15,22 +15,18 @@ public class ValidateDeathStep extends AbstractFlowStep<DeathContext> {
     @Override
     public StepResult execute(DeathContext context) {
         if (context.getVictim() == null) {
-            log.debug("Mobile victim is null");
-            return StepResult.STOP;
+            return StepResult.failure("Mobile victim is null");
         }
         if (context.getKiller() == null) {
-            log.debug("Object killer is null");
-            return StepResult.STOP;
+            return StepResult.failure("Killer is null");
         }
         if (context.getCause() == null) {
-            log.debug("Cause is null");
-            return StepResult.STOP;
+            return StepResult.failure("Cause is null");
         }
         if (!context.getVictim().isAlive()) {
-            log.debug("Mobile [{}] is already dead", context.getVictim().getName());
-            return StepResult.STOP;
+            return StepResult.failure("Mobile [" + context.getVictim().getName() + "] is already dead");
         }
 
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

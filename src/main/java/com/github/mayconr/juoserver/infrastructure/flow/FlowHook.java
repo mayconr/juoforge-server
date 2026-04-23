@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.flow;
 
-public class FlowHook<T extends FlowContext> {
+public class FlowHook<T extends AbstractContext> {
 
     private final String targetStep;
 

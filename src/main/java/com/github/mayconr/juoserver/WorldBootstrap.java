@@ -10,6 +10,9 @@ import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.mobile.npc.template.CachedNpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.player.template.BodyKey;
+import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
+import com.github.mayconr.juoserver.game.player.template.StartkitTemplate;
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.World;
@@ -43,14 +46,28 @@ import java.util.Map;
 public final class WorldBootstrap {
 
     public static final String GAMEPLAY_CONFIG = "GAMEPLAY_CONFIG_BY_NAME";
+    public static final String NPC_BY_NAME = "NPC_BY_NAME";
+    public static final String ITEM_TEMPLATE_BY_NAME = "ITEM_BY_NAME";
+    public static final String ITEM_TEMPLATE_BY_MODEL_ID = "ITEM_TEMPLATE_BY_MODEL_ID";
+    private static final String BODY_BY_BODY_KEY = "BODY_BY_BODY_KEY";
+    public static final String STARTKIT_BY_SKILL_ID = "STARTKIT_BY_SKILL_ID";
+
     private final ShardBootstrap shardBootstrap;
 
     public ServerRuntime start() {
         final var configuration = new DefaultWorldCfg();
 
         configuration.addCustomTemplate(GAMEPLAY_CONFIG, GamePlaySettings.class, GamePlaySettings::name, Path.of("template/config/gameplay.json"));
+        configuration.addCustomTemplate(NPC_BY_NAME, NpcTemplate.class, NpcTemplate::name, Path.of("template/npcs"));
 
-        // Initial configuration
+        final var itemsPath = Path.of("template/items");
+        configuration.addCustomTemplate(ITEM_TEMPLATE_BY_NAME, ItemTemplate.class, ItemTemplate::name, itemsPath);
+        configuration.addCustomTemplate(ITEM_TEMPLATE_BY_MODEL_ID, ItemTemplate.class, ItemTemplate::modelId, itemsPath);
+
+        configuration.addCustomTemplate(BODY_BY_BODY_KEY, BodyTemplate.class, body -> new BodyKey(body.gender(), body.race()), Path.of("template/bodies"));
+
+        configuration.addCustomTemplate(STARTKIT_BY_SKILL_ID, StartkitTemplate.class, StartkitTemplate::skillId, Path.of("template/startkit"));
+
         shardBootstrap.configure(configuration);
 
         // --- Templates
@@ -83,6 +100,13 @@ public final class WorldBootstrap {
 
         ItemTemplateRegistry itemTemplateRegistry =
                 new CachedItemTemplateRegistry(new JsonTemplateLoader<>(Path.of("template/items"), ItemTemplate.class).load());
+
+        final TemplateRegistry<String, NpcTemplate> npcTemplateByName = registryMap.get(NPC_BY_NAME);
+        final TemplateRegistry<String, ItemTemplate> itemTemplateByName = registryMap.get(ITEM_TEMPLATE_BY_NAME);
+        final TemplateRegistry<Integer, ItemTemplate> itemTemplateByModelId = registryMap.get(ITEM_TEMPLATE_BY_MODEL_ID);
+        final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateByName = registryMap.get(BODY_BY_BODY_KEY);
+        final TemplateRegistry<Integer, StartkitTemplate> startKitBySkillId = registryMap.get(STARTKIT_BY_SKILL_ID);
+
 
         // --- Region
         RegionSystem regionSystem = new RegionSystemImpl(new JsonTemplateLoader<>(Path.of("template/regions"), RegionTemplate.class));
@@ -117,6 +141,11 @@ public final class WorldBootstrap {
                 // Templates
                 itemTemplateRegistry,
                 npcTemplateRegistry,
+                npcTemplateByName,
+                itemTemplateByName,
+                itemTemplateByModelId,
+                bodyTemplateByName,
+                startKitBySkillId,
 
                 settings,
                 configuration

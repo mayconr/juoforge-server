@@ -17,7 +17,9 @@
       "backpackItem" : "backpack"
     },
     "world" : {
-      "lightOfSight" : 24
+      "visibility" : {
+        "range" : 24
+      }
     },
     "files" : {
       "dataFileRoot" : "C:\\Program Files (x86)\\Electronic Arts\\Ultima Online Classic"

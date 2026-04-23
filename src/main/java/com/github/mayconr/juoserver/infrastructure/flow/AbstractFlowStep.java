@@ -1,19 +1,18 @@
 package com.github.mayconr.juoserver.infrastructure.flow;
 
-public abstract class AbstractFlowStep<T extends FlowContext> implements FlowStep<T> {
+public abstract class AbstractFlowStep<T extends AbstractContext> implements FlowStep<T> {
 
     private final String name;
-    private final int order;
-    private final FlowPhase phase;
 
     protected AbstractFlowStep(
             String name,
             int order,
             FlowPhase phase) {
-
         this.name = name;
-        this.order = order;
-        this.phase = phase;
+    }
+
+    protected AbstractFlowStep(String name) {
+        this.name = name;
     }
 
     @Override
@@ -23,12 +22,12 @@ public abstract class AbstractFlowStep<T extends FlowContext> implements FlowSte
 
     @Override
     public int order() {
-        return order;
+        return 0;
     }
 
     @Override
     public FlowPhase phase() {
-        return phase;
+        return null;
     }
 
 }

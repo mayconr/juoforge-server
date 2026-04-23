@@ -14,7 +14,10 @@ public class Teste implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        var item = runtime.storage().loadItem(1073741824).join();
-        System.out.println(item);
+        var mobile = runtime.storage().loadMobile(1)
+                .thenAccept(data->{
+                    System.out.println(data);
+                });
+
     }
 }

@@ -1,6 +1,5 @@
 package com.github.mayconr.juoserver.game.mobile.npc;
 
-import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -34,12 +33,18 @@ public class NpcDespawnService implements WorldModule {
 
                 if (!npc.isAlive()) {
                     log.info("Npc {} has been destroyed", npc.getId());
-                    for (UOItem equippedItem : npc.getEquippedItems().values()) {
-                        storage.deleteItem(equippedItem);
+                    for (Integer equippedItemSerial : npc.getEquippedItems().values()) {
+                        storage.deleteItem(storage.getItem(equippedItemSerial).orElse(null));
                     }
-                    for (UOItem containerItem : npc.getContainerItems()) {
-                        storage.deleteItem(containerItem);
+
+                    if (npc.getBackpack() != null) {
+                        var backpack = storage.getContainer(npc.getBackpack())
+                                .orElseThrow(() -> new RuntimeException("Backpack could not be found"));
+                        for (Integer itemSerial : backpack.getContainerItems()) {
+                            storage.getItem(itemSerial).ifPresent(storage::deleteItem);
+                        }
                     }
+
                     storage.deleteMobile(npc);
                 }
 

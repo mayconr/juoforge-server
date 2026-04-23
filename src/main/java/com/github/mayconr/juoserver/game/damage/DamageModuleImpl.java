@@ -1,11 +1,9 @@
 package com.github.mayconr.juoserver.game.damage;
 
-import com.github.mayconr.juoserver.game.flow.DamageFlowDefinition;
 import com.github.mayconr.juoserver.game.flow.DamageFlowDefinition.DamageContext;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.MobileDamagedEvent;
-import com.github.mayconr.juoserver.game.world.ModuleContext;
-import com.github.mayconr.juoserver.game.world.ModuleContext.FlowFacade;
+import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import lombok.RequiredArgsConstructor;
 

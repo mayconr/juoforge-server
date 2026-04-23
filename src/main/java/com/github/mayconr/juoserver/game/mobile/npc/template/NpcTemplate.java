@@ -1,8 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile.npc.template;
 
-import com.github.mayconr.juoserver.game.model.BehaviorDefinition;
-import com.github.mayconr.juoserver.game.model.Notoriety;
-import com.github.mayconr.juoserver.game.model.Speech;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 
 import java.util.List;
@@ -15,9 +13,35 @@ public record NpcTemplate(String name,
                           int hue,
                           String mountItemName,
                           BehaviorDefinition behavior,
-                          List<String> roles,
                           Map<String, Object> attr,
-                          List<String> equippedItems)
+                          List<String> equippedItems,
+                          List<String> roles)
         implements BaseTemplate {
+
+    public UOMobileData toData(int serialId, Map<Layer, Integer> equippedItems, Location location) {
+        UOMobileData data = new UOMobileData();
+        data.setSerialId(serialId);
+        data.setName(name);
+        data.setDisplayName(displayName);
+        data.setModelId(modelId);
+        data.setHue(hue);
+        data.setNotoriety(notoriety);
+        data.setPersistentAttrMap(new DefaultAttributeMap(attr));
+        data.setDirection(Direction.NORTH);
+        data.setEquippedItems(equippedItems);
+        data.setBehavior(behavior);
+        data.setRoles(roles);
+        data.setX(location.getX());
+        data.setY(location.getY());
+        data.setZ(location.getZ());
+        //  Defautls
+        data.setType("N");
+        data.setAlive(true);
+        data.setRunning(false);
+        data.setStatus(CharacterStatus.NORMAL);
+        data.setGender(Gender.MALE);
+
+        return data;
+    }
 
 }

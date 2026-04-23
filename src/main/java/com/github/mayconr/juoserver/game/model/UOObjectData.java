@@ -20,4 +20,10 @@ public class UOObjectData {
     private String displayName;
 
     private AttributeMap persistentAttrMap;
+
+    public void setLocation(Location location) {
+        this.x = location.getX();
+        this.y = location.getY();
+        this.z = location.getZ();
+    }
 }

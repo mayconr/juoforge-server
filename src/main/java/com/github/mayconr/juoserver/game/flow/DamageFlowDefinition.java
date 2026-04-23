@@ -10,7 +10,7 @@ import com.github.mayconr.juoserver.game.model.DamageSourceKind;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-import com.github.mayconr.juoserver.infrastructure.flow.FlowContext;
+import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,7 +23,7 @@ public final class DamageFlowDefinition {
     @EqualsAndHashCode(callSuper = true)
     @Data
     @RequiredArgsConstructor
-    public static class DamageContext extends FlowContext {
+    public static class DamageContext extends SyncFlowContext {
         private final UOMobile source;
         private final UOMobile target;
         private final DamageSourceKind sourceKind;

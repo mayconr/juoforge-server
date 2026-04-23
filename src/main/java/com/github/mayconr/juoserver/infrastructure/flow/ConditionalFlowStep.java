@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.infrastructure.flow;
 
 import java.util.function.Predicate;
 
-class ConditionalFlowStep<T extends FlowContext> implements FlowStep<T> {
+class ConditionalFlowStep<T extends AbstractContext> implements FlowStep<T> {
 
     private final FlowStep<T> delegate;
     private final Predicate<T> condition;
@@ -30,7 +30,7 @@ class ConditionalFlowStep<T extends FlowContext> implements FlowStep<T> {
     @Override
     public StepResult execute(T context) {
         if (!condition.test(context)) {
-            return StepResult.CONTINUE;
+            return StepResult.success(); // ou CONTINUE, se for alias
         }
         return delegate.execute(context);
     }

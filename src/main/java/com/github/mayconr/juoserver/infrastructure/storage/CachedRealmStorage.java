@@ -1,6 +1,5 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
-import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,23 +24,27 @@ public class CachedRealmStorage implements RealmStorage {
 
     private final AccountStorage accountStorage;
 
-    private final List<UOMobile> dirtyMobiles = new ArrayList<>();
+    private final List<Integer> dirtyMobiles = new ArrayList<>();
     private final List<UOItem> dirtyItems = new ArrayList<>();
 
     private Supplier<Integer> itemSerialSupplier;
     private Supplier<Integer> mobileSerialSupplier;
+
+    private MobileDependencyLoader mobileDependencyLoader;
 
     // Lifecycle
     @Override
     public void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> initialDataConsumer) {
         this.itemSerialSupplier = itemSerialSupplier;
         this.mobileSerialSupplier = mobileSerialSupplier;
+        this.mobileDependencyLoader = new MobileDependencyLoader(mobileStorage, itemStorage, itemCache);
 
-        mobileStorage.findAllNpcs()
+        /*mobileStorage.findAllNpcs()
             .thenCombine(itemStorage.findAllGroundItems().thenApply(ItemMapper::mapToItem), InitialData::new)
             .thenAccept(data->{
                 for (UOMobile mobile : data.npcs()) {
-                    loadAndCacheMobile(mobile);
+                    mobileDependencyLoader.loadDependencies(mobile)
+                            .thenApply(this::cache);
                 }
                 for (UOItem item : data.items()) {
                     itemCache.put(item);
@@ -51,7 +54,7 @@ public class CachedRealmStorage implements RealmStorage {
                 // World initialized
                 initialDataConsumer.accept(data);
             })
-            .whenComplete(this::logging);
+            .whenComplete(this::logging);*/
     }
 
     // Serial allocation
@@ -69,7 +72,9 @@ public class CachedRealmStorage implements RealmStorage {
     @Override
     public CompletableFuture<UOMobile> loadMobile(int serialId) {
         return mobileStorage.findMobileBySerialId(serialId)
-                .thenCompose(this::loadAndCacheMobile);
+                .thenApply(MobileMapper::mapToMobile)
+                .thenCompose(mobileDependencyLoader::loadDependencies)
+                .thenApply(this::cache);
     }
 
     @Override
@@ -84,8 +89,7 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public UOItem loadItem(int serialId, ItemTemplate template) {
-        var data = template.createData(serialId);
+    public UOItem createItem(UOItemData data) {
         var item = ItemMapper.mapToItem(data);
 
         itemCache.put(item);
@@ -108,11 +112,12 @@ public class CachedRealmStorage implements RealmStorage {
     public void unloadMobile(UOMobile mobile) {
         // TODO save mobile to database
         mobileCache.remove(mobile);
-        for (UOItem item : mobile.getContainerItems()) {
-            itemCache.remove(item);
+        var backpack = (UOContainer) itemCache.get(mobile.getBackpack());
+        for (Integer itemSerial : backpack.getContainerItems()) {
+            itemCache.remove(itemCache.get(itemSerial));
         }
-        for (UOItem item : mobile.getEquippedItems().values()) {
-            itemCache.remove(item);
+        for (Integer itemSerial : mobile.getEquippedItems().values()) {
+            itemCache.remove(itemCache.get(itemSerial));
         }
         log.info("Unloaded mobile {}", mobile);
     }
@@ -124,7 +129,10 @@ public class CachedRealmStorage implements RealmStorage {
 
     // Cached lookups
     @Override
-    public Optional<UOMobile> getMobile(int serialId) {
+    public Optional<UOMobile> getMobile(Integer serialId) {
+        if (serialId == null) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(mobileCache.get(serialId));
     }
 
@@ -136,7 +144,9 @@ public class CachedRealmStorage implements RealmStorage {
     @Override
     public Optional<UOContainer> getContainer(int serialId) {
         if (UOMobile.isMobile(serialId)) {
-            return getMobile(serialId).map(UOMobile::getBackpack);
+            return getMobile(serialId).map(UOMobile::getBackpack)
+                    .map(itemCache::get)
+                    .map(UOContainer.class::cast);
         }
         if (UOItem.isItem(serialId)) {
             return getItem(serialId).map(UOContainer.class::cast);
@@ -146,23 +156,26 @@ public class CachedRealmStorage implements RealmStorage {
 
     // Cache and indexing
     @Override
-    public void cache(UOMobile mobile) {
+    public UOMobile cache(UOMobile mobile) {
         if (mobile == null) {
-            return;
+            return null;
         }
         mobileCache.put(mobile);
         worldMobileIndex.add(mobile);
+        return mobile;
     }
 
     @Override
-    public void cache(UOItem item) {
+    public UOItem cache(UOItem item) {
         if (item == null) {
-            return;
+            return null;
         }
         itemCache.put(item);
-        if (item.isOnTheGround()) {
+        if (item.getCurrentLocation() instanceof GroundLocation) {
             worldItemIndex.add(item);
         }
+
+        return item;
     }
 
     // Spatial queries
@@ -213,13 +226,13 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public void dropItemOnTheGround(UOItem item) {
+    public void placeOnTheGround(UOItem item) {
         itemCache.put(item);
         worldItemIndex.add(item);
     }
 
     @Override
-    public void removeItemFromTheGround(UOItem item) {
+    public void removeFromTheGround(UOItem item) {
         worldItemIndex.remove(item);
     }
 
@@ -228,7 +241,7 @@ public class CachedRealmStorage implements RealmStorage {
         mobileCache.remove(mobile);
         worldMobileIndex.remove(mobile);
 
-        dirtyMobiles.add(mobile);
+        dirtyMobiles.add(mobile.getSerialId());
         log.info("Mobile [{}-{}] added to be removed", mobile.getSerialId(), mobile.getName());
     }
 
@@ -252,35 +265,22 @@ public class CachedRealmStorage implements RealmStorage {
 
     @Override
     public CompletableFuture<UOPlayer> insertPlayerMobile(int mobileSerialId, int itemSerialId, UOPlayer player) {
-        return mobileStorage.saveMobileFull(mobileSerialId, itemSerialId, player)
-                .thenApply(mobile -> (UOPlayer) mobile)
-                .whenComplete(this::logging);
-    }
+        var data = player.toData();
+        var items = player.getEquippedItems().values().stream().map(itemCache::get).map(UOItem::toData).toList();
 
-    // Persistence
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveMobileRuntime() {
-        return mobileStorage.saveRuntime(mobileCache.getMobiles())
-                .whenComplete(this::logging);
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveMobileVitals() {
-        return mobileStorage.saveVitals(mobileCache.getMobiles())
-                .whenComplete(this::logging);
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveMobileAttributes() {
-        return mobileStorage.saveAttributes(mobileCache.getMobiles())
-                .whenComplete(this::logging);
+        return mobileStorage.saveMobileFull(mobileSerialId, data, itemSerialId, items)
+                .thenApply(MobileMapper::mapToMobile)
+                .thenApply(UOPlayer.class::cast);
     }
 
     @Override
     public CompletableFuture<Collection<UOMobile>> saveMobiles() {
-        // TODO remove dirty
-        return mobileStorage.saveMobiles(mobileSerialSupplier.get(), mobileCache.getMobiles(), dirtyMobiles)
-                .whenComplete(this::logging);
+        var data = mobileCache.getMobiles()
+                .stream()
+                .map(UOMobile::toData)
+                .toList();
+        return mobileStorage.saveMobiles(mobileSerialSupplier.get(), data, dirtyMobiles)
+                .thenApply(MobileMapper::mapToMobile);
     }
 
     @Override
@@ -311,27 +311,24 @@ public class CachedRealmStorage implements RealmStorage {
                 });
     }
 
+    @Override
+    public CompletableFuture<UOAccount> getAccountByUsername(String username) {
+        return accountStorage.getByUsername(username);
+    }
+
     private <T> void logging(T data, Throwable throwable) {
         if (throwable != null) {
             log.error("Unable execute storage", throwable);
         }
     }
 
-    private CompletableFuture<UOMobile> loadAndCacheMobile(UOMobile mobile) {
-        return itemStorage.findAllEquippedItems(mobile.getSerialId())
-                .thenApply(ItemMapper::mapToItem)
-                .thenApply(itemCache::putAll)
-                .thenApply(items -> {
-                    items.forEach(mobile::equipItem);
-                    mobileCache.put(mobile);
-                    worldMobileIndex.add(mobile);
-                    return mobile;
-                })
-                .whenComplete(this::logging);
-    }
-
     @Override
-    public CompletableFuture<UOAccount> getAccountByUsername(String username) {
-        return accountStorage.getByUsername(username);
+    public UOMobile createMobile(UOMobileData data) {
+        var mobile = switch (data.getType()) {
+            case "N" -> new UONpc(data);
+            case "P" -> new UOPlayer(data);
+            default -> throw new IllegalArgumentException("Invalid data type");
+        };
+        return cache(mobile);
     }
 }

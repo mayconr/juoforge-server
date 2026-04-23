@@ -1,14 +1,14 @@
 package com.github.mayconr.juoserver.game.player;
 
+import com.github.mayconr.juoserver.game.flow.PlayerCreationFlowDefinition.PlayerCreationContext;
 import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedIn;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedOut;
-import com.github.mayconr.juoserver.game.player.PlayerCreationHandler.PlayerItemFactory;
 import com.github.mayconr.juoserver.game.world.WorldModule;
+import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
-import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +24,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PlayerModule implements WorldModule, PlayerCommands {
 
     private final Map<Integer, UOPlayer> onlinePlayers = new ConcurrentHashMap<>();
-    private final PlayerCreationHandler playerCreationHandler;
     private final PlayerVitalsHandler playerVitalsHandler;
     private final RealmStorage storage;
     private final EventBus eventBus;
 
-    public void initialize(PlayerItemFactory playerItemFactory) {
-        playerCreationHandler.initialize(playerItemFactory);
+    private ModuleContext.FlowFacade flows;
+
+    @Override
+    public void initialize(ModuleContext context) {
+        this.flows = context.flows();
     }
 
     @Override
@@ -42,7 +44,9 @@ public class PlayerModule implements WorldModule, PlayerCommands {
 
     @Override
     public CompletableFuture<UOPlayer> createPlayerMobile(CreateCharacter character, Map<Integer, RegionNode> startingLocations, UOAccount account) {
-        return playerCreationHandler.createPlayerMobile(character, startingLocations, account);
+        final var context = new PlayerCreationContext(character, startingLocations, account);
+        flows.execute(context);
+        return context.result();
     }
 
     @Override

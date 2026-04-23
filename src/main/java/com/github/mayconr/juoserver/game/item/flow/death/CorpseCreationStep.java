@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.item.flow.death;
 
 import com.github.mayconr.juoserver.game.flow.DeathFlowDefinition;
 import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.item.ItemModuleImpl;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.GroundItemTarget;
 import com.github.mayconr.juoserver.game.model.UOCorpse;
@@ -34,6 +35,6 @@ public class CorpseCreationStep extends AbstractFlowStep<DeathFlowDefinition.Dea
         // Set context corpse
         context.corpse(corpse);
 
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

@@ -1,8 +1,18 @@
 package com.github.mayconr.juoserver.infrastructure.flow;
 
-public enum StepResult {
+import java.util.concurrent.CompletableFuture;
 
-    CONTINUE,
-    STOP
+public record StepResult(ResultStatus status, CompletableFuture<StepResult> next, String reason) {
 
+    public static StepResult success() {
+        return new StepResult(ResultStatus.SUCCESS, null, null);
+    }
+
+    public static StepResult failure(String reason) {
+        return new StepResult(ResultStatus.FAILURE, null, reason);
+    }
+
+    public static StepResult async(CompletableFuture<StepResult> future) {
+        return new StepResult(ResultStatus.ASYNC, future, null);
+    }
 }

@@ -2,12 +2,13 @@ package com.github.mayconr.juoserver.game.mobile.flow.death;
 
 import com.github.mayconr.juoserver.game.flow.DeathFlowDefinition;
 import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.item.ItemModuleImpl;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
-import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowPhase;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
@@ -18,11 +19,13 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathFlowDefinition.
 
     private final MobileModule mobileModule;
     private final ItemModule itemModule;
+    private final RealmStorage storage;
 
-    public MoveItemsToCorpseStep(MobileModule mobileModule, ItemModule itemModule) {
+    public MoveItemsToCorpseStep(MobileModule mobileModule, ItemModule itemModule, RealmStorage storage) {
         super("move_item_corpse_step", 300, FlowPhase.CORE);
         this.mobileModule = mobileModule;
         this.itemModule = itemModule;
+        this.storage = storage;
     }
 
     @Override
@@ -32,10 +35,10 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathFlowDefinition.
         var corpse = Objects.requireNonNull(context.getCorpse(), "Corpse");
 
         var random = new Random();
-        for (UOItem item : equippedItems) {
+        for (Integer itemSerial : equippedItems) {
+            var item = storage.getItem(itemSerial).orElseThrow(()->new IllegalStateException("Item Not Found"));
             if (item.getFlags().contains(ItemFlag.MOUNT)) {
                 itemModule.deleteItem(item);
-                System.out.println(item.getMountName());
                 log.debug("Mount item {} has been deleted", item);
                 continue;
             }
@@ -46,6 +49,6 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathFlowDefinition.
                 corpse.addEquippedItem(item);
             }
         }
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

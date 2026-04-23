@@ -1,47 +1,55 @@
 package com.github.mayconr.shard.storage;
 
 import com.github.mayconr.juoserver.game.model.SkillValue;
-import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.model.UONpc;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.UOMobileData;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.UUID;
 
 @Mapper
 public interface MobileMapper {
 
+    // =========================
+    // Serial
+    // =========================
+
     Integer findNextMobileSerial();
 
-    int updateMobileSerial(@Param("serial") long serial);
+    int updateMobileSerial(@Param("serial") Integer serial);
+
+
+    // =========================
+    // Queries
+    // =========================
 
     boolean mobileExists(@Param("name") String name);
 
-    UOMobile findMobileBySerialId(@Param("serialId") int serialId);
+    UOMobileData findMobileBySerialId(@Param("serialId") Integer serialId);
 
-    UOMobile findMobileById(@Param("id") UUID id);
+    List<UOMobileData> findAllNpcs();
 
-    List<UONpc> findAllNpcs();
+    List<SkillValue> findSkillsBySerialId(@Param("serialId") Integer serialId);
 
-    List<SkillValue> findSkillsByMobileId(@Param("mobileId") UUID mobileId);
 
-    int upsertMobile(UOMobile mobile);
+    // =========================
+    // Write (tabela única)
+    // =========================
 
-    int upsertPlayer(UOPlayer player);
+    int upsertMobile(UOMobileData mobile);
 
-    int upsertNpc(UONpc npc);
 
-    int deleteById(@Param("id") UUID id);
+    // =========================
+    // Skills
+    // =========================
+
+    int upsertSkill(@Param("serialId") Integer serialId,
+                    @Param("skill") SkillValue skill);
+
+
+    // =========================
+    // Delete
+    // =========================
 
     int deleteBySerialId(@Param("serialId") Integer serialId);
-
-    int upsertMobileRuntime(UOMobile mobile);
-
-    int upsertMobileVitals(UOMobile mobile);
-
-    int upsertMobileAttributes(UOMobile mobile);
-
-    void upsertSkill(@Param("mobile") UOMobile mobile, @Param("skill") SkillValue skill);
 }

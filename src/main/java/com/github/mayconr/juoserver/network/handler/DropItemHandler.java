@@ -17,10 +17,6 @@ public class DropItemHandler extends PlayerSessionChannelInboundHandler<DropItem
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, DropItem msg) {
-        if (msg.isContainerDrop()) {
-            world.dropItemInContainer(session.getPlayer(), msg);
-        } else {
-            world.dropItemOnTheGround(session.getPlayer(), msg);
-        }
+        world.dropItem(session.getPlayer(), msg);
     }
 }

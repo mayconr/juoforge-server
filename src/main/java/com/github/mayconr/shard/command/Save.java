@@ -17,9 +17,6 @@ public class Save extends AbstractCommand {
     public void handle(Prompt event) {
         realmStorage.saveMobiles()
                 .thenAccept(mobiles->{
-                    realmStorage.saveMobileRuntime();
-                    realmStorage.saveMobileAttributes();
-                    realmStorage.saveMobileVitals();
                 }).whenComplete((unused, throwable) -> {
                     if (throwable!= null) {
                         log.error("unable to dele", throwable);

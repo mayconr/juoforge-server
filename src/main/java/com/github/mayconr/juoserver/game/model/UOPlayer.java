@@ -12,17 +12,18 @@ public class UOPlayer extends UOMobile {
     private String password;
     private boolean connected;
     private VendorSession vendorSession;
+    private int ghostModelId;
 
-    private int deathModelId;
-
-    public UOPlayer(Integer serialId, Integer modelId, Integer x, Integer y, Integer z, String name, String displayName, AttributeMap persistentAttrMap) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
-        this.deathModelId = 0x3CA;
+    public UOPlayer(UOMobileData data) {
+        super(data);
+        this.accountId = data.getAccountId();
+        this.ghostModelId = data.getGhostModelId();
     }
 
-    public UOPlayer(UOMobile mobile, UUID accountId) {
-        super(mobile);
-        this.accountId = accountId;
+    @Override
+    protected void populateData(UOMobileData data) {
+        super.populateData(data);
+        data.setAccountId(accountId);
+        data.setGhostModelId(ghostModelId);
     }
-
 }

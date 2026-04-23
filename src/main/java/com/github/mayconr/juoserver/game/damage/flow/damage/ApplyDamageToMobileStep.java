@@ -22,6 +22,6 @@ public class ApplyDamageToMobileStep extends AbstractFlowStep<DamageContext> {
 
         context.setOldHp(oldHp);
         context.setNewHp(newHp);
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

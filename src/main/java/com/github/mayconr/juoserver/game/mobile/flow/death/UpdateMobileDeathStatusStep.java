@@ -13,6 +13,6 @@ public class UpdateMobileDeathStatusStep extends AbstractFlowStep<DeathFlowDefin
     @Override
     public StepResult execute(DeathFlowDefinition.DeathContext context) {
         context.getVictim().setAlive(false);
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

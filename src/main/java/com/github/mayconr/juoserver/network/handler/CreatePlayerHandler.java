@@ -16,7 +16,12 @@ public class CreatePlayerHandler extends PlayerSessionChannelInboundHandler<Crea
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, CreateCharacter msg) {
         session.createCharacter(msg)
                 .thenCompose(player->session.enteringWorld())
-                .thenAccept(player->session.activate());
+                .thenAccept(player->session.activate())
+                .whenComplete((player, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Error to create character [{}]", msg, throwable);
+                    }
+                });
     }
 
 }

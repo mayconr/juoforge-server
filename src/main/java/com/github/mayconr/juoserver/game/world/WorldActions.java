@@ -36,8 +36,6 @@ public interface WorldActions {
 
     void move(UOMobile mobile, Location location);
 
-    void moveItem(UOItem item, Location location);
-
     void mount(UOPlayer player, UONpc npc);
 
     void unmount(UOPlayer player);
@@ -66,7 +64,7 @@ public interface WorldActions {
     // Items / containers
     // =========================
 
-    ConsumeResult consumeItem(UOContainer container, String name, int amount, boolean searchNestedContainers);
+    ConsumeResult consumeItem(Integer containerSerial, String name, int amount, boolean searchNestedContainers);
 
     // =========================
     // Skills / progression

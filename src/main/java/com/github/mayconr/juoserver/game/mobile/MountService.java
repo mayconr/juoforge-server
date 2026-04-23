@@ -6,8 +6,8 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
 import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.game.model.policy.Mount;
-import com.github.mayconr.juoserver.game.world.ModuleContext;
 import com.github.mayconr.juoserver.game.world.WorldModule;
+import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -44,9 +44,9 @@ public class MountService implements WorldModule {
                 return null;
             }
 
-            final var item = items.create(ItemRequest.byName(template.name()), EquipItemTarget.of(player));
+            final var item = items.create(ItemRequest.byName(template.name()), ItemTarget.equip(player));
 
-            player.equipItem(Layer.MOUNT, item);
+            player.equipItem(item);
             player.setLocation(npc);
             player.setDirection(npc.getDirection());
 
@@ -59,7 +59,8 @@ public class MountService implements WorldModule {
     }
 
     public UOItem unmount(UOPlayer player) {
-        final var item = player.getEquippedItems().get(Layer.MOUNT);
+        final var itemSerial = player.getEquippedItems().get(Layer.MOUNT);
+        var item = storage.getItem(itemSerial).orElse(null);
 
         if (item == null) {
             log.debug("Player [{}] is not mounted", player.getName());

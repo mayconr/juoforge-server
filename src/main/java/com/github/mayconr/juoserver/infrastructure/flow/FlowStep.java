@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.flow;
 
-public interface FlowStep<T extends FlowContext> {
+public interface FlowStep<T extends AbstractContext> {
 
     String name();
 

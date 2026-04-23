@@ -20,6 +20,6 @@ public class SpawnMobileMountStep extends AbstractFlowStep<DeathContext> {
             log.info("Unimplemented mount spawn");
         }
 
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

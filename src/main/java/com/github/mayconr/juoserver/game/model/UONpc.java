@@ -1,29 +1,34 @@
 package com.github.mayconr.juoserver.game.model;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Setter
-@Getter
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class UONpc extends UOMobile {
     private int speechHue;
     private int speechFont;
     private BehaviorDefinition behavior;
-    private final List<String> roles = new ArrayList<>();
+    private List<String> roles;
 
-    public UONpc(Integer serialId, Integer modelId, Integer x, Integer y, Integer z, String name, String displayName, AttributeMap persistentAttrMap) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
+    public UONpc(UOMobileData data) {
+        super(data);
+        this.speechHue = data.getSpeechHue();
+        this.speechFont = data.getSpeechFont();
+        this.behavior = data.getBehavior();
+        this.roles = data.getRoles();
     }
 
-    public UONpc(UOMobile mobile) {
-        super(mobile);
+    @Override
+    protected void populateData(UOMobileData data) {
+        super.populateData(data);
+        data.setSpeechHue(speechHue);
+        data.setSpeechFont(speechFont);
+        data.setBehavior(behavior);
+        data.setRoles(roles);
     }
-
-    public void addRole(String role) {
-        roles.add(role);
-    }
-
 }

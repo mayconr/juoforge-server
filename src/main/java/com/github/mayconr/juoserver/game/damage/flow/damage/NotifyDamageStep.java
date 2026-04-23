@@ -26,7 +26,7 @@ public class NotifyDamageStep extends AbstractFlowStep<DamageContext> {
                             context.getTarget(),
                             context.getSourceKind())
             );
-            return StepResult.CONTINUE;
+            return StepResult.success();
         }
 
         eventBus.publish(
@@ -40,6 +40,6 @@ public class NotifyDamageStep extends AbstractFlowStep<DamageContext> {
                         context.getNewHp()
                 )
         );
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

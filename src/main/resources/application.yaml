@@ -4,7 +4,7 @@ logging:
     com.github.mayconr.juoserver: INFO
     com.github.mayconr.juoserver.game.core: INFO
     com.github.mayconr.juoserver.infrastructure.server: INFO
-    com.github.mayconr.juoserver.network: DEBUG
+    com.github.mayconr.juoserver.network: INFO
     com.github.mayconr.juoserver.game.session.player.vitals: INFO
     com.github.mayconr.juoserver.game.skill: DEBUG
     com.github.mayconr.juoserver.game.npc: DEBUG
@@ -12,4 +12,5 @@ logging:
     com.github.mayconr.shard.storage: DEBUG
     com.github.mayconr.juoserver.game.economy: DEBUG
     com.github.mayconr.juoserver.network.handler: INFO
+    com.github.mayconr.juoserver.game.world.context: INFO
 

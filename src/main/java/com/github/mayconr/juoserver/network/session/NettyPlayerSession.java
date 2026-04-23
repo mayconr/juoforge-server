@@ -170,7 +170,6 @@ public class NettyPlayerSession implements PlayerSession {
 
     @Override
     public CompletableFuture<UOPlayer> createCharacter(CreateCharacter character) {
-        System.out.println(account);
         return world.createPlayerMobile(character, availableStartingLocations, account)
                 .exceptionally(throwable -> {
                     var error = unwrap(throwable);
@@ -242,41 +241,67 @@ public class NettyPlayerSession implements PlayerSession {
      */
 
     public void onMobileMoved(MobileMoved moved) {
-        if (!player.equals(moved.mobile())) {
-            final var mobile = moved.mobile();
+        final UOMobile mobile = moved.mobile();
 
-            if (GameMath.isInRange(player, mobile, settings.world().lightOfSight())) {
-                channel.writeAndFlush(new DrawMobile(mobile));
-            }
+        // =========================
+        // Case 1: Other mobile moved
+        // =========================
+        if (!player.equals(mobile)) {
+            handleOtherMobileMovement(mobile);
             return;
         }
 
-        // handle player movement
-        var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight(), UOMobile::isAlive);
-        var items  = world.getItemsInRange(player, settings.world().lightOfSight());
+        // =========================
+        // Case 2: Player moved
+        // =========================
+        handlePlayerMovement(moved);
+    }
 
+    private void handleOtherMobileMovement(UOMobile mobile) {
+        if (!shouldReceiveUpdate(mobile)) {
+            return;
+        }
+
+        runInEventLoop(() ->
+                channel.writeAndFlush(
+                        new DrawMobile(mobile, world.getEquippedItems(mobile))
+                )
+        );
+    }
+
+    private void handlePlayerMovement(MobileMoved moved) {
+        int visibility = settings.world().visibility().range();
+
+        var mobiles = world.getMobilesInRange(player, visibility, UOMobile::isAlive);
+        var items   = world.getItemsInRange(player, visibility);
+
+        // Acknowledge movement
         channel.write(new MovementResyncAck(moved.sequence(), player.getNotoriety()));
 
+        // Draw nearby mobiles
         for (UOMobile mobile : mobiles) {
             if (!mobile.equals(player)) {
-                channel.write(new DrawMobile(mobile));
+                channel.write(new DrawMobile(mobile, world.getEquippedItems(mobile)));
             }
         }
+
+        // Draw nearby items
         for (UOItem item : items) {
             channel.write(new ObjectInfo(item));
         }
 
+        // Update player itself
         if (moved.teleport()) {
             channel.write(new DrawGamePlayer(player));
-            channelGroup.write(new UpdatePlayer(player));
         } else {
-            // Notify everyone close
-            channelGroup.write(new UpdatePlayer(player));
+            channel.write(new UpdatePlayer(player));
         }
-        channelGroup.flush();
 
+        channel.flush();
 
-        // TODO drawMobile when enter on range, after that update player
+        // TODO:
+        // - Send incremental updates instead of full redraw
+        // - Track enter/leave range to avoid resending everything
     }
 
     public void onMobileSpeech(MobileSpeech event) {
@@ -285,16 +310,18 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onEnteredLineOfSight(MobileEnteredLineOfSight event) {
         if (player.equals(event.target())) {
-            channel.write(new DrawMobile(event.observer()));
+            var mobile = event.observer();
+
+            channel.write(new DrawMobile(mobile, world.getEquippedItems(mobile)));
         }
     }
 
     public void onNpcCreated(NpcCreated event) {
-        channel.writeAndFlush(new DrawMobile(event.npc()));
+        channel.writeAndFlush(new DrawMobile(event.npc(), world.getEquippedItems(event.npc())));
     }
 
-    public void onMobileDeleted(MobileDeleted event) {
-        channelGroup.writeAndFlush(new DeleteObject(event.mobile()));
+    public void onMobileDeleted(NpcRemoved event) {
+        channelGroup.writeAndFlush(new DeleteObject(event.npc()));
     }
 
     public void onPlayerDeleted(PlayerDeleted event) {
@@ -307,15 +334,16 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onPlayerLoggedIn(PlayerLoggedIn event) {
         if (player.equals(event.player())) {
-            final var mobiles = world.getMobilesInRange(player, settings.world().lightOfSight(), UOMobile::isAlive);
-            final var items = world.getItemsInRange(player, settings.world().lightOfSight());
+            final var visibility = settings.world().visibility().range();
+            final var mobiles = world.getMobilesInRange(player, visibility, UOMobile::isAlive);
+            final var items = world.getItemsInRange(player, visibility);
 
             channel.write(new LoginConfirm(player, 7168, 4096));
             channel.write(new SeasonalInformation(Season.Summer, true));
 
             for (UOMobile someone : mobiles) {
                 if (!someone.equals(player)) {
-                    channel.write(new DrawMobile(someone));
+                    channel.write(new DrawMobile(someone, world.getEquippedItems(someone)));
                 }
             }
 
@@ -325,12 +353,12 @@ public class NettyPlayerSession implements PlayerSession {
 
             channel.write(new SendSkill(player));
             channel.write(new DrawGamePlayer(player));
-            channel.write(new DrawMobile(player));
+            channel.write(new DrawMobile(player, world.getEquippedItems(player)));
             channel.write(new StatusBarInfo(player));
             channel.write(new LoginComplete());
             channel.flush();
 
-            channelGroup.writeAndFlush(new DrawMobile(player));
+            //channelGroup.writeAndFlush(new DrawMobile(player, toEquippedItemsMap(player)));
         }
     }
 
@@ -349,27 +377,43 @@ public class NettyPlayerSession implements PlayerSession {
      */
 
     public void onItemEquipped(ItemEquipped equipped) {
-        runInEventLoop(()-> channel.writeAndFlush(new EquipItem(equipped.mobile(), equipped.item().getLayer(), equipped.item())), 20, TimeUnit.MILLISECONDS);
+        final var item = equipped.item();
+        if (item.getCurrentLocation() instanceof EquippedLocation location) {
+            runInEventLoop(()-> channel.writeAndFlush(new EquipItem(equipped.mobile(), item.getLayer(), equipped.item())), 20, TimeUnit.MILLISECONDS);
+        }
     }
 
     public void onItemUnequipped(ItemUnequipped itemUnequipped) {
-        if (player.equals(itemUnequipped.player())) {
-            channelGroup.writeAndFlush(new DrawMobile(itemUnequipped.player()));
+        if (player.equals(itemUnequipped.mobile())) {
+            channelGroup.writeAndFlush(new DrawMobile(itemUnequipped.mobile(), world.getEquippedItems(itemUnequipped.mobile())));
         }
     }
 
     public void onItemDroppedOnTheGround(ItemDroppedOnTheGround event) {
-        channel.writeAndFlush(new ObjectInfo(event.item()));
-    }
-
-    public void onItemDroppedInContainer(ItemDroppedInContainer event) {
-        if (player.equals(event.player())) {
-            channel.writeAndFlush(new AddItemToContainer(event.container(), event.item()));
+        if (shouldReceiveUpdate(event.item())) {
+            channel.writeAndFlush(new ObjectInfo(event.item()));
         }
     }
 
-    public void onItemStacked(ItemStacked event) {
+    public void onItemDroppedInContainer(ItemDroppedInContainer event) {
+        final var container = event.container();
 
+        // container has owner, must notify only this one
+        if (container.getCurrentLocation() instanceof EquippedLocation(Integer ownerSerialId)) {
+            if (ownerSerialId == player.getSerialId()) {
+                runInEventLoop(()->channel.writeAndFlush(new AddItemToContainer(event.container(), event.item())));
+            }
+            return;
+        }
+
+        // Container in the ground
+        if (shouldReceiveUpdate(event.container())) {
+            runInEventLoop(()->channel.writeAndFlush(new AddItemToContainer(event.container(), event.item())));
+        }
+
+    }
+
+    public void onItemStacked(ItemStacked event) {
         channelGroup.write(new DeleteObject(event.dropped()));
         if (StackDestination.GROUND.equals(event.destination())) {
             channelGroup.writeAndFlush(new ObjectInfo(event.target()));
@@ -380,25 +424,27 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onItemCreated(GroundedItemCreated event) {
-        if (event.render()) {
+        if (shouldReceiveUpdate(event.item())) {
             runInEventLoop(()->channel.writeAndFlush(new ObjectInfo(event.item())),  20, TimeUnit.MILLISECONDS);
         }
     }
 
-    public void onItemCreated(EquippedItemCreated event) {
-        if (event.render()) {
-            channelGroup.writeAndFlush(new DrawMobile(event.mobile()));
+    public void onEquippedItemCreated(EquippedItemCreated event) {
+        if (shouldReceiveUpdate(event.mobile())) {
+            channel.writeAndFlush(new DrawMobile(event.mobile(), world.getEquippedItems(event.mobile())));
         }
     }
 
-    public void onItemCreated(ItemCreatedInContainer event) {
-        if (event.render()) {
-            if (event.container() instanceof UOPlayer pl && pl.equals(player)) {
-                channel.writeAndFlush(new AddItemToContainer(pl, event.item()));
-                return;
+    public void onItemCreatedInContainer(ItemCreatedInContainer event) {
+        if (event.owner() != null) {
+            if (player.equals(event.owner())) {
+                runInEventLoop(()->channel.writeAndFlush(new AddItemToContainer(event.container(), event.item())));
             }
+            return;
+        }
 
-            channel.writeAndFlush(new AddItemToContainer(event.container(), event.item()));
+        if (shouldReceiveUpdate(event.container())) {
+            runInEventLoop(()->channel.writeAndFlush(new AddItemToContainer(event.container(), event.item())));
         }
     }
 
@@ -407,8 +453,9 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onItemUpdated(ItemUpdated event) {
+        final var item = event.item();
         channel.write(new ObjectRevision(event.item()));
-        if (event.item().isInContainer()) {
+        if (item.getCurrentLocation() instanceof ContainerLocation) {
             channel.writeAndFlush(new AddItemToContainer(event.container(), event.item()));
             return;
         }
@@ -471,7 +518,11 @@ public class NettyPlayerSession implements PlayerSession {
 
             channel.write(new DrawContainer(container));
             if (!container.getContainerItems().isEmpty()) {
-                channel.write(AddMultipleItemsToContainer.ofUOItem(container, container.getContainerItems()));
+                var items = new ArrayList<UOItem>(container.getContainerItems().size());
+                for (var item : container.getContainerItems()) {
+                    world.getItemBySerialId(item).ifPresent(items::add);
+                }
+                channel.write(AddMultipleItemsToContainer.ofUOItem(container, items));
             }
             channel.flush();
         }
@@ -512,7 +563,7 @@ public class NettyPlayerSession implements PlayerSession {
     public void onSkillGumpRequested(SkillGumpRequested event) {
         if (player.equals(event.player())) {
             log.info("Sending skills of {}", event.skillsOf());
-            channel.writeAndFlush(new SendSkill(SendSkillType.FULL_LIST_WITH_CAP, event.skillsOf().getSkills().skills()));
+            channel.writeAndFlush(new SendSkill(SendSkillType.FULL_LIST_WITH_CAP, event.skillsOf().getSkills().getSkillValues()));
         } else {
             log.info("Not implemented yet");
         }
@@ -548,12 +599,13 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onVendorTradeSessionOpened(VendorSessionOpened event) {
         if (player.equals(event.player())) {
-            final var vendor = event.vendor();
+            /*final var vendor = event.vendor();
             final var restockContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
             channel.write(AddMultipleItemsToContainer.ofStockItem(restockContainer, event.session().items().values()));
             channel.write(new VendorBuyList(restockContainer, event.session().items().values()));
             channel.write(new DrawContainer(vendor.getSerialId(), 0x0030));
-            channel.flush();
+            channel.flush();*/
+            // TODO locate items for uocontainer
         }
     }
 
@@ -582,14 +634,17 @@ public class NettyPlayerSession implements PlayerSession {
         runInEventLoop(()->{
             if (player.equals(event.target())) {
                 channel.write(new StatusBarInfo(player));
-                channel.write(new DrawMobile(player));
+                channel.write(new DrawMobile(player, world.getEquippedItems(player)));
                 channel.writeAndFlush(new DeathScreen(DeathScreenType.SERVER));
             } else {
                 channel.write(new DeathAction(event.target(), event.corpse().getSerialId()));
                 channel.write(new ObjectInfo(event.corpse()));
                 List<CorpseClothing.Entry> items = new ArrayList<>();
                 var containerItems = ((Container) event.corpse()).getContainerItems();
-                containerItems.forEach(item->items.add(new CorpseClothing.Entry(item.getLayer(), item)));
+                for (Integer itemSerial : containerItems) {
+                    var item = world.getItemBySerialId(itemSerial).orElseThrow(() -> new RuntimeException("Container item could not be found"));
+                    items.add(new CorpseClothing.Entry(item.getLayer(), item));
+                }
                 channel.writeAndFlush(new CorpseClothing(event.corpse(), items));
             }
         });
@@ -597,7 +652,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onMobileResurrect(MobileResurrectEvent event) {
         channel.write(new StatusBarInfo(player));
-        channel.write(new DrawMobile(player));
+        channel.write(new DrawMobile(player, world.getEquippedItems(player)));
         channel.writeAndFlush(new DeathScreen(DeathScreenType.RESURRECT));
     }
 
@@ -628,5 +683,9 @@ public class NettyPlayerSession implements PlayerSession {
 
     private void runInEventLoop(Runnable runnable, long delay, TimeUnit unit) {
         channel.eventLoop().schedule(runnable, delay, unit);
+    }
+
+    private boolean shouldReceiveUpdate(Location target) {
+        return GameMath.isInRange(player, target, settings.world().visibility().range());
     }
 }

@@ -20,6 +20,6 @@ public class CalculateTotalDamageStep extends AbstractFlowStep<DamageContext> {
         }
 
         context.setTotalDamage(total);
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

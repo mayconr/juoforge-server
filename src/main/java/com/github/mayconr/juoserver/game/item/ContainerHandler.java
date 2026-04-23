@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -17,10 +18,13 @@ import java.util.function.Predicate;
 public class ContainerHandler {
 
     private final EventBus eventBus;
+    private final RealmStorage storage;
 
-    public List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> predicate) {
+    public List<UOItem> getItemsInContainer(Integer containerSerial, Predicate<UOItem> predicate) {
+        var container = storage.getContainer(containerSerial).orElseThrow(()->new IllegalArgumentException("Container not found"));
         final List<UOItem> items = new ArrayList<>();
-        for (UOItem item : container.getContainerItems()) {
+        for (Integer serial : container.getContainerItems()) {
+            var item = storage.getItem(serial).orElseThrow(()->new IllegalArgumentException("Item not found"));
             if (predicate.test(item)) {
                 items.add(item);
             }
@@ -28,7 +32,9 @@ public class ContainerHandler {
         return items;
     }
 
-    public int consumeItem(UOContainer container, String itemName, int amount, boolean searchNestedContainers) {
+    public int consumeItem(Integer containerSerial, String itemName, int amount, boolean searchNestedContainers) {
+        var container = storage.getContainer(containerSerial).orElseThrow(()->new IllegalArgumentException("Container not found"));
+
         if (amount <= 0) {
             return 0;
         }
@@ -46,7 +52,8 @@ public class ContainerHandler {
                            String itemName,
                            boolean searchNestedContainers) {
         int total = 0;
-        for (UOItem item : container.getContainerItems()) {
+        for (Integer serial : container.getContainerItems()) {
+            var item = storage.getItem(serial).orElseThrow(()->new IllegalArgumentException("Item not found"));
             if (item.getName().equals(itemName)) {
                 total += item.getAmount();
             }
@@ -62,9 +69,10 @@ public class ContainerHandler {
                                 int amount,
                                 boolean searchNestedContainers) {
 
-        Iterator<UOItem> iterator = container.getContainerItems().iterator();
+        Iterator<Integer> iterator = container.getContainerItems().iterator();
         while (iterator.hasNext() && amount > 0) {
-            UOItem item = iterator.next();
+            Integer serial = iterator.next();
+            var item =  storage.getItem(serial).orElseThrow(()->new IllegalArgumentException("Item not found"));
             if (item.getName().equals(itemName)) {
                 int itemAmount = item.getAmount();
                 if (itemAmount > amount) {

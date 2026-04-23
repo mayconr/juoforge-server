@@ -25,6 +25,6 @@ public class CheckLethalDamageStep extends AbstractFlowStep<DamageContext> {
             mobileModule.die(new DeathRequest(context.getTarget(), context.getSource(), DeathCause.COMBAT));
         }
 
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

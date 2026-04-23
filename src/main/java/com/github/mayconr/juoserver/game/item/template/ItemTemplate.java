@@ -27,7 +27,7 @@ public record ItemTemplate(String name,
         flags = flags == null ? Collections.emptyList() : flags;
     }
 
-    public UOItemData createData(int serialId) {
+    public UOItemData toData(int serialId) {
         final var data = new UOItemData();
         data.setId(UUID.randomUUID());
         data.setSerialId(serialId);
@@ -44,7 +44,6 @@ public record ItemTemplate(String name,
         data.setMovable(movable);
         data.setHidden(false);
         data.setDirection(Direction.NORTH);
-        data.setOwnerSerialId(0);
         data.setFlags(flags);
         data.setContainerGumpId(containerGumpId);
         data.setMountName(mountName);

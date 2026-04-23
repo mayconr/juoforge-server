@@ -4,7 +4,7 @@ public final class FlowFactory {
 
     private FlowFactory() {}
 
-    public static <T extends FlowContext> FlowBuilder<T> builder() {
+    public static <T extends AbstractContext> FlowBuilder<T> builder() {
         return new FlowBuilder<>();
     }
 }

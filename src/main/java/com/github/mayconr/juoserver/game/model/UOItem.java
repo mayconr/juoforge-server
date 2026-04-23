@@ -19,9 +19,9 @@ public class UOItem extends UOObject<UOItemData> {
     private boolean movable;
     private boolean hidden;
     private Direction direction;
-    private Integer containerSerialId;
-    private Integer ownerSerialId;
     private String mountName;
+    private ItemLocation currentLocation;
+    private ItemLocation previousLocation;
     private List<ItemFlag> flags;
 
     public UOItem(UOItemData data) {
@@ -33,9 +33,18 @@ public class UOItem extends UOObject<UOItemData> {
         this.movable = data.isMovable();
         this.hidden = data.isHidden();
         this.direction = data.getDirection();
-        this.containerSerialId = data.getContainerSerialId();
         this.flags = data.getFlags();
         this.unitWeight = data.getUnitWeight();
+        this.mountName = data.getMountName();
+        switch (data.getLocationType() == null ? ItemLocationType.EQUIPPED : data.getLocationType()) {
+            case EQUIPPED -> this.currentLocation = new EquippedLocation(data.getParentSerial());
+            case CONTAINER ->  this.currentLocation = new ContainerLocation(data.getParentSerial());
+            case GROUND ->  this.currentLocation = new GroundLocation();
+        }
+    }
+
+    public static boolean isItem(int serialId) {
+        return serialId >= OBJECTS_MIN_SERIAL_ID;
     }
 
     @Override
@@ -54,57 +63,23 @@ public class UOItem extends UOObject<UOItemData> {
         data.setMovable(movable);
         data.setHidden(hidden);
         data.setDirection(direction);
-        data.setContainerSerialId(containerSerialId);
+
+        switch (currentLocation) {
+            case EquippedLocation location -> {
+                data.setParentSerial(location.ownerSerialId());
+                data.setLocationType(ItemLocationType.EQUIPPED);
+            }
+            case ContainerLocation location -> {
+                data.setParentSerial(location.containerSerialId());
+                data.setLocationType(ItemLocationType.CONTAINER);
+            }
+            case GroundLocation location -> data.setLocationType(ItemLocationType.GROUND);
+            case OrphanLocation location -> {
+                data.setLocationType(ItemLocationType.ORPHAN);
+            }
+        }
         data.setFlags(flags);
         data.setUnitWeight(unitWeight);
-        data.setOwnerSerialId(ownerSerialId);
-    }
-
-    public static boolean isItem(int serialId) {
-        return serialId >= OBJECTS_MIN_SERIAL_ID;
-    }
-
-    public boolean isOnTheGround() {
-        return ownerSerialId == null && containerSerialId == null;
-    }
-
-    public boolean isInContainer() {
-        return containerSerialId != null && ownerSerialId == null;
-    }
-
-    public boolean isEquipped() {
-        return ownerSerialId != null && containerSerialId == null;
-    }
-
-    public void dropOnTheGround(Location location) {
-        ownerSerialId = null;
-        containerSerialId = null;
-        setLocation(location);
-    }
-
-    public void equip(UOMobile mobile) {
-        containerSerialId = null;
-        setLocation(0,0,0);
-        ownerSerialId = mobile.getSerialId();
-    }
-
-    public void unequip() {
-        containerSerialId = null;
-    }
-
-    public void addToContainer(UOContainer container) {
-        ownerSerialId = null;
-        containerSerialId = container.getSerialId();
-    }
-
-    public void addToContainer(UOContainer container, Location locationInContainer) {
-        ownerSerialId = null;
-        setLocation(locationInContainer);
-        containerSerialId = container.getSerialId();
-    }
-
-    public void removeFromContainer() {
-        containerSerialId = null;
     }
 
     public boolean hasFlag(ItemFlag flag) {
@@ -115,9 +90,27 @@ public class UOItem extends UOObject<UOItemData> {
         this.amount += amount;
     }
 
-    public void removeWhenInContainer() {
-        if (isInContainer()) {
-            containerSerialId = null;
-        }
+    public void setCurrentLocation(ItemLocation currentLocation) {
+        this.previousLocation = this.currentLocation;
+        this.currentLocation = currentLocation;
+    }
+
+    /*
+        Item lifecycle methods
+     */
+    public boolean isEquipped() {
+        return currentLocation instanceof EquippedLocation;
+    }
+
+    public boolean isOnTheGround() {
+        return currentLocation instanceof GroundLocation;
+    }
+
+    public boolean isInContainer() {
+        return currentLocation instanceof ContainerLocation;
+    }
+
+    public boolean isOrphan() {
+        return currentLocation instanceof OrphanLocation;
     }
 }

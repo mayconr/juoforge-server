@@ -65,28 +65,9 @@ public abstract class UOObject<T extends UOObjectData> implements Location, Attr
         data.setPersistentAttrMap(persistentAttrMap);
     }
 
-
-    public UOObject(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap) {
-        this.serialId = serialId;
-        this.modelId = modelId;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.name = name;
-        this.displayName = displayName;
-        this.persistentAttrMap = persistentAttrMap;
-        this.runtimeAttrMap = new DefaultAttributeMap();
-    }
-
     public void setLocation(int x, int y) {
         this.x = x;
         this.y = y;
-    }
-
-    public void setLocation(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
     }
 
     public void setLocation(Location location) {

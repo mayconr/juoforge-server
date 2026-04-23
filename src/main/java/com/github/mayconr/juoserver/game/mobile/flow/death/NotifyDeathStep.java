@@ -19,6 +19,6 @@ public class NotifyDeathStep extends AbstractFlowStep<DeathFlowDefinition.DeathC
     @Override
     public StepResult execute(DeathFlowDefinition.DeathContext context) {
         eventBus.publish(new MobileDeathEvent(context.getKiller(), context.getVictim(), context.getCause(), context.getCorpse()));
-        return StepResult.CONTINUE;
+        return StepResult.success();
     }
 }

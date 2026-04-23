@@ -37,22 +37,5 @@ public class UOCorpse extends UOContainer {
         equippedItems.put(item.getLayer(), item.getSerialId());
     }
 
-    public boolean removeEquippedItem(UOItem item) {
-
-        var existing = equippedItems.get(item.getLayer());
-
-        if (existing == item.getSerialId()) {
-
-            equippedItems.remove(item.getLayer());
-
-            super.removeItemFromContainer(item);
-
-            item.setContainerSerialId(0);
-
-            return true;
-        }
-
-        return false;
-    }
 
 }

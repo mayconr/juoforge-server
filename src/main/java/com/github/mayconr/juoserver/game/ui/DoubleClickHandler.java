@@ -80,9 +80,6 @@ public class DoubleClickHandler {
                     return;
                 }
 
-                if (player.isLayerAvailable(item.getLayer())) {
-                    //playerItemService.equipItem(item, item.getLayer());
-                }
                 // if the item is not a container, delegate the behavior
                 itemUseService.use(new ItemUseContext(player, item, Trigger.DOUBLE_CLICK));
             });

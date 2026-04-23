@@ -2,53 +2,27 @@
 
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
-<!--
-    AccountMapper.xml
-
-    Responsibilities:
-    - Account persistence queries
-    - Account character (mobile) queries
-    - SQL result mapping to domain objects
-
-    Conventions:
-    - ResultMaps defined first
-    - Queries grouped by domain
-    - Explicit column selection (avoid SELECT *)
--->
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.github.mayconr.shard.storage.AccountMapper">
-
 
     <!-- ===================================================== -->
     <!-- ACCOUNT RESULT MAPPING                               -->
     <!-- ===================================================== -->
 
-    <!--
-        Maps account table data into UOAccount.
-
-        Constructor mapping is used because UOAccount is immutable.
-        UUID requires a custom type handler.
-    -->
     <resultMap id="accountMapping"
-               type="UOAccount">
+               type="com.github.mayconr.juoserver.game.model.UOAccount">
 
         <constructor>
-
-            <!-- Unique account identifier -->
             <arg column="id"
                  javaType="java.util.UUID"
                  typeHandler="com.github.mayconr.shard.storage.types.UUIDTypeHandler"/>
 
-            <!-- Account login name -->
             <arg column="username"
                  javaType="java.lang.String"/>
 
-            <!-- Account hashed password -->
             <arg column="password"
                  javaType="java.lang.String"/>
-
         </constructor>
 
     </resultMap>
@@ -58,29 +32,12 @@
     <!-- ACCOUNT MOBILE RESULT MAPPING                        -->
     <!-- ===================================================== -->
 
-    <!--
-        Maps account characters available at login.
-
-        Source:
-        v_account_mobiles_login view
-
-        Represents:
-        - Character serial
-        - Character name
-    -->
     <resultMap id="accountMobileMapping"
-               type="AccountMobile">
+               type="com.github.mayconr.juoserver.game.model.AccountMobile">
 
         <constructor>
-
-            <!-- Character unique serial -->
-            <arg column="serial_id"
-                 javaType="int"/>
-
-            <!-- Character display name -->
-            <arg column="mobile_name"
-                 javaType="java.lang.String"/>
-
+            <arg column="serial_id" javaType="int"/>
+            <arg column="name" javaType="java.lang.String"/>
         </constructor>
 
     </resultMap>
@@ -90,11 +47,6 @@
     <!-- ACCOUNT QUERIES                                      -->
     <!-- ===================================================== -->
 
-    <!--
-        Finds an account by username.
-
-        Used during authentication phase.
-    -->
     <select id="findByUsername"
             resultMap="accountMapping">
 
@@ -112,26 +64,16 @@
     <!-- ACCOUNT CHARACTER QUERIES                            -->
     <!-- ===================================================== -->
 
-    <!--
-        Returns all characters associated with an account.
-
-        View simplifies joins between:
-        - accounts
-        - mobiles
-        - character state tables
-
-        accountId is UUID (PostgreSQL OTHER type).
-    -->
     <select id="findAccountMobiles"
             resultMap="accountMobileMapping">
 
         SELECT
         serial_id,
-        mobile_name
-        FROM v_account_mobiles_login
+        name
+        FROM mobiles
         WHERE account_id = #{accountId, jdbcType=OTHER}
+        AND type = 'P'
 
     </select>
-
 
 </mapper>

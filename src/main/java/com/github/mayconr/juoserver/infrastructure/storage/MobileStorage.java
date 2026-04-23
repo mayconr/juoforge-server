@@ -1,13 +1,11 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
-import com.github.mayconr.juoserver.game.model.AccountMobile;
-import com.github.mayconr.juoserver.game.model.UOAccount;
-import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.SkillValue;
+import com.github.mayconr.juoserver.game.model.UOItemData;
+import com.github.mayconr.juoserver.game.model.UOMobileData;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface MobileStorage {
@@ -16,26 +14,18 @@ public interface MobileStorage {
 
     CompletableFuture<Void> setNextMobileSerial(int serial);
 
-    CompletableFuture<UOMobile> findMobileById(UUID id);
-
     CompletableFuture<Void> deleteBySerialId(int serialId);
 
-    CompletableFuture<UOMobile> findMobileBySerialId(int serialId);
+    CompletableFuture<UOMobileData> findMobileBySerialId(int serialId);
+
+    CompletableFuture<List<SkillValue>> findSkillsBySerialId(int serialId);
 
     CompletableFuture<Boolean> mobileExists(String name);
 
-    CompletableFuture<List<UONpc>> findAllNpcs();
+    CompletableFuture<List<UOMobileData>> findAllNpcs();
 
-    CompletableFuture<UOMobile> saveMobileFull(int mobileSerialId, int itemSerialId, UOMobile mobile);
+    CompletableFuture<UOMobileData> saveMobileFull(int mobileSerialId, UOMobileData data, int itemSerialId, List<UOItemData> equippedItems);
 
-    CompletableFuture<Collection<UOMobile>> saveMobiles(int serial, Collection<UOMobile> mobiles, Collection<UOMobile> dirties);
-
-    CompletableFuture<Collection<UOMobile>> saveRuntime(Collection<UOMobile> mobiles);
-
-    CompletableFuture<Collection<UOMobile>> saveVitals(Collection<UOMobile> mobiles);
-
-    CompletableFuture<Collection<UOMobile>> saveAttributes(Collection<UOMobile> mobiles);
-
-    CompletableFuture<Collection<UOMobile>> saveSkills(Collection<UOMobile> mobiles);
+    CompletableFuture<Collection<UOMobileData>> saveMobiles(int serial, Collection<UOMobileData> mobiles, Collection<Integer> dirties);
 
 }

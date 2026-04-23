@@ -3,38 +3,71 @@ package com.github.mayconr.juoserver.game.model;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
+@Slf4j
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class UOMobile extends UOObject<UOMobileData> implements Container {
+/**
+ * Represents a mobile entity in the game world (player or NPC).
+ *
+ * This class is the in-memory domain representation of a mobile and is backed by {@link UOMobileData}.
+ * It contains combat stats, attributes, equipment, and state flags.
+ */
+public class UOMobile extends UOObject<UOMobileData> {
 
+    /**
+     * Maximum serial ID reserved for mobiles.
+     */
     private static final int MOBILES_MAX_SERIAL_ID = 0x3FFFFFFF;
 
+    // =========================
+    // Identity & Core State
+    // =========================
+
+    /** Unique runtime identifier (not persisted). */
     private UUID id;
+
+    /** Current facing direction. */
     private Direction direction;
+
+    /** Visual hue (color). */
     private int hue;
-    private CharacterStatus status; // TODO statusmap
+
+    /** Current character status (e.g., war mode). */
+    private CharacterStatus status;
+
+    /** Reputation / notoriety (e.g., innocent, criminal). */
     private Notoriety notoriety;
+
+    /** Whether the mobile is running. */
     private boolean running;
+
+    /** Character race. */
     private Race race;
+
+    /** Character gender. */
     private Gender gender;
+
+    /** Mobile type (e.g., 'P' for player, 'N' for NPC). */
     private String type;
+
+    /** Whether the mobile is alive. */
     private boolean alive;
 
-    // vitals
+    // =========================
+    // Vitals (Dynamic Resources)
+    // =========================
+
     private int hitpoints;
     private int maxHitpoints;
-
-    private int strength;
-    private int dexterity;
-    private int intelligence;
 
     private int stamina;
     private int maxStamina;
@@ -42,26 +75,61 @@ public class UOMobile extends UOObject<UOMobileData> implements Container {
     private int mana;
     private int maxMana;
 
-    private int gold;
-    private int weight;
-    private int maxWeight;
+    // =========================
+    // Primary Stats
+    // =========================
+
+    private int strength;
+    private int dexterity;
+    private int intelligence;
+
+    /** Maximum total stat cap. */
     private int statCap;
+
+    // =========================
+    // Inventory & Capacity
+    // =========================
+
+    private int gold;
+
+    /** Current carried weight. */
+    private int weight;
+
+    /** Maximum carrying capacity. */
+    private int maxWeight;
+
+    // =========================
+    // Followers / Pets
+    // =========================
 
     private int followers;
     private int maxFollowers;
 
+    // =========================
+    // Resistances
+    // =========================
+
     private int physicalResist;
     private int maxPhysicalResist;
+
     private int fireResist;
     private int maxFireResist;
+
     private int coldResist;
     private int maxColdResist;
+
     private int poisonResist;
     private int maxPoisonResist;
+
     private int energyResist;
     private int maxEnergyResist;
 
+    // =========================
+    // Combat & Bonuses
+    // =========================
+
     private int luck;
+
     private int damageMin;
     private int damageMax;
 
@@ -69,253 +137,206 @@ public class UOMobile extends UOObject<UOMobileData> implements Container {
 
     private int defenseChanceIncrease;
     private int maxDefenseChanceIncrease;
+
     private int hitChanceIncrease;
     private int swingSpeedIncrease;
     private int weaponDamageIncrease;
+
     private int lowerReagentCost;
     private int spellDamageIncrease;
     private int reflectPhysicalDamage;
     private int enhancePotions;
+
     private int fasterCastRecovery;
     private int fasterCasting;
     private int lowerManaCost;
 
-    // Items
-    private UOContainer backpack;
-    private Map<Layer, UOItem> equippedItems = new ConcurrentHashMap<>();
+    // =========================
+    // Equipment
+    // =========================
 
+    /** Backpack serial ID. */
+    private Integer backpack;
+
+    /** Equipped items mapped by layer. */
+    private Map<Layer, Integer> equippedItems;
+
+    // =========================
     // Skills
+    // =========================
+
     private SkillContainer skills;
 
-    public UOMobile(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
-        this.alive = true;
+    // =========================
+    // Constructor
+    // =========================
+
+    public UOMobile(UOMobileData data) {
+        super(data);
+
+        this.id = UUID.randomUUID();
+
+        // Core
+        this.direction = data.getDirection();
+        this.hue = data.getHue();
+        this.status = data.getStatus();
+        this.notoriety = data.getNotoriety();
+        this.running = data.isRunning();
+        this.race = data.getRace();
+        this.gender = data.getGender();
+        this.type = data.getType();
+        this.alive = data.isAlive();
+
+        // Vitals
+        this.hitpoints = data.getHitpoints();
+        this.maxHitpoints = data.getMaxHitpoints();
+        this.stamina = data.getStamina();
+        this.maxStamina = data.getMaxStamina();
+        this.mana = data.getMana();
+        this.maxMana = data.getMaxMana();
+
+        // Stats
+        this.strength = data.getStrength();
+        this.dexterity = data.getDexterity();
+        this.intelligence = data.getIntelligence();
+        this.statCap = data.getStatCap();
+
+        // Inventory
+        this.gold = data.getGold();
+        this.weight = data.getWeight();
+        this.maxWeight = data.getMaxWeight();
+
+        // Followers
+        this.followers = data.getFollowers();
+        this.maxFollowers = data.getMaxFollowers();
+
+        // Resistances
+        this.physicalResist = data.getPhysicalResist();
+        this.maxPhysicalResist = data.getMaxPhysicalResist();
+        this.fireResist = data.getFireResist();
+        this.maxFireResist = data.getMaxFireResist();
+        this.coldResist = data.getColdResist();
+        this.maxColdResist = data.getMaxColdResist();
+        this.poisonResist = data.getPoisonResist();
+        this.maxPoisonResist = data.getMaxPoisonResist();
+        this.energyResist = data.getEnergyResist();
+        this.maxEnergyResist = data.getMaxEnergyResist();
+
+        // Combat
+        this.luck = data.getLuck();
+        this.damageMin = data.getDamageMin();
+        this.damageMax = data.getDamageMax();
+        this.tithingPoints = data.getTithingPoints();
+
+        this.defenseChanceIncrease = data.getDefenseChanceIncrease();
+        this.maxDefenseChanceIncrease = data.getMaxDefenseChanceIncrease();
+        this.hitChanceIncrease = data.getHitChanceIncrease();
+        this.swingSpeedIncrease = data.getSwingSpeedIncrease();
+        this.weaponDamageIncrease = data.getWeaponDamageIncrease();
+        this.lowerReagentCost = data.getLowerReagentCost();
+        this.spellDamageIncrease = data.getSpellDamageIncrease();
+        this.reflectPhysicalDamage = data.getReflectPhysicalDamage();
+        this.enhancePotions = data.getEnhancePotions();
+        this.fasterCastRecovery = data.getFasterCastRecovery();
+        this.fasterCasting = data.getFasterCasting();
+        this.lowerManaCost = data.getLowerManaCost();
+
+        // Equipment
+        this.equippedItems = new ConcurrentHashMap<>();
+        if (data.getEquippedItems() != null) {
+            data.getEquippedItems().forEach(this::equipItem);
+        }
+
+        // Skills
+        this.skills = new SkillContainer(
+                Optional.ofNullable(data.getSkills())
+                        .map(Map::values)
+                        .orElse(new ArrayList<>())
+        );
     }
 
-    public UOMobile(UOMobile other) {
-        super(
-                other.getSerialId(),
-                other.getModelId(),
-                other.getX(),
-                other.getY(),
-                other.getZ(),
-                other.getName(),
-                other.getDisplayName(),
-                other.persistentAttributes());
-        this.id = other.id;
-        this.direction = other.getDirection();
-        this.hue = other.getHue();
-        this.status = other.getStatus();
-        this.notoriety = other.getNotoriety();
-        this.running = other.isRunning();
-        this.race = other.getRace();
-        this.gender = other.getGender();
-        this.type = other.getType();
-        this.alive = other.isAlive();
-
-        this.hitpoints = other.getHitpoints();
-        this.maxHitpoints = other.getMaxHitpoints();
-
-        this.strength = other.getStrength();
-        this.dexterity = other.getDexterity();
-        this.intelligence = other.getIntelligence();
-
-        this.stamina = other.getStamina();
-        this.maxStamina = other.getMaxStamina();
-
-        this.mana = other.getMana();
-        this.maxMana = other.getMaxMana();
-
-        this.gold = other.getGold();
-        this.weight = other.getWeight();
-        this.maxWeight = other.getMaxWeight();
-        this.statCap = other.getStatCap();
-
-        this.followers = other.getFollowers();
-        this.maxFollowers = other.getMaxFollowers();
-
-        this.physicalResist = other.getPhysicalResist();
-        this.maxPhysicalResist = other.getMaxPhysicalResist();
-        this.fireResist = other.getFireResist();
-        this.maxFireResist = other.getMaxFireResist();
-        this.coldResist = other.getColdResist();
-        this.maxColdResist = other.getMaxColdResist();
-        this.poisonResist = other.getPoisonResist();
-        this.maxPoisonResist = other.getMaxPoisonResist();
-        this.energyResist = other.getEnergyResist();
-        this.maxEnergyResist = other.getMaxEnergyResist();
-
-        this.luck = other.getLuck();
-        this.damageMin = other.getDamageMin();
-        this.damageMax = other.getDamageMax();
-
-        this.tithingPoints = other.getTithingPoints();
-
-        this.defenseChanceIncrease = other.getDefenseChanceIncrease();
-        this.maxDefenseChanceIncrease = other.getMaxDefenseChanceIncrease();
-        this.hitChanceIncrease = other.getHitChanceIncrease();
-        this.swingSpeedIncrease = other.getSwingSpeedIncrease();
-        this.weaponDamageIncrease = other.getWeaponDamageIncrease();
-        this.lowerReagentCost = other.getLowerReagentCost();
-        this.spellDamageIncrease = other.getSpellDamageIncrease();
-        this.reflectPhysicalDamage = other.getReflectPhysicalDamage();
-        this.enhancePotions = other.getEnhancePotions();
-        this.fasterCastRecovery = other.getFasterCastRecovery();
-        this.fasterCasting = other.getFasterCasting();
-        this.lowerManaCost = other.getLowerManaCost();
-
-        this.backpack = other.getBackpack();
-        this.equippedItems = other.getEquippedItems();
-
-        this.skills = other.skills;
-    }
-
-    public UOMobile(
-            UUID id,
-            int serialId,
-            int modelId,
-            int x,
-            int y,
-            int z,
-            String name,
-            String displayName,
-            AttributeMap attrMap,
-            Direction direction,
-            int hue,
-            CharacterStatus status,
-            Notoriety notoriety,
-            boolean running,
-            Race race,
-            Gender gender,
-            int hitpoints,
-            int maxHitpoints,
-            int strength,
-            int dexterity,
-            int intelligence,
-            int stamina,
-            int maxStamina,
-            int mana,
-            int maxMana,
-            int gold,
-            int weight,
-            int maxWeight,
-            int statCap,
-            int followers,
-            int maxFollowers,
-            int physicalResist,
-            int maxPhysicalResist,
-            int fireResist,
-            int maxFireResist,
-            int coldResist,
-            int maxColdResist,
-            int poisonResist,
-            int maxPoisonResist,
-            int energyResist,
-            int maxEnergyResist,
-            int luck,
-            int damageMin,
-            int damageMax,
-            int tithingPoints,
-            int defenseChanceIncrease,
-            int maxDefenseChanceIncrease,
-            int hitChanceIncrease,
-            int swingSpeedIncrease,
-            int weaponDamageIncrease,
-            int lowerReagentCost,
-            int spellDamageIncrease,
-            int reflectPhysicalDamage,
-            int enhancePotions,
-            int fasterCastRecovery,
-            int fasterCasting,
-            int lowerManaCost) {
-        super(serialId, modelId, x, y, z, name, displayName, attrMap);
-        this.id = id;
-        this.direction = direction;
-        this.hue = hue;
-        this.status = status;
-        this.notoriety = notoriety;
-        this.running = running;
-        this.race = race;
-        this.gender = gender;
-        this.alive = true;
-
-        this.hitpoints = hitpoints;
-        this.maxHitpoints = maxHitpoints;
-
-        this.strength = strength;
-        this.dexterity = dexterity;
-        this.intelligence = intelligence;
-
-        this.stamina = stamina;
-        this.maxStamina = maxStamina;
-
-        this.mana = mana;
-        this.maxMana = maxMana;
-
-        this.gold = gold;
-        this.weight = weight;
-        this.maxWeight = maxWeight;
-        this.statCap = statCap;
-
-        this.followers = followers;
-        this.maxFollowers = maxFollowers;
-
-        this.physicalResist = physicalResist;
-        this.maxPhysicalResist = maxPhysicalResist;
-        this.fireResist = fireResist;
-        this.maxFireResist = maxFireResist;
-        this.coldResist = coldResist;
-        this.maxColdResist = maxColdResist;
-        this.poisonResist = poisonResist;
-        this.maxPoisonResist = maxPoisonResist;
-        this.energyResist = energyResist;
-        this.maxEnergyResist = maxEnergyResist;
-
-        this.luck = luck;
-        this.damageMin = damageMin;
-        this.damageMax = damageMax;
-
-        this.tithingPoints = tithingPoints;
-
-        this.defenseChanceIncrease = defenseChanceIncrease;
-        this.maxDefenseChanceIncrease = maxDefenseChanceIncrease;
-        this.hitChanceIncrease = hitChanceIncrease;
-        this.swingSpeedIncrease = swingSpeedIncrease;
-        this.weaponDamageIncrease = weaponDamageIncrease;
-        this.lowerReagentCost = lowerReagentCost;
-        this.spellDamageIncrease = spellDamageIncrease;
-        this.reflectPhysicalDamage = reflectPhysicalDamage;
-        this.enhancePotions = enhancePotions;
-        this.fasterCastRecovery = fasterCastRecovery;
-        this.fasterCasting = fasterCasting;
-        this.lowerManaCost = lowerManaCost;
-        this.skills = new SkillContainer();
-    }
+    // =========================
+    // Persistence Mapping
+    // =========================
 
     @Override
     protected UOMobileData createData() {
-        return null;
+        return new UOMobileData();
     }
+
+    @Override
+    protected void populateData(UOMobileData data) {
+        super.populateData(data);
+
+        data.setDirection(direction);
+        data.setHue(hue);
+        data.setStatus(status);
+        data.setNotoriety(notoriety);
+        data.setRunning(running);
+        data.setRace(race);
+        data.setGender(gender);
+        data.setType(type);
+        data.setAlive(alive);
+
+        data.setHitpoints(hitpoints);
+        data.setMaxHitpoints(maxHitpoints);
+        data.setStamina(stamina);
+        data.setMaxStamina(maxStamina);
+        data.setMana(mana);
+        data.setMaxMana(maxMana);
+
+        data.setStrength(strength);
+        data.setDexterity(dexterity);
+        data.setIntelligence(intelligence);
+        data.setStatCap(statCap);
+
+        data.setGold(gold);
+        data.setWeight(weight);
+        data.setMaxWeight(maxWeight);
+
+        data.setFollowers(followers);
+        data.setMaxFollowers(maxFollowers);
+
+        data.setPhysicalResist(physicalResist);
+        data.setMaxPhysicalResist(maxPhysicalResist);
+        data.setFireResist(fireResist);
+        data.setColdResist(coldResist);
+        data.setPoisonResist(poisonResist);
+        data.setMaxPoisonResist(maxPoisonResist);
+        data.setEnergyResist(energyResist);
+
+        data.setLuck(luck);
+        data.setDamageMin(damageMin);
+        data.setDamageMax(damageMax);
+        data.setTithingPoints(tithingPoints);
+
+        data.setDefenseChanceIncrease(defenseChanceIncrease);
+
+        data.setSkills(skills.getSkillMap());
+        data.setEquippedItems(equippedItems);
+    }
+
+    // =========================
+    // Equipment Logic
+    // =========================
 
     public void equipItem(UOItem item) {
-        if (Layer.BACKPACK.equals(item.getLayer())) {
-            this.backpack = (UOContainer) item;
-        }
-        equipItem(item.getLayer(), item);
+        equipItem(item.getLayer(), item.getSerialId());
     }
 
-    public void equipItem(Layer layer, UOItem item) {
-        equippedItems.put(layer, item);
-        item.equip(this);
+    private void equipItem(Layer layer, Integer serialId) {
+        if (Layer.BACKPACK.equals(layer)) {
+            this.backpack = serialId;
+        }
+        equippedItems.put(layer, serialId);
     }
 
     public void unequipItem(UOItem item) {
-        item.unequip();
         equippedItems.remove(item.getLayer());
     }
 
     public boolean isItemEquipped(UOItem item) {
-        return equippedItems.containsValue(item);
+        return equippedItems.containsValue(item.getSerialId());
     }
 
     public boolean isLayerAvailable(Layer layer) {
@@ -323,61 +344,17 @@ public class UOMobile extends UOObject<UOMobileData> implements Container {
     }
 
     public void setBackpack(UOContainer backpack) {
-        this.backpack = backpack;
-        equippedItems.put(Layer.BACKPACK, backpack);
-    }
-
-    @Override
-    public void addItemsToContainer(List<UOItem> items) {
-        for (UOItem item : items) {
-            addItemToContainer(item);
-        }
-    }
-
-    @Override
-    public void addItemToContainer(UOItem item) {
-        if (backpack == null) {
-            throw new IllegalStateException("Backpack does not exist for player " + getName());
-        }
-        backpack.addItemToContainer(item);
-    }
-
-    @Override
-    public void addItemToContainer(UOItem item, Location locationInContainer) {
-        if (backpack == null) {
-            throw new IllegalStateException("Backpack does not exist for player " + getName());
-        }
-        backpack.addItemToContainer(item, locationInContainer);
-    }
-
-    @Override
-    public void removeItemFromContainer(UOItem item) {
-        backpack.removeItemFromContainer(item);
-    }
-
-    @Override
-    public Collection<UOItem> getContainerItems() {
-        return backpack.getContainerItems();
-    }
-
-    @Override
-    public int getContainerGumpId() {
-        return backpack.getContainerGumpId();
-    }
-
-    @Deprecated
-    public void move(Direction direction) {
-        this.direction = direction;
-        setLocation(getX() + direction.getDx(), getY() + direction.getDy());
+        this.backpack = backpack.getSerialId();
+        equippedItems.put(Layer.BACKPACK, backpack.getSerialId());
     }
 
     public boolean isMounted() {
         return equippedItems.containsKey(Layer.MOUNT);
     }
 
-    public UOItem getMountedItem() {
-        return equippedItems.get(Layer.MOUNT);
-    }
+    // =========================
+    // State Helpers
+    // =========================
 
     public boolean isWarMode() {
         return CharacterStatus.WAR_MODE.equals(status);
@@ -387,8 +364,20 @@ public class UOMobile extends UOObject<UOMobileData> implements Container {
         return serialId <= MOBILES_MAX_SERIAL_ID;
     }
 
+    /**
+     * Registers the killer of this mobile for persistence/logging.
+     */
     public void registerKiller(UOObject<?> killer) {
         persistentAttributes()
                 .add(AttributeKeys.MOBILE_KILLED_BY, killer.getSerialId());
+    }
+
+    /**
+     * @deprecated Movement should be handled by movement systems / game loop.
+     */
+    @Deprecated
+    public void move(Direction direction) {
+        this.direction = direction;
+        setLocation(getX() + direction.getDx(), getY() + direction.getDy());
     }
 }

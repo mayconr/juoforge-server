@@ -18,10 +18,10 @@ public class UOItemData extends UOObjectData {
     private boolean movable;
     private boolean hidden;
     private Direction direction;
-    private Integer containerSerialId;
     private List<ItemFlag> flags;
     private int unitWeight;
-    private Integer ownerSerialId;
+    private ItemLocationType locationType;
+    private Integer parentSerial;
     private String mountName;
 
     // Container

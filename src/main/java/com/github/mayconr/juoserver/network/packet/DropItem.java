@@ -30,7 +30,7 @@ public class DropItem extends AbstractPacket implements Location {
         this.containerSerialId = buf.readInt();
     }
 
-    public boolean isContainerDrop() {
-        return containerSerialId > -1;
+    public boolean isGroundDrop() {
+        return containerSerialId < 0;
     }
 }
