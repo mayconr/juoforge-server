@@ -52,6 +52,15 @@ public class Flow<T extends AbstractContext> {
                         handleAsyncResult(context, step, start, index, nextResult);
                     });
                 }
+
+                case SKIP -> {
+                    context.trace().logStep(step.name(), elapsed(start), "SKIP: " + result.reason());
+                    executeStep(context, index + 1);
+                }
+
+                case STOP -> {
+                    context.trace().logStep(step.name(), elapsed(start), "STOP: " + result.reason());
+                }
             }
 
         } catch (Exception e) {
@@ -80,7 +89,6 @@ public class Flow<T extends AbstractContext> {
             }
 
             case ASYNC -> {
-                // edge case: async dentro de async
                 result.next().whenComplete((r, t) -> {
                     if (t != null) {
                         context.trace().logStep(step.name(), elapsed(start), "FAIL");
@@ -88,6 +96,15 @@ public class Flow<T extends AbstractContext> {
                     }
                     handleAsyncResult(context, step, start, index, r);
                 });
+            }
+
+            case SKIP -> {
+                context.trace().logStep(step.name(), elapsed(start), "SKIP: " + result.reason());
+                executeStep(context, index + 1);
+            }
+
+            case STOP -> {
+                context.trace().logStep(step.name(), elapsed(start), "STOP: " + result.reason());
             }
         }
     }

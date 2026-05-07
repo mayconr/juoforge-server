@@ -1,11 +1,12 @@
 package com.github.mayconr.juoserver.game.mobile;
 
-import com.github.mayconr.juoserver.game.flow.DeathFlowDefinition.DeathContext;
-import com.github.mayconr.juoserver.game.flow.EquipItemFlowDefinition;
-import com.github.mayconr.juoserver.game.flow.UnequipItemFlowDefinition.UnequipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
+import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
-import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
 import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
@@ -25,10 +26,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MobileModuleImpl implements MobileModule {
 
-    private final MountService mountService;
     private final MovementService movementService;
     private final NpcDespawnService npcDespawnService;
-    private final NpcTemplateRegistry npcTemplateRegistry;
     private final Wallet wallet;
     private final EventBus eventBus;
     private final RealmStorage storage;
@@ -38,8 +37,6 @@ public class MobileModuleImpl implements MobileModule {
     @Override
     public void initialize(ModuleContext context) {
         this.flows = context.flows();
-
-        mountService.initialize(context);
     }
 
     @Override
@@ -49,31 +46,12 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void mount(UOPlayer player, UONpc npc) {
-        if (mountService.mount(player, npc) != null) {
-            //npcCreationService.deleteMobile(npc);
-        }
+        flows.execute(new MountContext(player, npc));
     }
 
     @Override
     public void unmount(UOPlayer player) {
-        var item = mountService.unmount(player);
-        if (item != null) {
-            final var npcName = (String) item.persistentAttributes().get("npcName");
-            if (npcName == null) {
-                log.debug("Item [{}] is not a mount item", item.getName());
-                return;
-            }
-            final var template = npcTemplateRegistry.get(npcName);
-            if (template == null) {
-                throw  new IllegalStateException("NPC [" + npcName + "] is not a mount item");
-            }
-
-            //npcCreationService.createNpc(template, player);
-
-            if (log.isDebugEnabled()) {
-                log.debug("Created mount NPC [{}]", npcName);
-            }
-        }
+        flows.execute(new UnmountContext(player));
     }
 
     @Override
@@ -100,7 +78,7 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public boolean equipItem(UOMobile mobile, UOItem item) {
-        var context = new EquipItemFlowDefinition.EquipItemContext(mobile, item);
+        var context = new EquipItemContext(mobile, item);
         flows.execute(context);
         //itemEquipService.equipItem(mobile, item);
         return context.isEquipped();

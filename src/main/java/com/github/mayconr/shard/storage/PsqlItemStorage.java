@@ -1,6 +1,5 @@
 package com.github.mayconr.shard.storage;
 
-import com.github.mayconr.juoserver.game.model.ItemNotFoundException;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOItemData;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
@@ -78,7 +77,7 @@ public class PsqlItemStorage implements ItemStorage {
     }
 
     @Override
-    public CompletableFuture<Collection<UOItemData>> saveItems(int serial, Collection<UOItemData> items, Collection<UOItemData> dirties) {
+    public CompletableFuture<Collection<UOItemData>> saveItems(int currentSerialId, Collection<UOItemData> items, Collection<UOItemData> dirties) {
         return CompletableFuture.supplyAsync(()->{
             try (var session = sessionFactory.openSession(false)) {
                 try {
@@ -88,10 +87,10 @@ public class PsqlItemStorage implements ItemStorage {
                         itemMapper.upsert(itemData);
                     }
 
-                    itemMapper.updateItemSerial(serial);
+                    itemMapper.updateItemSerial(currentSerialId);
 
                     for (UOItemData dirty : dirties) {
-                        itemMapper.deleteById(dirty.getId());
+                        itemMapper.deleteBySerialId(dirty.getSerialId());
                     }
 
                     session.commit();
@@ -103,22 +102,6 @@ public class PsqlItemStorage implements ItemStorage {
                 }
             }
         }, executor);
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOItemData>> saveStates(Collection<UOItemData> items) {
-        try (var session = sessionFactory.openSession(true)) {
-            try {
-                for (UOItemData data : items) {
-                    session.getMapper(ItemMapper.class).upsertItemState(data);
-                }
-                session.commit();
-                return CompletableFuture.completedFuture(items);
-            } catch (Exception e) {
-                session.rollback();
-                throw new RuntimeException(e);
-            }
-        }
     }
 
 }

@@ -20,9 +20,10 @@ public class UOItemData extends UOObjectData {
     private Direction direction;
     private List<ItemFlag> flags;
     private int unitWeight;
+    
     private ItemLocationType locationType;
-    private Integer parentSerial;
-    private String mountName;
+    private Integer ownerSerialId;
+    private Integer containerSerialId;
 
     // Container
     private int containerGumpId;

@@ -6,8 +6,7 @@
     "modelId": 16032,
     "movable": false,
     "hue": 0,
-    "flags": ["WEARABLE", "MOUNT"],
-    "mountName": "horse"
+    "flags": ["WEARABLE", "MOUNT"]
   },
   {
     "name": "llama_item",
@@ -16,8 +15,7 @@
     "modelId": 16038, // 0x3EA6
     "movable": false,
     "hue": 0,
-    "flags": ["WEARABLE", "MOUNT"],
-    "mountName": "horse"
+    "flags": ["WEARABLE", "MOUNT"]
   },
   {
     "name": "ethereal_giant_beetle_item",
@@ -26,7 +24,6 @@
     "modelId": 16023, // 0x3E97
     "movable": true,
     "hue": 0,
-    "flags": ["WEARABLE", "MOUNT"],
-    "mountName": "horse"
+    "flags": ["WEARABLE", "MOUNT"]
   }
 ]

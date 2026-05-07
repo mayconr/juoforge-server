@@ -1,7 +1,8 @@
 package com.github.mayconr.juoserver.game.item.flow.creation.placement;
 
-import com.github.mayconr.juoserver.game.flow.ItemCreationFlowDefinition.ItemCreationContext;
+import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.EquipItemTarget;
+import com.github.mayconr.juoserver.game.model.ItemLocation;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.event.EquippedItemCreated;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
@@ -17,6 +18,7 @@ public class PlaceEquippedItemStep extends AbstractFlowStep<ItemCreationContext>
         if (context.getTarget() instanceof EquipItemTarget(UOMobile mobile)) {
             var item = context.result();
 
+            item.setCurrentLocation(ItemLocation.equipped(mobile.getSerialId()));
             mobile.equipItem(item);
             context.setEvent(new EquippedItemCreated(mobile, item));
 

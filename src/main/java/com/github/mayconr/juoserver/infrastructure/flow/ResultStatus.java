@@ -3,5 +3,7 @@ package com.github.mayconr.juoserver.infrastructure.flow;
 public enum ResultStatus {
     SUCCESS,
     FAILURE,
-    ASYNC
+    ASYNC,
+    STOP,
+    SKIP,
 }

@@ -46,10 +46,11 @@ public interface RealmStorage {
 
     UOMobile createMobile(UOMobileData data);
 
-    CompletableFuture<UOPlayer> insertPlayerMobile(
-            int mobileSerialId,
-            int itemSerialId,
-            UOPlayer player
+    CompletableFuture<UOPlayer> saveNewPlayerMobile(
+            int currentMobileSerialId,
+            UOPlayer player,
+            int currentItemSerialId,
+            List<UOItem> starterItems
     );
 
     // =========================
@@ -128,7 +129,5 @@ public interface RealmStorage {
     CompletableFuture<Collection<UOMobile>> saveMobiles();
 
     CompletableFuture<Collection<UOItem>> saveItems();
-
-    CompletableFuture<Collection<UOItem>> saveItemStates();
 
 }

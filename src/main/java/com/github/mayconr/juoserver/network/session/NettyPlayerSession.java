@@ -599,12 +599,15 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onVendorTradeSessionOpened(VendorSessionOpened event) {
         if (player.equals(event.player())) {
-            /*final var vendor = event.vendor();
-            final var restockContainer = (UOContainer) vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
-            channel.write(AddMultipleItemsToContainer.ofStockItem(restockContainer, event.session().items().values()));
-            channel.write(new VendorBuyList(restockContainer, event.session().items().values()));
+            final var vendor = event.vendor();
+            final var sellContainerSerialId = vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
+            final var sellContainer = world.getContainerBySerialId(sellContainerSerialId)
+                    .orElseThrow(() -> new RuntimeException("Sell container not found for serial "+sellContainerSerialId));
+
+            channel.write(AddMultipleItemsToContainer.ofStockItem(sellContainer, event.session().items().values()));
+            channel.write(new VendorBuyList(sellContainer, event.session().items().values()));
             channel.write(new DrawContainer(vendor.getSerialId(), 0x0030));
-            channel.flush();*/
+            channel.flush();
             // TODO locate items for uocontainer
         }
     }

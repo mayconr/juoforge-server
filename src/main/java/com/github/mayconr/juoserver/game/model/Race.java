@@ -10,7 +10,8 @@ import java.util.List;
 public enum Race {
     HUMAN(1, List.of(0,1,2,3)),
     ELF(2, List.of(4,5)),
-    GARGOYLE(3, List.of(6,7)),;
+    GARGOYLE(3, List.of(6,7)),
+    UNKNOWN(100, List.of()),;
 
     private final int code;
     private final List<Integer> packetCodes;

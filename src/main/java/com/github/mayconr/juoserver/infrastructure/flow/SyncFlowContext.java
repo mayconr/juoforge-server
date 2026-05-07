@@ -9,6 +9,12 @@ public abstract class SyncFlowContext<T> extends AbstractContext {
     }
 
     public T result() {
+        if (result == null) throw new IllegalStateException("result is null");
+        return result;
+    }
+
+    public T result(String nullValueMessage) {
+        if (result == null) throw new IllegalStateException(nullValueMessage);
         return result;
     }
 }

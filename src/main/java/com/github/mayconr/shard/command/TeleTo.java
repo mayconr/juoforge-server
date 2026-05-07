@@ -17,7 +17,7 @@ public class TeleTo extends AbstractCommand {
     public void handle(Prompt event) {
         if (event.player() instanceof  UOPlayer player) {
             world.sendTarget(player, CursorType.HARMFUL, res->{
-                if (res.isStatics()) {
+                if (res.isStatic()) {
                     world.move(event.player(), res.location());
                 }
             });

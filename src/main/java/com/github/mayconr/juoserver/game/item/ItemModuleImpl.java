@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.item;
 
-import com.github.mayconr.juoserver.game.flow.DropItemFlowDefinition.DropItemContext;
-import com.github.mayconr.juoserver.game.flow.ItemCreationFlowDefinition.ItemCreationContext;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
+import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
@@ -28,14 +28,14 @@ public class ItemModuleImpl implements ItemModule {
     public UOItem createItem(ItemRequest request, ItemTarget target) {
         var context = new ItemCreationContext(request, target);
         flows.execute(context);
-        return context.result();
+        return context.result("Cannot create item for request "+request);
     }
 
     @Override
     public UOItem createItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> options) {
         var context = new ItemCreationContext(request, target, options);
         flows.execute(context);
-        return context.result();
+        return context.result("Cannot create item for request "+request);
     }
 
     @Override

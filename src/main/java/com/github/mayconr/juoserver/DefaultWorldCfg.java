@@ -1,12 +1,5 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.game.ai.AI;
-import com.github.mayconr.juoserver.game.ai.BehaviorProfile;
-import com.github.mayconr.juoserver.game.ai.ais.DialogueReactiveAI;
-import com.github.mayconr.juoserver.game.ai.ais.PassiveAnimalAI;
-import com.github.mayconr.juoserver.game.ai.profiles.AnimalBehaviorProfile;
-import com.github.mayconr.juoserver.game.ai.profiles.BankerBehaviorProfile;
-import com.github.mayconr.juoserver.game.ai.profiles.VendorBehaviorProfile;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.economy.ScarcityBasedPricingStrategy;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
@@ -37,10 +30,6 @@ public class DefaultWorldCfg implements WorldCfg {
     private Function<World, Wallet> wallet = PhisycalGoldWallet::new;
     private Supplier<PricingStrategy> pricingStrategy = ScarcityBasedPricingStrategy::new;
 
-    // ===== AI =====
-    private final List<AI> aiList = new ArrayList<>(defaultAIs());
-    private final List<BehaviorProfile> behaviorProfileList = new ArrayList<>(defaultBehaviorProfiles());
-
     // ===== Item trigger ====
     private final List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList = new ArrayList<>();
 
@@ -55,21 +44,6 @@ public class DefaultWorldCfg implements WorldCfg {
     private ItemStorage itemStorage;
     private AccountStorage accountStorage;
 
-    private static List<AI> defaultAIs() {
-        return List.of(
-                new DialogueReactiveAI(),
-                new PassiveAnimalAI()
-        );
-    }
-
-    private static List<BehaviorProfile> defaultBehaviorProfiles() {
-        return List.of(
-                new VendorBehaviorProfile(),
-                new BankerBehaviorProfile(),
-                new AnimalBehaviorProfile()
-        );
-    }
-
     // ===== Economy =====
 
     @Override
@@ -80,18 +54,6 @@ public class DefaultWorldCfg implements WorldCfg {
     @Override
     public void pricingStrategy(Supplier<PricingStrategy> pricingStrategyFactory) {
         this.pricingStrategy = pricingStrategyFactory;
-    }
-
-    // ===== AI =====
-
-    @Override
-    public void addNpcAI(AI ai) {
-        this.aiList.add(ai);
-    }
-
-    @Override
-    public void addBehaviorProfile(BehaviorProfile profile) {
-        this.behaviorProfileList.add(profile);
     }
 
     // ===== Item Triggers =====
@@ -142,16 +104,6 @@ public class DefaultWorldCfg implements WorldCfg {
     @Override
     public Supplier<PricingStrategy> pricingStrategy() {
         return pricingStrategy;
-    }
-
-    @Override
-    public List<AI> aiList() {
-        return List.copyOf(aiList);
-    }
-
-    @Override
-    public List<BehaviorProfile> behaviorProfileList() {
-        return List.copyOf(behaviorProfileList);
     }
 
     @Override

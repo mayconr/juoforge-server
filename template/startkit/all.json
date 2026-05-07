@@ -1,0 +1,12 @@
+[
+  {
+    "name" : "anatomy_gold",
+    "item" : "gold_coin",
+    "amount" : 100
+  },
+  {
+    "name" : "mount",
+    "item" : "horse_item",
+    "amount" : 1
+  }
+]

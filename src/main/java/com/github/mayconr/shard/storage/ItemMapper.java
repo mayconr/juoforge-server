@@ -3,7 +3,6 @@ package com.github.mayconr.shard.storage;
 import com.github.mayconr.juoserver.game.model.UOItemData;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface ItemMapper {
 
@@ -23,6 +22,6 @@ public interface ItemMapper {
 
     int upsertItemState(UOItemData data);
 
-    int deleteById(UUID id);
+    int deleteBySerialId(int serialId);
 
 }

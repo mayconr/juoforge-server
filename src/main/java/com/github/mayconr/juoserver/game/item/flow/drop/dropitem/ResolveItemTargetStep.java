@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.item.flow.drop.dropitem;
 
-import com.github.mayconr.juoserver.game.flow.DropItemFlowDefinition.DropItemContext;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;

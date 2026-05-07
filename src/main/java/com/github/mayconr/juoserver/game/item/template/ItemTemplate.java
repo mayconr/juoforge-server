@@ -46,7 +46,7 @@ public record ItemTemplate(String name,
         data.setDirection(Direction.NORTH);
         data.setFlags(flags);
         data.setContainerGumpId(containerGumpId);
-        data.setMountName(mountName);
+        data.setLocationType(ItemLocationType.ORPHAN);
         return data;
     }
 }

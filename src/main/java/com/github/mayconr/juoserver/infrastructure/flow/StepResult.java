@@ -15,4 +15,12 @@ public record StepResult(ResultStatus status, CompletableFuture<StepResult> next
     public static StepResult async(CompletableFuture<StepResult> future) {
         return new StepResult(ResultStatus.ASYNC, future, null);
     }
+
+    public static StepResult stop() {
+        return new StepResult(ResultStatus.STOP, null, null);
+    }
+
+    public static StepResult skip() {
+        return new StepResult(ResultStatus.SKIP, null, null);
+    }
 }

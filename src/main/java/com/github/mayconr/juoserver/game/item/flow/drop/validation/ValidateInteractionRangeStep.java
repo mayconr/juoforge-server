@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.item.flow.drop.validation;
 
-import com.github.mayconr.juoserver.game.flow.DropItemFlowDefinition.DropItemContext;
-import com.github.mayconr.juoserver.game.flow.DropItemFlowDefinition.DropItemContext.DropTarget;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext.DropTarget;
 import com.github.mayconr.juoserver.game.messaging.MessageModule;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.model.EquippedLocation;

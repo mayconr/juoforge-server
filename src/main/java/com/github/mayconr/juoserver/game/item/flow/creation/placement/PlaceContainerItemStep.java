@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.item.flow.creation.placement;
 
-import com.github.mayconr.juoserver.game.flow.ItemCreationFlowDefinition.ItemCreationContext;
+import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.ContainerItemTarget.Options;
 import com.github.mayconr.juoserver.game.model.event.ItemCreatedInContainer;
@@ -43,7 +43,7 @@ public class PlaceContainerItemStep extends AbstractFlowStep<ItemCreationContext
 
                 // Item is stackable, but is unable to stack. Should bed added to container
                 if (updatedItem.equals(item)) {
-                    item.setCurrentLocation(new ContainerLocation(container.getSerialId()));
+                    item.setCurrentLocation(ItemLocation.container(container.getSerialId()));
                     container.addItemToContainer(updatedItem);
                 }
 

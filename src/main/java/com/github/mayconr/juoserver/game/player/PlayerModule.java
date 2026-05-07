@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.player;
 
-import com.github.mayconr.juoserver.game.flow.PlayerCreationFlowDefinition.PlayerCreationContext;
+import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationContext;
 import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedIn;

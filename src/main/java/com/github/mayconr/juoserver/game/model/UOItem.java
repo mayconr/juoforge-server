@@ -19,7 +19,6 @@ public class UOItem extends UOObject<UOItemData> {
     private boolean movable;
     private boolean hidden;
     private Direction direction;
-    private String mountName;
     private ItemLocation currentLocation;
     private ItemLocation previousLocation;
     private List<ItemFlag> flags;
@@ -35,12 +34,12 @@ public class UOItem extends UOObject<UOItemData> {
         this.direction = data.getDirection();
         this.flags = data.getFlags();
         this.unitWeight = data.getUnitWeight();
-        this.mountName = data.getMountName();
-        switch (data.getLocationType() == null ? ItemLocationType.EQUIPPED : data.getLocationType()) {
-            case EQUIPPED -> this.currentLocation = new EquippedLocation(data.getParentSerial());
-            case CONTAINER ->  this.currentLocation = new ContainerLocation(data.getParentSerial());
-            case GROUND ->  this.currentLocation = new GroundLocation();
-        }
+        this.currentLocation = switch (data.getLocationType() == null ? ItemLocationType.EQUIPPED : data.getLocationType()) {
+            case EQUIPPED -> ItemLocation.equipped(data.getOwnerSerialId());
+            case CONTAINER -> ItemLocation.container(data.getContainerSerialId());
+            case GROUND ->  ItemLocation.ground();
+            case ORPHAN -> ItemLocation.orphan();
+        };
     }
 
     public static boolean isItem(int serialId) {
@@ -66,11 +65,11 @@ public class UOItem extends UOObject<UOItemData> {
 
         switch (currentLocation) {
             case EquippedLocation location -> {
-                data.setParentSerial(location.ownerSerialId());
+                data.setOwnerSerialId(location.ownerSerialId());
                 data.setLocationType(ItemLocationType.EQUIPPED);
             }
             case ContainerLocation location -> {
-                data.setParentSerial(location.containerSerialId());
+                data.setContainerSerialId(location.containerSerialId());
                 data.setLocationType(ItemLocationType.CONTAINER);
             }
             case GroundLocation location -> data.setLocationType(ItemLocationType.GROUND);

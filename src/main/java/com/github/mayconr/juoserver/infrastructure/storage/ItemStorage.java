@@ -1,6 +1,5 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
-import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOItemData;
 
@@ -28,7 +27,6 @@ public interface ItemStorage {
 
     CompletableFuture<UOItem> saveItemFull(UOItem item);
 
-    CompletableFuture<Collection<UOItemData>> saveItems(int serial, Collection<UOItemData> items, Collection<UOItemData> dirties);
+    CompletableFuture<Collection<UOItemData>> saveItems(int currentSerialId, Collection<UOItemData> items, Collection<UOItemData> dirties);
 
-    CompletableFuture<Collection<UOItemData>> saveStates(Collection<UOItemData> items);
 }

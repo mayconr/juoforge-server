@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum ItemLocationType {
-    GROUND(0),
-    CONTAINER(1),
-    EQUIPPED(2),
-    ORPHAN(3);
+    GROUND(1),
+    CONTAINER(2),
+    EQUIPPED(3),
+    ORPHAN(4);
 
     private final int code;
 

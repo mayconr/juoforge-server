@@ -10,9 +10,10 @@ import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.mobile.npc.template.CachedNpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
-import com.github.mayconr.juoserver.game.player.template.StartkitTemplate;
+import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.World;
@@ -49,8 +50,10 @@ public final class WorldBootstrap {
     public static final String NPC_BY_NAME = "NPC_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_NAME = "ITEM_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_MODEL_ID = "ITEM_TEMPLATE_BY_MODEL_ID";
-    private static final String BODY_BY_BODY_KEY = "BODY_BY_BODY_KEY";
-    public static final String STARTKIT_BY_SKILL_ID = "STARTKIT_BY_SKILL_ID";
+    private static final String BODY_TEMPLATE_BY_BODY_KEY = "BODY_BY_BODY_KEY";
+    public static final String START_KIT_TEMPLATE_BY_SKILL_ID = "STARTKIT_BY_SKILL_ID";
+    private static final String MOUNT_TEMPLATE_BY_NPC_NAME = "MOUNT_TEMPLATE_BY_NPC_NAME";
+    private static final String MOUNT_TEMPLATE_BY_ITEM_NAME = "MOUNT_TEMPLATE_BY_ITEM_NAME";
 
     private final ShardBootstrap shardBootstrap;
 
@@ -64,10 +67,12 @@ public final class WorldBootstrap {
         configuration.addCustomTemplate(ITEM_TEMPLATE_BY_NAME, ItemTemplate.class, ItemTemplate::name, itemsPath);
         configuration.addCustomTemplate(ITEM_TEMPLATE_BY_MODEL_ID, ItemTemplate.class, ItemTemplate::modelId, itemsPath);
 
-        configuration.addCustomTemplate(BODY_BY_BODY_KEY, BodyTemplate.class, body -> new BodyKey(body.gender(), body.race()), Path.of("template/bodies"));
+        configuration.addCustomTemplate(BODY_TEMPLATE_BY_BODY_KEY, BodyTemplate.class, body -> new BodyKey(body.gender(), body.race()), Path.of("template/bodies"));
+        configuration.addCustomTemplate(START_KIT_TEMPLATE_BY_SKILL_ID, StartKitTemplate.class, StartKitTemplate::skillId, Path.of("template/startkit"));
 
-        configuration.addCustomTemplate(STARTKIT_BY_SKILL_ID, StartkitTemplate.class, StartkitTemplate::skillId, Path.of("template/startkit"));
-
+        final var mountsPath = Path.of("template/config/mounts.json");
+        configuration.addCustomTemplate(MOUNT_TEMPLATE_BY_NPC_NAME, MountTemplate.class, MountTemplate::npcName, mountsPath);
+        configuration.addCustomTemplate(MOUNT_TEMPLATE_BY_ITEM_NAME, MountTemplate.class, MountTemplate::itemName, mountsPath);
         shardBootstrap.configure(configuration);
 
         // --- Templates
@@ -95,17 +100,16 @@ public final class WorldBootstrap {
 
         // --- Templates
 
-        NpcTemplateRegistry npcTemplateRegistry =
-                new CachedNpcTemplateRegistry(new JsonTemplateLoader<>(Path.of("template/npcs"), NpcTemplate.class).load());
-
         ItemTemplateRegistry itemTemplateRegistry =
                 new CachedItemTemplateRegistry(new JsonTemplateLoader<>(Path.of("template/items"), ItemTemplate.class).load());
 
         final TemplateRegistry<String, NpcTemplate> npcTemplateByName = registryMap.get(NPC_BY_NAME);
         final TemplateRegistry<String, ItemTemplate> itemTemplateByName = registryMap.get(ITEM_TEMPLATE_BY_NAME);
         final TemplateRegistry<Integer, ItemTemplate> itemTemplateByModelId = registryMap.get(ITEM_TEMPLATE_BY_MODEL_ID);
-        final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateByName = registryMap.get(BODY_BY_BODY_KEY);
-        final TemplateRegistry<Integer, StartkitTemplate> startKitBySkillId = registryMap.get(STARTKIT_BY_SKILL_ID);
+        final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateByName = registryMap.get(BODY_TEMPLATE_BY_BODY_KEY);
+        final TemplateRegistry<Integer, StartKitTemplate> startKitTemplateBySkillId = registryMap.get(START_KIT_TEMPLATE_BY_SKILL_ID);
+        final TemplateRegistry<String, MountTemplate> mountTemplateByNpcName = registryMap.get(MOUNT_TEMPLATE_BY_NPC_NAME);
+        final TemplateRegistry<String, MountTemplate> mountTemplateByItemName = registryMap.get(MOUNT_TEMPLATE_BY_ITEM_NAME);
 
 
         // --- Region
@@ -140,12 +144,13 @@ public final class WorldBootstrap {
 
                 // Templates
                 itemTemplateRegistry,
-                npcTemplateRegistry,
                 npcTemplateByName,
                 itemTemplateByName,
                 itemTemplateByModelId,
                 bodyTemplateByName,
-                startKitBySkillId,
+                startKitTemplateBySkillId,
+                mountTemplateByNpcName,
+                mountTemplateByItemName,
 
                 settings,
                 configuration

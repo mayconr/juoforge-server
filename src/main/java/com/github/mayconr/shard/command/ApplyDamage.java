@@ -1,6 +1,7 @@
 package com.github.mayconr.shard.command;
 
 import com.github.mayconr.juoserver.ServerRuntime;
+import com.github.mayconr.juoserver.game.model.MobileTargetResult;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.DamageRequest;
 import com.github.mayconr.juoserver.game.model.DamageComponent;
@@ -23,10 +24,9 @@ public class ApplyDamage extends AbstractCommand {
     @Override
     public void handle(Prompt event) {
         world.sendTarget(event.player(), CursorType.HARMFUL, targetResult -> {
-            final var mobile = world.getMobileBySerialId(targetResult.serialId())
-                    .orElseThrow(() -> new IllegalStateException("No mobile found"));
-
-            world.applyDamage(new DamageRequest(event.player(), mobile, DamageSourceKind.COMMAND, List.of(new DamageComponent(DamageType.PHYSICAL, Integer.parseInt(event.arguments()[0])))));
+            if (targetResult instanceof MobileTargetResult rs) {
+                world.applyDamage(new DamageRequest(event.player(), rs.mobile(), DamageSourceKind.COMMAND, List.of(new DamageComponent(DamageType.PHYSICAL, Integer.parseInt(event.arguments()[0])))));
+            }
         });
 
     }

@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.item.flow.drop.placement;
 
-import com.github.mayconr.juoserver.game.flow.DropItemFlowDefinition.DropItemContext;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.model.ContainerLocation;
 import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked;

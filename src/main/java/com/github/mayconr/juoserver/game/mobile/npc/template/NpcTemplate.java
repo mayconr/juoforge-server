@@ -11,8 +11,9 @@ public record NpcTemplate(String name,
                           int modelId,
                           Notoriety notoriety,
                           int hue,
-                          String mountItemName,
                           BehaviorDefinition behavior,
+                          Race race,
+                          Gender gender,
                           Map<String, Object> attr,
                           List<String> equippedItems,
                           List<String> roles)
@@ -39,7 +40,8 @@ public record NpcTemplate(String name,
         data.setAlive(true);
         data.setRunning(false);
         data.setStatus(CharacterStatus.NORMAL);
-        data.setGender(Gender.MALE);
+        data.setGender(gender == null ? Gender.MALE : gender);
+        data.setRace(race == null ? Race.UNKNOWN : race);
 
         return data;
     }

@@ -50,9 +50,9 @@
 			<version>3.5.19</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.janinko</groupId>
+			<groupId>org.github.mayconr</groupId>
 			<artifactId>ultimasdk</artifactId>
-			<version>pre-03</version>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>

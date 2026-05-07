@@ -1,9 +1,12 @@
 package com.github.mayconr.shard.command;
 
-import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
+import com.github.mayconr.juoserver.game.model.ItemTargetResult;
+import com.github.mayconr.juoserver.game.model.MobileTargetResult;
+import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.ItemTarget;
+import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.world.World;
@@ -39,8 +42,9 @@ public class CreateItem extends AbstractCommand {
     }
 
     private void createEquippedItem(TargetResult result, String template) {
-        world.getMobileBySerialId(result.serialId())
-            .ifPresent(mobile -> world.createItem(ItemRequest.byName(template), ItemTarget.equip(mobile)));
+        if (result instanceof MobileTargetResult rs) {
+            world.createItem(ItemRequest.byName(template), ItemTarget.equip(rs.mobile()));
+        }
     }
 
     private void createGroundItem(TargetResult result, String template) {
@@ -48,7 +52,8 @@ public class CreateItem extends AbstractCommand {
     }
 
     private void createContainerItem(TargetResult result, String template) {
-        world.getContainerBySerialId(result.serialId())
-                .ifPresent(container -> world.createItem(ItemRequest.byName(template), ItemTarget.container(container)));
+        if (result instanceof ItemTargetResult rs) {
+            world.createItem(ItemRequest.byName(template), ItemTarget.container((UOContainer) rs.item()));
+        }
     }
 }

@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
-import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
+import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;

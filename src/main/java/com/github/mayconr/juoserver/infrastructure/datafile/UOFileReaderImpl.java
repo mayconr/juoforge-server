@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.Static;
 import eu.janinko.andaria.ultimasdk.files.Map;
 import eu.janinko.andaria.ultimasdk.files.Statics;
+import eu.janinko.andaria.ultimasdk.files.TileData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +24,7 @@ public class UOFileReaderImpl implements UOFileReader{
     private final GamePlaySettings settings;
     private Map map;
     private Statics statics;
+    private TileData tileData;
 
     public void loadFiles() {
         log.info("Loading files...");
@@ -35,6 +37,10 @@ public class UOFileReaderImpl implements UOFileReader{
             Path statics0 = Paths.get(settings.files().dataFileRoot() + File.separator + "statics0.mul");
             this.statics = Statics.open(staidx0, statics0);
             log.info("Statics loaded successfully!");
+
+            Path tiledata = Paths.get(settings.files().dataFileRoot() + File.separator + "tiledata.mul");
+            this.tileData = TileData.load(tiledata);
+            log.info("Tiledata loaded successfully!");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -59,13 +65,37 @@ public class UOFileReaderImpl implements UOFileReader{
 
     public List<Static> getStatics(int x, int y) {
         try {
-            return statics.getStatics(x, y)
+            var lista = statics.getStatics(x, y)
                     .stream()
                     .map(s->new Static(s.getId(), s.getX(), s.getY(), s.getZ(), s.getColor(), s.getXBlock(), s.getYBlock()))
                     .toList();
+            return lista;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
+    @Override
+    public boolean hasBlockingStatics(int x, int y, int z) {
+        try {
+            var lista = statics.getStatics(x, y);
+
+            /*int cont = 1;
+
+            for (var item : tileData.getItems()) {
+
+                System.out.println(item);
+                cont++;
+                if (cont >= 500) {
+                    break;
+                }
+            }*/
+
+            System.out.println("uiltima "+tileData.getItems());
+
+            return false;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 }

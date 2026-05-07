@@ -39,22 +39,39 @@ public class CachedRealmStorage implements RealmStorage {
         this.mobileSerialSupplier = mobileSerialSupplier;
         this.mobileDependencyLoader = new MobileDependencyLoader(mobileStorage, itemStorage, itemCache);
 
-        /*mobileStorage.findAllNpcs()
-            .thenCombine(itemStorage.findAllGroundItems().thenApply(ItemMapper::mapToItem), InitialData::new)
-            .thenAccept(data->{
-                for (UOMobile mobile : data.npcs()) {
-                    mobileDependencyLoader.loadDependencies(mobile)
-                            .thenApply(this::cache);
-                }
+        // Load all World NPCs
+        var loadGroundItems = itemStorage.findAllGroundItems()
+                .thenApply(ItemMapper::mapToItem);
+
+        // World initialized
+        mobileStorage.findAllNpcs()
+            .thenApply(MobileMapper::mapToMobile)
+            .thenCombine(loadGroundItems, InitialData::new)
+            .thenCompose(data -> {
+                var dependencyFutures = data.mobiles().stream()
+                        .map(mobile ->
+                                mobileDependencyLoader.loadDependencies(mobile)
+                                    .thenApply(this::cache)
+                                    .exceptionally(ex -> {
+                                        log.error("Failed loading {}", mobile, ex);
+                                        return null;
+                                    })
+                        )
+                        .toArray(CompletableFuture[]::new);
+
+                return CompletableFuture
+                        .allOf(dependencyFutures)
+                        .thenApply(v -> data);
+            })
+            .thenCompose(data->{
                 for (UOItem item : data.items()) {
                     itemCache.put(item);
                     worldItemIndex.add(item);
                 }
-
-                // World initialized
-                initialDataConsumer.accept(data);
+                return CompletableFuture.completedFuture(data);
             })
-            .whenComplete(this::logging);*/
+            .thenAccept(initialDataConsumer)
+            .whenComplete(this::logging);
     }
 
     // Serial allocation
@@ -264,13 +281,17 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public CompletableFuture<UOPlayer> insertPlayerMobile(int mobileSerialId, int itemSerialId, UOPlayer player) {
+    public CompletableFuture<UOPlayer> saveNewPlayerMobile(int currentMobileSerialId, UOPlayer player, int currentItemSerialId, List<UOItem> starterItems) {
         var data = player.toData();
-        var items = player.getEquippedItems().values().stream().map(itemCache::get).map(UOItem::toData).toList();
+        var itemsData = starterItems.stream().map(UOItem::toData).toList();
 
-        return mobileStorage.saveMobileFull(mobileSerialId, data, itemSerialId, items)
+        return mobileStorage.saveMobileFull(currentMobileSerialId, data, currentItemSerialId, itemsData)
                 .thenApply(MobileMapper::mapToMobile)
-                .thenApply(UOPlayer.class::cast);
+                .thenApply(UOPlayer.class::cast).whenComplete((uo, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Error in inserting mobile player [{}]", player.getName(), throwable);
+                    }
+                });
     }
 
     @Override
@@ -295,20 +316,6 @@ public class CachedRealmStorage implements RealmStorage {
 
         return itemStorage.saveItems(itemSerialSupplier.get(), updated, dirty)
                 .thenApply(ItemMapper::mapToItem);
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOItem>> saveItemStates() {
-        var updated = itemCache.getItems()
-                .stream()
-                .map(ItemMapper::mapToData)
-                .toList();
-
-        return itemStorage.saveStates(updated)
-                .thenApply(items->{
-                    log.info("Items states saved!");
-                    return ItemMapper.mapToItem(items);
-                });
     }
 
     @Override

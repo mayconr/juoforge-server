@@ -90,13 +90,10 @@
                 column="roles"
                 typeHandler="com.github.mayconr.shard.storage.types.RolesJsonTypeHandler"/>
 
-        <association property="behavior"
-                     javaType="com.github.mayconr.juoserver.game.model.BehaviorDefinition">
-            <constructor>
-                <arg column="behavior_profile"/>
-                <arg column="ai"/>
-            </constructor>
-        </association>
+        <result property="behavior"
+                column="behavior"
+                     javaType="com.github.mayconr.juoserver.game.model.BehaviorDefinition"
+                     typeHandler="com.github.mayconr.shard.storage.types.BehaviorDefinitionTypeHandler" />
 
     </resultMap>
 
@@ -180,9 +177,8 @@
         notoriety,
         status,
         account_id,
-        ai,
-        behavior_profile,
         roles,
+        behavior,
         strength,
         dexterity,
         intelligence,
@@ -217,9 +213,8 @@
         #{notoriety},
         #{status},
         #{accountId},
-        #{behavior.ai},
-        #{behavior.profile},
         #{roles, typeHandler=com.github.mayconr.shard.storage.types.RolesJsonTypeHandler}::jsonb,
+        #{behavior, typeHandler=com.github.mayconr.shard.storage.types.BehaviorDefinitionTypeHandler}::jsonb,
         #{strength},
         #{dexterity},
         #{intelligence},
@@ -255,8 +250,6 @@
         notoriety          = EXCLUDED.notoriety,
         status             = EXCLUDED.status,
         account_id         = EXCLUDED.account_id,
-        ai                 = EXCLUDED.ai,
-        behavior_profile   = EXCLUDED.behavior_profile,
         roles              = EXCLUDED.roles,
         strength           = EXCLUDED.strength,
         dexterity          = EXCLUDED.dexterity,

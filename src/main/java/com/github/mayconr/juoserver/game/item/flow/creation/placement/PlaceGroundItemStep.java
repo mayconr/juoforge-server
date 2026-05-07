@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver.game.item.flow.creation.placement;
 
-import com.github.mayconr.juoserver.game.flow.ItemCreationFlowDefinition.ItemCreationContext;
+import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.GroundItemTarget;
-import com.github.mayconr.juoserver.game.model.GroundLocation;
+import com.github.mayconr.juoserver.game.model.ItemLocation;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.event.GroundedItemCreated;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
@@ -23,7 +23,7 @@ public class PlaceGroundItemStep extends AbstractFlowStep<ItemCreationContext> {
         if (context.getTarget() instanceof GroundItemTarget(Location location)) {
             final var item = context.result();
 
-            item.setCurrentLocation(new GroundLocation());
+            item.setCurrentLocation(ItemLocation.ground());
             item.setLocation(location);
             storage.placeOnTheGround(item);
 

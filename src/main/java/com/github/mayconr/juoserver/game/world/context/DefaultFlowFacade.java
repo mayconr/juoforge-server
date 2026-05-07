@@ -5,11 +5,13 @@ import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowTraceFormatter;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
+@Builder
 public class DefaultFlowFacade implements FlowFacade {
 
     private final FlowRegistry registry;
@@ -26,6 +28,6 @@ public class DefaultFlowFacade implements FlowFacade {
 
         flow.execute(context);
 
-        log.debug("Executed flow steps:\n{}", FlowTraceFormatter.format(context.trace()));
+        log.info("Executed flow steps:\n{}", FlowTraceFormatter.format(context.trace()));
     }
 }

@@ -45,9 +45,8 @@ CREATE TABLE mobiles (
      account_id UUID,
 
     -- npc only
-     ai VARCHAR(64),
-     behavior_profile VARCHAR(64),
      roles JSONB DEFAULT '[]'::jsonb,
+     behavior jsonb,
 
     -- attributes
      strength INT NOT NULL,
@@ -135,7 +134,7 @@ CREATE TABLE mobiles (
 
      CONSTRAINT chk_npc_fields
          CHECK (
-             (type = 'N' AND ai IS NOT NULL AND behavior_profile IS NOT NULL)
+             (type = 'N' AND behavior IS NOT NULL)
                  OR
              (type = 'P')
              )
@@ -175,6 +174,7 @@ CREATE TABLE items (
    serial_id INT PRIMARY KEY,
 
 -- relação
+   location_type INT NOT NULL,
    owner_serial_id INT,
    container_serial_id INT,
 
@@ -186,7 +186,6 @@ CREATE TABLE items (
    hue INT NOT NULL,
    layer SMALLINT,
    movable BOOLEAN,
-   mount_name VARCHAR(64),
 
    unit_weight INT NOT NULL,
    amount INT NOT NULL DEFAULT 1,
@@ -200,7 +199,6 @@ CREATE TABLE items (
    x INT,
    y INT,
    z INT,
-   location_type INT,
 
    attr JSONB NOT NULL DEFAULT '{}',
 
@@ -229,5 +227,26 @@ CREATE TABLE items (
            (x IS NULL AND y IS NULL AND z IS NULL)
                OR
            (x >= 0 AND y >= 0)
-           )
+           ),
+
+   CONSTRAINT chk_item_location_rules
+       CHECK (
+       -- location_type = 1 → ambos NULL
+       (location_type = 1 AND owner_serial_id IS NULL AND container_serial_id IS NULL)
+
+       OR
+
+       -- location_type = 2 → container != NULL e owner NULL
+       (location_type = 2 AND container_serial_id IS NOT NULL AND owner_serial_id IS NULL)
+
+       OR
+
+       -- location_type = 3 → owner != NULL e container NULL
+       (location_type = 3 AND owner_serial_id IS NOT NULL AND container_serial_id IS NULL)
+
+       OR
+
+       -- location_type = 4 → ambos NULL
+       (location_type = 4 AND owner_serial_id IS NULL AND container_serial_id IS NULL)
+       )
 );

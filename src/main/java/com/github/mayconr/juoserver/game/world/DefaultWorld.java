@@ -2,11 +2,12 @@ package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.WorldCfg;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.ai.AIEngineImpl;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.ai.AIModuleImpl;
-import com.github.mayconr.juoserver.game.ai.BehaviorProfileRegistry;
-import com.github.mayconr.juoserver.game.ai.NpcAiRegistry;
-import com.github.mayconr.juoserver.game.ai.session.AISessionManager;
+import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
+import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
+import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.combat.CombatHandler;
 import com.github.mayconr.juoserver.game.combat.CombatModule;
 import com.github.mayconr.juoserver.game.combat.DefaultCombatSystem;
@@ -14,16 +15,16 @@ import com.github.mayconr.juoserver.game.combat.VitalsHandler;
 import com.github.mayconr.juoserver.game.damage.DamageModule;
 import com.github.mayconr.juoserver.game.damage.DamageModuleImpl;
 import com.github.mayconr.juoserver.game.economy.EconomyModule;
+import com.github.mayconr.juoserver.game.economy.EconomyModuleImpl;
 import com.github.mayconr.juoserver.game.economy.StockHandler;
 import com.github.mayconr.juoserver.game.economy.VendorHandler;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.economy.template.RegionStockTemplate;
-import com.github.mayconr.juoserver.game.interaction.InteractionModule;
+import com.github.mayconr.juoserver.game.interaction.InteractionModuleImpl;
 import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
+import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.interaction.speech.SpeechHandler;
-import com.github.mayconr.juoserver.game.interaction.target.TargetHandler;
-import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
 import com.github.mayconr.juoserver.game.item.*;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
@@ -33,12 +34,11 @@ import com.github.mayconr.juoserver.game.messaging.MessageModuleImpl;
 import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.mobile.MobileModuleImpl;
-import com.github.mayconr.juoserver.game.mobile.MountService;
 import com.github.mayconr.juoserver.game.mobile.movement.MobileMovementRules;
 import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
-import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
+import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
@@ -48,7 +48,7 @@ import com.github.mayconr.juoserver.game.player.PlayerModule;
 import com.github.mayconr.juoserver.game.player.PlayerVitalsHandler;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
-import com.github.mayconr.juoserver.game.player.template.StartkitTemplate;
+import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillHandler;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
@@ -60,6 +60,9 @@ import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
 import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
 import com.github.mayconr.juoserver.game.world.transition.DespawnNpcOnDeath;
 import com.github.mayconr.juoserver.game.world.transition.RegionTransitionServiceImpl;
 import com.github.mayconr.juoserver.game.world.transition.TeleportTransitionServiceImpl;
@@ -103,7 +106,7 @@ public class DefaultWorld implements WorldInternal, World {
     private PlayerModule playerModule;
     private CombatModule combatModule;
     private MobileModule mobileModule;
-    private InteractionModule interactionModule;
+    private InteractionModuleImpl interactionModule;
     private MessageModule messageModule;
     private DamageModule damageModule;
     private NpcModule npcModule;
@@ -129,12 +132,13 @@ public class DefaultWorld implements WorldInternal, World {
      * ==========
      */
     private final ItemTemplateRegistry itemTemplateRegistry;
-    private final NpcTemplateRegistry npcTemplateRegistry;
     private final TemplateRegistry<String, NpcTemplate> npcTemplateByName;
     private final TemplateRegistry<String, ItemTemplate> itemTemplateByName;
     private final TemplateRegistry<Integer, ItemTemplate> itemTemplateByModelId;
-    private final TemplateRegistry<BodyKey, BodyTemplate> bodyByBodyKey;
-    private final TemplateRegistry<Integer, StartkitTemplate> startKitBySkillId;
+    private final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateByBodyKey;
+    private final TemplateRegistry<Integer, StartKitTemplate> startKitTemplateBySkillId;
+    private final TemplateRegistry<String, MountTemplate> mountTemplateByNpcName;
+    private final TemplateRegistry<String, MountTemplate> mountTemplateByItemName;
     /*
      * ==========
      * Properties
@@ -193,15 +197,25 @@ public class DefaultWorld implements WorldInternal, World {
         final var stockHandler = new StockHandler();
         final var templateLoader = new JsonTemplateLoader<>(Path.of("template/stock"), RegionStockTemplate.class);
 
-        this.economyModule = new EconomyModule(vendorHandler, stockHandler, wallet, templateLoader);
+        this.economyModule = new EconomyModuleImpl(vendorHandler, stockHandler, wallet, templateLoader);
     }
 
     private void initializeAiModule() {
-        final var aiFactory = new NpcAiRegistry(worldCfg.aiList());
-        final var profileRegistry = new BehaviorProfileRegistry(worldCfg.behaviorProfileList());
-        final var aiSessionHandler = new AISessionManager(eventBus, profileRegistry, aiFactory);
+        //final var aiFactory = new NpcAiRegistry(worldCfg.aiList());
+        //final var profileRegistry = new BehaviorProfileRegistry(worldCfg.behaviorProfileList());
+        //final var aiSessionHandler = new AISessionManager(eventBus, profileRegistry, aiFactory);
+        var engine = new AIEngineImpl(this, e->{
 
-        this.aiModule = new AIModuleImpl(aiSessionHandler);
+            switch (e) {
+                //case SpeechAction say -> world.printTextAbove(, say.content(), say.speechTo());
+                case WalkAction walkAction -> move(walkAction.npc(), walkAction.direction());
+                case SellListAction buyList -> beginVendorPurchase(buyList.buyer(), buyList.seller(), buyList.itemsToSell());
+                case SpeechAction speech -> printTextAbove(speech.speaker(), speech.content(), speech.target());
+                default -> throw new IllegalStateException("Unexpected value: " + e);
+            }
+
+        });
+        this.aiModule = new AIModuleImpl(engine, eventBus);
     }
 
     private void initializeUiModule() {
@@ -250,16 +264,13 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeMobileModule(Wallet wallet) {
-        final var mountService = new MountService(eventBus, storage, policyService, itemTemplateRegistry);
         final var movementRules = new MobileMovementRules(storage);
         final var movementService = new MovementService(eventBus, movementRules);
         final var npcDespawnService = new NpcDespawnService(storage);
 
         this.mobileModule = new MobileModuleImpl(
-                mountService,
                 movementService,
                 npcDespawnService,
-                npcTemplateRegistry,
                 wallet,
                 eventBus,
                 storage
@@ -267,12 +278,11 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeInteractionModule() {
-        final var targetHandler = new TargetHandler(eventBus);
         final var actionHandler = new ActionHandler(eventBus);
         final var animationService = new AnimationHandler(eventBus);
         final var speechHandler = new SpeechHandler(eventBus);
 
-        this.interactionModule = new InteractionModule(targetHandler, actionHandler, animationService, speechHandler);
+        this.interactionModule = new InteractionModuleImpl(actionHandler, animationService, speechHandler);
     }
 
     private void initializeDamageModule() {
@@ -290,17 +300,49 @@ public class DefaultWorld implements WorldInternal, World {
      */
 
     private void initializeModules() {
-        final var flowRegistry = new FlowRegistryFactory(itemModule, mobileModule, aiModule, messageModule, eventBus,
-                storage, serialGenerator, this, settings, npcTemplateByName, itemTemplateByName, itemTemplateByModelId, bodyByBodyKey, startKitBySkillId).buildRegistry();
-        final var flowFacade = new DefaultFlowFacade(flowRegistry);
-        final var context = new DefaultModuleContext(itemModule, flowFacade);
+        final var flowRegistry = FlowRegistryFactory.builder()
+                .modules(GameModules.builder()
+                    .message(messageModule)
+                    .ai(aiModule)
+                    .npc(npcModule)
+                    .mobile(mobileModule)
+                    .item(itemModule)
+                    .build())
+                .infra(GameInfra.builder()
+                    .serialGenerator(serialGenerator)
+                    .eventBus(eventBus)
+                    .storage(storage)
+                    .settings(settings)
+                    .fileReader(fileReader)
+                    .build())
+                .templates(GameTemplates.builder()
+                    .itemByModelId(itemTemplateByModelId)
+                    .itemByName(itemTemplateByName)
+                    .npcByName(npcTemplateByName)
+                    .bodyByKey(bodyTemplateByBodyKey)
+                    .startKitBySkillId(startKitTemplateBySkillId)
+                    .mountByItemName(mountTemplateByItemName)
+                    .mountByNpcName(mountTemplateByNpcName)
+                    .build())
+                .build()
+                .buildRegistry();
 
-        this.economyModule.initialize(itemTemplateRegistry::get);
+        final var flowFacade = DefaultFlowFacade.builder()
+                .registry(flowRegistry)
+                .build();
+        final var context = DefaultModuleContext.builder()
+                .flowFacade(flowFacade)
+                .build();
+
+        //this.economyModule.initialize(itemTemplateRegistry::get);
+        this.economyModule.initialize(context);
         this.mobileModule.initialize(context);
         this.playerModule.initialize(context);
         this.damageModule.initialize(context);
         this.npcModule.initialize(context);
         this.itemModule.initialize(context);
+        this.aiModule.initialize(context);
+        this.interactionModule.initialize(context);
     }
 
     /*
@@ -345,10 +387,12 @@ public class DefaultWorld implements WorldInternal, World {
                 serialGenerator::getCurrentItem,
                 serialGenerator::getCurrentMobile,
                 data -> {
-                    for (UONpc npc : data.npcs()) {
-                        var ai = aiModule.attach(npc);
-                        if (ai != null) {
-                            ai.wakeup(this);
+                    for (UOMobile mobile : data.mobiles()) {
+                        if (mobile instanceof UONpc npc) {
+                            /*var ai = aiModule.attach(npc);
+                            if (ai != null) {
+                                ai.wakeup(this);
+                            }*/
                         }
                     }
                 }

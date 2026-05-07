@@ -11,4 +11,6 @@ public interface UOFileReader {
     LandTile getLandTile(int x, int y);
     List<Static> getStatics(Location location);
     List<Static> getStatics(int x, int y);
+
+    boolean hasBlockingStatics(int x, int y, int z);
 }

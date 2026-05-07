@@ -24,9 +24,7 @@ public class Save extends AbstractCommand {
                     }
 
                     realmStorage.saveItems()
-                            .thenAccept(items->{
-                                realmStorage.saveItemStates();
-                            }).whenComplete((unused2, throwabl2) -> {
+                            .whenComplete((unused2, throwabl2) -> {
                                 if (throwabl2 != null) {
                                     log.info("erro ", throwabl2);
                                 }

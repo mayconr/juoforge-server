@@ -18,16 +18,6 @@ class ConditionalFlowStep<T extends AbstractContext> implements FlowStep<T> {
     }
 
     @Override
-    public int order() {
-        return delegate.order();
-    }
-
-    @Override
-    public FlowPhase phase() {
-        return delegate.phase();
-    }
-
-    @Override
     public StepResult execute(T context) {
         if (!condition.test(context)) {
             return StepResult.success(); // ou CONTINUE, se for alias
