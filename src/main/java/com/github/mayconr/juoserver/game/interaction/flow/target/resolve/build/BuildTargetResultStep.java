@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.interaction.flow.target.resolve.build;
 
 import com.github.mayconr.juoserver.game.model.ItemTargetResult;
 import com.github.mayconr.juoserver.game.model.MobileTargetResult;
-import com.github.mayconr.juoserver.game.model.StaticTargetResult;
+import com.github.mayconr.juoserver.game.model.TileTargetResult;
 import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.interaction.flow.target.resolve.ResolveTargetContext;
 import com.github.mayconr.juoserver.game.model.CursorTarget;
@@ -25,13 +25,13 @@ public class BuildTargetResultStep extends AbstractFlowStep<ResolveTargetContext
 
         if (CursorTarget.LOCATION.equals(ctx.getCursorTarget())) {
             final var landTile = fileReader.getLandTile(ctx.getTargetLocation());
-            final var statics = fileReader.getStatics(ctx.getTargetLocation());
+            final var staticsTile = fileReader.getStatics(ctx.getTargetLocation());
 
-            result = new StaticTargetResult(
+            result = new TileTargetResult(
                     ctx.getPlayer(),
                     ctx.getTargetLocation(),
                     landTile,
-                    statics
+                    staticsTile
             );
         } else if (ctx.getMobile() != null) {
             result = new MobileTargetResult(

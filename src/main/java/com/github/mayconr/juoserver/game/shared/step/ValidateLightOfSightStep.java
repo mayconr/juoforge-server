@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.shared.step;
 
+import com.github.mayconr.juoserver.game.messaging.MessageModule;
+import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
@@ -9,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class ValidateLightOfSightStep<T extends LightOfSightContext> implements FlowStep<T> {
 
     private final UOFileReader fileReader;
+    private final MessageModule messageModule;
 
     @Override
     public String name() {
@@ -18,6 +21,7 @@ public class ValidateLightOfSightStep<T extends LightOfSightContext> implements 
     @Override
     public StepResult execute(LightOfSightContext context) {
         if (!hasLineOfSight(context)) {
+            messageModule.send(context.targetSource(), MessageContent.localized("{validateLightOfSight.cannotSee}"));
             return StepResult.failure("You cannot see!");
         }
         return StepResult.success();
@@ -47,7 +51,6 @@ public class ValidateLightOfSightStep<T extends LightOfSightContext> implements 
         int maxSteps = Math.max(dx, dy);
 
         for (int step = 0; step <= maxSteps; step++) {
-            System.out.println("Step: " + step);
             int z = interpolateZ(z0, z1, step, maxSteps);
 
             boolean isOrigin = (x == from.getX() && y == from.getY());
@@ -83,8 +86,6 @@ public class ValidateLightOfSightStep<T extends LightOfSightContext> implements 
                 movedY = true;
             }
 
-            // 🔥 CORREÇÃO CRÍTICA:
-            // se moveu nos dois eixos, validar os tiles intermediários
             if (movedX && movedY) {
 
                 int zMid = z;

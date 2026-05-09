@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 public class ResolveTargetContext extends SyncFlowContext<Void> implements LightOfSightContext {
     private final UOPlayer player;
     private final Target target;
+    private final boolean validateLOS;
 
     private Consumer<TargetResult> callback;
     private Location targetLocation;
@@ -30,8 +31,12 @@ public class ResolveTargetContext extends SyncFlowContext<Void> implements Light
 
     private TargetResult targetResult;
 
+    public static ResolveTargetContext of(UOPlayer player, Target target, boolean validateLOS) {
+        return new ResolveTargetContext(player, target, validateLOS);
+    }
+
     @Override
-    public Location targetSource() {
+    public UOPlayer targetSource() {
         return player;
     }
 

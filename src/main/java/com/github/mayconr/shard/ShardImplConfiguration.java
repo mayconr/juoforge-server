@@ -112,6 +112,7 @@ public class ShardImplConfiguration {
             cfg.addEventListener(runtime->new Kill(runtime.world()));
             cfg.addEventListener(runtime->new Destroy(runtime.world()));
             cfg.addEventListener(runtime->new CreateEquippedItem(runtime.world()));
+            cfg.addEventListener(runtime -> new Info(runtime.world()));
             cfg.addEventListener(Mount::new);
             cfg.addEventListener(Unmount::new);
             cfg.addEventListener(Region::new);

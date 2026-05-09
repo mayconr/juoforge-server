@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoforge.reader.view.LandTile;
+import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
@@ -29,9 +31,9 @@ public interface WorldView {
 
     Optional<UOContainer> getContainerBySerialId(int serial);
 
-    List<Static> getStatics(int x, int y);
+    List<StaticTile> getStatics(int x, int y);
 
-    List<Static> getStatics(Location location);
+    List<StaticTile> getStatics(Location location);
 
     LandTile getLandTile(int x, int y);
 

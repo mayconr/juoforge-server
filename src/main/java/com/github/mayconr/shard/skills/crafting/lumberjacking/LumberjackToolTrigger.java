@@ -1,12 +1,12 @@
 package com.github.mayconr.shard.skills.crafting.lumberjacking;
 
-import com.github.mayconr.juoserver.game.model.TargetResult;
+import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
-import com.github.mayconr.juoserver.game.model.Static;
+import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.world.WorldActions;
 import com.github.mayconr.juoserver.game.world.WorldView;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
@@ -48,7 +48,7 @@ public class LumberjackToolTrigger implements ItemUseTrigger {
         worldActions.scheduleTask(new LumberjackSwingTask(player, worldActions, resourceRoller));
     }
 
-    private boolean canLumberjack(List<Static> statics) {
+    private boolean canLumberjack(List<StaticTile> statics) {
         return Arrays.stream(LogableStatic.values())
                 .anyMatch(type-> statics.stream().anyMatch(sta->sta.id() > type.getMin() && sta.id() < type.getMax()));
     }

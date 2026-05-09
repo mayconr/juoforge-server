@@ -2,20 +2,16 @@ package com.github.mayconr.juoserver.game.world.context;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.ai.AIModule;
+import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIDefinition;
+import com.github.mayconr.juoserver.game.ai.definition.VendorAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.VendorAIDefinition;
 import com.github.mayconr.juoserver.game.damage.flow.damage.DamageContext;
 import com.github.mayconr.juoserver.game.damage.flow.damage.DamageFlowDefinition;
 import com.github.mayconr.juoserver.game.interaction.flow.target.resolve.ResolveTargetContext;
 import com.github.mayconr.juoserver.game.interaction.flow.target.resolve.ResolveTargetFlowDefinition;
 import com.github.mayconr.juoserver.game.interaction.flow.target.send.SendTargetContext;
 import com.github.mayconr.juoserver.game.interaction.flow.target.send.SendTargetFlowDefinition;
-import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationFlowDefinition;
-import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationContext;
-import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalFlowDefinition;
-import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalContext;
-import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIDefinition;
-import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.VendorAIDefinition;
-import com.github.mayconr.juoserver.game.ai.definition.VendorAIContext;
 import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationFlowDefinition;
@@ -37,11 +33,17 @@ import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountFlowDefiniti
 import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
+import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationContext;
+import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationFlowDefinition;
+import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalContext;
+import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalFlowDefinition;
 import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationContext;
 import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationFlowDefinition;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
+import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -155,6 +157,7 @@ public class FlowRegistryFactory {
 
         registry.register(SendTargetFlowDefinition.class.getSimpleName(), SendTargetFlowDefinition.build(modules, infra), SendTargetContext.class);
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
+        registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
         return registry;
     }
 }

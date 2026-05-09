@@ -2,14 +2,10 @@ package com.github.mayconr.juoserver.game.interaction;
 
 import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
-import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.interaction.flow.target.resolve.ResolveTargetContext;
 import com.github.mayconr.juoserver.game.interaction.flow.target.send.SendTargetContext;
 import com.github.mayconr.juoserver.game.interaction.speech.SpeechHandler;
-import com.github.mayconr.juoserver.game.model.AnimationOptions;
-import com.github.mayconr.juoserver.game.model.CursorType;
-import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.network.packet.ActionRequest;
 import com.github.mayconr.juoserver.network.packet.Target;
@@ -39,7 +35,7 @@ public class InteractionModuleImpl implements InteractionModule {
 
     @Override
     public void resolveTarget(UOPlayer player, Target target) {
-        flows.execute(new ResolveTargetContext(player, target));
+        flows.execute(ResolveTargetContext.of(player, target, true));
     }
 
     @Override

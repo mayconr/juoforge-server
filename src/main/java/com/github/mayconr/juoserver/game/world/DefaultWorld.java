@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoforge.reader.view.LandTile;
+import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.WorldCfg;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.ai.AIEngineImpl;
@@ -23,7 +25,6 @@ import com.github.mayconr.juoserver.game.economy.template.RegionStockTemplate;
 import com.github.mayconr.juoserver.game.interaction.InteractionModuleImpl;
 import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
-import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.interaction.speech.SpeechHandler;
 import com.github.mayconr.juoserver.game.item.*;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
@@ -52,6 +53,7 @@ import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillHandler;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
+import com.github.mayconr.juoserver.game.skill.SkillModuleImpl;
 import com.github.mayconr.juoserver.game.ui.*;
 import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.DefaultGumpSystem;
@@ -238,9 +240,9 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeSkillModule() {
         final var skillSystem = new DefaultSkillSystem(settings, rng, eventBus);
-        final var skillHandler = new SkillHandler(eventBus, storage);
+        final var skillHandler = new SkillHandler(eventBus);
 
-        this.skillModule = new SkillModule(skillHandler, skillSystem);
+        this.skillModule = new SkillModuleImpl(skillHandler, skillSystem);
     }
 
     private void initializeItemModule() {
@@ -334,7 +336,6 @@ public class DefaultWorld implements WorldInternal, World {
                 .flowFacade(flowFacade)
                 .build();
 
-        //this.economyModule.initialize(itemTemplateRegistry::get);
         this.economyModule.initialize(context);
         this.mobileModule.initialize(context);
         this.playerModule.initialize(context);
@@ -343,6 +344,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.itemModule.initialize(context);
         this.aiModule.initialize(context);
         this.interactionModule.initialize(context);
+        this.skillModule.initialize(context);
     }
 
     /*
@@ -510,12 +512,12 @@ public class DefaultWorld implements WorldInternal, World {
      */
 
     @Override
-    public List<Static> getStatics(Location location) {
+    public List<StaticTile> getStatics(Location location) {
         return fileReader.getStatics(location);
     }
 
     @Override
-    public List<Static> getStatics(int x, int y) {
+    public List<StaticTile> getStatics(int x, int y) {
         return fileReader.getStatics(x, y);
     }
 

@@ -5,33 +5,14 @@ import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.WorldModule;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
 
-@RequiredArgsConstructor
-public class SkillModule implements WorldModule, SkillCommands {
+public interface SkillModule extends WorldModule {
 
-    private final SkillHandler skillHandler;
-    private final SkillSystem skillSystem;
+    void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills);
 
-    @Override
-    public void update(double delta) {
+    void useSkill(UOPlayer player, int skillId);
 
-    }
-
-    @Override
-    public void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills) {
-        skillHandler.sendSkillsLock(player, skills);
-    }
-
-    @Override
-    public void useSkill(UOPlayer player, int skillId) {
-        skillHandler.useSkill(player, skillId);
-    }
-
-    @Override
-    public void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
-        skillSystem.tryGain(mobile, skillId, difficulty, context);
-    }
+    void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context);
 }

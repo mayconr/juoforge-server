@@ -15,17 +15,10 @@ public record LocalizedMessageContent(
         params = params == null ? Map.of() : Map.copyOf(params);
     }
 
-    public LocalizedMessageContent(String key) {
-        this(key, Map.of(), null);
-    }
-
     public LocalizedMessageContent withParam(String name, Object value) {
         var copy = new java.util.HashMap<>(params);
         copy.put(name, value);
         return new LocalizedMessageContent(key, copy, fallback);
     }
 
-    public LocalizedMessageContent withFallback(String fallback) {
-        return new LocalizedMessageContent(key, params, fallback);
-    }
 }

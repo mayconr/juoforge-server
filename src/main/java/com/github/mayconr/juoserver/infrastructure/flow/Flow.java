@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class Flow<T extends AbstractContext> {
@@ -11,16 +12,17 @@ public class Flow<T extends AbstractContext> {
     private final List<FlowStep<T>> steps;
 
     Flow(List<FlowStep<T>> steps) {
-        this.steps = new ArrayList<>(steps);
+        this.steps = List.copyOf(steps);
     }
 
-    public void execute(T context) {
-        executeStep(context, 0);
+    public StepResult execute(T context) {
+        return executeStep(context, 0);
     }
 
-    private void executeStep(T context, int index) {
+    private StepResult executeStep(T context, int index) {
+
         if (index >= steps.size()) {
-            return;
+            return StepResult.success();
         }
 
         FlowStep<T> step = steps.get(index);
@@ -28,85 +30,98 @@ public class Flow<T extends AbstractContext> {
         long start = System.currentTimeMillis();
 
         try {
-            StepResult result = step.execute(context);
 
-            switch (result.status()) {
+            StepResult result = resolve(step.execute(context));
 
-                case SUCCESS -> {
-                    context.trace().logStep(step.name(), elapsed(start), "OK");
-                    executeStep(context, index + 1);
-                }
+            log(context, step, start, result);
 
-                case FAILURE -> {
-                    context.trace().logStep(step.name(), elapsed(start), "FAIL: " + result.reason());
-                }
-
-                case ASYNC -> {
-                    result.next().whenComplete((nextResult, throwable) -> {
-
-                        if (throwable != null) {
-                            context.trace().logStep(step.name(), elapsed(start), "FAIL");
-                            throw new RuntimeException(throwable);
-                        }
-
-                        handleAsyncResult(context, step, start, index, nextResult);
-                    });
-                }
-
-                case SKIP -> {
-                    context.trace().logStep(step.name(), elapsed(start), "SKIP: " + result.reason());
-                    executeStep(context, index + 1);
-                }
-
-                case STOP -> {
-                    context.trace().logStep(step.name(), elapsed(start), "STOP: " + result.reason());
-                }
+            if (result.shouldContinue()) {
+                return executeStep(context, index + 1);
             }
 
+            return result;
+
         } catch (Exception e) {
-            log.error(step.name(), elapsed(start), e);
-            context.trace().logStep(step.name(), elapsed(start), "FAIL");
-            throw e;
+
+            long elapsed = elapsed(start);
+
+            log.error(step.name(), elapsed, e);
+
+            context.trace().logStep(
+                    step.name(),
+                    elapsed,
+                    "ERROR: " + e.getMessage()
+            );
+
+            return StepResult.failure(
+                    "FLOW_EXCEPTION",
+                    "Step '%s' failed: %s"
+                            .formatted(step.name(), e.getMessage())
+            );
         }
     }
 
-    private void handleAsyncResult(
+    private StepResult resolve(StepResult result) {
+
+        return switch (result.status()) {
+
+            case SUCCESS,
+                 FAILURE,
+                 SKIP,
+                 STOP ->
+                    result;
+
+            case ASYNC ->
+                    resolve(result.next().join());
+        };
+    }
+
+    private void log(
             T context,
             FlowStep<T> step,
             long start,
-            int index,
             StepResult result
     ) {
-        switch (result.status()) {
 
-            case SUCCESS -> {
-                context.trace().logStep(step.name(), elapsed(start), "OK");
-                executeStep(context, index + 1);
-            }
+        String status = switch (result.status()) {
 
-            case FAILURE -> {
-                context.trace().logStep(step.name(), elapsed(start), "FAIL: " + result.reason());
-            }
+            case SUCCESS ->
+                    "OK";
 
-            case ASYNC -> {
-                result.next().whenComplete((r, t) -> {
-                    if (t != null) {
-                        context.trace().logStep(step.name(), elapsed(start), "FAIL");
-                        throw new RuntimeException(t);
-                    }
-                    handleAsyncResult(context, step, start, index, r);
-                });
-            }
+            case FAILURE ->
+                    "FAIL[%s]: %s"
+                            .formatted(
+                                    result.code(),
+                                    result.reason()
+                            );
 
-            case SKIP -> {
-                context.trace().logStep(step.name(), elapsed(start), "SKIP: " + result.reason());
-                executeStep(context, index + 1);
-            }
+            case SKIP ->
+                    result.reason() == null
+                            ? "SKIP"
+                            : "SKIP[%s]: %s"
+                            .formatted(
+                                    result.code(),
+                                    result.reason()
+                            );
 
-            case STOP -> {
-                context.trace().logStep(step.name(), elapsed(start), "STOP: " + result.reason());
-            }
-        }
+            case STOP ->
+                    result.reason() == null
+                            ? "STOP"
+                            : "STOP[%s]: %s"
+                            .formatted(
+                                    result.code(),
+                                    result.reason()
+                            );
+
+            case ASYNC ->
+                    "ASYNC";
+        };
+
+        context.trace().logStep(
+                step.name(),
+                elapsed(start),
+                status
+        );
     }
 
     private long elapsed(long start) {
@@ -114,7 +129,6 @@ public class Flow<T extends AbstractContext> {
     }
 
     public List<FlowStep<T>> steps() {
-        return List.copyOf(steps);
+        return steps;
     }
-
 }

@@ -20,7 +20,7 @@ public class ResolveTargetFlowDefinition {
                 .step(new ExtractTargetMetadataStep())
                 .step(new ResolveTargetEntityStep(infra.storage()))
                 .step(new BuildTargetResultStep(infra.fileReader()))
-                .step(new ValidateLightOfSightStep<>(infra.fileReader()))
+                .step(new ValidateLightOfSightStep<>(infra.fileReader(), modules.message()), ResolveTargetContext::isValidateLOS)
                 .step(new DispatchTargetResultStep())
                 .build();
     }

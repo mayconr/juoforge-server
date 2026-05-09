@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.model;
 
-public sealed interface TargetResult permits MobileTargetResult, ItemTargetResult, StaticTargetResult {
+public sealed interface TargetResult permits MobileTargetResult, ItemTargetResult, TileTargetResult {
     UOPlayer source();
     Location location();
 
@@ -13,6 +13,6 @@ public sealed interface TargetResult permits MobileTargetResult, ItemTargetResul
     }
 
     default boolean isStatic() {
-        return this instanceof StaticTargetResult;
+        return this instanceof TileTargetResult;
     }
 }
