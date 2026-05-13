@@ -1,7 +1,5 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.game.ai.AI;
-import com.github.mayconr.juoserver.game.ai.BehaviorProfile;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
@@ -24,11 +22,6 @@ public interface WorldCfg {
 
     void pricingStrategy(Supplier<PricingStrategy> pricingStrategyFactory);
 
-    // ===== AI =====
-    void addNpcAI(AI ai);
-
-    void addBehaviorProfile(BehaviorProfile profile);
-
     // Item use trigger
     void addItemTrigger(Function<ServerRuntime, ItemUseTrigger> triggerFactory);
 
@@ -49,10 +42,6 @@ public interface WorldCfg {
     Function<World, Wallet> wallet();
 
     Supplier<PricingStrategy> pricingStrategy();
-
-    List<AI> aiList();
-
-    List<BehaviorProfile> behaviorProfileList();
 
     List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList();
 

@@ -4,10 +4,7 @@ import com.github.mayconr.juoserver.game.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -27,32 +24,53 @@ public class CachedRealmStorage implements RealmStorage {
 
     private final AccountStorage accountStorage;
 
-    private final List<UOMobile> dirtyMobiles = new ArrayList<>();
+    private final List<Integer> dirtyMobiles = new ArrayList<>();
     private final List<UOItem> dirtyItems = new ArrayList<>();
 
     private Supplier<Integer> itemSerialSupplier;
     private Supplier<Integer> mobileSerialSupplier;
+
+    private MobileDependencyLoader mobileDependencyLoader;
 
     // Lifecycle
     @Override
     public void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> initialDataConsumer) {
         this.itemSerialSupplier = itemSerialSupplier;
         this.mobileSerialSupplier = mobileSerialSupplier;
+        this.mobileDependencyLoader = new MobileDependencyLoader(mobileStorage, itemStorage, itemCache);
 
+        // Load all World NPCs
+        var loadGroundItems = itemStorage.findAllGroundItems()
+                .thenApply(ItemMapper::mapToItem);
+
+        // World initialized
         mobileStorage.findAllNpcs()
-            .thenCombine(itemStorage.findAllGroundItems(), InitialData::new)
-            .thenAccept(data->{
-                for (UOMobile mobile : data.npcs()) {
-                    loadAndCacheMobile(mobile);
-                }
+            .thenApply(MobileMapper::mapToMobile)
+            .thenCombine(loadGroundItems, InitialData::new)
+            .thenCompose(data -> {
+                var dependencyFutures = data.mobiles().stream()
+                        .map(mobile ->
+                                mobileDependencyLoader.loadDependencies(mobile)
+                                    .thenApply(this::cache)
+                                    .exceptionally(ex -> {
+                                        log.error("Failed loading {}", mobile, ex);
+                                        return null;
+                                    })
+                        )
+                        .toArray(CompletableFuture[]::new);
+
+                return CompletableFuture
+                        .allOf(dependencyFutures)
+                        .thenApply(v -> data);
+            })
+            .thenCompose(data->{
                 for (UOItem item : data.items()) {
                     itemCache.put(item);
                     worldItemIndex.add(item);
                 }
-
-                // World initialized
-                initialDataConsumer.accept(data);
+                return CompletableFuture.completedFuture(data);
             })
+            .thenAccept(initialDataConsumer)
             .whenComplete(this::logging);
     }
 
@@ -71,22 +89,35 @@ public class CachedRealmStorage implements RealmStorage {
     @Override
     public CompletableFuture<UOMobile> loadMobile(int serialId) {
         return mobileStorage.findMobileBySerialId(serialId)
-                .thenCompose(this::loadAndCacheMobile);
+                .thenApply(MobileMapper::mapToMobile)
+                .thenCompose(mobileDependencyLoader::loadDependencies)
+                .thenApply(this::cache);
     }
 
     @Override
     public CompletableFuture<UOItem> loadItem(int serialId) {
         return itemStorage.findItemBySerialId(serialId)
-            .thenApply(item -> {
-                cacheItem(item);
-                return item;
-            })
+                .thenApply(ItemMapper::mapToItem)
+                .thenApply(item -> {
+                    cache(item);
+                    return item;
+                })
             .whenComplete(this::logging);
     }
 
     @Override
+    public UOItem createItem(UOItemData data) {
+        var item = ItemMapper.mapToItem(data);
+
+        itemCache.put(item);
+
+        return item;
+    }
+
+    @Override
     public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
-        return itemStorage.loadContainerItems(container)
+        return itemStorage.loadContainerItems(container.getSerialId())
+                .thenApply(ItemMapper::mapToItem)
                 .thenApply(items -> {
                     itemCache.putAll(items);
                     return items;
@@ -98,55 +129,70 @@ public class CachedRealmStorage implements RealmStorage {
     public void unloadMobile(UOMobile mobile) {
         // TODO save mobile to database
         mobileCache.remove(mobile);
-        for (UOItem item : mobile.getItemsInContainer()) {
-            itemCache.remove(item);
+        var backpack = (UOContainer) itemCache.get(mobile.getBackpack());
+        for (Integer itemSerial : backpack.getContainerItems()) {
+            itemCache.remove(itemCache.get(itemSerial));
         }
-        for (UOItem item : mobile.getEquippedItems().values()) {
-            itemCache.remove(item);
+        for (Integer itemSerial : mobile.getEquippedItems().values()) {
+            itemCache.remove(itemCache.get(itemSerial));
         }
         log.info("Unloaded mobile {}", mobile);
     }
 
     @Override
-    public CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount uoAccount) {
-        return mobileStorage.findPlayersByAccount(uoAccount);
+    public CompletableFuture<List<AccountMobile>> getAccountMobiles(UOAccount uoAccount) {
+        return accountStorage.findAccountMobiles(Objects.requireNonNull(uoAccount.getId(), "Account id is null"));
     }
 
     // Cached lookups
     @Override
-    public Optional<UOMobile> getMobileBySerialId(int serialId) {
+    public Optional<UOMobile> getMobile(Integer serialId) {
+        if (serialId == null) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(mobileCache.get(serialId));
     }
 
     @Override
-    public Optional<UOItem> getItemBySerialId(int serialId) {
+    public Optional<UOItem> getItem(int serialId) {
         return Optional.ofNullable(itemCache.get(serialId));
     }
 
     @Override
-    public Optional<Container> getContainerBySerialId(int serialId) {
+    public Optional<UOContainer> getContainer(int serialId) {
         if (UOMobile.isMobile(serialId)) {
-            return getMobileBySerialId(serialId).map(Container.class::cast);
+            return getMobile(serialId).map(UOMobile::getBackpack)
+                    .map(itemCache::get)
+                    .map(UOContainer.class::cast);
         }
         if (UOItem.isItem(serialId)) {
-            return getItemBySerialId(serialId).map(Container.class::cast);
+            return getItem(serialId).map(UOContainer.class::cast);
         }
         return Optional.empty();
     }
 
     // Cache and indexing
     @Override
-    public void cacheMobile(UOMobile mobile) {
+    public UOMobile cache(UOMobile mobile) {
+        if (mobile == null) {
+            return null;
+        }
         mobileCache.put(mobile);
         worldMobileIndex.add(mobile);
+        return mobile;
     }
 
     @Override
-    public void cacheItem(UOItem item) {
+    public UOItem cache(UOItem item) {
+        if (item == null) {
+            return null;
+        }
         itemCache.put(item);
-        if (item.isOnTheGround()) {
+        if (item.getCurrentLocation() instanceof GroundLocation) {
             worldItemIndex.add(item);
         }
+
+        return item;
     }
 
     // Spatial queries
@@ -197,13 +243,13 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public void dropItemOnTheGround(UOItem item) {
+    public void placeOnTheGround(UOItem item) {
         itemCache.put(item);
         worldItemIndex.add(item);
     }
 
     @Override
-    public void removeItemFromTheGround(UOItem item) {
+    public void removeFromTheGround(UOItem item) {
         worldItemIndex.remove(item);
     }
 
@@ -212,7 +258,7 @@ public class CachedRealmStorage implements RealmStorage {
         mobileCache.remove(mobile);
         worldMobileIndex.remove(mobile);
 
-        dirtyMobiles.add(mobile);
+        dirtyMobiles.add(mobile.getSerialId());
         log.info("Mobile [{}-{}] added to be removed", mobile.getSerialId(), mobile.getName());
     }
 
@@ -235,73 +281,61 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public CompletableFuture<UOPlayer> insertPlayerMobile(int mobileSerialId, int itemSerialId, UOPlayer player) {
-        return mobileStorage.saveMobileFull(mobileSerialId, itemSerialId, player)
-                .thenApply(mobile -> (UOPlayer) mobile)
-                .whenComplete(this::logging);
-    }
+    public CompletableFuture<UOPlayer> saveNewPlayerMobile(int currentMobileSerialId, UOPlayer player, int currentItemSerialId, List<UOItem> starterItems) {
+        var data = player.toData();
+        var itemsData = starterItems.stream().map(UOItem::toData).toList();
 
-    // Persistence
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveMobileRuntime() {
-        return mobileStorage.saveRuntime(mobileCache.getMobiles())
-                .whenComplete(this::logging);
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveMobileVitals() {
-        return mobileStorage.saveVitals(mobileCache.getMobiles())
-                .whenComplete(this::logging);
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveMobileAttributes() {
-        return mobileStorage.saveAttributes(mobileCache.getMobiles())
-                .whenComplete(this::logging);
+        return mobileStorage.saveMobileFull(currentMobileSerialId, data, currentItemSerialId, itemsData)
+                .thenApply(MobileMapper::mapToMobile)
+                .thenApply(UOPlayer.class::cast).whenComplete((uo, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Error in inserting mobile player [{}]", player.getName(), throwable);
+                    }
+                });
     }
 
     @Override
     public CompletableFuture<Collection<UOMobile>> saveMobiles() {
-        // TODO remove dirty
-        return mobileStorage.saveMobiles(mobileSerialSupplier.get(), mobileCache.getMobiles(), dirtyMobiles)
-                .whenComplete(this::logging);
+        var data = mobileCache.getMobiles()
+                .stream()
+                .map(UOMobile::toData)
+                .toList();
+        return mobileStorage.saveMobiles(mobileSerialSupplier.get(), data, dirtyMobiles)
+                .thenApply(MobileMapper::mapToMobile);
     }
 
     @Override
     public CompletableFuture<Collection<UOItem>> saveItems() {
-        return itemStorage.saveItems(itemSerialSupplier.get(), itemCache.getItems(), dirtyItems)
-                .whenComplete(this::logging);
-    }
+        var updated = itemCache.getItems()
+                .stream()
+                .map(ItemMapper::mapToData)
+                .toList();
+        var dirty = dirtyItems.stream()
+                .map(ItemMapper::mapToData)
+                .toList();
 
-    @Override
-    public CompletableFuture<Collection<UOItem>> saveItemStates() {
-        return itemStorage.saveStates(itemCache.getItems())
-                .thenApply(items->{
-                    log.info("Items states saved!");
-                    return items;
-                }).whenComplete(this::logging);
-    }
-
-    private <T> void logging(T data, Throwable throwable) {
-        if (throwable != null) {
-            log.error("Unable to save mobiles", throwable);
-        }
-    }
-
-    private CompletableFuture<UOMobile> loadAndCacheMobile(UOMobile mobile) {
-        return itemStorage.findAllEquippedItems(mobile)
-                .thenApply(itemCache::putAll)
-                .thenApply(items -> {
-                    items.forEach(mobile::equipItem);
-                    mobileCache.put(mobile);
-                    worldMobileIndex.add(mobile);
-                    return mobile;
-                })
-                .whenComplete(this::logging);
+        return itemStorage.saveItems(itemSerialSupplier.get(), updated, dirty)
+                .thenApply(ItemMapper::mapToItem);
     }
 
     @Override
     public CompletableFuture<UOAccount> getAccountByUsername(String username) {
         return accountStorage.getByUsername(username);
+    }
+
+    private <T> void logging(T data, Throwable throwable) {
+        if (throwable != null) {
+            log.error("Unable execute storage", throwable);
+        }
+    }
+
+    @Override
+    public UOMobile createMobile(UOMobileData data) {
+        var mobile = switch (data.getType()) {
+            case "N" -> new UONpc(data);
+            case "P" -> new UOPlayer(data);
+            default -> throw new IllegalArgumentException("Invalid data type");
+        };
+        return cache(mobile);
     }
 }

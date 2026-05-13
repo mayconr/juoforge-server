@@ -26,9 +26,9 @@ public class SendSkill extends AbstractPacket {
     }
 
     public SendSkill(UOMobile mobile) {
-        super(CODE, computeLength((byte) SendSkillType.SINGLE_UPDATE_WITH_CAP.getCode(), mobile.getSkills().skills()));
+        super(CODE, computeLength((byte) SendSkillType.SINGLE_UPDATE_WITH_CAP.getCode(), mobile.getSkills().getSkillValues()));
         this.type = SendSkillType.SINGLE_UPDATE_WITH_CAP;
-        this.skills = mobile.getSkills().skills();
+        this.skills = mobile.getSkills().getSkillValues();
     }
 
     public SendSkill(ByteBuf buf) {

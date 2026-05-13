@@ -5,11 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Map;
-
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class UOObject implements Location, AttributeSupport, TooltipSupport {
+public abstract class UOObject<T extends UOObjectData> implements Location, AttributeSupport, TooltipSupport {
     @Getter
     @EqualsAndHashCode.Include @ToString.Include private int serialId;
     @Getter
@@ -34,27 +32,42 @@ public class UOObject implements Location, AttributeSupport, TooltipSupport {
     private final AttributeMap persistentAttrMap;
     private final AttributeMap runtimeAttrMap;
 
-    public UOObject(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap) {
-        this.serialId = serialId;
-        this.modelId = modelId;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.name = name;
-        this.displayName = displayName;
-        this.persistentAttrMap = persistentAttrMap;
+    protected UOObject(UOObjectData data) {
+        this.serialId = data.getSerialId();
+        this.modelId = data.getModelId();
+        this.x = data.getX();
+        this.y = data.getY();
+        this.z = data.getZ();
+        this.name = data.getName();
+        this.displayName = data.getDisplayName();
+        this.persistentAttrMap = data.getPersistentAttrMap();
         this.runtimeAttrMap = new DefaultAttributeMap();
+    }
+
+    public T toData() {
+        T data = createData();
+
+        populateData(data);
+
+        return data;
+    }
+
+    protected abstract T createData();
+
+    protected void populateData(T data) {
+        data.setSerialId(serialId);
+        data.setModelId(modelId);
+        data.setX(x);
+        data.setY(y);
+        data.setZ(z);
+        data.setName(name);
+        data.setDisplayName(displayName);
+        data.setPersistentAttrMap(persistentAttrMap);
     }
 
     public void setLocation(int x, int y) {
         this.x = x;
         this.y = y;
-    }
-
-    public void setLocation(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
     }
 
     public void setLocation(Location location) {

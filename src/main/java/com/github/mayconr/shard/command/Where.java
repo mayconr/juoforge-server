@@ -1,6 +1,8 @@
 package com.github.mayconr.shard.command;
 
 import com.github.mayconr.juoserver.ServerRuntime;
+import com.github.mayconr.juoserver.game.model.ItemTargetResult;
+import com.github.mayconr.juoserver.game.model.MobileTargetResult;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
@@ -25,12 +27,12 @@ public class Where extends AbstractCommand{
         var message = "You are here "+event.player().getX()+" - "+ event.player().getY()+" - "+event.player().getZ();
 
         world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
-            world.getMobileBySerialId(result.serialId()).ifPresent(mobile -> {
-                world.printTextAbove(mobile, new PlainTextMessageContent(message), event.player());
-            });
-            world.getItemBySerialId(result.serialId()).ifPresent(item->{
-                world.printTextAbove(item, new PlainTextMessageContent(message));
-            });
+            if (result instanceof MobileTargetResult rs) {
+                world.printTextAbove(rs.mobile(), new PlainTextMessageContent(message), event.player());
+            }
+            if (result instanceof ItemTargetResult rs) {
+                world.printTextAbove(rs.item(), new PlainTextMessageContent(message));
+            }
         });
         world.sendMessage(event.player(), MessageContent.localized(message, Map.of()));
 

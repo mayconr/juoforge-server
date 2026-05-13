@@ -5,26 +5,26 @@ import lombok.ToString;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ToString(callSuper = true)
 public class UOContainer extends UOItem implements Container {
 
-    private final Map<Integer, UOItem> itensInContainer = new ConcurrentHashMap<>();
+    private final Set<Integer> itemsInContainer = ConcurrentHashMap.newKeySet();
 
     @Getter
     private final int containerGumpId;
 
-    public UOContainer(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight, int corpseId) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap, id, layer, amount, hue, flags, unitWeight, corpseId);
-        this.containerGumpId = persistentAttrMap.getOrDefault("gumpId", 0);
+    public UOContainer(UOItemData data) {
+        super(data);
+        this.containerGumpId = data.getContainerGumpId();
     }
 
-    public UOContainer(UOItem item, int containerGumpId) {
-        super(item);
-        this.containerGumpId = containerGumpId;
+    @Override
+    protected void populateData(UOItemData data) {
+        super.populateData(data);
+        data.setContainerGumpId(containerGumpId);
     }
 
     @Override
@@ -36,20 +36,17 @@ public class UOContainer extends UOItem implements Container {
 
     @Override
     public void addItemToContainer(UOItem item) {
-        item.setOwner(null);
-        item.setContainer(this);
-        itensInContainer.put(item.getSerialId(), item);
+        itemsInContainer.add(item.getSerialId());
     }
 
     @Override
-    public Collection<UOItem> getItemsInContainer() {
-        return itensInContainer.values();
+    public Collection<Integer> getContainerItems() {
+        return List.copyOf(itemsInContainer);
     }
 
     @Override
     public void removeItemFromContainer(UOItem item) {
-        item.setContainer(null);
-        itensInContainer.remove(item.getSerialId());
+        itemsInContainer.remove(item.getSerialId());
     }
 
 }

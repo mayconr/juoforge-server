@@ -9,7 +9,6 @@ import org.springframework.context.annotation.ComponentScan;
 public class ApplicationMain {
 
     public static void main(String[] args) {
-        System.out.println((int) 0x56C5);
         SpringApplication.run(ApplicationMain.class, args);
     }
 

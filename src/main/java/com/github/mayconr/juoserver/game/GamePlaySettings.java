@@ -19,7 +19,12 @@ public record GamePlaySettings(
     public record Vitals(int saturationFactor) {}
     public record GameLoop(int tps) {}
     public record Skills(double minGainChance, double maxGainChance, int balanceOffset, double cap) {}
-    public record World(int lightOfSight) {}
+
+    public record World(Visibility visibility, Interaction interaction) {}
+    public record Visibility(int range) {}
+    public record Interaction(MoveItem moveItem) {}
+    public record MoveItem(int maxDistance) {}
+
     public record Economy(String goldCoinItem) {}
     public record Files(String dataFileRoot) {}
     public record Client(List<ClientFeatureFlag> unlockedFeatures) {}

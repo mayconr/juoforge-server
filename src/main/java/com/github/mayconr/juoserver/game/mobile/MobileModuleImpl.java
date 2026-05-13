@@ -1,37 +1,42 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
+import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
-import com.github.mayconr.juoserver.game.mobile.npc.NpcCreationService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
-import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
-import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplateRegistry;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
 import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
-import com.github.mayconr.juoserver.game.world.ModuleContext;
+import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @RequiredArgsConstructor
 public class MobileModuleImpl implements MobileModule {
 
-    private final MountService mountService;
-    private final NpcCreationService npcCreationService;
     private final MovementService movementService;
-    private final ItemEquipService itemEquipService;
     private final NpcDespawnService npcDespawnService;
-    private final NpcTemplateRegistry npcTemplateRegistry;
     private final Wallet wallet;
     private final EventBus eventBus;
+    private final RealmStorage storage;
+
+    private ModuleContext.FlowFacade flows;
 
     @Override
     public void initialize(ModuleContext context) {
-        mountService.initialize(context);
+        this.flows = context.flows();
     }
 
     @Override
@@ -41,41 +46,12 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void mount(UOPlayer player, UONpc npc) {
-        if (mountService.mount(player, npc) != null) {
-            npcCreationService.deleteMobile(npc);
-        }
+        flows.execute(new MountContext(player, npc));
     }
 
     @Override
     public void unmount(UOPlayer player) {
-        var item = mountService.unmount(player);
-        if (item != null) {
-            final var npcName = (String) item.persistentAttributes().get("npcName");
-            if (npcName == null) {
-                log.debug("Item [{}] is not a mount item", item.getName());
-                return;
-            }
-            final var template = npcTemplateRegistry.get(npcName);
-            if (template == null) {
-                throw  new IllegalStateException("NPC [" + npcName + "] is not a mount item");
-            }
-
-            npcCreationService.createNpc(template, player);
-
-            if (log.isDebugEnabled()) {
-                log.debug("Created mount NPC [{}]", npcName);
-            }
-        }
-    }
-
-    @Override
-    public UONpc createNpc(NpcTemplate template, Location location) {
-        return npcCreationService.createNpc(template, location);
-    }
-
-    @Override
-    public void removeNpc(UONpc npc) {
-        npcCreationService.deleteMobile(npc);
+        flows.execute(new UnmountContext(player));
     }
 
     @Override
@@ -101,13 +77,25 @@ public class MobileModuleImpl implements MobileModule {
     }
 
     @Override
-    public void equipItem(UOMobile mobile, UOItem item) {
-        itemEquipService.equipItem(mobile, item);
+    public boolean equipItem(UOMobile mobile, UOItem item) {
+        var context = new EquipItemContext(mobile, item);
+        flows.execute(context);
+        //itemEquipService.equipItem(mobile, item);
+        return context.isEquipped();
     }
 
     @Override
-    public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
-        itemEquipService.unequipItem(player, pickedUpItem);
+    public boolean unequipItem(UOMobile mobile, UOItem item) {
+        var context = new UnequipItemContext(mobile, item);
+        flows.execute(context);
+        return context.isUnequipped();
+    }
+
+    @Override
+    public boolean unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
+        var context = new UnequipItemContext(player, pickedUpItem);
+        flows.execute(context);
+        return context.isUnequipped();
     }
 
     @Override
@@ -123,5 +111,24 @@ public class MobileModuleImpl implements MobileModule {
         mobile.setAlive(true);
 
         eventBus.publish(new MobileResurrectEvent(mobile));
+    }
+
+    @Override
+    public void die(DeathRequest request) {
+        flows.execute(new DeathContext(request.victim(), request.killer(), request.cause()));
+    }
+
+    @Override
+    public Map<Layer, UOItem> getEquippedItems(UOMobile mobile) {
+        final var equippedSerials = mobile.getEquippedItems();
+        final Map<Layer, UOItem> equippedItems = new HashMap<>(equippedSerials.size());
+        for (Map.Entry<Layer, Integer> entry : equippedSerials.entrySet()) {
+            var itemSerial = entry.getValue();
+
+            var item = storage.getItem(itemSerial)
+                    .orElseThrow(() -> new IllegalStateException("Cannot find equipped Item ["+itemSerial+"] for player " + mobile.getName()));
+            equippedItems.put(entry.getKey(), item);
+        }
+        return equippedItems;
     }
 }

@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
-import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
+import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
@@ -36,8 +36,6 @@ public interface WorldActions {
 
     void move(UOMobile mobile, Location location);
 
-    void moveItem(UOItem item, Location location);
-
     void mount(UOPlayer player, UONpc npc);
 
     void unmount(UOPlayer player);
@@ -66,7 +64,7 @@ public interface WorldActions {
     // Items / containers
     // =========================
 
-    ConsumeResult consumeItem(Container container, String name, int amount, boolean searchNestedContainers);
+    ConsumeResult consumeItem(Integer containerSerial, String name, int amount, boolean searchNestedContainers);
 
     // =========================
     // Skills / progression

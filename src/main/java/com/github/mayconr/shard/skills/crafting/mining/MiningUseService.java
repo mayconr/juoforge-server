@@ -1,7 +1,7 @@
 package com.github.mayconr.shard.skills.crafting.mining;
 
 import com.github.mayconr.juoserver.ServerRuntime;
-import com.github.mayconr.juoserver.game.interaction.target.TargetResult;
+import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.Location;

@@ -51,6 +51,7 @@ public class AddMultipleItemsToContainer extends AbstractPacket {
             buf.writeShort(item.getModelId());
             buf.writeByte(0); // unknown
             buf.writeShort(item.getAmount());
+            System.out.println(item.getX() + " " + item.getY() + " " + item.getZ());
             buf.writeShort(item.getX());
             buf.writeShort(item.getY());
             buf.writeByte(item.getZ());

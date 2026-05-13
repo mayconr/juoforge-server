@@ -5,21 +5,22 @@
 
 <configuration>
 
-    <!-- (Opcional) aliases -->
     <typeAliases>
-        <!-- use o seu package real -->
+        <typeAlias type="com.github.mayconr.juoserver.game.model.AccountMobile" alias="AccountMobile" />
+        <typeAlias type="com.github.mayconr.juoserver.game.model.UOMobile" alias="UOMobile" />
+        <typeAlias type="com.github.mayconr.juoserver.game.model.UOItemData" alias="UOItemData"/>
+        <typeAlias type="com.github.mayconr.juoserver.game.model.UOAccount" alias="UOAccount" />
         <package name="com.github.mayconr.shard.storage"/>
     </typeAliases>
 
-    <!-- (Opcional) typeHandlers -->
     <typeHandlers>
         <package name="com.github.mayconr.shard.storage.types"/>
     </typeHandlers>
 
     <mappers>
-        <!-- caminho classpath do XML do mapper -->
         <mapper resource="mappers/MobileMapper.xml"/>
-        <!-- adicione os outros mappers aqui -->
+        <mapper resource="mappers/ItemMapper.xml"/>
+        <mapper resource="mappers/AccountMapper.xml"/>
     </mappers>
 
 </configuration>

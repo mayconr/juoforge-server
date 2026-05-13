@@ -5,8 +5,8 @@ CREATE TABLE serial_counters (
 );
 
 INSERT INTO serial_counters (entity_type, next_serial) VALUES
-   ('MOBILE', 0x00000001),
-   ('ITEM',   0x40000000);
+                                                           ('MOBILE', 0x00000001),
+                                                           ('ITEM',   0x40000000);
 --Tipo	Base
 -- MOBILE	0x00000000
 -- ITEM	0x20000000
@@ -21,312 +21,232 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE mobiles (
- id UUID PRIMARY KEY,
+    -- identidade
+     serial_id INT PRIMARY KEY,
 
- serial_id INT NOT NULL,
+    -- tipo
+     type CHAR(1) NOT NULL, -- 'P' | 'N'
 
- type CHAR(1) NOT NULL, -- 'P' = Player | 'N' = NPC
+    -- base
+     name VARCHAR(32) NOT NULL,
+     display_name VARCHAR(64),
 
- name VARCHAR(32) NOT NULL,
- display_name VARCHAR(64),
+     model_id INT NOT NULL,
+     hue INT NOT NULL,
 
- model_id INT NOT NULL,
- hue INT NOT NULL,
+     race SMALLINT NOT NULL,
+     gender SMALLINT NOT NULL,
+     notoriety SMALLINT,
+     status SMALLINT,
 
- race SMALLINT NOT NULL,
- gender SMALLINT NOT NULL,
- notoriety SMALLINT,
- status SMALLINT,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
- created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- player only
+     account_id UUID,
 
- CONSTRAINT ck_mobile_type
-     CHECK (type IN ('P', 'N')),
+    -- npc only
+     roles JSONB DEFAULT '[]'::jsonb,
+     behavior jsonb,
 
- CONSTRAINT uk_character_serial
-     UNIQUE (serial_id)
-);
-CREATE UNIQUE INDEX idx_mobiles_serial
-    ON mobiles(serial_id);
+    -- attributes
+     strength INT NOT NULL,
+     dexterity INT NOT NULL,
+     intelligence INT NOT NULL,
 
-ALTER TABLE mobiles
-    ADD CONSTRAINT chk_mobile_serial_range
-        CHECK (serial_id BETWEEN 1 AND 1073741823);
+     stat_cap SMALLINT NOT NULL,
 
-CREATE TABLE mobile_player (
-   mobile_id UUID PRIMARY KEY
-       REFERENCES mobiles(id)
-           ON DELETE CASCADE,
+     followers INT NOT NULL,
+     max_followers INT NOT NULL,
 
-   account_id UUID NOT NULL
-       REFERENCES accounts(id)
-           ON DELETE CASCADE
-);
+     luck INT NOT NULL DEFAULT 0,
+     tithing_points INT NOT NULL DEFAULT 0,
 
-CREATE TABLE mobile_npc (
-    mobile_id UUID PRIMARY KEY
-        REFERENCES mobiles(id)
-            ON DELETE CASCADE,
+    -- vitals (base)
+     max_hitpoints INT NOT NULL,
+     max_stamina INT NOT NULL,
+     max_mana INT NOT NULL,
 
-    ai VARCHAR(64) NOT NULL,
-    behavior_profile VARCHAR(64) NOT NULL,
+    -- runtime
+     x INT NOT NULL,
+     y INT NOT NULL,
+     z INT NOT NULL,
 
-    roles JSONB NOT NULL DEFAULT '[]'::jsonb
-);
+     direction SMALLINT NOT NULL,
+     running BOOLEAN NOT NULL,
 
-CREATE TABLE mobile_attributes (
-   mobile_id UUID PRIMARY KEY,
+     hitpoints INT NOT NULL,
+     stamina INT NOT NULL,
+     mana INT NOT NULL,
 
-   strength      INT NOT NULL,
-   dexterity     INT NOT NULL,
-   intelligence  INT NOT NULL,
+     alive BOOLEAN not null,
 
-   stat_cap      SMALLINT NOT NULL,
+     runtime_attr JSONB NOT NULL DEFAULT '{}',
 
-   followers     INT NOT NULL,
-   max_followers INT NOT NULL,
+     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-   luck           INT NOT NULL DEFAULT 0,
-   tithing_points INT NOT NULL DEFAULT 0,
+    -- constraints
+     CONSTRAINT fk_mobile_account
+         FOREIGN KEY (account_id)
+             REFERENCES accounts(id)
+             ON DELETE CASCADE,
 
-   CONSTRAINT fk_mobile_attributes_mobile
-       FOREIGN KEY (mobile_id)
-           REFERENCES mobiles(id)
-           ON DELETE CASCADE,
+     CONSTRAINT ck_mobile_type
+         CHECK (type IN ('P', 'N')),
 
-   CONSTRAINT chk_attributes_non_negative
-       CHECK (
-           strength >= 0 AND
-           dexterity >= 0 AND
-           intelligence >= 0 AND
-           stat_cap >= 0 AND
-           followers >= 0 AND
-           max_followers >= 0 AND
-           luck >= 0 AND
-           tithing_points >= 0
-           )
-);
+     CONSTRAINT chk_mobile_serial_range
+         CHECK (serial_id BETWEEN 1 AND 1073741823),
 
-CREATE TABLE mobile_vitals (
-   mobile_id UUID PRIMARY KEY,
+     CONSTRAINT chk_attributes_non_negative
+         CHECK (
+             strength >= 0 AND
+             dexterity >= 0 AND
+             intelligence >= 0 AND
+             stat_cap >= 0 AND
+             followers >= 0 AND
+             max_followers >= 0 AND
+             luck >= 0 AND
+             tithing_points >= 0
+             ),
 
-   max_hitpoints INT NOT NULL,
-   max_stamina   INT NOT NULL,
-   max_mana      INT NOT NULL,
+     CONSTRAINT chk_vitals_non_negative
+         CHECK (
+             max_hitpoints >= 0 AND
+             max_stamina >= 0 AND
+             max_mana >= 0
+             ),
 
-   CONSTRAINT fk_mobile_vitals_mobile
-       FOREIGN KEY (mobile_id)
-           REFERENCES mobiles(id)
-           ON DELETE CASCADE,
+     CONSTRAINT chk_mobile_runtime_valid
+         CHECK (
+             x >= 0 AND
+             y >= 0 AND
+             hitpoints >= 0 AND
+             stamina >= 0 AND
+             mana >= 0
+             ),
 
-   CONSTRAINT chk_vitals_non_negative
-       CHECK (
-           max_hitpoints >= 0 AND
-           max_stamina >= 0 AND
-           max_mana >= 0
-           )
-);
+    -- coerência tipo → campos
+     CONSTRAINT chk_player_fields
+         CHECK (
+             (type = 'P' AND account_id IS NOT NULL)
+                 OR
+             (type = 'N' AND account_id IS NULL)
+             ),
 
-CREATE TABLE mobile_runtime (
-    mobile_id UUID PRIMARY KEY,
-
-    x         INT NOT NULL,
-    y         INT NOT NULL,
-    z         INT NOT NULL,
-
-    direction SMALLINT NOT NULL,
-    running   BOOLEAN NOT NULL,
-
-    hitpoints INT NOT NULL,
-    stamina   INT NOT NULL,
-    mana      INT NOT NULL,
-
-    attr JSONB NOT NULL DEFAULT '{}',
-
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT fk_mobile_runtime_mobile
-        FOREIGN KEY (mobile_id)
-            REFERENCES mobiles(id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT chk_mobile_runtime_valid
-        CHECK (
-            x >= 0 AND
-            y >= 0 AND
-            hitpoints >= 0 AND
-            stamina >= 0 AND
-            mana >= 0
-            )
+     CONSTRAINT chk_npc_fields
+         CHECK (
+             (type = 'N' AND behavior IS NOT NULL)
+                 OR
+             (type = 'P')
+             )
 );
 
 CREATE TABLE mobile_skills (
-   mobile_id UUID NOT NULL,
-   skill_id SMALLINT NOT NULL,
+       serial_id INT NOT NULL,
+       skill_id SMALLINT NOT NULL,
 
-   skill_base DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-   skill_cap  DOUBLE PRECISION NOT NULL DEFAULT 100.0,
-   skill_lock SMALLINT NOT NULL DEFAULT 0,
+       skill_base DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+       skill_cap  DOUBLE PRECISION NOT NULL DEFAULT 100.0,
+       skill_lock SMALLINT NOT NULL DEFAULT 0,
 
-   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-   PRIMARY KEY (mobile_id, skill_id),
+       PRIMARY KEY (serial_id, skill_id),
 
-   CONSTRAINT fk_mobile_skills_mobile
-       FOREIGN KEY (mobile_id)
-           REFERENCES mobiles(id)
-           ON DELETE CASCADE
+       CONSTRAINT fk_mobile_skills_mobile
+           FOREIGN KEY (serial_id)
+               REFERENCES mobiles(serial_id)
+               ON DELETE CASCADE,
+
+       CONSTRAINT chk_skill_values
+           CHECK (
+               skill_base >= 0 AND
+               skill_cap >= 0 AND
+               skill_base <= skill_cap
+               ),
+
+       CONSTRAINT chk_skill_lock
+           CHECK (skill_lock IN (0, 1, 2)) -- 0=up, 1=down, 2=locked (padrão UO)
 );
 
-CREATE OR REPLACE VIEW v_account_mobiles_login AS
-SELECT
-    m.id AS mobile_id,
-    m.serial_id,
-    mp.account_id,
-    m.name AS mobile_name
-FROM mobiles m
-JOIN mobile_player mp ON mp.mobile_id = m.id;
-
-CREATE OR REPLACE VIEW v_mobile_full AS
-SELECT
-    m.id AS mobile_id,
-    m.serial_id,
-    mp.account_id,
-    m.type,
-    m.name,
-    m.display_name,
-    m.model_id,
-    m.hue,
-    m.race,
-    m.gender,
-    m.notoriety,
-    m.status,
-    m.created_at,
-
-    r.x,
-    r.y,
-    r.z,
-    r.direction,
-    r.running,
-    r.hitpoints,
-    r.stamina,
-    r.mana,
-    r.attr,
-    r.updated_at,
-
-    a.strength,
-    a.dexterity,
-    a.intelligence,
-    a.stat_cap,
-    a.followers,
-    a.max_followers,
-    a.luck,
-    a.tithing_points,
-
-    v.max_hitpoints,
-    v.max_stamina,
-    v.max_mana,
-
-    -- NPC specific (NULL para players)
-    n.ai,
-    n.behavior_profile,
-    n.roles
-
-FROM mobiles m
-JOIN mobile_runtime r      ON r.mobile_id = m.id
-JOIN mobile_attributes a   ON a.mobile_id = m.id
-JOIN mobile_vitals v       ON v.mobile_id = m.id
-LEFT JOIN mobile_player mp ON mp.mobile_id = m.id
-LEFT JOIN mobile_npc n     ON n.mobile_id = m.id;
-
 CREATE TABLE items (
-   id UUID PRIMARY KEY,
-   serial_id INT NOT NULL,
+    -- identidade
+   serial_id INT PRIMARY KEY,
 
--- ownership forte (ao deletar o mobile, deleta os itens dele)
-   owner_mobile_id UUID,
+-- relação
+   location_type INT NOT NULL,
+   owner_serial_id INT,
+   container_serial_id INT,
 
--- hierarquia forte (ao deletar o container, deleta o conteúdo)
-   parent_item_id UUID,
-
+-- definição
    name VARCHAR(64) NOT NULL,
    display_name VARCHAR(64) NOT NULL,
 
    model_id INT NOT NULL,
    hue INT NOT NULL,
    layer SMALLINT,
+   movable BOOLEAN,
 
    unit_weight INT NOT NULL,
    amount INT NOT NULL DEFAULT 1,
+
+   container_gump_id INT,
    corpse_id INT,
 
    flags JSONB NOT NULL DEFAULT '{}',
 
-   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+-- estado (ex item_state)
+   x INT,
+   y INT,
+   z INT,
 
-   CONSTRAINT uk_item_serial UNIQUE (serial_id),
+   attr JSONB NOT NULL DEFAULT '{}',
 
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+-- constraints
    CONSTRAINT fk_items_owner
-       FOREIGN KEY (owner_mobile_id)
-           REFERENCES mobiles(id)
+       FOREIGN KEY (owner_serial_id)
+           REFERENCES mobiles(serial_id)
            ON DELETE CASCADE,
 
-   CONSTRAINT fk_items_parent
-       FOREIGN KEY (parent_item_id)
-           REFERENCES items(id)
-           ON DELETE CASCADE
+   CONSTRAINT fk_items_container
+       FOREIGN KEY (container_serial_id)
+           REFERENCES items(serial_id)
+           ON DELETE CASCADE,
+
+   CONSTRAINT chk_item_amount
+       CHECK (amount > 0),
+
+   CONSTRAINT chk_item_weight
+       CHECK (unit_weight >= 0),
+
+   CONSTRAINT chk_item_position
+       CHECK (
+           (x IS NULL AND y IS NULL AND z IS NULL)
+               OR
+           (x >= 0 AND y >= 0)
+           ),
+
+   CONSTRAINT chk_item_location_rules
+       CHECK (
+       -- location_type = 1 → ambos NULL
+       (location_type = 1 AND owner_serial_id IS NULL AND container_serial_id IS NULL)
+
+       OR
+
+       -- location_type = 2 → container != NULL e owner NULL
+       (location_type = 2 AND container_serial_id IS NOT NULL AND owner_serial_id IS NULL)
+
+       OR
+
+       -- location_type = 3 → owner != NULL e container NULL
+       (location_type = 3 AND owner_serial_id IS NOT NULL AND container_serial_id IS NULL)
+
+       OR
+
+       -- location_type = 4 → ambos NULL
+       (location_type = 4 AND owner_serial_id IS NULL AND container_serial_id IS NULL)
+       )
 );
-
-CREATE INDEX idx_items_name ON items (name);
-CREATE INDEX idx_items_owner_mobile_id ON items(owner_mobile_id);
-CREATE INDEX idx_items_parent_item_id  ON items(parent_item_id);
-
-CREATE TABLE item_state (
-    item_id UUID PRIMARY KEY,
-
-    x INT,
-    y INT,
-    z INT,
-
-    attr JSONB NOT NULL DEFAULT '{}',
-
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT fk_item_state_item
-        FOREIGN KEY (item_id)
-            REFERENCES items(id)
-            ON DELETE CASCADE
-            DEFERRABLE INITIALLY DEFERRED
-);
-
-CREATE OR REPLACE VIEW v_item_full AS
-SELECT
-    i.id AS item_id,
-    i.serial_id,
-    i.name,
-    i.display_name,
-    i.model_id,
-    i.hue,
-    i.layer,
-    i.unit_weight,
-    i.amount,
-    i.flags,
-    i.corpse_id,
-
-    i.owner_mobile_id,
-    i.parent_item_id,
-
-    COALESCE(s.x, 0) AS x,
-    COALESCE(s.y, 0) AS y,
-    COALESCE(s.z, 0) AS z,
-
-    s.attr,
-    s.updated_at,
-
-    CASE
-        WHEN i.flags ? 'CONTAINER' THEN 'C'
-        ELSE 'O'
-        END AS type
-FROM items i
-JOIN item_state s ON s.item_id = i.id;

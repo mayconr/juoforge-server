@@ -1,11 +1,14 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoforge.reader.view.LandTile;
+import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -16,7 +19,9 @@ public interface WorldView {
 
     List<UOItem> getItemsInRange(Location location, int radius);
 
-    List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> filter);
+    List<UOItem> getItemsInContainer(Integer container, Predicate<UOItem> filter);
+
+    Map<Layer, UOItem> getEquippedItems(UOMobile mobile);
 
     List<ItemTemplate> getItemsTemplate(String stockType);
 
@@ -24,11 +29,11 @@ public interface WorldView {
 
     Optional<UOItem> getItemBySerialId(int serial);
 
-    Optional<Container> getContainerBySerialId(int serial);
+    Optional<UOContainer> getContainerBySerialId(int serial);
 
-    List<Static> getStatics(int x, int y);
+    List<StaticTile> getStatics(int x, int y);
 
-    List<Static> getStatics(Location location);
+    List<StaticTile> getStatics(Location location);
 
     LandTile getLandTile(int x, int y);
 

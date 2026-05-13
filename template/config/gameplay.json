@@ -17,10 +17,12 @@
       "backpackItem" : "backpack"
     },
     "world" : {
-      "lightOfSight" : 24
+      "visibility" : {
+        "range" : 24
+      }
     },
     "files" : {
-      "dataFileRoot" : "/home/mgregorio/uo/Ultima Online Classic"
+      "dataFileRoot" : "C:\\Program Files (x86)\\Electronic Arts\\Ultima Online Classic"
     },
     "client": {
       "unlockedFeatures" : ["AOS"]

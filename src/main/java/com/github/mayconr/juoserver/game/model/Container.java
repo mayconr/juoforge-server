@@ -14,7 +14,7 @@ public interface Container {
 
     void removeItemFromContainer(UOItem item);
 
-    Collection<UOItem> getItemsInContainer();
+    Collection<Integer> getContainerItems();
 
     int getSerialId();
 

@@ -35,9 +35,7 @@ public interface WorldInternal extends WorldActions, WorldView, CombatInternal, 
 
     void unequipItem(UOPlayer player, UnequipItem pickedUpItem);
 
-    void dropItemOnTheGround(UOPlayer player, DropItem dropItem);
-
-    void dropItemInContainer(UOPlayer player, DropItem dropItem);
+    void dropItem(UOPlayer player, DropItem dropItem);
 
     void useSkill(UOPlayer player, int skillId);
 

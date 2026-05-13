@@ -5,18 +5,15 @@
     "layer": "BACKPACK",
     "modelId": 3701,
     "movable": false,
-    "hue": 0,
     "flags": ["WEARABLE", "CONTAINER"],
-    "attr": {
-      "gumpId": 60
-    }
+    "containerGumpId": 60
   },
   {
     "name": "shirt",
     "displayName": "shirt",
     "layer": "SHIRT",
     "modelId": 5399,
-    "movable": false,
+    "movable": true,
     "hue": 0,
     "flags": ["WEARABLE"],
     "attr": {}
@@ -26,7 +23,7 @@
     "displayName": "pants",
     "layer": "PANTS",
     "modelId": 5422,
-    "movable": false,
+    "movable": true,
     "hue": 0,
     "flags": ["WEARABLE"],
     "attr": {}
@@ -36,7 +33,7 @@
     "displayName": "shoes",
     "layer": "SHOES",
     "modelId": 5903,
-    "movable": false,
+    "movable": true,
     "hue": 0,
     "flags": ["WEARABLE"],
     "attr": {}

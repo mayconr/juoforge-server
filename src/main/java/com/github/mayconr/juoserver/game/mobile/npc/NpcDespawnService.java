@@ -32,7 +32,19 @@ public class NpcDespawnService implements WorldModule {
                 UONpc npc = despawnEntry.npc;
 
                 if (!npc.isAlive()) {
-                    log.debug("Npc {} has been destroyed", npc.getId());
+                    log.info("Npc {} has been destroyed", npc.getId());
+                    for (Integer equippedItemSerial : npc.getEquippedItems().values()) {
+                        storage.deleteItem(storage.getItem(equippedItemSerial).orElse(null));
+                    }
+
+                    if (npc.getBackpack() != null) {
+                        var backpack = storage.getContainer(npc.getBackpack())
+                                .orElseThrow(() -> new RuntimeException("Backpack could not be found"));
+                        for (Integer itemSerial : backpack.getContainerItems()) {
+                            storage.getItem(itemSerial).ifPresent(storage::deleteItem);
+                        }
+                    }
+
                     storage.deleteMobile(npc);
                 }
 

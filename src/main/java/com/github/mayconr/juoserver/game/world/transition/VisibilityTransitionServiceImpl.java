@@ -23,8 +23,9 @@ public class VisibilityTransitionServiceImpl implements VisibilityTransitionServ
     public void handle(MobileMoved event) {
         var mobile = event.mobile();
 
-        var oldView = storage.getMobilesInRange(event.result().from(), settings.world().lightOfSight(), UOMobile::isAlive);
-        var newView = storage.getMobilesInRange(event.result().to(), settings.world().lightOfSight(), UOMobile::isAlive);
+        var visibility = settings.world().visibility().range();
+        var oldView = storage.getMobilesInRange(event.result().from(), visibility, UOMobile::isAlive);
+        var newView = storage.getMobilesInRange(event.result().to(), visibility, UOMobile::isAlive);
 
         detectEnteredVisibleArea(mobile, oldView, newView);
         detectLeftVisibleArea(mobile, oldView, newView);

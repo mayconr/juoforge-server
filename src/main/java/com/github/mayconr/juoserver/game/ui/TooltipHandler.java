@@ -22,12 +22,12 @@ public class TooltipHandler {
         for (int serialId : serials) {
             // Mobiles
             if (SerialGenerator.isMobile(serialId)) {
-                storage.getMobileBySerialId(serialId).ifPresent(objects::add);
+                storage.getMobile(serialId).ifPresent(objects::add);
                 continue;
             }
             // Items
             if (SerialGenerator.isItem(serialId)) {
-                storage.getItemBySerialId(serialId).ifPresent(objects::add);
+                storage.getItem(serialId).ifPresent(objects::add);
                 continue;
             }
             // Vendor session (buy gump)

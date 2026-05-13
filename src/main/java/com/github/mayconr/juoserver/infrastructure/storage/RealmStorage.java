@@ -12,17 +12,51 @@ import java.util.function.Supplier;
 
 public interface RealmStorage {
 
+    // =========================
+    // LIFECYCLE
+    // =========================
+
+    void initialize(
+            Supplier<Integer> itemSerialSupplier,
+            Supplier<Integer> mobileSerialSupplier,
+            Consumer<InitialData> updateMobile
+    );
+
+    // =========================
+    // ACCOUNT ACCESS
+    // =========================
+
     CompletableFuture<UOAccount> getAccountByUsername(String username);
 
-    // Lifecycle
-    void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> updateMobile);
+    CompletableFuture<List<AccountMobile>> getAccountMobiles(UOAccount uoAccount);
 
-    // Serial allocation
+    // =========================
+    // SERIAL ALLOCATION
+    // =========================
+
     CompletableFuture<Integer> getNextItemSerial();
 
     CompletableFuture<Integer> getNextMobileSerial();
 
-    // Load and unload
+    // =========================
+    // CREATION
+    // =========================
+
+    UOItem createItem(UOItemData data);
+
+    UOMobile createMobile(UOMobileData data);
+
+    CompletableFuture<UOPlayer> saveNewPlayerMobile(
+            int currentMobileSerialId,
+            UOPlayer player,
+            int currentItemSerialId,
+            List<UOItem> starterItems
+    );
+
+    // =========================
+    // LOADING
+    // =========================
+
     CompletableFuture<UOMobile> loadMobile(int serialId);
 
     CompletableFuture<UOItem> loadItem(int serialId);
@@ -31,31 +65,49 @@ public interface RealmStorage {
 
     void unloadMobile(UOMobile mobile);
 
-    CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount uoAccount);
+    // =========================
+    // CACHE LOOKUPS
+    // =========================
 
-    // Cached lookups
-    Optional<UOMobile> getMobileBySerialId(int serialId);
+    Optional<UOMobile> getMobile(Integer serialId);
 
-    Optional<UOItem> getItemBySerialId(int serialId);
+    Optional<UOItem> getItem(int serialId);
 
-    Optional<Container> getContainerBySerialId(int serialId);
+    Optional<UOContainer> getContainer(int serialId);
 
-    // Cache and indexing
-    void cacheMobile(UOMobile mobile);
+    // =========================
+    // CACHE MANAGEMENT
+    // =========================
 
-    void cacheItem(UOItem npc);
+    UOMobile cache(UOMobile mobile);
 
-    // Spatial queries
-    List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);
+    UOItem cache(UOItem item);
+
+    // =========================
+    // SPATIAL QUERIES
+    // =========================
+
+    List<UOMobile> getMobilesInRange(
+            Location location,
+            int radius,
+            Predicate<UOMobile> filter
+    );
 
     List<UOItem> getItemsInRange(Location location);
 
-    // State mutation
-    void updateMobileLocation(UOMobile mobile, Location oldLoc, Location newLoc);
+    // =========================
+    // STATE MUTATION
+    // =========================
 
-    void dropItemOnTheGround(UOItem item);
+    void updateMobileLocation(
+            UOMobile mobile,
+            Location oldLoc,
+            Location newLoc
+    );
 
-    void removeItemFromTheGround(UOItem item);
+    void placeOnTheGround(UOItem item);
+
+    void removeFromTheGround(UOItem item);
 
     void deleteMobile(UOMobile mobile);
 
@@ -63,22 +115,19 @@ public interface RealmStorage {
 
     void deleteItem(UOItem item);
 
-    // Existence and creation
+    // =========================
+    // EXISTENCE CHECKS
+    // =========================
+
     CompletableFuture<Boolean> mobileExists(String name);
 
-    CompletableFuture<UOPlayer> insertPlayerMobile(int mobileSerialId, int itemSerialId, UOPlayer player);
+    // =========================
+    // PERSISTENCE
+    // =========================
 
-    // Persistence
-    CompletableFuture<Collection<UOMobile>> saveMobileRuntime();
-
-    CompletableFuture<Collection<UOMobile>> saveMobileVitals();
-
-    CompletableFuture<Collection<UOMobile>> saveMobileAttributes();
 
     CompletableFuture<Collection<UOMobile>> saveMobiles();
 
     CompletableFuture<Collection<UOItem>> saveItems();
-
-    CompletableFuture<Collection<UOItem>> saveItemStates();
 
 }

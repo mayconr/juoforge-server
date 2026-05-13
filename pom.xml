@@ -50,9 +50,9 @@
 			<version>3.5.19</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.janinko</groupId>
-			<artifactId>ultimasdk</artifactId>
-			<version>pre-03</version>
+			<groupId>om.github.mayconr</groupId>
+			<artifactId>juoforge-filereader</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>

@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.model.event.ContainerOpened;
+import com.github.mayconr.juoserver.game.model.event.ContainerOpenedEvent;
 import com.github.mayconr.juoserver.game.model.event.PaperdollOpened;
 import com.github.mayconr.juoserver.game.model.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -51,7 +51,7 @@ public class DoubleClickHandler {
             return;
         }
 
-        storage.getMobileBySerialId(serialId)
+        storage.getMobile(serialId)
                 .ifPresent(mobile -> otherMobileDoubleClick(player, mobile));
     }
 
@@ -71,7 +71,7 @@ public class DoubleClickHandler {
     }
 
     private void itemClicked(UOPlayer player, int serialId) {
-        storage.getItemBySerialId(serialId)
+        storage.getItem(serialId)
             .ifPresent(item->{
                 // TODO check the item range
 
@@ -80,9 +80,6 @@ public class DoubleClickHandler {
                     return;
                 }
 
-                if (player.isLayerAvailable(item.getLayer())) {
-                    //playerItemService.equipItem(item, item.getLayer());
-                }
                 // if the item is not a container, delegate the behavior
                 itemUseService.use(new ItemUseContext(player, item, Trigger.DOUBLE_CLICK));
             });
@@ -92,7 +89,7 @@ public class DoubleClickHandler {
         storage.loadContainerItems(container)
             .thenAccept(containerItems -> {
                 container.addItemsToContainer(containerItems);
-                eventBus.publish(new ContainerOpened(player, container));
+                eventBus.publish(new ContainerOpenedEvent(player, container));
             });
     }
 }

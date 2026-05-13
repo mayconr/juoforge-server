@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.mayconr.shard.storage.AccountMapper">
+
+    <!-- ===================================================== -->
+    <!-- ACCOUNT RESULT MAPPING                               -->
+    <!-- ===================================================== -->
+
+    <resultMap id="accountMapping"
+               type="com.github.mayconr.juoserver.game.model.UOAccount">
+
+        <constructor>
+            <arg column="id"
+                 javaType="java.util.UUID"
+                 typeHandler="com.github.mayconr.shard.storage.types.UUIDTypeHandler"/>
+
+            <arg column="username"
+                 javaType="java.lang.String"/>
+
+            <arg column="password"
+                 javaType="java.lang.String"/>
+        </constructor>
+
+    </resultMap>
+
+
+    <!-- ===================================================== -->
+    <!-- ACCOUNT MOBILE RESULT MAPPING                        -->
+    <!-- ===================================================== -->
+
+    <resultMap id="accountMobileMapping"
+               type="com.github.mayconr.juoserver.game.model.AccountMobile">
+
+        <constructor>
+            <arg column="serial_id" javaType="int"/>
+            <arg column="name" javaType="java.lang.String"/>
+        </constructor>
+
+    </resultMap>
+
+
+    <!-- ===================================================== -->
+    <!-- ACCOUNT QUERIES                                      -->
+    <!-- ===================================================== -->
+
+    <select id="findByUsername"
+            resultMap="accountMapping">
+
+        SELECT
+        id,
+        username,
+        password
+        FROM accounts
+        WHERE username = #{username}
+
+    </select>
+
+
+    <!-- ===================================================== -->
+    <!-- ACCOUNT CHARACTER QUERIES                            -->
+    <!-- ===================================================== -->
+
+    <select id="findAccountMobiles"
+            resultMap="accountMobileMapping">
+
+        SELECT
+        serial_id,
+        name
+        FROM mobiles
+        WHERE account_id = #{accountId, jdbcType=OTHER}
+        AND type = 'P'
+
+    </select>
+
+</mapper>

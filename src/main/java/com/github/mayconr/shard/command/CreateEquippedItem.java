@@ -1,7 +1,7 @@
 package com.github.mayconr.shard.command;
 
 import com.github.mayconr.juoserver.game.item.ItemRequest;
-import com.github.mayconr.juoserver.game.model.EquipItemTarget;
+import com.github.mayconr.juoserver.game.model.ItemTarget;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.world.World;
 
@@ -16,6 +16,6 @@ public class CreateEquippedItem extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        world.createItem(ItemRequest.byName(event.arguments()[0]), EquipItemTarget.of(event.player()));
+        world.createItem(ItemRequest.byName(event.arguments()[0]), ItemTarget.equip(event.player()));
     }
 }

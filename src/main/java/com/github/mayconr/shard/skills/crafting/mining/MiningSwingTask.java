@@ -51,7 +51,8 @@ public class MiningSwingTask implements GameTask {
         }
         final var itemRequest = ItemRequest.byName(ore.itemName())
                 .withAmount(2);
-        final var oreItem = world.createItem(itemRequest, ContainerItemTarget.of(player, cfg->{
+        UOContainer container = null;
+        final var oreItem = world.createItem(itemRequest, ContainerItemTarget.of(container, cfg->{
             cfg.tryStack(true);
         }));
 

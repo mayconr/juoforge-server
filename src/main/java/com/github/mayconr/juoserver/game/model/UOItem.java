@@ -2,15 +2,13 @@ package com.github.mayconr.juoserver.game.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class UOItem extends UOObject {
+public class UOItem extends UOObject<UOItemData> {
 
     public static final int OBJECTS_MIN_SERIAL_ID = 0x3FFFFFFF + 1;
     private UUID id;
@@ -21,96 +19,66 @@ public class UOItem extends UOObject {
     private boolean movable;
     private boolean hidden;
     private Direction direction;
-    private Container container;
-    private UOMobile owner;
+    private ItemLocation currentLocation;
+    private ItemLocation previousLocation;
     private List<ItemFlag> flags;
-    private int corpseId;
 
-    public UOItem(int serialId, int modelId, int x, int y, int z, String name, String displayName, AttributeMap persistentAttrMap, UUID id, Layer layer, int amount, int hue, List<ItemFlag> flags, int unitWeight, int corpseId) {
-        super(serialId, modelId, x, y, z, name, displayName, persistentAttrMap);
-        this.id = id;
-        this.layer = layer;
-        this.amount = amount;
-        this.hue = hue;
-        this.flags = flags;
-        this.unitWeight = unitWeight;
-        this.corpseId = corpseId;
-        /*this.movable = movable;
-        this.hidden = hidden;
-        this.direction = direction;
-        this.owner = owner;
-        this.flags = flags;*/
-    }
-
-    public UOItem(
-            UUID id,
-            int serialId,
-            int modelId,
-            int x,
-            int y,
-            int z,
-            String name,
-            String displayName,
-            AttributeMap attr,
-            Layer layer,
-            int amount,
-            int hue,
-            boolean movable,
-            boolean hidden,
-            Direction direction,
-            Container container,
-            List<ItemFlag> flags) {
-        super(serialId, modelId, x, y, z, name, displayName, attr);
-        this.id = id;
-        this.layer = layer;
-        this.amount = Math.max(1, amount);
-        this.hue = hue;
-        this.movable = movable;
-        this.hidden = hidden;
-        this.direction = direction;
-        this.container = container;
-        this.flags = flags;
-    }
-
-    public UOItem(UOItem other) {
-        super(
-                other.getSerialId(),
-                other.getModelId(),
-                other.getX(),
-                other.getY(),
-                other.getZ(),
-                other.getName(),
-                other.getDisplayName(),
-                other.persistentAttributes()
-        );
-        this.id = other.id;
-        this.layer = other.layer;
-        this.amount = other.amount;
-        this.hue = other.hue;
-        this.movable = other.movable;
-        this.hidden = other.hidden;
-        this.direction = other.direction;
-        this.container = other.container;
-        this.owner = other.owner;
-        this.flags = other.flags;
-        this.unitWeight = other.unitWeight;
-        this.corpseId = other.corpseId;
+    public UOItem(UOItemData data) {
+        super(data);
+        this.id = data.getId();
+        this.layer = data.getLayer();
+        this.amount = data.getAmount();
+        this.hue = data.getHue();
+        this.movable = data.isMovable();
+        this.hidden = data.isHidden();
+        this.direction = data.getDirection();
+        this.flags = data.getFlags();
+        this.unitWeight = data.getUnitWeight();
+        this.currentLocation = switch (data.getLocationType() == null ? ItemLocationType.EQUIPPED : data.getLocationType()) {
+            case EQUIPPED -> ItemLocation.equipped(data.getOwnerSerialId());
+            case CONTAINER -> ItemLocation.container(data.getContainerSerialId());
+            case GROUND ->  ItemLocation.ground();
+            case ORPHAN -> ItemLocation.orphan();
+        };
     }
 
     public static boolean isItem(int serialId) {
         return serialId >= OBJECTS_MIN_SERIAL_ID;
     }
 
-    public boolean isOnTheGround() {
-        return owner == null && container == null;
+    @Override
+    protected UOItemData createData() {
+        return new UOItemData();
     }
 
-    public boolean isInContainer() {
-        return container != null && owner == null;
-    }
+    @Override
+    protected void populateData(UOItemData data) {
+        super.populateData(data);
 
-    public boolean isEquipped() {
-        return owner != null && container == null;
+        data.setId(id);
+        data.setLayer(layer);
+        data.setAmount(amount);
+        data.setHue(hue);
+        data.setMovable(movable);
+        data.setHidden(hidden);
+        data.setDirection(direction);
+
+        switch (currentLocation) {
+            case EquippedLocation location -> {
+                data.setOwnerSerialId(location.ownerSerialId());
+                data.setLocationType(ItemLocationType.EQUIPPED);
+            }
+            case ContainerLocation location -> {
+                data.setContainerSerialId(location.containerSerialId());
+                data.setLocationType(ItemLocationType.CONTAINER);
+            }
+            case GroundLocation location -> data.setLocationType(ItemLocationType.GROUND);
+            case OrphanLocation location -> {
+                data.setLocationType(ItemLocationType.ORPHAN);
+            }
+        }
+        data.setFlags(flags);
+        data.setUnitWeight(unitWeight);
     }
 
     public boolean hasFlag(ItemFlag flag) {
@@ -121,10 +89,27 @@ public class UOItem extends UOObject {
         this.amount += amount;
     }
 
-    public void removeWhenInContainer() {
-        if (isInContainer()) {
-            container.removeItemFromContainer(this);
-            container = null;
-        }
+    public void setCurrentLocation(ItemLocation currentLocation) {
+        this.previousLocation = this.currentLocation;
+        this.currentLocation = currentLocation;
+    }
+
+    /*
+        Item lifecycle methods
+     */
+    public boolean isEquipped() {
+        return currentLocation instanceof EquippedLocation;
+    }
+
+    public boolean isOnTheGround() {
+        return currentLocation instanceof GroundLocation;
+    }
+
+    public boolean isInContainer() {
+        return currentLocation instanceof ContainerLocation;
+    }
+
+    public boolean isOrphan() {
+        return currentLocation instanceof OrphanLocation;
     }
 }

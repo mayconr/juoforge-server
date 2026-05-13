@@ -6,5 +6,5 @@ import com.github.mayconr.juoserver.game.model.UONpc;
 
 import java.util.List;
 
-public record InitialData(List<UONpc> npcs, List<UOItem> items) {
+public record InitialData(List<UOMobile> mobiles, List<UOItem> items) {
 }

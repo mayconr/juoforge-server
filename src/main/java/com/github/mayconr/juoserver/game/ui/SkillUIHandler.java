@@ -13,7 +13,7 @@ public class SkillUIHandler {
     private final RealmStorage storage;
 
     public void sendSkillGump(UOPlayer player, int requestedSkillSerialId) {
-        final var mobile = storage.getMobileBySerialId(requestedSkillSerialId)
+        final var mobile = storage.getMobile(requestedSkillSerialId)
                 .orElseThrow(()->new IllegalArgumentException("Mobile not found "+requestedSkillSerialId));
         eventBus.publish(new SkillGumpRequested(player, mobile));
     }

@@ -1,8 +1,7 @@
 package com.github.mayconr.shard.storage;
 
-import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOItem;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOItemData;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,23 +30,23 @@ public class PsqlItemStorage implements ItemStorage {
     }
 
     @Override
-    public CompletableFuture<List<UOItem>> findAllEquippedItems(UOMobile mobile) {
-        return findInternal(mapper->mapper.findAllEquippedItems(mobile.getId()));
+    public CompletableFuture<List<UOItemData>> findAllEquippedItems(int mobileSerialId) {
+        return findInternal(mapper->mapper.findAllEquippedItems(mobileSerialId));
     }
 
     @Override
-    public CompletableFuture<List<UOItem>> findAllGroundItems() {
+    public CompletableFuture<List<UOItemData>> findAllGroundItems() {
         return findInternal(ItemMapper::findAllGroundItems);
     }
 
     @Override
-    public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
-        return findInternal(mapper->mapper.findAllContainerItems(container.getId()));
+    public CompletableFuture<List<UOItemData>> loadContainerItems(int containerSerialId) {
+        return findInternal(mapper->mapper.findAllContainerItems(containerSerialId));
     }
 
     @Override
-    public CompletableFuture<UOItem> findItemBySerialId(int serialId) {
-        return findInternal(mapper->mapper.findItemBySerialId(serialId));
+    public CompletableFuture<UOItemData> findItemBySerialId(int itemSerialId) {
+        return findInternal(mapper->mapper.findItemBySerialId(itemSerialId));
     }
 
     private <T> CompletableFuture<T> findInternal(Function<ItemMapper, T> function) {
@@ -65,8 +64,8 @@ public class PsqlItemStorage implements ItemStorage {
             try (var session = sessionFactory.openSession(false)) {
                 try {
                     final var mapper = session.getMapper(ItemMapper.class);
-                    mapper.upsert(item);
-                    mapper.upsertItemState(item);
+                    mapper.upsert(item.toData());
+                    mapper.upsertItemState(item.toData());
                     session.commit();
                     return item;
                 } catch (Exception e) {
@@ -78,49 +77,31 @@ public class PsqlItemStorage implements ItemStorage {
     }
 
     @Override
-    public CompletableFuture<Collection<UOItem>> saveItems(int serial, Collection<UOItem> items, Collection<UOItem> dirties) {
-        try (var session = sessionFactory.openSession(false)) {
-            try {
-                final var itemMapper = session.getMapper(ItemMapper.class);
+    public CompletableFuture<Collection<UOItemData>> saveItems(int currentSerialId, Collection<UOItemData> items, Collection<UOItemData> dirties) {
+        return CompletableFuture.supplyAsync(()->{
+            try (var session = sessionFactory.openSession(false)) {
+                try {
+                    final var itemMapper = session.getMapper(ItemMapper.class);
 
-                for (UOItem item : items) {
-                    itemMapper.upsert(item);
+                    for (UOItemData itemData : items) {
+                        itemMapper.upsert(itemData);
+                    }
+
+                    itemMapper.updateItemSerial(currentSerialId);
+
+                    for (UOItemData dirty : dirties) {
+                        itemMapper.deleteBySerialId(dirty.getSerialId());
+                    }
+
+                    session.commit();
+
+                    return items;
+                } catch (Exception e) {
+                    session.rollback();
+                    throw new RuntimeException(e);
                 }
-
-                itemMapper.updateItemSerial(serial);
-
-                for (UOItem dirty : dirties) {
-                    itemMapper.deleteById(dirty.getId());
-                }
-
-                session.commit();
-
-                return CompletableFuture.completedFuture(items);
-            } catch (Exception e) {
-                session.rollback();
-                throw new RuntimeException(e);
             }
-        }
+        }, executor);
     }
 
-    @Override
-    public CompletableFuture<Collection<UOItem>> saveStates(Collection<UOItem> items) {
-        try (var session = sessionFactory.openSession(true)) {
-            try {
-                for (UOItem item : items) {
-                    session.getMapper(ItemMapper.class).upsertItemState(item);
-                }
-                session.commit();
-                return CompletableFuture.completedFuture(items);
-            } catch (Exception e) {
-                session.rollback();
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> setNextItemSerial(int serial) {
-        return null;
-    }
 }

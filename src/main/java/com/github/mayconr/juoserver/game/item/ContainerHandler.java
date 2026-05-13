@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.model.Container;
+import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
@@ -16,12 +17,14 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class ContainerHandler {
 
-    private final RealmStorage realmStorage;
     private final EventBus eventBus;
+    private final RealmStorage storage;
 
-    public List<UOItem> getItemsInContainer(Container container, Predicate<UOItem> predicate) {
+    public List<UOItem> getItemsInContainer(Integer containerSerial, Predicate<UOItem> predicate) {
+        var container = storage.getContainer(containerSerial).orElseThrow(()->new IllegalArgumentException("Container not found"));
         final List<UOItem> items = new ArrayList<>();
-        for (UOItem item : container.getItemsInContainer()) {
+        for (Integer serial : container.getContainerItems()) {
+            var item = storage.getItem(serial).orElseThrow(()->new IllegalArgumentException("Item not found"));
             if (predicate.test(item)) {
                 items.add(item);
             }
@@ -29,7 +32,9 @@ public class ContainerHandler {
         return items;
     }
 
-    public int consumeItem(Container container, String itemName, int amount, boolean searchNestedContainers) {
+    public int consumeItem(Integer containerSerial, String itemName, int amount, boolean searchNestedContainers) {
+        var container = storage.getContainer(containerSerial).orElseThrow(()->new IllegalArgumentException("Container not found"));
+
         if (amount <= 0) {
             return 0;
         }
@@ -43,34 +48,36 @@ public class ContainerHandler {
         return consumeInternal(container, itemName, amount, searchNestedContainers);
     }
 
-    private int countItems(Container container,
+    private int countItems(UOContainer container,
                            String itemName,
                            boolean searchNestedContainers) {
         int total = 0;
-        for (UOItem item : container.getItemsInContainer()) {
+        for (Integer serial : container.getContainerItems()) {
+            var item = storage.getItem(serial).orElseThrow(()->new IllegalArgumentException("Item not found"));
             if (item.getName().equals(itemName)) {
                 total += item.getAmount();
             }
-            if (searchNestedContainers && item instanceof Container nestedContainer) {
+            if (searchNestedContainers && item instanceof UOContainer nestedContainer) {
                 total += countItems(nestedContainer, itemName, true);
             }
         }
         return total;
     }
 
-    private int consumeInternal(Container container,
+    private int consumeInternal(UOContainer container,
                                 String itemName,
                                 int amount,
                                 boolean searchNestedContainers) {
 
-        Iterator<UOItem> iterator = container.getItemsInContainer().iterator();
+        Iterator<Integer> iterator = container.getContainerItems().iterator();
         while (iterator.hasNext() && amount > 0) {
-            UOItem item = iterator.next();
+            Integer serial = iterator.next();
+            var item =  storage.getItem(serial).orElseThrow(()->new IllegalArgumentException("Item not found"));
             if (item.getName().equals(itemName)) {
                 int itemAmount = item.getAmount();
                 if (itemAmount > amount) {
                     item.setAmount(itemAmount - amount);
-                    eventBus.publish(new ItemUpdated(item));
+                    eventBus.publish(new ItemUpdated(item, container));
                     return 0;
                 } else {
                     amount -= itemAmount;
@@ -79,7 +86,7 @@ public class ContainerHandler {
                     continue;
                 }
             }
-            if (searchNestedContainers && item instanceof Container nestedContainer) {
+            if (searchNestedContainers && item instanceof UOContainer nestedContainer) {
                 amount = consumeInternal(
                         nestedContainer,
                         itemName,

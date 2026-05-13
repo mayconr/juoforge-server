@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.mayconr.shard.storage.ItemMapper">
+
+    <!-- =========================
+         ResultMap
+         ========================= -->
+
+    <resultMap id="ItemDataMap" type="com.github.mayconr.juoserver.game.model.UOItemData">
+
+        <!-- Base -->
+        <id property="serialId" column="serial_id"/>
+        <result property="modelId" column="model_id"/>
+
+        <result property="x" column="x"/>
+        <result property="y" column="y"/>
+        <result property="z" column="z"/>
+
+        <result property="name" column="name"/>
+        <result property="displayName" column="display_name"/>
+
+        <result property="persistentAttrMap"
+                column="attr"
+                typeHandler="com.github.mayconr.shard.storage.types.AttributesTypeHandler"/>
+
+        <!-- Core -->
+        <result property="hue" column="hue"/>
+        <result property="amount" column="amount"/>
+        <result property="movable" column="movable"/>
+
+        <result property="layer"
+                column="layer"
+                typeHandler="com.github.mayconr.shard.storage.types.LayerTypeHandler"/>
+
+        <result property="flags"
+                column="flags"
+                typeHandler="com.github.mayconr.shard.storage.types.ItemFlagTypeHandler"/>
+
+        <result property="unitWeight" column="unit_weight"/>
+
+        <!-- Relações -->
+        <result property="ownerSerialId" column="owner_serial_id"/>
+        <result property="containerSerialId" column="container_serial_id"/>
+        <result property="locationType" column="location_type"/>
+
+
+        <!-- Container / corpse -->
+        <result property="containerGumpId" column="container_gump_id"/>
+        <result property="corpseId" column="corpse_id"/>
+
+        <!-- Localização -->
+        <result property="locationType"
+                column="location_type"/>
+
+    </resultMap>
+
+
+    <!-- =========================
+         Serial counter
+         ========================= -->
+
+    <select id="findNextItemSerial" resultType="int">
+        SELECT next_serial
+        FROM serial_counters
+        WHERE entity_type = 'ITEM'
+    </select>
+
+    <update id="updateItemSerial">
+        UPDATE serial_counters
+        SET next_serial = #{serial},
+        updated_at  = NOW()
+        WHERE entity_type = 'ITEM'
+    </update>
+
+
+    <!-- =========================
+         Queries
+         ========================= -->
+
+    <select id="findItemBySerialId" resultMap="ItemDataMap">
+        SELECT *
+        FROM items
+        WHERE serial_id = #{serialId}
+    </select>
+
+    <select id="findAllEquippedItems" resultMap="ItemDataMap">
+        SELECT *
+        FROM items
+        WHERE owner_serial_id = #{ownerSerialId}
+        AND container_serial_id IS NULL
+    </select>
+
+    <select id="findAllGroundItems" resultMap="ItemDataMap">
+        SELECT *
+        FROM items
+        WHERE owner_serial_id IS NULL
+        AND container_serial_id IS NULL
+    </select>
+
+    <select id="findAllContainerItems" resultMap="ItemDataMap">
+        SELECT *
+        FROM items
+        WHERE container_serial_id = #{containerSerialId}
+    </select>
+
+
+    <!-- =========================
+         Upsert
+         ========================= -->
+
+    <insert id="upsert">
+
+        INSERT INTO items (
+        serial_id,
+        container_serial_id,
+        owner_serial_id,
+        name,
+        display_name,
+        model_id,
+        hue,
+        layer,
+        movable,
+        unit_weight,
+        amount,
+        flags,
+        container_gump_id,
+        corpse_id,
+        x,
+        y,
+        z,
+        location_type,
+        attr
+        )
+        VALUES (
+        #{serialId},
+        #{containerSerialId},
+        #{ownerSerialId},
+        #{name},
+        #{displayName},
+        #{modelId},
+        #{hue},
+        #{layer},
+        #{movable},
+        #{unitWeight},
+        #{amount},
+        #{flags, typeHandler=com.github.mayconr.shard.storage.types.ItemFlagTypeHandler}::jsonb,
+        #{containerGumpId},
+        #{corpseId},
+        #{x},
+        #{y},
+        #{z},
+        #{locationType},
+        #{persistentAttrMap, typeHandler=com.github.mayconr.shard.storage.types.AttributesTypeHandler}::jsonb
+        )
+
+        ON CONFLICT (serial_id)
+        DO UPDATE SET
+        owner_serial_id   = EXCLUDED.owner_serial_id,
+        name              = EXCLUDED.name,
+        display_name      = EXCLUDED.display_name,
+        model_id          = EXCLUDED.model_id,
+        hue               = EXCLUDED.hue,
+        layer             = EXCLUDED.layer,
+        movable           = EXCLUDED.movable,
+        unit_weight       = EXCLUDED.unit_weight,
+        amount            = EXCLUDED.amount,
+        flags             = EXCLUDED.flags,
+        container_gump_id = EXCLUDED.container_gump_id,
+        corpse_id         = EXCLUDED.corpse_id,
+        x                 = EXCLUDED.x,
+        y                 = EXCLUDED.y,
+        z                 = EXCLUDED.z,
+        location_type     = EXCLUDED.location_type,
+        attr              = EXCLUDED.attr,
+        updated_at        = NOW()
+
+    </insert>
+
+
+    <!-- =========================
+         Delete
+         ========================= -->
+
+    <delete id="deleteBySerialId">
+        DELETE FROM items
+        WHERE serial_id = #{serialId}
+    </delete>
+
+</mapper>

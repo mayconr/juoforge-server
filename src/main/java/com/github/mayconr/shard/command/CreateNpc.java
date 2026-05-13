@@ -1,6 +1,7 @@
 package com.github.mayconr.shard.command;
 
 import com.github.mayconr.juoserver.game.model.CursorType;
+import com.github.mayconr.juoserver.game.model.TileTargetResult;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import com.github.mayconr.juoserver.game.world.World;
@@ -22,6 +23,9 @@ public class CreateNpc extends AbstractCommand {
 
         world.sendMessage(player, MessageContent.plain("Select a location to create the NPC"));
         world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
+            if (result instanceof TileTargetResult staticResult) {
+                System.out.println(staticResult.staticsTile());
+            }
             world.createNpc(npcName, result.location());
         });
 

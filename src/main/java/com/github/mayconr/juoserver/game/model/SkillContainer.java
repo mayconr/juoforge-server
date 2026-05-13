@@ -11,27 +11,27 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SkillContainer {
 
     @ToString.Include
-    private final Map<Integer, SkillValue> skills = new ConcurrentHashMap<>();
+    private final Map<Integer, SkillValue> skillMap = new ConcurrentHashMap<>();
 
     public SkillContainer() {
     }
 
-    public SkillContainer(List<SkillValue> skills) {
+    public SkillContainer(Collection<SkillValue> skills) {
         for (SkillValue value : skills) {
             set(value.getSkillId(), value);
         }
     }
 
     public SkillValue get(Integer id) {
-        return skills.computeIfAbsent(id, SkillValue::zero);
+        return skillMap.computeIfAbsent(id, SkillValue::zero);
     }
 
     public void set(Integer id, SkillValue value) {
-        skills.put(id, value);
+        skillMap.put(id, value);
     }
 
     public SkillValue updateSkill(int id, SkillLock lock) {
-        return skills.compute(id, (integer, value) -> {
+        return skillMap.compute(id, (integer, value) -> {
             if (value == null) {
                 return SkillValue.of(id, lock);
             }
@@ -40,8 +40,11 @@ public class SkillContainer {
         });
     }
 
-    public Collection<SkillValue> skills() {
-        return skills.values();
+    public Collection<SkillValue> getSkillValues() {
+        return List.copyOf(skillMap.values());
     }
 
+    public Map<Integer, SkillValue> getSkillMap() {
+        return Map.copyOf(skillMap);
+    }
 }

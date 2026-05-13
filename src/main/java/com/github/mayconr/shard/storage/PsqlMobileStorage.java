@@ -1,13 +1,14 @@
 package com.github.mayconr.shard.storage;
 
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.SkillValue;
+import com.github.mayconr.juoserver.game.model.UOItemData;
+import com.github.mayconr.juoserver.game.model.UOMobileData;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -38,7 +39,7 @@ public class PsqlMobileStorage implements MobileStorage {
     }
 
     @Override
-    public CompletableFuture<List<UONpc>> findAllNpcs() {
+    public CompletableFuture<List<UOMobileData>> findAllNpcs() {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try (var session = sessionFactory.openSession()) {
@@ -58,44 +59,33 @@ public class PsqlMobileStorage implements MobileStorage {
     }
 
     @Override
-    public CompletableFuture<List<AccountMobile>> findPlayersByAccount(UOAccount uoAccount) {
-        return CompletableFuture.supplyAsync(
-                () -> {
-                    try (var session = sessionFactory.openSession()) {
-                        return session.getMapper(MobileMapper.class).findAccountMobilesByAccountId(uoAccount.getId());
-                    }
-                }).whenComplete((accountMobiles, throwable) -> {
-                    if (throwable != null) {
-                        log.warn(throwable.getMessage(), throwable);
-                    }
-        });
-    }
-
-    @Override
-    public CompletableFuture<UOMobile> findMobileById(UUID id) {
-        return findMobileInternal(mapper->mapper.findMobileById(id));
-    }
-
-    @Override
-    public CompletableFuture<UOMobile> findMobileBySerialId(int serialId) {
+    public CompletableFuture<UOMobileData> findMobileBySerialId(int serialId) {
         return findMobileInternal(mapper->mapper.findMobileBySerialId(serialId));
     }
 
-    private CompletableFuture<UOMobile> findMobileInternal(Function<MobileMapper, UOMobile> mapper) {
+    @Override
+    public CompletableFuture<List<SkillValue>> findSkillsBySerialId(int serialId) {
+        return CompletableFuture.supplyAsync(()->{
+            try (var session = sessionFactory.openSession()) {
+                return session.getMapper(MobileMapper.class).findSkillsBySerialId(serialId);
+            }
+        }, executor);
+    }
+
+    private CompletableFuture<UOMobileData> findMobileInternal(Function<MobileMapper, UOMobileData> mapper) {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try (var session = sessionFactory.openSession()) {
                         final var mobileMapper = session.getMapper(MobileMapper.class);
 
-                        final var mobile = mapper.apply(mobileMapper);
-                        log.debug("Mobile [{}] loaded", mobile.getId());
+                        final var data = mapper.apply(mobileMapper);
+                        if (data != null) {
+                            log.debug("Mobile [{}] loaded", data.getSerialId());
+                        } else {
+                            log.debug("Mobile not found");
+                        }
 
-                        var initializer = new MobileInitializer(mobileMapper);
-                        initializer.initialize(mobile);
-
-                        // TODO check reason of buffer failed without skills
-                        //mobile.setSkills(loadSkills(mobile.getId()));
-                        return mobile;
+                        return data;
                     }
                 }, executor)
                 .whenComplete((mobile, throwable) -> {
@@ -115,7 +105,7 @@ public class PsqlMobileStorage implements MobileStorage {
     }
 
     @Override
-    public CompletableFuture<UOMobile> saveMobileFull(int mobileSerialId, int itemSerialId, UOMobile mobile) {
+    public CompletableFuture<UOMobileData> saveMobileFull(int mobileSerialId, UOMobileData data, int itemSerialId, List<UOItemData> equippedItems) {
         return CompletableFuture.supplyAsync(()->{
            try (var session = sessionFactory.openSession(false)) {
                try {
@@ -125,41 +115,19 @@ public class PsqlMobileStorage implements MobileStorage {
                    // Update serial
                    mobileMapper.updateMobileSerial(mobileSerialId);
                    itemMapper.updateItemSerial(itemSerialId);
-
-                   // Update mobile
-                   if (mobile instanceof UOPlayer player) {
-                       mobileMapper.upsertMobile(player);
-                       mobileMapper.upsertPlayer(player);
-                   }
-                   if (mobile instanceof UONpc npc) {
-                       mobileMapper.upsertMobile(npc);
-                       mobileMapper.upsertNpc(npc);
-                   }
-
-                   // Update attributes
-                   mobileMapper.upsertMobileAttributes(mobile);
-
-                   // Update vitals
-                   mobileMapper.upsertMobileVitals(mobile);
-
-                   // Update runtime
-                   mobileMapper.upsertMobileRuntime(mobile);
+                   mobileMapper.upsertMobile(data);
 
                    // Update skills
-                   for (SkillValue skill : mobile.getSkills().skills()) {
-                       mobileMapper.upsertSkill(mobile, skill);
+                   for (SkillValue skill : data.getSkills().values()) {
+                       mobileMapper.upsertSkill(data.getSerialId(), skill);
                    }
 
-                   // EquippedItems
-                   for (UOItem item : mobile.getEquippedItems().values()) {
-                       // Update Item
+                   for (UOItemData item : equippedItems) {
                        itemMapper.upsert(item);
-                       // Update item state
-                       itemMapper.upsertItemState(item);
                    }
 
                    session.commit();
-                   return mobile;
+                   return data;
                } catch (Exception e) {
                    session.rollback();
                    throw new RuntimeException(e);
@@ -169,28 +137,20 @@ public class PsqlMobileStorage implements MobileStorage {
     }
 
     @Override
-    public CompletableFuture<Collection<UOMobile>> saveMobiles(int serial, Collection<UOMobile> mobiles, Collection<UOMobile> dirties) {
+    public CompletableFuture<Collection<UOMobileData>> saveMobiles(int serialId, Collection<UOMobileData> mobiles, Collection<Integer> dirties) {
         return CompletableFuture.supplyAsync(()->{
             try (var session = sessionFactory.openSession(false)) {
                 try {
                     final var mapper = session.getMapper(MobileMapper.class);
 
-                    for (UOMobile mobile : mobiles) {
-                        if (mobile instanceof UOPlayer player) {
-                            mapper.upsertMobile(player);
-                            mapper.upsertPlayer(player);
-                            continue;
-                        }
-                        if (mobile instanceof UONpc npc) {
-                            mapper.upsertMobile(npc);
-                            mapper.upsertNpc(npc);
-                        }
+                    for (UOMobileData mobile : mobiles) {
+                        mapper.upsertMobile(mobile);
                     }
 
-                    mapper.updateMobileSerial(serial);
+                    mapper.updateMobileSerial(serialId);
 
-                    for (UOMobile mobile : dirties) {
-                        mapper.deleteById(mobile.getId());
+                    for (Integer dirty : dirties) {
+                        mapper.deleteBySerialId(dirty);
                     }
 
                     session.commit();
@@ -202,75 +162,6 @@ public class PsqlMobileStorage implements MobileStorage {
                 }
             }
         });
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveRuntime(Collection<UOMobile> mobiles) {
-        return CompletableFuture.supplyAsync(()->{
-            try (var session = sessionFactory.openSession(false)) {
-                try {
-                    final var mapper = session.getMapper(MobileMapper.class);
-
-                    for (UOMobile mobile : mobiles) {
-                        mapper.upsertMobileRuntime(mobile);
-                    }
-                    session.commit();
-
-                    return mobiles;
-                } catch (Exception e) {
-                    session.rollback();
-                    throw new RuntimeException(e);
-                }
-            }
-        }, executor).whenComplete((e,error)->{
-            if (error != null) {
-                log.error(error.getMessage(), error);
-            }
-        });
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveVitals(Collection<UOMobile> mobiles) {
-        return CompletableFuture.supplyAsync(()->{
-            try (var session = sessionFactory.openSession(false)) {
-                try {
-                    final var mapper = session.getMapper(MobileMapper.class);
-                    for (UOMobile mobile : mobiles) {
-                        mapper.upsertMobileVitals(mobile);
-                    }
-                    session.commit();
-
-                    return mobiles;
-                } catch (Exception e) {
-                    session.rollback();
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveAttributes(Collection<UOMobile> mobiles) {
-        return CompletableFuture.supplyAsync(()->{
-            try (var session = sessionFactory.openSession(false)) {
-                try {
-                    final var mapper = session.getMapper(MobileMapper.class);
-                    for (UOMobile mobile : mobiles) {
-                        mapper.upsertMobileAttributes(mobile);
-                    }
-                    session.commit();
-                    return mobiles;
-                } catch (Exception e) {
-                    session.rollback();
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }
-
-    @Override
-    public CompletableFuture<Collection<UOMobile>> saveSkills(Collection<UOMobile> mobiles) {
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override

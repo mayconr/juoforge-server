@@ -132,7 +132,7 @@ public class Bounds extends AbstractCommand{
     }
 
     private void createItem(List<Integer> boundItems, String name, Location location) {
-        int serialFlag = world.createItem(ItemRequest.byName(name), GroundItemTarget.of(location))
+        int serialFlag = world.createItem(ItemRequest.byName(name), ItemTarget.dropAt(location))
                 .getSerialId();
         boundItems.add(serialFlag);
     }
