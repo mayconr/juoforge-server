@@ -4,14 +4,14 @@ import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class DropItemContext extends SyncFlowContext<Void> {
+public class DropItemContext extends AbstractSyncFlowContext<Void> {
     private final UOPlayer player;
 
     private DropItem dropItem;

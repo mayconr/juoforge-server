@@ -35,10 +35,8 @@ import com.github.mayconr.juoserver.game.messaging.MessageModuleImpl;
 import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.mobile.MobileModuleImpl;
-import com.github.mayconr.juoserver.game.mobile.movement.MobileMovementRules;
-import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
-import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
@@ -266,17 +264,9 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeMobileModule(Wallet wallet) {
-        final var movementRules = new MobileMovementRules(storage);
-        final var movementService = new MovementService(eventBus, movementRules);
         final var npcDespawnService = new NpcDespawnService(storage);
 
-        this.mobileModule = new MobileModuleImpl(
-                movementService,
-                npcDespawnService,
-                wallet,
-                eventBus,
-                storage
-        );
+        this.mobileModule = new MobileModuleImpl(npcDespawnService, wallet, eventBus, storage);
     }
 
     private void initializeInteractionModule() {
@@ -642,8 +632,13 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public void move(UOMobile mobile, Location location) {
-        mobileModule.move(mobile, location);
+    public void teleport(UOMobile mobile, Location location) {
+        mobileModule.teleport(mobile, location);
+    }
+
+    @Override
+    public void resync(UOPlayer player, MoveResyncAck resyncAck) {
+        mobileModule.resync(player, resyncAck);
     }
 
     /*
@@ -885,4 +880,14 @@ public class DefaultWorld implements WorldInternal, World {
         return storage.getAccountByUsername(username);
     }
 
+    /*
+     * ==========
+     * AI
+     * ==========
+     */
+
+    @Override
+    public void detachAI(UONpc npc) {
+        aiModule.detach(npc);
+    }
 }

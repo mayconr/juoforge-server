@@ -3,9 +3,11 @@ package com.github.mayconr.juoserver.game.mobile;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.MovementContext;
+import com.github.mayconr.juoserver.game.mobile.flow.resync.ResyncContext;
+import com.github.mayconr.juoserver.game.mobile.flow.teleport.TeleportContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
-import com.github.mayconr.juoserver.game.mobile.movement.MovementService;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
@@ -15,6 +17,7 @@ import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
+import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
 import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +29,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MobileModuleImpl implements MobileModule {
 
-    private final MovementService movementService;
     private final NpcDespawnService npcDespawnService;
     private final Wallet wallet;
     private final EventBus eventBus;
     private final RealmStorage storage;
-
     private ModuleContext.FlowFacade flows;
 
     @Override
@@ -56,17 +57,22 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void move(UOMobile mobile, Direction direction) {
-        movementService.move(mobile, direction);
+        flows.execute(MovementContext.of(mobile, direction, false));
     }
 
     @Override
     public void move(UOMobile mobile, MoveRequest request) {
-        movementService.move(mobile, request);
+        flows.execute(MovementContext.of(mobile, request));
     }
 
     @Override
-    public void move(UOMobile mobile, Location location) {
-        movementService.move(mobile, location);
+    public void teleport(UOMobile mobile, Location location) {
+        flows.execute(TeleportContext.of(mobile, location));
+    }
+
+    @Override
+    public void resync(UOPlayer player, MoveResyncAck resyncAck) {
+        flows.execute(ResyncContext.of(player, resyncAck));
     }
 
     @Override
@@ -80,7 +86,6 @@ public class MobileModuleImpl implements MobileModule {
     public boolean equipItem(UOMobile mobile, UOItem item) {
         var context = new EquipItemContext(mobile, item);
         flows.execute(context);
-        //itemEquipService.equipItem(mobile, item);
         return context.isEquipped();
     }
 

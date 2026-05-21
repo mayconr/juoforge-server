@@ -1,13 +1,13 @@
 package com.github.mayconr.juoserver.infrastructure.datafile;
 
 import com.github.mayconr.juoforge.reader.skill.Skill;
-import com.github.mayconr.juoforge.reader.tiledata.TileFlag;
 import com.github.mayconr.juoforge.reader.view.GameDataProvider;
 import com.github.mayconr.juoforge.reader.view.GameDataProviderFactory;
 import com.github.mayconr.juoforge.reader.view.LandTile;
 import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,11 +21,13 @@ public class UOFileReaderImpl implements UOFileReader{
 
     private final GamePlaySettings settings;
     private GameDataProvider gameDataProvider;
+    private MovementCollisionService collisionService;
 
     public void loadFiles() {
-        log.info("Loading files...");
+        log.info("Loading UO files...");
         gameDataProvider = GameDataProviderFactory.create(Path.of(settings.files().dataFileRoot()), true);
-        log.info("Loading files done!");
+        collisionService = new MovementCollisionService(gameDataProvider);
+        log.info("Loading UO files done!");
     }
 
     @Override
@@ -49,15 +51,13 @@ public class UOFileReaderImpl implements UOFileReader{
     }
 
     @Override
-    public boolean hasBlockingStatics(int x, int y, int z) {
-        boolean impassable = false;
-        for (StaticTile statics : gameDataProvider.staticsAt(x, y)) {
-            if (statics.flags().contains(TileFlag.IMPASSABLE)) {
-                impassable = true;
-                break;
-            }
-        }
-        return impassable;
+    public boolean hasBlockingCollision(UOMobile mobile, Location location) {
+        return collisionService.hasBlockingCollision(mobile, location.getX(), location.getY(), location.getZ());
+    }
+
+    @Override
+    public boolean hasBlockingCollision(UOMobile mobile, int x, int y, int z) {
+        return collisionService.hasBlockingCollision(mobile, x, y, z);
     }
 
     @Override

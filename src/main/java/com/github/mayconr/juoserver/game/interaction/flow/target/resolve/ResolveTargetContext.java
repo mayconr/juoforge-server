@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.interaction.flow.target.resolve;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.shared.step.LightOfSightContext;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import com.github.mayconr.juoserver.network.packet.Target;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 @Data
 @Slf4j
-public class ResolveTargetContext extends SyncFlowContext<Void> implements LightOfSightContext {
+public class ResolveTargetContext extends AbstractSyncFlowContext<Void> implements LightOfSightContext {
     private final UOPlayer player;
     private final Target target;
     private final boolean validateLOS;

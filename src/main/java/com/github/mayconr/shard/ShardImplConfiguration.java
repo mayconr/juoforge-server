@@ -113,6 +113,7 @@ public class ShardImplConfiguration {
             cfg.addEventListener(runtime->new Destroy(runtime.world()));
             cfg.addEventListener(runtime->new CreateEquippedItem(runtime.world()));
             cfg.addEventListener(runtime -> new Info(runtime.world()));
+            cfg.addEventListener(runtime->new MoveTo(runtime.world()));
             cfg.addEventListener(Mount::new);
             cfg.addEventListener(Unmount::new);
             cfg.addEventListener(Region::new);
@@ -120,6 +121,7 @@ public class ShardImplConfiguration {
             cfg.addEventListener(Bounds::new);
             cfg.addEventListener(ApplyDamage::new);
             cfg.addEventListener(Resurrect::new);
+            cfg.addEventListener(SystemCmd::new);
             cfg.addEventListener(r->new Save(r.storage()));
             cfg.addCustomTemplate("oreByName", Ore.class, Ore::name, Path.of("template/skills/mining"));
 

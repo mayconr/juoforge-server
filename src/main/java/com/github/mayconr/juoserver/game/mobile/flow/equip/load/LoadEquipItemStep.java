@@ -2,7 +2,6 @@ package com.github.mayconr.juoserver.game.mobile.flow.equip.load;
 
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
-import com.github.mayconr.juoserver.infrastructure.flow.FlowPhase;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.extern.slf4j.Slf4j;

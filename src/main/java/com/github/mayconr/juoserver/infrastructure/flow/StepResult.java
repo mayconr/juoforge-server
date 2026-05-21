@@ -18,9 +18,7 @@ public record StepResult(
         );
     }
 
-    public static StepResult failure(
-            String reason
-    ) {
+    public static StepResult failure(String reason) {
         return new StepResult(
                 ResultStatus.FAILURE,
                 null,
@@ -29,10 +27,7 @@ public record StepResult(
         );
     }
 
-    public static StepResult failure(
-            String code,
-            String reason
-    ) {
+    public static StepResult failure(String code, String reason) {
         return new StepResult(
                 ResultStatus.FAILURE,
                 null,
@@ -41,9 +36,7 @@ public record StepResult(
         );
     }
 
-    public static StepResult async(
-            CompletableFuture<StepResult> future
-    ) {
+    public static StepResult async(CompletableFuture<StepResult> future) {
         return new StepResult(
                 ResultStatus.ASYNC,
                 future,
@@ -61,10 +54,7 @@ public record StepResult(
         );
     }
 
-    public static StepResult stop(
-            String code,
-            String reason
-    ) {
+    public static StepResult stop(String code, String reason) {
         return new StepResult(
                 ResultStatus.STOP,
                 null,
@@ -82,10 +72,7 @@ public record StepResult(
         );
     }
 
-    public static StepResult skip(
-            String code,
-            String reason
-    ) {
+    public static StepResult skip(String code, String reason) {
         return new StepResult(
                 ResultStatus.SKIP,
                 null,

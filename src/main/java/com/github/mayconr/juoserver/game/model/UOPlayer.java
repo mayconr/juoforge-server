@@ -8,6 +8,9 @@ import java.util.UUID;
 @Getter
 @Setter
 public class UOPlayer extends UOMobile {
+
+    public static final String MOVEMENT_SEQUENCE = "MOVEMENT.EXPECTED_SEQUENCE";
+
     private UUID accountId;
     private String password;
     private boolean connected;
@@ -26,4 +29,13 @@ public class UOPlayer extends UOMobile {
         data.setAccountId(accountId);
         data.setGhostModelId(ghostModelId);
     }
+
+    public int movementSequence() {
+        return runtimeAttributes().getOrDefault(MOVEMENT_SEQUENCE, 0);
+    }
+
+    public void movementSequence(int sequence) {
+        runtimeAttributes().set(MOVEMENT_SEQUENCE, sequence);
+    }
+
 }

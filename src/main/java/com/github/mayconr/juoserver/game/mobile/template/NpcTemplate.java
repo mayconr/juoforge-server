@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.mobile.npc.template;
+package com.github.mayconr.juoserver.game.mobile.template;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;

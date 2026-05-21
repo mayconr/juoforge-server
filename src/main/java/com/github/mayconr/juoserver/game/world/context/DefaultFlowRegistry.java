@@ -2,7 +2,6 @@ package com.github.mayconr.juoserver.game.world.context;
 
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
 
 import java.util.HashMap;
 import java.util.Map;

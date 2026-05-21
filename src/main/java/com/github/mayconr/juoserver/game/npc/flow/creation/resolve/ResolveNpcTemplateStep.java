@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.npc.flow.creation.resolve;
 
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationContext;
-import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;

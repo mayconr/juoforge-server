@@ -8,20 +8,20 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class MovementResyncAck extends AbstractPacket {
+public class MoveResyncAck extends AbstractPacket {
 
     public static final int CODE = (byte) 0x22;
 
     private final int sequence;
     private final Notoriety notoriety;
 
-    public MovementResyncAck(int sequence, Notoriety notoriety) {
+    public MoveResyncAck(int sequence, Notoriety notoriety) {
         super(CODE, 3);
         this.sequence = sequence;
         this.notoriety = notoriety;
     }
 
-    public MovementResyncAck(ByteBuf buf) {
+    public MoveResyncAck(ByteBuf buf) {
         super(CODE, 3);
         buf.readByte(); // CODE
         this.sequence = buf.readByte();
