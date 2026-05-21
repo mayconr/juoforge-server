@@ -10,10 +10,7 @@ import com.github.mayconr.juoserver.game.ai.AIModuleImpl;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
-import com.github.mayconr.juoserver.game.combat.CombatHandler;
-import com.github.mayconr.juoserver.game.combat.CombatModule;
-import com.github.mayconr.juoserver.game.combat.DefaultCombatSystem;
-import com.github.mayconr.juoserver.game.combat.VitalsHandler;
+import com.github.mayconr.juoserver.game.combat.*;
 import com.github.mayconr.juoserver.game.damage.DamageModule;
 import com.github.mayconr.juoserver.game.damage.DamageModuleImpl;
 import com.github.mayconr.juoserver.game.economy.EconomyModule;
@@ -36,8 +33,8 @@ import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.mobile.MobileModuleImpl;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
-import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
+import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
@@ -177,6 +174,7 @@ public class DefaultWorld implements WorldInternal, World {
         aiModule.update(delta);
         playerModule.update(delta);
         mobileModule.update(delta);
+        combatModule.update(delta);
     }
 
     /*
@@ -260,7 +258,7 @@ public class DefaultWorld implements WorldInternal, World {
         final var combatSystem = new DefaultCombatSystem(null);
         final var combatService = new CombatHandler(eventBus, combatSystem, storage);
 
-        this.combatModule = new CombatModule(combatService, vitalsService);
+        this.combatModule = new CombatModuleImpl(combatService, vitalsService);
     }
 
     private void initializeMobileModule(Wallet wallet) {
@@ -335,6 +333,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.aiModule.initialize(context);
         this.interactionModule.initialize(context);
         this.skillModule.initialize(context);
+        this.combatModule.initialize(context);
     }
 
     /*

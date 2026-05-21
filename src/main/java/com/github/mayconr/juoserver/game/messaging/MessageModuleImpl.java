@@ -26,9 +26,6 @@ public class MessageModuleImpl implements WorldModule, MessageModule {
     private final TemplateRegistry<String, MessageStyleTemplate> templateRegistry;
 
     @Override
-    public void update(double delta) {}
-
-    @Override
     public void send(UOPlayer player, String message) {
         if (LocalizationKey.isLocalizationKey(message)) {
             internalSend(player, MessageContent.localized(LocalizationKey.extractKey(message), Map.of()));

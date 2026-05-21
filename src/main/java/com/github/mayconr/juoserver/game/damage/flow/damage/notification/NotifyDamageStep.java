@@ -18,27 +18,25 @@ public class NotifyDamageStep extends AbstractFlowStep<DamageContext> {
 
     @Override
     public StepResult execute(DamageContext context) {
-        if (context.isLethal()) {
-            eventBus.publish(
-                    new LethalDamageEvent(
-                            context.getSource(),
-                            context.getTarget(),
-                            context.getSourceKind())
-            );
-            return StepResult.success();
-        }
+        final var source = context.getSource();
+        final var target = context.getTarget();
+        final var kind = context.getSourceKind();
 
-        eventBus.publish(
-                new MobileDamagedEvent(
-                        context.getSource(),
-                        context.getTarget(),
-                        context.getSourceKind(),
-                        context.getComponents(),
-                        context.getTotalDamage(),
-                        context.getOldHp(),
-                        context.getNewHp()
-                )
-        );
+        if (context.isLethal()) {
+            eventBus.publish(new LethalDamageEvent(source, target, kind));
+        } else {
+            eventBus.publish(
+                    new MobileDamagedEvent(
+                            source,
+                            target,
+                            kind,
+                            context.getComponents(),
+                            context.getTotalDamage(),
+                            context.getOldHp(),
+                            context.getNewHp()
+                    )
+            );
+        }
         return StepResult.success();
     }
 }

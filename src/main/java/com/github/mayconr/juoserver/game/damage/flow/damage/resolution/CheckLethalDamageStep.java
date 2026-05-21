@@ -12,7 +12,7 @@ public class CheckLethalDamageStep extends AbstractFlowStep<DamageContext> {
     private final MobileModule mobileModule;
 
     public CheckLethalDamageStep(MobileModule mobileModule) {
-        super("check_lethal_damage");
+        super("CheckLethalDamageStep");
         this.mobileModule = mobileModule;
     }
 
@@ -21,7 +21,7 @@ public class CheckLethalDamageStep extends AbstractFlowStep<DamageContext> {
         context.setLethal(context.getNewHp() == 0);
 
         if (context.isLethal()) {
-            mobileModule.die(new DeathRequest(context.getTarget(), context.getSource(), DeathCause.COMBAT));
+            mobileModule.die(DeathRequest.of(context.getTarget(), context.getSource(), DeathCause.COMBAT));
         }
 
         return StepResult.success();

@@ -26,7 +26,7 @@ public class SystemCmd extends AbstractCommand {
             case "move" ->{
                 world.sendTarget(player, CursorType.NEUTRAL, res->{
                     if (res instanceof MobileTargetResult mobileResult) {
-                        world.move(mobileResult.mobile(), Direction.WEST);
+                        world.move(mobileResult.mobile(), Direction.NORTH);
                     }
 
                 });

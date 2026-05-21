@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.messaging;
 
-public class LocalizationKey {
+public final class LocalizationKey {
 
     private LocalizationKey() {}
 
