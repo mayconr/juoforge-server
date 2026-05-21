@@ -47,4 +47,6 @@ public interface WorldInternal extends WorldActions, WorldView, CombatInternal, 
 
     CompletableFuture<UOAccount> getAccountByUsername(String username);
 
+    void resync(UOPlayer player, MoveResyncAck resyncAck);
+
 }

@@ -14,8 +14,8 @@ public class RegionTransitionServiceImpl implements RegionTransitionService {
 
     @Override
     public void handle(MobileMoved event) {
-        var oldRegion = regionSystem.getRegion(event.result().from()).orElse(null);
-        var newRegion = regionSystem.getRegion(event.result().to()).orElse(null);
+        var oldRegion = regionSystem.getRegion(event.from()).orElse(null);
+        var newRegion = regionSystem.getRegion(event.to()).orElse(null);
 
         if (oldRegion == null || newRegion == null) {
             return;

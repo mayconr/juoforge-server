@@ -4,11 +4,11 @@ import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 
 import java.util.*;
 
-public class AIFlowContext extends SyncFlowContext<Void> {
+public class AIFlowContext extends AbstractSyncFlowContext<Void> {
 
     private final UONpc npc;
     private final World world;

@@ -34,11 +34,12 @@ public interface WorldActions {
 
     void move(UOMobile mobile, Direction direction);
 
-    void move(UOMobile mobile, Location location);
+    void teleport(UOMobile mobile, Location location);
 
     void mount(UOPlayer player, UONpc npc);
 
     void unmount(UOPlayer player);
+
 
     // =========================
     // Messaging / UI
@@ -93,4 +94,10 @@ public interface WorldActions {
     void kill(UOMobile target, UOMobile source, DamageSourceKind kind);
 
     void resurrect(UOMobile mobile);
+
+    // =========================
+    // AI
+    // =========================
+
+    void detachAI(UONpc npc);
 }

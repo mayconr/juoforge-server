@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.flow;
 
-public abstract class SyncFlowContext<T> extends AbstractContext {
+public abstract class AbstractSyncFlowContext<T> extends AbstractContext {
 
     private T result;
 

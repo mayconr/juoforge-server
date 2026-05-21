@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.mobile.flow.unmount;
 
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 @Data
-public class UnmountContext extends SyncFlowContext<Void> {
+public class UnmountContext extends AbstractSyncFlowContext<Void> {
     private final UOMobile mobile;
 
     private UOItem mountItem;

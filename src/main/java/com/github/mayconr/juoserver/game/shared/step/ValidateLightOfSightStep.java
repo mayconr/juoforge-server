@@ -57,7 +57,7 @@ public class ValidateLightOfSightStep<T extends LightOfSightContext> implements 
             boolean isTarget = (x == x1 && y == y1);
 
             if (!isOrigin && !isTarget) {
-                if (fileReader.hasBlockingStatics(x, y, z)) {
+                if (fileReader.hasBlockingCollision(from, x, y, z)) {
                     return false;
                 }
             }
@@ -89,8 +89,8 @@ public class ValidateLightOfSightStep<T extends LightOfSightContext> implements 
             if (movedX && movedY) {
 
                 int zMid = z;
-                if (fileReader.hasBlockingStatics(prevX + sx, prevY, zMid) &&
-                    fileReader.hasBlockingStatics(prevX, prevY + sy, zMid)) {
+                if (fileReader.hasBlockingCollision(from, prevX + sx, prevY, zMid) &&
+                    fileReader.hasBlockingCollision(from, prevX, prevY + sy, zMid)) {
                     return false;
                 }
             }

@@ -2,7 +2,6 @@ package com.github.mayconr.juoserver.game.world.context;
 
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
 
 public interface FlowRegistry {
     <T extends AbstractContext> void register(String name, Flow<T> flow, Class<T> contextType);

@@ -44,7 +44,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(ActionRequest.CODE, ActionRequest.class);
         packetsClass.put(SendSkill.CODE, SendSkill.class);
         packetsClass.put(VendorBuyRequest.CODE, VendorBuyRequest.class);
-        packetsClass.put(MovementResyncAck.CODE, MovementResyncAck.class);
+        packetsClass.put(MoveResyncAck.CODE, MoveResyncAck.class);
     }
 
     @Override

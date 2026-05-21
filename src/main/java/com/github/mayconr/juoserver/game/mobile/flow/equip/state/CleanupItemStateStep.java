@@ -6,7 +6,6 @@ import com.github.mayconr.juoserver.game.model.EquippedLocation;
 import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.model.OrphanLocation;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
-import com.github.mayconr.juoserver.infrastructure.flow.FlowPhase;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 

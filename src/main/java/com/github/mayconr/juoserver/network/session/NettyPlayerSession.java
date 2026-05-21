@@ -227,11 +227,13 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void resync(MovementResyncAck resyncAck) {
-        runInEventLoop(()->{
-            channel.write(new MovementResyncAck(resyncAck.getSequence(), resyncAck.getNotoriety()));
-            channel.writeAndFlush(new DrawGamePlayer(player));
-        });
+    public void resync(MoveResyncAck resyncAck) {
+        world.resync(player, resyncAck);
+        //runInEventLoop(()->{
+
+            //channel.write(new MoveResyncAck(resyncAck.getSequence(), resyncAck.getNotoriety()));
+            //channel.writeAndFlush(new DrawGamePlayer(player));
+        //});
     }
 
     /*
@@ -261,12 +263,7 @@ public class NettyPlayerSession implements PlayerSession {
         if (!shouldReceiveUpdate(mobile)) {
             return;
         }
-
-        runInEventLoop(() ->
-                channel.writeAndFlush(
-                        new DrawMobile(mobile, world.getEquippedItems(mobile))
-                )
-        );
+        runInEventLoop(() -> channel.writeAndFlush(new DrawMobile(mobile, world.getEquippedItems(mobile))));
     }
 
     private void handlePlayerMovement(MobileMoved moved) {
@@ -276,7 +273,7 @@ public class NettyPlayerSession implements PlayerSession {
         var items   = world.getItemsInRange(player, visibility);
 
         // Acknowledge movement
-        channel.write(new MovementResyncAck(moved.sequence(), player.getNotoriety()));
+        channel.write(new MoveResyncAck(moved.sequence(), player.getNotoriety()));
 
         // Draw nearby mobiles
         for (UOMobile mobile : mobiles) {
@@ -302,6 +299,25 @@ public class NettyPlayerSession implements PlayerSession {
         // TODO:
         // - Send incremental updates instead of full redraw
         // - Track enter/leave range to avoid resending everything
+    }
+
+    public void onMobileMoveRejected(MobileMoveRejected rejected) {
+        if (player.equals(rejected.mobile())) {
+            runInEventLoop(()->{
+                channel.write(new MoveReject(rejected.sequence(), rejected.mobile()));
+                channel.writeAndFlush(new DrawGamePlayer(player));
+            });
+        }
+    }
+
+    public void onMobileResynced(MobileMoveResync resync) {
+        if (player.equals(resync.player())) {
+            runInEventLoop(()->{
+                log.info("Mobile resynced");
+                channel.write(new MoveResyncAck(resync.sequence(), resync.player().getNotoriety()));
+                channel.writeAndFlush(new DrawGamePlayer(player));
+            });
+        }
     }
 
     public void onMobileSpeech(MobileSpeech event) {

@@ -55,6 +55,8 @@ public class NettySessionManager implements SessionManager {
     private List<Event<?>> eventList(NettyPlayerSession session) {
         return List.of(
                 new Event<>(MobileMoved.class, session::onMobileMoved),
+                new Event<>(MobileMoveRejected.class, session::onMobileMoveRejected),
+                new Event<>(MobileMoveResync.class, session::onMobileResynced),
                 new Event<>(MobileSpeech.class, session::onMobileSpeech),
                 new Event<>(ItemEquipped.class, session::onItemEquipped),
                 new Event<>(ItemUnequipped.class, session::onItemUnequipped),

@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.infrastructure.flow;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class AsyncFlowContext<T> extends AbstractContext {
+public abstract class AbstractAsyncFlowContext<T> extends AbstractContext {
 
     private final CompletableFuture<T> future = new CompletableFuture<>();
 

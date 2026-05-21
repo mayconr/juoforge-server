@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import com.github.mayconr.juoserver.network.packet.DeleteCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
-import com.github.mayconr.juoserver.network.packet.MovementResyncAck;
+import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
@@ -95,5 +95,5 @@ public interface PlayerSession {
 
     void deleteCharacter(DeleteCharacter deleteCharacter);
 
-    void resync(MovementResyncAck movementResyncAck);
+    void resync(MoveResyncAck moveResyncAck);
 }

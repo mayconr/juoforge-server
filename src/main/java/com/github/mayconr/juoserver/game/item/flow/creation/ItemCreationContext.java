@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @RequiredArgsConstructor
-public class ItemCreationContext extends SyncFlowContext<UOItem> {
+public class ItemCreationContext extends AbstractSyncFlowContext<UOItem> {
     private final ItemRequest request;
     private final ItemTarget target;
     private Consumer<ItemCreationOptions> consumerOptions;

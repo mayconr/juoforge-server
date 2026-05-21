@@ -23,7 +23,7 @@ public class TeleportTransitionServiceImpl implements TeleportTransitionService 
         int y = (int) properties.get(TELEPORT_DESTINATION_Y);
         int z = (int) properties.get(TELEPORT_DESTINATION_Z);
 
-        mobileModule.move(event.mobile(), new PointInTheWorld(x, y, z));
+        mobileModule.teleport(event.mobile(), new PointInTheWorld(x, y, z));
     }
 
     @Override

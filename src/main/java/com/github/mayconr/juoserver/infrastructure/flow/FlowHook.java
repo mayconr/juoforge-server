@@ -2,27 +2,23 @@ package com.github.mayconr.juoserver.infrastructure.flow;
 
 public class FlowHook<T extends AbstractContext> {
 
-    private final String targetStep;
+    private final HookTarget target;
 
-    private final FlowStep<T> step;
+    private final HookStep<T> step;
 
     private final HookPosition position;
 
-    public FlowHook(
-            String targetStep,
-            FlowStep<T> step,
-            HookPosition position) {
-
-        this.targetStep = targetStep;
+    public FlowHook(HookTarget target, HookStep<T> step, HookPosition position) {
+        this.target = target;
         this.step = step;
         this.position = position;
     }
 
-    public String targetStep() {
-        return targetStep;
+    public HookTarget target() {
+        return target;
     }
 
-    public FlowStep<T> step() {
+    public HookStep<T> step() {
         return step;
     }
 

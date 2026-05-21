@@ -25,7 +25,7 @@ public class Goto extends AbstractCommand {
             int x = Integer.parseInt(event.arguments()[0]);
             int y = Integer.parseInt(event.arguments()[1]);
             int z = Integer.parseInt(event.arguments()[2]);
-            world.move(event.player(), new PointInTheWorld(x, y, z));
+            world.teleport(event.player(), new PointInTheWorld(x, y, z));
         }
     }
 
@@ -51,10 +51,10 @@ public class Goto extends AbstractCommand {
                 gump,
                 (c, e) -> {
                     switch (e.getButtonId()) {
-                        case 100 -> world.move(c.player(), new PointInTheWorld(1466, 1715, 0));
-                        case 101 -> world.move(c.player(), new PointInTheWorld(2516, 531, 0));
-                        case 102 -> world.move(c.player(), new PointInTheWorld(4427, 1140, 0));
-                        case 103 -> world.move(c.player(), new PointInTheWorld(5753, 324, 27));
+                        case 100 -> world.teleport(c.player(), new PointInTheWorld(1466, 1715, 0));
+                        case 101 -> world.teleport(c.player(), new PointInTheWorld(2516, 531, 0));
+                        case 102 -> world.teleport(c.player(), new PointInTheWorld(4427, 1140, 0));
+                        case 103 -> world.teleport(c.player(), new PointInTheWorld(5753, 324, 27));
                     }
                 });
     }

@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.model.DeathCause;
 import com.github.mayconr.juoserver.game.model.UOCorpse;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOObject;
-import com.github.mayconr.juoserver.infrastructure.flow.SyncFlowContext;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @RequiredArgsConstructor
-public class DeathContext extends SyncFlowContext<Void> {
+public class DeathContext extends AbstractSyncFlowContext<Void> {
 
     private final UOMobile victim;
     private final UOObject<?> killer;

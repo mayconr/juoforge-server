@@ -26,11 +26,17 @@ import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
 import com.github.mayconr.juoserver.game.mobile.flow.mount.MountFlowDefinition;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.MovementContext;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.MovementFlowDefinition;
+import com.github.mayconr.juoserver.game.mobile.flow.resync.ResyncContext;
+import com.github.mayconr.juoserver.game.mobile.flow.resync.ResyncFlowDefinition;
+import com.github.mayconr.juoserver.game.mobile.flow.teleport.TeleportContext;
+import com.github.mayconr.juoserver.game.mobile.flow.teleport.TeleportFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountFlowDefinition;
-import com.github.mayconr.juoserver.game.mobile.npc.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationContext;
@@ -95,69 +101,25 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
-
-        registry.register(
-                DeathFlowDefinition.class.getSimpleName(),
-                DeathFlowDefinition.build(modules, infra),
-                DeathContext.class
-        );
-
-        registry.register(
-                DamageFlowDefinition.class.getSimpleName(),
-                DamageFlowDefinition.build(modules, infra),
-                DamageContext.class
-        );
-
-        registry.register(
-                NpcCreationFlowDefinition.class.getSimpleName(),
-                NpcCreationFlowDefinition.build(modules, infra, templates),
-                NpcCreationContext.class
-        );
-
-        registry.register(
-                NpcRemovalFlowDefinition.class.getSimpleName(),
-                NpcRemovalFlowDefinition.build(modules, infra),
-                NpcRemovalContext.class
-        );
-
-        registry.register(UnequipItemFlowDefinition.class.getSimpleName(),
-                UnequipItemFlowDefinition.build(infra),
-                UnequipItemContext.class);
-
-        registry.register(
-                EquipItemFlowDefinition.class.getSimpleName(),
-                EquipItemFlowDefinition.build(infra),
-                EquipItemContext.class);
-
-        registry.register(
-                ItemCreationFlowDefinition.class.getSimpleName(),
-                ItemCreationFlowDefinition.build(infra, templates),
-                ItemCreationContext.class);
-
-        registry.register(DropItemFlowDefinition.class.getSimpleName(),
-                DropItemFlowDefinition.build(modules, infra),
-                DropItemContext.class);
-
-        registry.register(PlayerCreationFlowDefinition.class.getSimpleName(),
-                PlayerCreationFlowDefinition.build(modules, infra, templates),
-                PlayerCreationContext.class);
-
-        registry.register(UnmountFlowDefinition.class.getSimpleName(),
-                UnmountFlowDefinition.build(modules, infra, templates),
-                UnmountContext.class);
-
-        registry.register(
-                MountFlowDefinition.class.getSimpleName(),
-                MountFlowDefinition.build(modules, templates),
-                MountContext.class);
-
+        registry.register(DeathFlowDefinition.class.getSimpleName(), DeathFlowDefinition.build(modules, infra), DeathContext.class);
+        registry.register(DamageFlowDefinition.class.getSimpleName(), DamageFlowDefinition.build(modules, infra), DamageContext.class);
+        registry.register(NpcCreationFlowDefinition.class.getSimpleName(), NpcCreationFlowDefinition.build(modules, infra, templates), NpcCreationContext.class);
+        registry.register(NpcRemovalFlowDefinition.class.getSimpleName(), NpcRemovalFlowDefinition.build(modules, infra), NpcRemovalContext.class);
+        registry.register(UnequipItemFlowDefinition.class.getSimpleName(), UnequipItemFlowDefinition.build(infra), UnequipItemContext.class);
+        registry.register(EquipItemFlowDefinition.class.getSimpleName(), EquipItemFlowDefinition.build(infra), EquipItemContext.class);
+        registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates), ItemCreationContext.class);
+        registry.register(DropItemFlowDefinition.class.getSimpleName(), DropItemFlowDefinition.build(modules, infra), DropItemContext.class);
+        registry.register(PlayerCreationFlowDefinition.class.getSimpleName(), PlayerCreationFlowDefinition.build(modules, infra, templates), PlayerCreationContext.class);
+        registry.register(UnmountFlowDefinition.class.getSimpleName(), UnmountFlowDefinition.build(modules, infra, templates), UnmountContext.class);
+        registry.register(MountFlowDefinition.class.getSimpleName(), MountFlowDefinition.build(modules, templates), MountContext.class);
         registry.register(PassiveAnimalAIDefinition.class.getSimpleName(), PassiveAnimalAIDefinition.build(), PassiveAnimalAIContext.class);
-
         registry.register(VendorAIDefinition.class.getSimpleName(), VendorAIDefinition.build(), VendorAIContext.class);
-
         registry.register(SendTargetFlowDefinition.class.getSimpleName(), SendTargetFlowDefinition.build(modules, infra), SendTargetContext.class);
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
+        registry.register(TeleportFlowDefinition.class.getSimpleName(), TeleportFlowDefinition.build(infra), TeleportContext.class);
+        registry.register(MovementFlowDefinition.class.getSimpleName(), MovementFlowDefinition.build(infra), MovementContext.class);
+        registry.register(ResyncFlowDefinition.class.getSimpleName(), ResyncFlowDefinition.build(infra), ResyncContext.class);
         return registry;
     }
 }
