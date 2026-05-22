@@ -87,11 +87,9 @@ public interface RealmStorage {
     // SPATIAL QUERIES
     // =========================
 
-    List<UOMobile> getMobilesInRange(
-            Location location,
-            int radius,
-            Predicate<UOMobile> filter
-    );
+    List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);
+
+    List<UOMobile> getMobilesAtLocation(Location location);
 
     List<UOItem> getItemsInRange(Location location);
 
