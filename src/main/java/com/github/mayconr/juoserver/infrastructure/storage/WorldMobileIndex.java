@@ -12,8 +12,8 @@ import java.util.concurrent.ConcurrentMap;
 
 public class WorldMobileIndex {
 
-    private final ConcurrentMap<Long, Set<Integer>> mobilesByRegion =
-            new ConcurrentHashMap<>();
+    private static final int BLOCK_SIZE = 24;
+    private final ConcurrentMap<Long, Set<Integer>> mobilesByRegion = new ConcurrentHashMap<>();
 
     public void addAll(Collection<UOMobile> mobiles) {
         for (UOMobile mobile : mobiles) {
@@ -45,12 +45,12 @@ public class WorldMobileIndex {
     }
 
     public List<Integer> getNearbySerials(Location location, int radius) {
-        int blockX = location.getX() / 24;
-        int blockY = location.getY() / 24;
+        int blockX = location.getX() / BLOCK_SIZE;
+        int blockY = location.getY() / BLOCK_SIZE;
 
-        int blockRadius = (radius / 24) + 1;
+        int blockRadius = (radius / BLOCK_SIZE) + 1;
 
-        List<Integer> result = new ArrayList<>(64);
+        List<Integer> result = new ArrayList<>(BLOCK_SIZE * 2);
 
         for (int dx = -blockRadius; dx <= blockRadius; dx++) {
             for (int dy = -blockRadius; dy <= blockRadius; dy++) {

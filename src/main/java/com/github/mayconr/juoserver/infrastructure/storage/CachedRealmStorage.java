@@ -226,6 +226,14 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
+    public List<UOMobile> getMobilesAtLocation(Location location) {
+        return worldMobileIndex.getNearbySerials(location, 1)
+                .stream().map(mobileCache::get)
+                .filter(mobile->mobile.getX() == location.getX() && mobile.getY() == location.getY())
+                .toList();
+    }
+
+    @Override
     public List<UOItem> getItemsInRange(Location location) {
         return worldItemIndex.getSerialsInRange(location)
                 .stream()
