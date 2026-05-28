@@ -50,14 +50,20 @@ public class MovementCollisionService {
                  * Ignore if standing on valid surface above/below
                  */
                 if (walkableSurface != null && walkableSurface.z() >= staticBottom) {
+                    System.out.println("Walkable surface is impassable");
                     continue;
                 }
+
                 return true;
             }
         }
 
         // Check if the tile does not have blocking
         var tile = gameDataProvider.tileAt(x, y);
-        return tile.flags().contains(TileFlag.IMPASSABLE);
+        if (walkableSurface == null && tile != null && tile.flags().contains(TileFlag.IMPASSABLE)) {
+            return true;
+        }
+
+        return false;
     }
 }

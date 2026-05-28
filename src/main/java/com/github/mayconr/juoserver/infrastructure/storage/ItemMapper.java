@@ -1,36 +1,47 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
+@RequiredArgsConstructor
 public class ItemMapper {
 
-    public static UOItemData mapToData(UOItem uoItem) {
+    private final TemplateRegistry<String, ItemTemplate> itemTemplateByName;
+
+    public UOItemData mapToData(UOItem uoItem) {
         return uoItem.toData();
     }
 
-    public static UOItem mapToItem(UOItemData uoItemData) {
+    public UOItem mapToItem(UOItemData uoItemData) {
         if (uoItemData == null) {
             return null;
         }
+        final var template = Optional.ofNullable(uoItemData.getTemplate())
+                .flatMap(itemTemplateByName::getFisrt)
+                .orElse(null); // TODO ajustar para nao suportar null
+
         var flags = uoItemData.getFlags() == null ? new ArrayList<>() : uoItemData.getFlags();
         if (flags.contains(ItemFlag.CORPSE)) {
-            return new UOCorpse(uoItemData);
+            return new UOCorpse(uoItemData, template);
         }
         if (flags.contains(ItemFlag.CONTAINER)) {
-            return new UOContainer(uoItemData);
+            return new UOContainer(uoItemData, template);
         }
-        return new UOItem(uoItemData);
+        return new UOItem(uoItemData, template);
     }
 
-    public static List<UOItemData> mapToData(List<UOItem> uoItems) {
-        return uoItems.stream().map(ItemMapper::mapToData).toList();
+    public List<UOItemData> mapToData(List<UOItem> uoItems) {
+        return uoItems.stream().map(this::mapToData).toList();
     }
 
-    public static List<UOItem> mapToItem(Collection<UOItemData> uoItems) {
-        return uoItems.stream().map(ItemMapper::mapToItem).toList();
+    public List<UOItem> mapToItem(Collection<UOItemData> uoItems) {
+        return uoItems.stream().map(this::mapToItem).toList();
     }
 }

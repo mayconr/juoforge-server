@@ -28,7 +28,7 @@ public class DamageModuleImpl implements DamageModule {
         var sourceKind = request.sourceKind();
         var components = request.components();
 
-        flows.execute(new DamageContext(source, target, sourceKind, components));
+        flows.execute(DamageContext.of(source, target, sourceKind, components));
     }
 
     @Override

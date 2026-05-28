@@ -10,4 +10,5 @@ public interface DamageModule extends WorldModule {
     void applyDamage(DamageRequest request);
 
     void kill(UOMobile target, UOMobile requestedBy, DamageSourceKind kind);
+
 }

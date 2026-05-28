@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.model;
 
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -16,8 +17,8 @@ public class UOContainer extends UOItem implements Container {
     @Getter
     private final int containerGumpId;
 
-    public UOContainer(UOItemData data) {
-        super(data);
+    public UOContainer(UOItemData data, ItemTemplate template) {
+        super(data, template);
         this.containerGumpId = data.getContainerGumpId();
     }
 

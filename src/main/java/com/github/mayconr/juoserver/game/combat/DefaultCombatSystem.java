@@ -15,6 +15,17 @@ import com.github.mayconr.juoserver.network.packet.CharacterAnimation;
 
 import io.netty.channel.group.ChannelGroup;
 
+/**
+ * Criar CombatStateStore e mover combatStateMap + attackingIndex para lá.
+ * 2.
+ * Criar CancelAttackFlow, que é pequeno e seguro.
+ * 3.
+ * Criar StartAttackFlow, movendo validações do CombatHandler.attack.
+ * 4.
+ * Criar AttackSwingFlow, removendo ChannelGroup e publicando AnimationSent.
+ * 5.
+ * Só depois integrar dano real chamando DamageFlowDefinition.
+ */
 public class DefaultCombatSystem extends IntervalGameTask implements CombatSystem {
 
     private final Map<Integer, CombatState> combatStateMap = new HashMap<>();

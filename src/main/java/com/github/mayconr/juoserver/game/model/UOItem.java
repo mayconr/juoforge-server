@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.model;
 
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ public class UOItem extends UOObject<UOItemData> {
 
     public static final int OBJECTS_MIN_SERIAL_ID = 0x3FFFFFFF + 1;
     private UUID id;
+    private ItemTemplate template;
     private Layer layer;
     private int amount;
     private int hue;
@@ -23,9 +25,10 @@ public class UOItem extends UOObject<UOItemData> {
     private ItemLocation previousLocation;
     private List<ItemFlag> flags;
 
-    public UOItem(UOItemData data) {
+    public UOItem(UOItemData data, ItemTemplate template) {
         super(data);
         this.id = data.getId();
+        this.template = template;
         this.layer = data.getLayer();
         this.amount = data.getAmount();
         this.hue = data.getHue();
