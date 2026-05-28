@@ -43,6 +43,35 @@
     "attr": {}
   },
   {
+    "name": "kite",
+    "displayName": "a Kite",
+    "layer": "TWO_HANDED",
+    "modelId": 7028,
+    "flags": ["WEARABLE","WEAPON"]
+  },
+  {
+    "name": "katana",
+    "displayName": "a Katana",
+    "layer": "ONE_HANDED",
+    "modelId": 5118,
+    "flags": ["WEARABLE","WEAPON"],
+    "weapon": {
+      "style" : "MELEE",
+      "baseDamage" : {
+        "min": 10,
+        "max" : 15
+      },
+      "radius": 1
+    }
+  },
+  {
+    "name": "black_staff",
+    "displayName": "a Black Staff",
+    "layer": "TWO_HANDED",
+    "modelId": 3568,
+    "flags": ["WEARABLE","WEAPON"]
+  },
+  {
     "name": "hat",
     "displayName": "hat",
     "layer": "HEAD",

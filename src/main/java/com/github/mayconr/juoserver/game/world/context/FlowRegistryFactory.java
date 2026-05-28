@@ -6,6 +6,11 @@ import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIDefinition;
 import com.github.mayconr.juoserver.game.ai.definition.VendorAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.VendorAIDefinition;
+import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
+import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionFlow;
+import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
+import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationFlow;
+import com.github.mayconr.juoserver.game.damage.DamageModule;
 import com.github.mayconr.juoserver.game.damage.flow.damage.DamageContext;
 import com.github.mayconr.juoserver.game.damage.flow.damage.DamageFlowDefinition;
 import com.github.mayconr.juoserver.game.interaction.flow.target.resolve.ResolveTargetContext;
@@ -36,8 +41,8 @@ import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountFlowDefinition;
-import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
+import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationContext;
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationFlowDefinition;
@@ -72,7 +77,8 @@ public class FlowRegistryFactory {
             MobileModule mobile,
             AIModule ai,
             MessageModule message,
-            NpcModule npc
+            NpcModule npc,
+            DamageModule damage
     ) {}
 
     @Builder
@@ -120,6 +126,8 @@ public class FlowRegistryFactory {
         registry.register(TeleportFlowDefinition.class.getSimpleName(), TeleportFlowDefinition.build(infra), TeleportContext.class);
         registry.register(MovementFlowDefinition.class.getSimpleName(), MovementFlowDefinition.build(infra), MovementContext.class);
         registry.register(ResyncFlowDefinition.class.getSimpleName(), ResyncFlowDefinition.build(infra), ResyncContext.class);
+        registry.register(CombatExecutionFlow.class.getSimpleName(), CombatExecutionFlow.build(modules, infra), CombatExecutionContext.class);
+        registry.register(CombatPreparationFlow.class.getSimpleName(), CombatPreparationFlow.build(infra), CombatPreparationContext.class);
         return registry;
     }
 }

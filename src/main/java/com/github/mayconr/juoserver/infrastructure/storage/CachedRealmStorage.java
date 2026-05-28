@@ -23,6 +23,7 @@ public class CachedRealmStorage implements RealmStorage {
     private final WorldItemIndex worldItemIndex = new WorldItemIndex();
 
     private final AccountStorage accountStorage;
+    private final ItemMapper itemMapper;
 
     private final List<Integer> dirtyMobiles = new ArrayList<>();
     private final List<UOItem> dirtyItems = new ArrayList<>();
@@ -37,11 +38,11 @@ public class CachedRealmStorage implements RealmStorage {
     public void initialize(Supplier<Integer> itemSerialSupplier, Supplier<Integer> mobileSerialSupplier, Consumer<InitialData> initialDataConsumer) {
         this.itemSerialSupplier = itemSerialSupplier;
         this.mobileSerialSupplier = mobileSerialSupplier;
-        this.mobileDependencyLoader = new MobileDependencyLoader(mobileStorage, itemStorage, itemCache);
+        this.mobileDependencyLoader = new MobileDependencyLoader(mobileStorage, itemStorage, itemCache, itemMapper);
 
         // Load all World NPCs
         var loadGroundItems = itemStorage.findAllGroundItems()
-                .thenApply(ItemMapper::mapToItem);
+                .thenApply(itemMapper::mapToItem);
 
         // World initialized
         mobileStorage.findAllNpcs()
@@ -97,7 +98,7 @@ public class CachedRealmStorage implements RealmStorage {
     @Override
     public CompletableFuture<UOItem> loadItem(int serialId) {
         return itemStorage.findItemBySerialId(serialId)
-                .thenApply(ItemMapper::mapToItem)
+                .thenApply(itemMapper::mapToItem)
                 .thenApply(item -> {
                     cache(item);
                     return item;
@@ -107,7 +108,7 @@ public class CachedRealmStorage implements RealmStorage {
 
     @Override
     public UOItem createItem(UOItemData data) {
-        var item = ItemMapper.mapToItem(data);
+        var item = itemMapper.mapToItem(data);
 
         itemCache.put(item);
 
@@ -117,7 +118,7 @@ public class CachedRealmStorage implements RealmStorage {
     @Override
     public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
         return itemStorage.loadContainerItems(container.getSerialId())
-                .thenApply(ItemMapper::mapToItem)
+                .thenApply(itemMapper::mapToItem)
                 .thenApply(items -> {
                     itemCache.putAll(items);
                     return items;
@@ -308,14 +309,14 @@ public class CachedRealmStorage implements RealmStorage {
     public CompletableFuture<Collection<UOItem>> saveItems() {
         var updated = itemCache.getItems()
                 .stream()
-                .map(ItemMapper::mapToData)
+                .map(itemMapper::mapToData)
                 .toList();
         var dirty = dirtyItems.stream()
-                .map(ItemMapper::mapToData)
+                .map(itemMapper::mapToData)
                 .toList();
 
         return itemStorage.saveItems(itemSerialSupplier.get(), updated, dirty)
-                .thenApply(ItemMapper::mapToItem);
+                .thenApply(itemMapper::mapToItem);
     }
 
     @Override

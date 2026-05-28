@@ -9,7 +9,9 @@ import com.github.mayconr.juoserver.network.packet.AttackRequest;
 public interface CombatModule extends WorldModule {
     void toggleWarMode(UOPlayer player, WarModeType type);
 
-    void attack(UOPlayer player, AttackRequest request);
+    void requestAttack(UOPlayer player, AttackRequest request);
+
+    void requestSpellCast(UOPlayer player, UOMobile target);
 
     void regen(UOMobile mobile, double interval);
 }

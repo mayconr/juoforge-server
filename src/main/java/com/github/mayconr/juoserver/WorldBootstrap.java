@@ -116,7 +116,8 @@ public final class WorldBootstrap {
         MobileStorage mobileStorage = configuration.mobileStorage();
         ItemStorage itemStorage = configuration.itemStorage();
         AccountStorage accountStorage = configuration.accountStorage();
-        RealmStorage storage = new CachedRealmStorage(mobileStorage, itemStorage, accountStorage);
+        ItemMapper itemMapper = new ItemMapper(itemTemplateByName);
+        RealmStorage storage = new CachedRealmStorage(mobileStorage, itemStorage, accountStorage, itemMapper);
 
         // --- Serial
         SerialGenerator serialGenerator = new SerialGenerator(storage);

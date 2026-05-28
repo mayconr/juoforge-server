@@ -12,6 +12,7 @@ import java.util.UUID;
 @Data
 public class UOItemData extends UOObjectData {
     private UUID id;
+    private String template;
     private Layer layer;
     private int amount;
     private int hue;
@@ -20,14 +21,12 @@ public class UOItemData extends UOObjectData {
     private Direction direction;
     private List<ItemFlag> flags;
     private int unitWeight;
-    
+    // Location
     private ItemLocationType locationType;
     private Integer ownerSerialId;
     private Integer containerSerialId;
-
     // Container
     private int containerGumpId;
-
     // Corpse
     private int corpseId;
     private Map<Layer, Integer> equippedItems = new EnumMap<>(Layer.class);

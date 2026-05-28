@@ -677,6 +677,14 @@ public class NettyPlayerSession implements PlayerSession {
 
     /*
      * ================
+     * COMBAT EVENTS
+     * ================
+     */
+
+
+
+    /*
+     * ================
      * Internal Helpers
      * ================
      */

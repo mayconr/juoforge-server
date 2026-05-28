@@ -22,7 +22,7 @@
       }
     },
     "files" : {
-      "dataFileRoot" : "C:\\Program Files (x86)\\Electronic Arts\\Ultima Online Classic"
+      "dataFileRoot" : "/home/mgregorio/uo/Ultima Online Classic"
     },
     "client": {
       "unlockedFeatures" : ["AOS"]

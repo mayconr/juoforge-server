@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 public enum Layer {
     /** Invalid layer. */
     INVALID(0x00),
-    /** First valid layer. Equivalent to OneHanded. */
-    FIRST_VALID(0x01),
     /** One handed weapon. */
     ONE_HANDED(0x01),
     /** Two handed weapon or shield. */
@@ -69,9 +67,7 @@ public enum Layer {
     /** Vendor 'sell pack' layer. */
     SHOP_SELL(0x1C),
     /** Bank box layer. */
-    BANK(0x1D),
-    /** Last valid layer. Equivalent to <tt>Layer.Bank</tt>. */
-    LAST_VALID(0x1D);
+    BANK(0x1D);
 
     private final int code;
 

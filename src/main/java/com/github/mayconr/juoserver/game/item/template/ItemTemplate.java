@@ -19,7 +19,9 @@ public record ItemTemplate(String name,
                            // Cotainer
                            int containerGumpId,
                            // Mount
-                           String mountName)
+                           String mountName,
+                           // Weapon
+                           Weapon weapon)
 
             implements BaseTemplate {
     public ItemTemplate {
@@ -27,9 +29,14 @@ public record ItemTemplate(String name,
         flags = flags == null ? Collections.emptyList() : flags;
     }
 
+    public record Weapon(WeaponStyle style, BaseDamage baseDamage, int radius) { }
+
+    public record BaseDamage(int min, int max) {}
+
     public UOItemData toData(int serialId) {
         final var data = new UOItemData();
         data.setId(UUID.randomUUID());
+        data.setTemplate(name);
         data.setSerialId(serialId);
         data.setModelId(modelId);
         data.setX(0);

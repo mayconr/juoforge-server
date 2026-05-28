@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.model;
 
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,8 +14,8 @@ public class UOCorpse extends UOContainer {
     private int corpseId;
     private final Map<Layer, Integer> equippedItems = new EnumMap<>(Layer.class);
 
-    public UOCorpse(UOItemData data) {
-        super(data);
+    public UOCorpse(UOItemData data, ItemTemplate template) {
+        super(data, template);
         this.corpseId = data.getCorpseId();
         if (data.getEquippedItems() != null) {
             equippedItems.putAll(data.getEquippedItems());

@@ -6,9 +6,8 @@ public abstract class AbstractAsyncFlowContext<T> extends AbstractContext {
 
     private final CompletableFuture<T> future = new CompletableFuture<>();
 
-    public StepResult complete(T result) {
+    public void complete(T result) {
         future.complete(result);
-        return StepResult.success();
     }
 
     public CompletableFuture<T> result() {

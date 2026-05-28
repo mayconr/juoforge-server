@@ -297,6 +297,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .npc(npcModule)
                     .mobile(mobileModule)
                     .item(itemModule)
+                    .damage(damageModule)
                     .build())
                 .infra(GameInfra.builder()
                     .serialGenerator(serialGenerator)
@@ -788,7 +789,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void attack(UOPlayer player, AttackRequest request) {
-        combatModule.attack(player, request);
+        combatModule.requestAttack(player, request);
     }
 
     @Override

@@ -11,6 +11,7 @@ public class MobileDependencyLoader {
     private final MobileStorage mobileStorage;
     private final ItemStorage itemStorage;
     private final ItemCache itemCache;
+    private final ItemMapper itemMapper;
 
     private CompletableFuture<UOMobile> loadMobileSkills(UOMobile mobile) {
         return mobileStorage.findSkillsBySerialId(mobile.getSerialId()).thenApply(skills -> {
@@ -21,7 +22,7 @@ public class MobileDependencyLoader {
 
     private CompletableFuture<UOMobile> loadEquippedItems(UOMobile mobile) {
         return itemStorage.findAllEquippedItems(mobile.getSerialId())
-                .thenApply(ItemMapper::mapToItem)
+                .thenApply(itemMapper::mapToItem)
                 .thenApply(itemCache::putAll)
                 .thenApply(items -> {
                     items.forEach(mobile::equipItem);
