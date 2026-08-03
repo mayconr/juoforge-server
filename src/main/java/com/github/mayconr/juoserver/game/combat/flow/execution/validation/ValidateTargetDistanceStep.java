@@ -18,7 +18,6 @@ public class ValidateTargetDistanceStep extends AbstractFlowStep<CombatExecution
         final var weapon = context.getWeapon().getTemplate().weapon();
 
         if (!GameMath.isInRange(attacker, target, weapon.radius())) {
-            System.out.println("out of range");
             return StepResult.failure("Out of Range");
         }
         return StepResult.success();

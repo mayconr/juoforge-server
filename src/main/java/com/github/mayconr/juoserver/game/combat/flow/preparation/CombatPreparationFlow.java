@@ -13,7 +13,7 @@ public class CombatPreparationFlow {
     public static Flow<CombatPreparationContext> build(FlowRegistryFactory.GameInfra infra) {
         return FlowFactory.<CombatPreparationContext>builder()
                 .step(new ResolveTargetStep(infra.storage()))
-                .step(new BuildSessionStep())
+                .step(new BuildSessionStep(infra.eventBus()))
                 .build();
     }
 }

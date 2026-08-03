@@ -1,12 +1,15 @@
 package com.github.mayconr.juoserver.game.combat.flow.execution;
 
 import com.github.mayconr.juoserver.game.combat.CombatSession;
+import com.github.mayconr.juoserver.game.model.DamageComponent;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.WeaponStyle;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractAsyncFlowContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
@@ -18,8 +21,10 @@ public class CombatExecutionContext extends AbstractAsyncFlowContext<Void> {
     private int animFrame;
 
     private WeaponStyle style;
-    private int minDamage;
-    private int maxDamage;
+    private int attackSpeed;
+    private List<DamageComponent> damages;
 
     private UOItem weapon;
+    private int maxDistance;
+
 }

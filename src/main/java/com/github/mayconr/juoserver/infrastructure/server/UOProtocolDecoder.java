@@ -29,7 +29,6 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(DoubleClick.CODE, DoubleClick.class);
         packetsClass.put(UnicodeSpeachRequest.CODE, UnicodeSpeachRequest.class);
         packetsClass.put(TooltipRequest.CODE, TooltipRequest.class);
-        packetsClass.put(GeneralInformation.CODE, GeneralInformation.class);
         packetsClass.put(SingleClickRequest.CODE, SingleClickRequest.class);
         packetsClass.put(UnequipItem.CODE, UnequipItem.class);
         packetsClass.put(DropItem.CODE, DropItem.class);
@@ -45,6 +44,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(SendSkill.CODE, SendSkill.class);
         packetsClass.put(VendorBuyRequest.CODE, VendorBuyRequest.class);
         packetsClass.put(MoveResyncAck.CODE, MoveResyncAck.class);
+        packetsClass.put(GeneralInformation.CODE, GeneralInformation.class);
     }
 
     @Override

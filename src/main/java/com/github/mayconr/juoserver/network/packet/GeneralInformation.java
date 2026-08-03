@@ -1,99 +1,43 @@
 package com.github.mayconr.juoserver.network.packet;
 
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
-
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.HexFormat;
+
+@Slf4j
 @Getter
 public class GeneralInformation extends AbstractPacket {
 
-    public static final int CODE = 0xBF;
+    public static final int CODE = (byte)0xBF;
+    private final ExtendedCommand command;
 
-    private final int subCommandCode;
-    private final SubCommand subCommand;
+    public GeneralInformation(ByteBuf buffer) {
+        super(CODE, extractLength(buffer));
+        int length = getLength();
+        int subCommand = buffer.readUnsignedShort();
 
-    public GeneralInformation(ByteBuf buf, int length) {
-        super(CODE, length);
+        this.command = switch (subCommand) {
+            case ClientVersionExtendedCommand.SUB_COMMAND -> new ClientVersionExtendedCommand(buffer, getLength());
+            case LanguageExtendedCommand.SUB_COMMAND -> new LanguageExtendedCommand(buffer);
+            case ScreenSizeExtendedCommand.SUB_COMMAND -> new ScreenSizeExtendedCommand(buffer);
+            case SpellSelectionExtendedCommand.SUB_COMMAND -> new SpellSelectionExtendedCommand(buffer);
 
-        this.subCommandCode = buf.readUnsignedShort();
-
-        this.subCommand = switch (subCommandCode) {
-            case 0x0005 -> new ScreenSize(buf);
-            case 0x000C -> new CloseStatusGump(buf);
-            default     -> new UnknownSubCommand(subCommandCode, buf);
+            default -> {
+                String hex = HexFormat.of().toHexDigits(subCommand);
+                log.warn("Unknown sub command {}", hex);
+                yield new UnknownExtendedCommand(buffer, length);
+            }
         };
+
+        System.out.println(command);
     }
 
-    /* ================= SUBCOMMANDS ================= */
-
-    public interface SubCommand {}
-
-    /**
-     * SubCommand 0x0005
-     * Client informs screen resolution
-     */
-    @Getter
-    public static final class ScreenSize implements SubCommand {
-
-        private final int width;
-        private final int height;
-
-        public ScreenSize(ByteBuf buf) {
-            buf.readUnsignedShort(); // unknown / flags
-            this.width  = buf.readUnsignedShort();
-            this.height = buf.readUnsignedShort();
-            buf.readUnsignedShort(); // unknown
-        }
-
-        @Override
-        public String toString() {
-            return "ScreenSize{" +
-                    "width=" + width +
-                    ", height=" + height +
-                    '}';
-        }
+    private static int extractLength(ByteBuf buf) {
+        buf.readByte(); // packet id 0xBF
+        return buf.readUnsignedShort();
     }
 
-    /**
-     * SubCommand 0x000C
-     * Client closed the status gump of a player
-     */
-    @Getter
-    public static final class CloseStatusGump implements SubCommand {
-
-        private final int serialId;
-
-        public CloseStatusGump(ByteBuf buf) {
-            this.serialId = buf.readInt();
-        }
-
-        @Override
-        public String toString() {
-            return "CloseStatusGump{" +
-                    "serialId=0x" + Integer.toHexString(serialId) +
-                    '}';
-        }
-    }
-
-    /**
-     * Fallback for unimplemented subcommands
-     */
-    @Getter
-    public static final class UnknownSubCommand implements SubCommand {
-
-        private final int code;
-
-        public UnknownSubCommand(int code, ByteBuf buf) {
-            this.code = code;
-            // skip remaining bytes safely
-            buf.skipBytes(buf.readableBytes());
-        }
-
-        @Override
-        public String toString() {
-            return "UnknownSubCommand{code=0x" +
-                    Integer.toHexString(code) + '}';
-        }
-    }
 }

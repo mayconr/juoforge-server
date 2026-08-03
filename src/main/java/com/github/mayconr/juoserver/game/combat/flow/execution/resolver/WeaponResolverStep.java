@@ -5,9 +5,11 @@ import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
+@Slf4j
 public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext> {
 
     private final RealmStorage storage;
@@ -26,7 +28,10 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
         if (equippedItems == null
                 || equippedItems.isEmpty()
                 || (!equippedItems.containsKey(Layer.ONE_HANDED) && !equippedItems.containsKey(Layer.TWO_HANDED))) {
-            return StepResult.failure("No equipped items found");
+            if (log.isDebugEnabled()) {
+                log.info("No equipped Items found");
+            }
+            return StepResult.success();
         }
         final var weaponSerial = Optional.ofNullable(equippedItems.get(Layer.ONE_HANDED))
                 .orElseGet(()->equippedItems.get(Layer.TWO_HANDED));

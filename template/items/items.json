@@ -65,6 +65,21 @@
     }
   },
   {
+    "name": "crossbow",
+    "displayName": "a Crossbow",
+    "layer": "ONE_HANDED",
+    "modelId": 3919,
+    "flags": ["WEARABLE","WEAPON"],
+    "weapon": {
+      "style" : "RANGED",
+      "baseDamage" : {
+        "min": 10,
+        "max" : 15
+      },
+      "radius": 8
+    }
+  },
+  {
     "name": "black_staff",
     "displayName": "a Black Staff",
     "layer": "TWO_HANDED",

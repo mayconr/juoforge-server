@@ -13,6 +13,6 @@ public class GeneralInformationHandler
     @Override
     protected void channelRead0(
             PlayerSession session, ChannelHandlerContext ctx, GeneralInformation msg) {
-        log.info(String.valueOf(msg.getSubCommand()));
+        log.info("process general information");
     }
 }

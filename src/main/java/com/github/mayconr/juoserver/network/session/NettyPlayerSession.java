@@ -345,7 +345,9 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onAnimationSent(AnimationSent event) {
-        channelGroup.writeAndFlush(new CharacterAnimation(event.mobile(), event.options().repeat(), event.options().type(), event.options().frame(), event.options().direction()));
+        runInEventLoop(()->{
+            channel.writeAndFlush(new CharacterAnimation(event.mobile(), event.options().repeat(), event.options().type(), event.options().frame(), event.options().direction()));
+        });
     }
 
     public void onPlayerLoggedIn(PlayerLoggedIn event) {
@@ -607,12 +609,6 @@ public class NettyPlayerSession implements PlayerSession {
         }
     }
 
-    public void onPlayerStartAttack(PlayerStartAttack event) {
-        if (player.equals(event.player())) {
-            channelGroup.writeAndFlush(new UpdateMobileStatus(event.opponent().getSerialId(), player.getSerialId()), out -> !out.equals(event.player()));
-        }
-    }
-
     public void onVendorTradeSessionOpened(VendorSessionOpened event) {
         if (player.equals(event.player())) {
             final var vendor = event.vendor();
@@ -681,7 +677,60 @@ public class NettyPlayerSession implements PlayerSession {
      * ================
      */
 
+    public void onCombatStarted(CombatStarted event) {
+        runInEventLoop(()->{
+            //channel.write(new CombatantChange(combatStarted.target(), combatStarted.attacker()));
+            // arrows: 0x0F3E 0x0F3F
+            // bolt 0x1BFB
 
+        });
+    }
+
+    public void onCombatOccurring(CombatOccurring event) {
+        runInEventLoop(() -> {
+            int hitFrame = event.hitFrame();
+            int animFrame = hitFrame * 2;
+
+            switch (event.weaponStyle()) {
+
+                case MELEE -> {
+                    channel.write(new CharacterAnimation(
+                            event.attacker(),
+                            AnimationRepeat.ONCE,
+                            AnimationType.ATTACK_STANCE_SHORT,
+                            animFrame,
+                            AnimationDirection.FORWARD
+                    ));
+                }
+
+                case RANGED -> {
+                    channel.write(new CharacterAnimation(
+                            event.attacker(),
+                            AnimationRepeat.ONCE,
+                            AnimationType.NORMAL_BOW_SHOT_ON_HORSE,
+                            animFrame,
+                            AnimationDirection.FORWARD
+                    ));
+
+                    channel.write(new GraphicalEffectPacket(
+                            EffectType.MOVING,
+                            0x1BFE,
+                            event.attacker(),
+                            event.target(),
+                            0,
+                            0,
+                            false,
+                            false
+                    ));
+                }
+
+                default -> throw new IllegalStateException(
+                        "Unsupported weapon style: " + event.weaponStyle());
+            }
+
+            channel.flush();
+        });
+    }
 
     /*
      * ================
