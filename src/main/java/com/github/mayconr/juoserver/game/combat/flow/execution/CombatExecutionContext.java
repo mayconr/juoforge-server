@@ -8,23 +8,27 @@ import com.github.mayconr.juoserver.infrastructure.flow.AbstractAsyncFlowContext
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 @Data
+@ToString
 public class CombatExecutionContext extends AbstractAsyncFlowContext<Void> {
     private final CombatSession session;
 
     private int hitFrame;
     private int animFrame;
 
-    private WeaponStyle style;
+    private boolean mounted;
+
+    private CombatType combatType;
+    private int combatRadius;
     private int attackSpeed;
     private List<DamageComponent> damages;
 
     private UOItem weapon;
-    private int maxDistance;
-
+    private WeaponStyle weaponStyle;
 }

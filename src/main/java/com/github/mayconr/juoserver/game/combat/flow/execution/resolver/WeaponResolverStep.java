@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.combat.flow.execution.resolver;
 
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
 import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.WeaponStyle;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -31,6 +32,7 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
             if (log.isDebugEnabled()) {
                 log.info("No equipped Items found");
             }
+            context.setWeaponStyle(WeaponStyle.NONE);
             return StepResult.success();
         }
         final var weaponSerial = Optional.ofNullable(equippedItems.get(Layer.ONE_HANDED))
@@ -39,7 +41,7 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
                 .orElseThrow(()->new IllegalArgumentException("Weapon not found"));
 
         context.setWeapon(weapon);
-
+        context.setWeaponStyle(weapon.getTemplate().weapon().style());
         return StepResult.success();
     }
 }

@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum WeaponStyle {
     MELEE(CombatType.MELEE),
-    RANGED(CombatType.RANGED);
+    RANGED(CombatType.RANGED),
+    NONE(CombatType.WRESTLING);
 
     private final CombatType combatType;
 }

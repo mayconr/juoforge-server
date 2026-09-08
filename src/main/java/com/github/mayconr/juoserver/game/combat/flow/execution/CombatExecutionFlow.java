@@ -1,8 +1,12 @@
 package com.github.mayconr.juoserver.game.combat.flow.execution;
 
+import com.github.mayconr.juoserver.game.combat.flow.execution.calculation.CalculateSwingFramesStep;
+import com.github.mayconr.juoserver.game.combat.flow.execution.notify.BroadcastAttackAnimationStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.CombatTypeResolverStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.ResolveCombatMaxDistanceStep;
+import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.ResolveCombatRadius;
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.WeaponResolverStep;
+import com.github.mayconr.juoserver.game.combat.flow.execution.swing.CombatHitFrameDelayStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.validation.ValidateTargetDistanceStep;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
@@ -20,13 +24,14 @@ public class CombatExecutionFlow {
             .step(new CombatTypeResolverStep())
 
             .step(new ResolveCombatMaxDistanceStep())
+            .step(new ResolveCombatRadius())
             .step(new ValidateTargetDistanceStep())
-                // Calculate hit and anim frames
-            //.step(new CalculateSwingFramesStep())
+            // Calculate hit and anim frames
+            .step(new CalculateSwingFramesStep())
             // Sends anim event
-            //.step(new BroadcastAttackAnimationStep(infra.eventBus()))
+            .step(new BroadcastAttackAnimationStep(infra.eventBus()))
             // Wait for hit frame
-            //.step(new CombatHitFrameDelayStep())
+            .step(new CombatHitFrameDelayStep())
             //.step(new ApplyDamageStep(modules.damage()))
             .build();
     }

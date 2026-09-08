@@ -688,35 +688,24 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onCombatOccurring(CombatOccurring event) {
         runInEventLoop(() -> {
+            var attacker = event.attacker();
+            var target = event.target();
             int hitFrame = event.hitFrame();
-            int animFrame = hitFrame * 2;
+            int animationFrame = hitFrame * 2;
 
-            switch (event.weaponStyle()) {
+            switch (event.combatType()) {
 
-                case MELEE -> {
-                    channel.write(new CharacterAnimation(
-                            event.attacker(),
-                            AnimationRepeat.ONCE,
-                            AnimationType.ATTACK_STANCE_SHORT,
-                            animFrame,
-                            AnimationDirection.FORWARD
-                    ));
-                }
+                case WRESTLING -> channel.write(CharacterAnimationFactory.wrestling(attacker, animationFrame));
+                case MELEE -> channel.write(CharacterAnimationFactory.weapon(attacker, animationFrame));
 
                 case RANGED -> {
-                    channel.write(new CharacterAnimation(
-                            event.attacker(),
-                            AnimationRepeat.ONCE,
-                            AnimationType.NORMAL_BOW_SHOT_ON_HORSE,
-                            animFrame,
-                            AnimationDirection.FORWARD
-                    ));
+                    channel.write(CharacterAnimationFactory.ranged(attacker, animationFrame));
 
                     channel.write(new GraphicalEffectPacket(
                             EffectType.MOVING,
                             0x1BFE,
-                            event.attacker(),
-                            event.target(),
+                            attacker,
+                            target,
                             0,
                             0,
                             false,
@@ -724,8 +713,10 @@ public class NettyPlayerSession implements PlayerSession {
                     ));
                 }
 
+                case SPELL -> throw new IllegalStateException("Spell not supported ");
+
                 default -> throw new IllegalStateException(
-                        "Unsupported weapon style: " + event.weaponStyle());
+                        "Unsupported combat type: " + event.combatType());
             }
 
             channel.flush();
