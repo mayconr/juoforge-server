@@ -13,7 +13,7 @@ public class CalculateSwingFramesStep extends AbstractFlowStep<CombatExecutionCo
     public StepResult execute(CombatExecutionContext context) {
         final var session = context.getSession();
 
-        context.setAnimFrame(1000);
+        context.setAnimFrame(200);
         context.setHitFrame(500);
 
         return StepResult.success();

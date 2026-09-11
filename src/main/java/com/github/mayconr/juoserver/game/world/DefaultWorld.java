@@ -10,7 +10,10 @@ import com.github.mayconr.juoserver.game.ai.AIModuleImpl;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
-import com.github.mayconr.juoserver.game.combat.*;
+import com.github.mayconr.juoserver.game.combat.CombatHandler;
+import com.github.mayconr.juoserver.game.combat.CombatModule;
+import com.github.mayconr.juoserver.game.combat.CombatModuleImpl;
+import com.github.mayconr.juoserver.game.combat.VitalsHandler;
 import com.github.mayconr.juoserver.game.damage.DamageModule;
 import com.github.mayconr.juoserver.game.damage.DamageModuleImpl;
 import com.github.mayconr.juoserver.game.economy.EconomyModule;
@@ -255,8 +258,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeCombatModule() {
         final var vitalsService = new VitalsHandler(eventBus, settings);
-        final var combatSystem = new DefaultCombatSystem(null);
-        final var combatService = new CombatHandler(eventBus, combatSystem, storage);
+        final var combatService = new CombatHandler(eventBus);
 
         this.combatModule = new CombatModuleImpl(combatService, vitalsService);
     }

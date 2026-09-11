@@ -84,7 +84,6 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(ContainerOpenedEvent.class, session::onContainerOpened),
                 new Event<>(SkillLocked.class, session::onSkillLocked),
                 new Event<>(MobileStatusChanged.class, session::onMobileStatusChanged),
-                new Event<>(PlayerStartAttack.class, session::onPlayerStartAttack),
                 new Event<>(VendorSessionOpened.class, session::onVendorTradeSessionOpened),
                 new Event<>(VitalsChanged.class, session::onVitalsChanged),
                 new Event<>(GumpSent.class, session::onGumpSent),
@@ -92,7 +91,9 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(MobileGoldChanged.class, session::onMobileGoldChanged),
                 new Event<>(MobileDamagedEvent.class, session::onMobileDamaged),
                 new Event<>(MobileDeathEvent.class, session::onMobileDeath),
-                new Event<>(MobileResurrectEvent.class, session::onMobileResurrect)
+                new Event<>(MobileResurrectEvent.class, session::onMobileResurrect),
+                new Event<>(CombatStarted.class, session::onCombatStarted),
+                new Event<>(CombatOccurring.class, session::onCombatOccurring)
         );
     }
 

@@ -345,7 +345,9 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onAnimationSent(AnimationSent event) {
-        channelGroup.writeAndFlush(new CharacterAnimation(event.mobile(), event.options().repeat(), event.options().type(), event.options().frame(), event.options().direction()));
+        runInEventLoop(()->{
+            channel.writeAndFlush(new CharacterAnimation(event.mobile(), event.options().repeat(), event.options().type(), event.options().frame(), event.options().direction()));
+        });
     }
 
     public void onPlayerLoggedIn(PlayerLoggedIn event) {
@@ -607,12 +609,6 @@ public class NettyPlayerSession implements PlayerSession {
         }
     }
 
-    public void onPlayerStartAttack(PlayerStartAttack event) {
-        if (player.equals(event.player())) {
-            channelGroup.writeAndFlush(new UpdateMobileStatus(event.opponent().getSerialId(), player.getSerialId()), out -> !out.equals(event.player()));
-        }
-    }
-
     public void onVendorTradeSessionOpened(VendorSessionOpened event) {
         if (player.equals(event.player())) {
             final var vendor = event.vendor();
@@ -681,7 +677,51 @@ public class NettyPlayerSession implements PlayerSession {
      * ================
      */
 
+    public void onCombatStarted(CombatStarted event) {
+        runInEventLoop(()->{
+            //channel.write(new CombatantChange(combatStarted.target(), combatStarted.attacker()));
+            // arrows: 0x0F3E 0x0F3F
+            // bolt 0x1BFB
 
+        });
+    }
+
+    public void onCombatOccurring(CombatOccurring event) {
+        runInEventLoop(() -> {
+            var attacker = event.attacker();
+            var target = event.target();
+            int hitFrame = event.hitFrame();
+            int animationFrame = hitFrame * 2;
+
+            switch (event.combatType()) {
+
+                case WRESTLING -> channel.write(CharacterAnimationFactory.wrestling(attacker, animationFrame));
+                case MELEE -> channel.write(CharacterAnimationFactory.weapon(attacker, animationFrame));
+
+                case RANGED -> {
+                    channel.write(CharacterAnimationFactory.ranged(attacker, animationFrame));
+
+                    channel.write(new GraphicalEffectPacket(
+                            EffectType.MOVING,
+                            0x1BFE,
+                            attacker,
+                            target,
+                            0,
+                            0,
+                            false,
+                            false
+                    ));
+                }
+
+                case SPELL -> throw new IllegalStateException("Spell not supported ");
+
+                default -> throw new IllegalStateException(
+                        "Unsupported combat type: " + event.combatType());
+            }
+
+            channel.flush();
+        });
+    }
 
     /*
      * ================

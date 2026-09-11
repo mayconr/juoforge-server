@@ -2,12 +2,15 @@ package com.github.mayconr.juoserver.game.combat.flow.execution.resolver;
 
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
 import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.WeaponStyle;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
+@Slf4j
 public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext> {
 
     private final RealmStorage storage;
@@ -26,7 +29,11 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
         if (equippedItems == null
                 || equippedItems.isEmpty()
                 || (!equippedItems.containsKey(Layer.ONE_HANDED) && !equippedItems.containsKey(Layer.TWO_HANDED))) {
-            return StepResult.failure("No equipped items found");
+            if (log.isDebugEnabled()) {
+                log.info("No equipped Items found");
+            }
+            context.setWeaponStyle(WeaponStyle.NONE);
+            return StepResult.success();
         }
         final var weaponSerial = Optional.ofNullable(equippedItems.get(Layer.ONE_HANDED))
                 .orElseGet(()->equippedItems.get(Layer.TWO_HANDED));
@@ -34,7 +41,7 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
                 .orElseThrow(()->new IllegalArgumentException("Weapon not found"));
 
         context.setWeapon(weapon);
-
+        context.setWeaponStyle(weapon.getTemplate().weapon().style());
         return StepResult.success();
     }
 }

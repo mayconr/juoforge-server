@@ -11,15 +11,17 @@ public final class CombatSession {
     private final UOMobile attacker;
     private final UOMobile target;
     private final long startedAt;
+    private final Trigger trigger;
     private long lastAggressionAt;
     private boolean active;
 
-    public CombatSession(UUID id, UOMobile attacker, UOMobile target) {
+    public CombatSession(UUID id, UOMobile attacker, UOMobile target, Trigger trigger) {
         this.id = id;
         this.attacker = attacker;
         this.target = target;
         this.startedAt = System.currentTimeMillis();
         this.active = true;
+        this.trigger = trigger;
     }
 
     public void refreshAggression() {
@@ -29,5 +31,11 @@ public final class CombatSession {
     public void close() {
         this.active = false;
     }
+
+    public sealed interface Trigger {}
+
+    public record PhysicalTrigger() implements Trigger {}
+
+    public record SpellTrigger() implements Trigger {}
 
 }
