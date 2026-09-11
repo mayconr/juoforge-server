@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.game.combat.flow.execution;
 
 import com.github.mayconr.juoserver.game.combat.flow.execution.calculation.CalculateSwingFramesStep;
+import com.github.mayconr.juoserver.game.damage.shared.CalculateDamageStep;
+import com.github.mayconr.juoserver.game.combat.flow.execution.damage.ApplyDamageStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.notify.BroadcastAttackAnimationStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.CombatTypeResolverStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.ResolveCombatMaxDistanceStep;
@@ -32,7 +34,8 @@ public class CombatExecutionFlow {
             .step(new BroadcastAttackAnimationStep(infra.eventBus()))
             // Wait for hit frame
             .step(new CombatHitFrameDelayStep())
-            //.step(new ApplyDamageStep(modules.damage()))
+            .step(new CalculateDamageStep<>())
+            .step(new ApplyDamageStep(modules.damage()))
             .build();
     }
 

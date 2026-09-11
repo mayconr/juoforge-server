@@ -31,6 +31,7 @@ public class ApplyDamageStep extends AbstractFlowStep<CombatExecutionContext> {
         if (!target.isAlive()) {
             session.close();
         }
+
         return StepResult.success();
     }
 }
