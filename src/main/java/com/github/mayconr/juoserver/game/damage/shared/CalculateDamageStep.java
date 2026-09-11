@@ -8,6 +8,7 @@ import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CalculateDamageStep<T extends CalculateDamageContext> implements FlowStep<T> {
 
@@ -25,7 +26,12 @@ public class CalculateDamageStep<T extends CalculateDamageContext> implements Fl
 
         var weaponDamage = Optional.ofNullable(request.weapon())
                 .map(UOItem::getTemplate)
-                .map(wp->10)
+                .map(wp->
+                    ThreadLocalRandom.current()
+                            .nextInt(
+                                    wp.weapon().baseDamage().min(),
+                                    wp.weapon().baseDamage().max()
+                            ))
                 .orElse(0);
         var attackerStr = attacker.getStrength();
         var damage = attackerStr / 10 + weaponDamage;
@@ -33,4 +39,5 @@ public class CalculateDamageStep<T extends CalculateDamageContext> implements Fl
         context.addDamage(new DamageComponent(DamageType.PHYSICAL, damage));
         return StepResult.success();
     }
+
 }
