@@ -27,6 +27,7 @@ public class CorpseClothing extends AbstractPacket {
         buf.writeInt(corpse.getSerialId());
 
         for (Entry entry : entries) {
+
             buf.writeByte((entry.layer().getCode() + 1) & 0xFF);
             buf.writeInt(entry.item().getSerialId());
         }

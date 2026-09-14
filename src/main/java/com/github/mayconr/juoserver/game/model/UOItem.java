@@ -115,4 +115,5 @@ public class UOItem extends UOObject<UOItemData> {
     public boolean isOrphan() {
         return currentLocation instanceof OrphanLocation;
     }
+
 }

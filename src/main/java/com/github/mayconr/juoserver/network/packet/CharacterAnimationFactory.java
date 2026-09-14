@@ -13,7 +13,7 @@ public class CharacterAnimationFactory {
         return new CharacterAnimation(
                 attacker,
                 AnimationRepeat.ONCE,
-                attacker.isMounted() ? AnimationType.SWING_SWORD_FROM_HORSE : AnimationType.ATTACK_STANCE_SHORT,
+                attacker.isMounted() ? AnimationType.SWING_SWORD_FROM_HORSE : AnimationType.ATTACK_OVERHAND_WITH_SWORD,
                 animationFrame,
                 AnimationDirection.FORWARD
         );
@@ -23,7 +23,7 @@ public class CharacterAnimationFactory {
         return new CharacterAnimation(
                 attacker,
                 AnimationRepeat.ONCE,
-                attacker.isMounted() ? AnimationType.SWING_SWORD_FROM_HORSE : AnimationType.ATTACK_STANCE_SHORT,
+                attacker.isMounted() ? AnimationType.SWING_SWORD_FROM_HORSE : AnimationType.ATTACK_WITH_SWORD_SIDE,
                 animationFrame,
                 AnimationDirection.FORWARD
         );

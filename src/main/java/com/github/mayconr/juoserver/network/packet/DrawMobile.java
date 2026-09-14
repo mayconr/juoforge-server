@@ -10,6 +10,15 @@ import io.netty.buffer.ByteBuf;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Death Graphics
+ * 0192
+ * 0193
+ * 025F
+ * 0260
+ * 02B6
+ * 02B7
+ */
 public class DrawMobile extends AbstractPacket {
 
     public static final int CODE = (byte) 0x78;

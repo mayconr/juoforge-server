@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 public class UOMobileData extends UOObjectData {
 
-    private int ghostModelId;
+    private int ghostModelId = 402;
     private Direction direction;
     private int hue;
     private CharacterStatus status;
