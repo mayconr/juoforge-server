@@ -26,6 +26,7 @@ public class UOPlayer extends UOMobile {
     @Override
     protected void populateData(UOMobileData data) {
         super.populateData(data);
+        data.setGhostModelId(ghostModelId);
         data.setAccountId(accountId);
         data.setGhostModelId(ghostModelId);
     }

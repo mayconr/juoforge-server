@@ -1,14 +1,13 @@
 package com.github.mayconr.juoserver.game.damage;
 
 import com.github.mayconr.juoserver.game.damage.flow.damage.DamageContext;
-import com.github.mayconr.juoserver.game.model.DamageRequest;
-import com.github.mayconr.juoserver.game.model.DamageSourceKind;
-import com.github.mayconr.juoserver.game.model.LethalDamageEvent;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 public class DamageModuleImpl implements DamageModule {
@@ -33,11 +32,7 @@ public class DamageModuleImpl implements DamageModule {
 
     @Override
     public void kill(UOMobile target, UOMobile source, DamageSourceKind kind) {
-        target.setHitpoints(0);
-        target.setStamina(0);
-        target.setMana(0);
-
-        eventBus.publish(new LethalDamageEvent(source, target, kind));
+        flows.execute(DamageContext.of(source, target, kind, List.of(new DamageComponent(DamageType.PHYSICAL, Integer.MAX_VALUE))));
     }
 
 }

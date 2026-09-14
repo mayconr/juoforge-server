@@ -647,21 +647,28 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onMobileDeath(MobileDeathEvent event) {
         runInEventLoop(()->{
-            if (player.equals(event.target())) {
-                channel.write(new StatusBarInfo(player));
-                channel.write(new DrawMobile(player, world.getEquippedItems(player)));
-                channel.writeAndFlush(new DeathScreen(DeathScreenType.SERVER));
-            } else {
-                channel.write(new DeathAction(event.target(), event.corpse().getSerialId()));
-                channel.write(new ObjectInfo(event.corpse()));
-                List<CorpseClothing.Entry> items = new ArrayList<>();
-                var containerItems = ((Container) event.corpse()).getContainerItems();
-                for (Integer itemSerial : containerItems) {
-                    var item = world.getItemBySerialId(itemSerial).orElseThrow(() -> new RuntimeException("Container item could not be found"));
+            channel.write(new UpdateHealth(event.target()));
+            channel.write(new ObjectInfo(event.corpse()));
+            // Send corpse items
+            final List<CorpseClothing.Entry> items = new ArrayList<>();
+            var containerItems = ((Container) event.corpse()).getContainerItems();
+            for (Integer itemSerial : containerItems) {
+                var item = world.getItemBySerialId(itemSerial)
+                        .orElse(null);
+
+                if (item != null) {
                     items.add(new CorpseClothing.Entry(item.getLayer(), item));
+                    channel.write(new ObjectInfo(item));
                 }
-                channel.writeAndFlush(new CorpseClothing(event.corpse(), items));
             }
+            channel.write(new CorpseClothing(event.corpse(), items));
+            channel.write(new DeathAction(event.target(), event.corpse().getSerialId()));
+
+            if (player.equals(event.target())) {
+                channel.write(new DeathScreen(DeathScreenType.SERVER));
+            }
+
+            channel.flush();
         });
     }
 

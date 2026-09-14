@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BroadcastAttackAnimationStep extends AbstractFlowStep<CombatExecutionContext> {
 
-    private EventBus eventBus;
+    private final EventBus eventBus;
 
     public BroadcastAttackAnimationStep(EventBus eventBus) {
         super("BroadcastAttackAnimationStep");

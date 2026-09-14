@@ -223,6 +223,7 @@ public class CachedRealmStorage implements RealmStorage {
             result.add(mobile);
         }
 
+
         return result;
     }
 
