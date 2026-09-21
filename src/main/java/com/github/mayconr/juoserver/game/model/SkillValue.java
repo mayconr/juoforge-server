@@ -37,7 +37,7 @@ public class SkillValue {
     }
 
     public static SkillValue zero(int skillId) {
-        return new SkillValue(skillId, 0d,0d, SkillLock.UP);
+        return new SkillValue(skillId, 0d,100d, SkillLock.UP); // TODO recuperar cap
     }
 
     public void increase(double amount) {

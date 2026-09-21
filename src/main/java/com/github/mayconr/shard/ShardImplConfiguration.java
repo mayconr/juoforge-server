@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.NetworkBootstrap;
 import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.WorldBootstrap;
+import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.command.*;
 import com.github.mayconr.shard.skills.crafting.mining.*;
@@ -102,6 +103,8 @@ public class ShardImplConfiguration {
                 final var service = new MiningUseService(oreResourceRoller, runtime, new MiningTargetValidator());
                 return new MiningToolTrigger(service);
             });
+
+            cfg.combatSkillGainPolicy(DefaultCombatSkillGainPolicy::new);
 
             // Listeners
             cfg.addEventListener(Goto::new);

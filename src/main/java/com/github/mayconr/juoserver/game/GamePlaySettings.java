@@ -18,7 +18,14 @@ public record GamePlaySettings(
     public record Mobile(String backpackItem) {}
     public record Vitals(int saturationFactor) {}
     public record GameLoop(int tps) {}
-    public record Skills(double minGainChance, double maxGainChance, int balanceOffset, double cap) {}
+    public record Skills(
+            double minGainChance,
+            double maxGainChance,
+            int balanceOffset,
+            double cap,
+            double beginnerGainMultiplier,
+            double beginnerGainThreshold
+    ) {}
 
     public record World(Visibility visibility, Interaction interaction) {}
     public record Visibility(int range) {}

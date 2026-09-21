@@ -1,49 +1,74 @@
 package com.github.mayconr.juoserver.network.packet;
 
-import com.github.mayconr.juoserver.game.model.AnimationDirection;
-import com.github.mayconr.juoserver.game.model.AnimationRepeat;
-import com.github.mayconr.juoserver.game.model.AnimationType;
-import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.model.*;
+
+import java.util.Objects;
 
 public class CharacterAnimationFactory {
     private CharacterAnimationFactory() {
     }
 
-    public static CharacterAnimation wrestling(UOMobile attacker, int animationFrame) {
-        return new CharacterAnimation(
+    public static CharacterAnimation wrestling(
+            UOMobile attacker,
+            int animationFrame
+    ) {
+        return attack(
                 attacker,
-                AnimationRepeat.ONCE,
-                attacker.isMounted() ? AnimationType.SWING_SWORD_FROM_HORSE : AnimationType.ATTACK_OVERHAND_WITH_SWORD,
-                animationFrame,
-                AnimationDirection.FORWARD
+                WeaponStyle.WRESTLING,
+                animationFrame
         );
     }
 
-    public static CharacterAnimation weapon(UOMobile attacker, int animationFrame) {
-        return new CharacterAnimation(
+    public static CharacterAnimation weapon(
+            UOMobile attacker,
+            ItemTemplate.Weapon weapon,
+            int animationFrame
+    ) {
+        Objects.requireNonNull(weapon, "Weapon cannot be null");
+        Objects.requireNonNull(weapon.style(), "Weapon style cannot be null");
+
+        return attack(
                 attacker,
-                AnimationRepeat.ONCE,
-                attacker.isMounted() ? AnimationType.SWING_SWORD_FROM_HORSE : AnimationType.ATTACK_WITH_SWORD_SIDE,
-                animationFrame,
-                AnimationDirection.FORWARD
+                weapon.style(),
+                animationFrame
         );
     }
 
-    public static CharacterAnimation ranged(UOMobile attacker, int animationFrame) {
-        return new CharacterAnimation(
+    public static CharacterAnimation spell(
+            UOMobile attacker,
+            int animationFrame
+    ) {
+        return create(
                 attacker,
-                AnimationRepeat.ONCE,
-                attacker.isMounted() ? AnimationType.NORMAL_BOW_SHOT_ON_HORSE : AnimationType.BOW_SHOT,
-                animationFrame,
-                AnimationDirection.FORWARD
+                AnimationType.CAST_DIRECTED,
+                animationFrame
         );
     }
 
-    public static CharacterAnimation spell(UOMobile attacker, int animationFrame) {
-        return new CharacterAnimation(
+    private static CharacterAnimation attack(
+            UOMobile attacker,
+            WeaponStyle style,
+            int animationFrame
+    ) {
+        AnimationType animation = style.animationFor(attacker.isMounted());
+
+        return create(
                 attacker,
+                animation,
+                animationFrame
+        );
+    }
+
+    private static CharacterAnimation create(
+            UOMobile mobile,
+            AnimationType animation,
+            int animationFrame
+    ) {
+        return new CharacterAnimation(
+                mobile,
                 AnimationRepeat.ONCE,
-                attacker.isMounted() ? AnimationType.NORMAL_BOW_SHOT_ON_HORSE : AnimationType.MAGIC_BUTTER_CHUM,
+                animation,
                 animationFrame,
                 AnimationDirection.FORWARD
         );

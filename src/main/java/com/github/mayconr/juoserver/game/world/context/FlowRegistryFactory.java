@@ -1,6 +1,11 @@
 package com.github.mayconr.juoserver.game.world.context;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
+import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
+import com.github.mayconr.juoserver.game.skill.SkillModule;
+import com.github.mayconr.juoserver.infrastructure.rng.RNG;
+import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIDefinition;
@@ -78,7 +83,8 @@ public class FlowRegistryFactory {
             AIModule ai,
             MessageModule message,
             NpcModule npc,
-            DamageModule damage
+            DamageModule damage,
+            SkillModule skill
     ) {}
 
     @Builder
@@ -87,8 +93,16 @@ public class FlowRegistryFactory {
             RealmStorage storage,
             SerialGenerator serialGenerator,
             GamePlaySettings settings,
-            UOFileReader fileReader
-    ) {}
+            UOFileReader fileReader,
+            RNG rng,
+            CombatSkillGainPolicy combatSkillGainPolicy
+    ) {
+        public GameInfra {
+            rng = rng == null ? new DefaultRNG() : rng;
+            combatSkillGainPolicy = combatSkillGainPolicy == null
+                    ? new DefaultCombatSkillGainPolicy() : combatSkillGainPolicy;
+        }
+    }
 
     @Builder
     public record GameTemplates(

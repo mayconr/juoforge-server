@@ -263,6 +263,9 @@ public class NettyPlayerSession implements PlayerSession {
         if (!shouldReceiveUpdate(mobile)) {
             return;
         }
+        if (!mobile.isAlive()) {
+            return;
+        }
         runInEventLoop(() -> channel.writeAndFlush(new DrawMobile(mobile, world.getEquippedItems(mobile))));
     }
 
@@ -647,11 +650,14 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onMobileDeath(MobileDeathEvent event) {
         runInEventLoop(()->{
-            channel.write(new UpdateHealth(event.target()));
-            channel.write(new ObjectInfo(event.corpse()));
+            final var corpse = event.corpse();
+            final var target = event.target();
+
+            channel.write(new UpdateHealth(target));
+            channel.write(new ObjectInfo(corpse));
             // Send corpse items
             final List<CorpseClothing.Entry> items = new ArrayList<>();
-            var containerItems = ((Container) event.corpse()).getContainerItems();
+            var containerItems = ((Container) corpse).getContainerItems();
             for (Integer itemSerial : containerItems) {
                 var item = world.getItemBySerialId(itemSerial)
                         .orElse(null);
@@ -661,13 +667,12 @@ public class NettyPlayerSession implements PlayerSession {
                     channel.write(new ObjectInfo(item));
                 }
             }
-            channel.write(new CorpseClothing(event.corpse(), items));
-            channel.write(new DeathAction(event.target(), event.corpse().getSerialId()));
+            channel.write(new CorpseClothing(corpse, items));
+            channel.write(new DeathAction(target, corpse.getSerialId()));
 
-            if (player.equals(event.target())) {
+            if (player.equals(target)) {
                 channel.write(new DeathScreen(DeathScreenType.SERVER));
             }
-
             channel.flush();
         });
     }
@@ -700,14 +705,15 @@ public class NettyPlayerSession implements PlayerSession {
             int hitFrame = event.hitFrame();
             int animationFrame = hitFrame * 2;
 
-            switch (event.combatType()) {
-
-                case WRESTLING -> channel.write(CharacterAnimationFactory.wrestling(attacker, animationFrame));
-                case MELEE -> channel.write(CharacterAnimationFactory.weapon(attacker, animationFrame));
-
-                case RANGED -> {
-                    channel.write(CharacterAnimationFactory.ranged(attacker, animationFrame));
-
+            switch (event.type()) {
+                case CombatOccurring.MeleeType meleeType -> {
+                    channel.write(CharacterAnimationFactory.weapon(attacker, meleeType.weaponItem().getTemplate().weapon(), animationFrame));
+                }
+                case CombatOccurring.WrestlingType wrestlingType -> {
+                    channel.write(CharacterAnimationFactory.wrestling(attacker, animationFrame));
+                }
+                case CombatOccurring.RangedType rangedType -> {
+                    channel.write(CharacterAnimationFactory.weapon(attacker, rangedType.weaponItem().getTemplate().weapon(), animationFrame));
                     channel.write(new GraphicalEffectPacket(
                             EffectType.MOVING,
                             0x1BFE,
@@ -719,13 +725,8 @@ public class NettyPlayerSession implements PlayerSession {
                             false
                     ));
                 }
-
-                case SPELL -> throw new IllegalStateException("Spell not supported ");
-
-                default -> throw new IllegalStateException(
-                        "Unsupported combat type: " + event.combatType());
+                case CombatOccurring.SpellType spellType -> throw new IllegalStateException("Spell not supported ");
             }
-
             channel.flush();
         });
     }
