@@ -32,7 +32,7 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
             if (log.isDebugEnabled()) {
                 log.info("No equipped Items found");
             }
-            context.setWeaponStyle(WeaponStyle.NONE);
+            context.setWeaponStyle(WeaponStyle.WRESTLING);
             return StepResult.success();
         }
         final var weaponSerial = Optional.ofNullable(equippedItems.get(Layer.ONE_HANDED))

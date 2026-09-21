@@ -48,7 +48,6 @@ import com.github.mayconr.juoserver.game.player.PlayerVitalsHandler;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
-import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillHandler;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
 import com.github.mayconr.juoserver.game.skill.SkillModuleImpl;
@@ -238,7 +237,8 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeSkillModule() {
-        final var skillSystem = new DefaultSkillSystem(settings, rng, eventBus);
+        final var skillSystem = Objects.requireNonNull(
+                worldCfg.skillSystem().create(settings, rng, eventBus), "Skill system factory returned null");
         final var skillHandler = new SkillHandler(eventBus);
 
         this.skillModule = new SkillModuleImpl(skillHandler, skillSystem);
@@ -300,6 +300,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .mobile(mobileModule)
                     .item(itemModule)
                     .damage(damageModule)
+                    .skill(skillModule)
                     .build())
                 .infra(GameInfra.builder()
                     .serialGenerator(serialGenerator)
@@ -307,6 +308,9 @@ public class DefaultWorld implements WorldInternal, World {
                     .storage(storage)
                     .settings(settings)
                     .fileReader(fileReader)
+                    .rng(rng)
+                    .combatSkillGainPolicy(Objects.requireNonNull(
+                            worldCfg.combatSkillGainPolicy().get(), "Combat skill gain policy factory returned null"))
                     .build())
                 .templates(GameTemplates.builder()
                     .itemByModelId(itemTemplateByModelId)

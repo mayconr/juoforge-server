@@ -64,15 +64,25 @@ public class DefaultSkillSystem implements SkillSystem {
         double difficultyFactor = difficulty / cap;
         difficultyFactor = Math.clamp(difficultyFactor, 0.5, 1.5);
 
-        return baseGain * capFactor * difficultyFactor;
+        // Multipliers <= 1 or a non-positive threshold disable the beginner bonus.
+        final double beginnerGainMultiplier = settings.skills().beginnerGainMultiplier();
+        final double beginnerGainThreshold = settings.skills().beginnerGainThreshold();
+        double beginnerFactor = 1.0;
+        if (beginnerGainMultiplier > 1.0 && beginnerGainThreshold > 0.0) {
+            beginnerFactor += (beginnerGainMultiplier - 1.0)
+                    * Math.clamp(1.0 - current / beginnerGainThreshold, 0.0, 1.0);
+        }
+
+        return baseGain * capFactor * difficultyFactor * beginnerFactor;
     }
 
     private void applyGain(UOMobile mobile, SkillValue skill, double amount) {
-        double currentBase = skill.getBase();
+        int previousClientBase = (int) (skill.getBase() * 10);
 
         skill.increase(amount);
 
-        if (skill.getBase() - 0.1 > currentBase) {
+        // Preserve fractional gains; notify only when the client-visible tenth increases.
+        if ((int) (skill.getBase() * 10) > previousClientBase) {
             eventBus.publish(new SkillGained(mobile, skill));
         }
     }

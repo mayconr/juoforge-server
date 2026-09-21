@@ -56,7 +56,7 @@
     "modelId": 5118,
     "flags": ["WEARABLE","WEAPON"],
     "weapon": {
-      "style" : "MELEE",
+      "style" : "KATANA",
       "baseDamage" : {
         "min": 10,
         "max" : 15
@@ -71,7 +71,22 @@
     "modelId": 3919,
     "flags": ["WEARABLE","WEAPON"],
     "weapon": {
-      "style" : "RANGED",
+      "style" : "CROSSBOW",
+      "baseDamage" : {
+        "min": 10,
+        "max" : 15
+      },
+      "radius": 8
+    }
+  },
+  {
+    "name": "bow",
+    "displayName": "a Bow",
+    "layer": "ONE_HANDED",
+    "modelId": 5041,
+    "flags": ["WEARABLE","WEAPON"],
+    "weapon": {
+      "style" : "BOW",
       "baseDamage" : {
         "min": 10,
         "max" : 15
@@ -84,7 +99,15 @@
     "displayName": "a Black Staff",
     "layer": "TWO_HANDED",
     "modelId": 3568,
-    "flags": ["WEARABLE","WEAPON"]
+    "flags": ["WEARABLE","WEAPON"],
+    "weapon": {
+      "style" : "STAFF",
+      "baseDamage" : {
+        "min": 10,
+        "max" : 15
+      },
+      "radius": 2
+    }
   },
   {
     "name": "hat",

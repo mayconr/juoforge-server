@@ -11,7 +11,12 @@
       "minGainChance" : 0.0,
       "maxGainChance" : 0.50,
       "balanceOffset" : 50.0,
-      "cap" : 50
+      "cap" : 50,
+      // Multiplicador inicial da quantidade ganha: 3.0 significa 3x na skill 0; valores <= 1 desativam o bonus.
+      "beginnerGainMultiplier" : 3.0,
+      // Skill em que o bonus termina: diminui linearmente ate 1x na skill 30; 0 desativa.
+      // Afeta a quantidade de ganho, sem alterar a chance do sorteio.
+      "beginnerGainThreshold" : 30.0
     },
     "mobile" : {
       "backpackItem" : "backpack"

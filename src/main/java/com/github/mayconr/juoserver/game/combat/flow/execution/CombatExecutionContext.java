@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.combat.flow.execution;
 
 import com.github.mayconr.juoserver.game.combat.CombatSession;
+import com.github.mayconr.juoserver.game.combat.CombatHitResult;
 import com.github.mayconr.juoserver.game.damage.shared.CalculateDamageContext;
 import com.github.mayconr.juoserver.game.model.DamageComponent;
 import com.github.mayconr.juoserver.game.model.UOItem;
@@ -34,6 +35,8 @@ public class CombatExecutionContext extends AbstractAsyncFlowContext<Void>
 
     private UOItem weapon;
     private WeaponStyle weaponStyle;
+    private WeaponStyle defenderWeaponStyle;
+    private CombatHitResult hitResult;
 
     @Override
     public void addDamage(DamageComponent damage) {

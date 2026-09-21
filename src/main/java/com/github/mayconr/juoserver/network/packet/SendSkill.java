@@ -61,12 +61,12 @@ public class SendSkill extends AbstractPacket {
 
         for (SkillValue skill : skills) {
             buf.writeShort(skill.getSkillId());
-            buf.writeShort((int) skill.getValue() * 10);
-            buf.writeShort((int) skill.getBase() * 10);
+            buf.writeShort((int) (skill.getValue() * 10));
+            buf.writeShort((int) (skill.getBase() * 10));
             buf.writeByte(skill.getLock().getCode());
 
             if (rawType == 0x02 || (rawType & 0xFF) == 0xDF) {
-                buf.writeShort((int) skill.getCap() * 10);
+                buf.writeShort((int) (skill.getCap() * 10));
             }
         }
 

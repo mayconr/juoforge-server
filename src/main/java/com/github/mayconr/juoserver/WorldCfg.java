@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
+import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
+import com.github.mayconr.juoserver.game.skill.SkillSystemFactory;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.World;
@@ -16,6 +18,16 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface WorldCfg {
+
+    /** Replaces the default weapon-skill and Tactics gain policy for combat swings. */
+    void combatSkillGainPolicy(Supplier<CombatSkillGainPolicy> factory);
+
+    Supplier<CombatSkillGainPolicy> combatSkillGainPolicy();
+
+    /** Replaces the skill system used for all skill gain attempts in this world. */
+    void skillSystem(SkillSystemFactory factory);
+
+    SkillSystemFactory skillSystem();
 
     // ===== Economy =====
     void wallet(Function<World, Wallet> walletFactory);

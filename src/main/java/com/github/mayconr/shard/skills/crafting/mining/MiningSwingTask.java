@@ -35,9 +35,9 @@ public class MiningSwingTask implements GameTask {
 
         AnimationOptions options;
         if (player.isMounted()) {
-            options = AnimationOptions.simpleForward(AnimationType.SWING_SWORD_FROM_HORSE, 20);
+            options = AnimationOptions.simpleForward(AnimationType.MOUNTED_ATTACK_MELEE, 20);
         } else {
-            options = AnimationOptions.simpleForward(AnimationType.ATTACK_WITH_SWORD_SIDE, 20);
+            options = AnimationOptions.simpleForward(AnimationType.ATTACK_ONE_HANDED_WIDE, 20);
         }
         world.sendAnimation(player, options);
         world.tryGainSkill(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
