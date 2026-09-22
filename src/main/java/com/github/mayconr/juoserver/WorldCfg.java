@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.skill.SkillSystemFactory;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.spell.trigger.SpellCastTrigger;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
@@ -37,6 +38,9 @@ public interface WorldCfg {
     // Item use trigger
     void addItemTrigger(Function<ServerRuntime, ItemUseTrigger> triggerFactory);
 
+    /** Registers a spell trigger factory. The first supporting trigger handles each request. */
+    void addSpellTrigger(Function<ServerRuntime, SpellCastTrigger> triggerFactory);
+
     // Events
     <T extends GameEvent> void addEventListener(Function<ServerRuntime, EventRegistry<T>> registry);
 
@@ -56,6 +60,8 @@ public interface WorldCfg {
     Supplier<PricingStrategy> pricingStrategy();
 
     List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList();
+
+    List<Function<ServerRuntime, SpellCastTrigger>> spellTriggerList();
 
     List<Function<ServerRuntime, EventRegistry<GameEvent>>> eventListenerList();
 

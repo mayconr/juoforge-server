@@ -1,0 +1,1077 @@
+[
+    {
+        "key":  "magery:clumsy",
+        "clientSpellId":  1,
+        "name":  "Clumsy",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7000,
+                         "powerWords":  "Uus Jux",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:create_food",
+        "clientSpellId":  2,
+        "name":  "Create Food",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7001,
+                         "powerWords":  "In Mani Ylem",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Ginseng",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:feeblemind",
+        "clientSpellId":  3,
+        "name":  "Feeblemind",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7002,
+                         "powerWords":  "Rel Wis",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Nightshade",
+                                          "Ginseng"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:heal",
+        "clientSpellId":  4,
+        "name":  "Heal",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7003,
+                         "powerWords":  "In Mani",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Ginseng",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:magic_arrow",
+        "clientSpellId":  5,
+        "name":  "Magic Arrow",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7004,
+                         "powerWords":  "In Por Ylem",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:night_sight",
+        "clientSpellId":  6,
+        "name":  "Night Sight",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7005,
+                         "powerWords":  "In Lor",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:reactive_armor",
+        "clientSpellId":  7,
+        "name":  "Reactive Armor",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7006,
+                         "powerWords":  "Flam Sanct",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:weaken",
+        "clientSpellId":  8,
+        "name":  "Weaken",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  1,
+                         "iconId":  7007,
+                         "powerWords":  "Des Mani",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:agility",
+        "clientSpellId":  9,
+        "name":  "Agility",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7008,
+                         "powerWords":  "Ex Uus",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:cunning",
+        "clientSpellId":  10,
+        "name":  "Cunning",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7009,
+                         "powerWords":  "Uus Wis",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Nightshade",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:cure",
+        "clientSpellId":  11,
+        "name":  "Cure",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7010,
+                         "powerWords":  "An Nox",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Ginseng"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:harm",
+        "clientSpellId":  12,
+        "name":  "Harm",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7011,
+                         "powerWords":  "An Mani",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Nightshade",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:magic_trap",
+        "clientSpellId":  13,
+        "name":  "Magic Trap",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7012,
+                         "powerWords":  "In Jux",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Garlic",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:magic_untrap",
+        "clientSpellId":  14,
+        "name":  "Magic Untrap",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7013,
+                         "powerWords":  "An Jux",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:protection",
+        "clientSpellId":  15,
+        "name":  "Protection",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7014,
+                         "powerWords":  "Uus Sanct",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Ginseng",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:strength",
+        "clientSpellId":  16,
+        "name":  "Strength",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  2,
+                         "iconId":  7015,
+                         "powerWords":  "Uus Mani",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "MandrakeRoot",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:bless",
+        "clientSpellId":  17,
+        "name":  "Bless",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7016,
+                         "powerWords":  "Rel Sanct",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:fireball",
+        "clientSpellId":  18,
+        "name":  "Fireball",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7017,
+                         "powerWords":  "Vas Flam",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "BlackPearl"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:magic_lock",
+        "clientSpellId":  19,
+        "name":  "Magic Lock",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7018,
+                         "powerWords":  "An Por",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "Garlic",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:poison",
+        "clientSpellId":  20,
+        "name":  "Poison",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7019,
+                         "powerWords":  "In Nox",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:telekinesis",
+        "clientSpellId":  21,
+        "name":  "Telekinesis",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7020,
+                         "powerWords":  "Ort Por Ylem",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:teleport",
+        "clientSpellId":  22,
+        "name":  "Teleport",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7021,
+                         "powerWords":  "Rel Por",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:unlock",
+        "clientSpellId":  23,
+        "name":  "Unlock",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7022,
+                         "powerWords":  "Ex Por",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:wall_of_stone",
+        "clientSpellId":  24,
+        "name":  "Wall of Stone",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  3,
+                         "iconId":  7023,
+                         "powerWords":  "In Sanct Ylem",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "Garlic"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:arch_cure",
+        "clientSpellId":  25,
+        "name":  "Arch Cure",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7024,
+                         "powerWords":  "Vas An Nox",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Ginseng",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:arch_protection",
+        "clientSpellId":  26,
+        "name":  "Arch Protection",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7025,
+                         "powerWords":  "Vas Uus Sanct",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Ginseng",
+                                          "MandrakeRoot",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:curse",
+        "clientSpellId":  27,
+        "name":  "Curse",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7026,
+                         "powerWords":  "Des Sanct",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Nightshade",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:fire_field",
+        "clientSpellId":  28,
+        "name":  "Fire Field",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7027,
+                         "powerWords":  "In Flam Grav",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:greater_heal",
+        "clientSpellId":  29,
+        "name":  "Greater Heal",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7028,
+                         "powerWords":  "In Vas Mani",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "Ginseng",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:lightning",
+        "clientSpellId":  30,
+        "name":  "Lightning",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7029,
+                         "powerWords":  "Por Ort Grav",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "MandrakeRoot",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:mana_drain",
+        "clientSpellId":  31,
+        "name":  "Mana Drain",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7030,
+                         "powerWords":  "Ort Rel",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:recall",
+        "clientSpellId":  32,
+        "name":  "Recall",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  4,
+                         "iconId":  7031,
+                         "powerWords":  "Kal Ort Por",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Bloodmoss",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:blade_spirits",
+        "clientSpellId":  33,
+        "name":  "Blade Spirits",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7032,
+                         "powerWords":  "In Jux Hur Ylem",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "MandrakeRoot",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:dispel_field",
+        "clientSpellId":  34,
+        "name":  "Dispel Field",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7033,
+                         "powerWords":  "An Grav",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Garlic",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:incognito",
+        "clientSpellId":  35,
+        "name":  "Incognito",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7034,
+                         "powerWords":  "Kal In Ex",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "Garlic",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:magic_reflection",
+        "clientSpellId":  36,
+        "name":  "Magic Reflection",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7035,
+                         "powerWords":  "In Jux Sanct",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Garlic",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:mind_blast",
+        "clientSpellId":  37,
+        "name":  "Mind Blast",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7036,
+                         "powerWords":  "Por Corp Wis",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "MandrakeRoot",
+                                          "Nightshade",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:paralyze",
+        "clientSpellId":  38,
+        "name":  "Paralyze",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7037,
+                         "powerWords":  "An Ex Por",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Garlic",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:poison_field",
+        "clientSpellId":  39,
+        "name":  "Poison Field",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7038,
+                         "powerWords":  "In Nox Grav",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Nightshade",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:summon_creature",
+        "clientSpellId":  40,
+        "name":  "Summon Creature",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  5,
+                         "iconId":  7039,
+                         "powerWords":  "Kal Xen",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:dispel",
+        "clientSpellId":  41,
+        "name":  "Dispel",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7040,
+                         "powerWords":  "An Ort",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Garlic",
+                                          "MandrakeRoot",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:energy_bolt",
+        "clientSpellId":  42,
+        "name":  "Energy Bolt",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7041,
+                         "powerWords":  "Corp Por",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:explosion",
+        "clientSpellId":  43,
+        "name":  "Explosion",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7042,
+                         "powerWords":  "Vas Ort Flam",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:invisibility",
+        "clientSpellId":  44,
+        "name":  "Invisibility",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7043,
+                         "powerWords":  "An Lor Xen",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:mark",
+        "clientSpellId":  45,
+        "name":  "Mark",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7044,
+                         "powerWords":  "Kal Por Ylem",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Bloodmoss",
+                                          "MandrakeRoot"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:mass_curse",
+        "clientSpellId":  46,
+        "name":  "Mass Curse",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7045,
+                         "powerWords":  "Vas Des Sanct",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Garlic",
+                                          "MandrakeRoot",
+                                          "Nightshade",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:paralyze_field",
+        "clientSpellId":  47,
+        "name":  "Paralyze Field",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7046,
+                         "powerWords":  "In Ex Grav",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Ginseng",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:reveal",
+        "clientSpellId":  48,
+        "name":  "Reveal",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  6,
+                         "iconId":  7047,
+                         "powerWords":  "Wis Quas",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:chain_lightning",
+        "clientSpellId":  49,
+        "name":  "Chain Lightning",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7048,
+                         "powerWords":  "Vas Ort Grav",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:energy_field",
+        "clientSpellId":  50,
+        "name":  "Energy Field",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7049,
+                         "powerWords":  "In Sanct Grav",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "MandrakeRoot",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:flamestrike",
+        "clientSpellId":  51,
+        "name":  "Flamestrike",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7050,
+                         "powerWords":  "Kal Vas Flam",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:gate_travel",
+        "clientSpellId":  52,
+        "name":  "Gate Travel",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7051,
+                         "powerWords":  "Vas Rel Por",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "MandrakeRoot",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:mana_vampire",
+        "clientSpellId":  53,
+        "name":  "Mana Vampire",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7052,
+                         "powerWords":  "Ort Sanct",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:mass_dispel",
+        "clientSpellId":  54,
+        "name":  "Mass Dispel",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7053,
+                         "powerWords":  "Vas An Ort",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Garlic",
+                                          "MandrakeRoot",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:meteor_swarm",
+        "clientSpellId":  55,
+        "name":  "Meteor Swarm",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7054,
+                         "powerWords":  "Flam Kal Des Ylem",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:polymorph",
+        "clientSpellId":  56,
+        "name":  "Polymorph",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  7,
+                         "iconId":  7055,
+                         "powerWords":  "Vas Ylem Rel",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:earthquake",
+        "clientSpellId":  57,
+        "name":  "Earthquake",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7056,
+                         "powerWords":  "In Vas Por",
+                         "targetType":  "Harmful",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "Ginseng",
+                                          "MandrakeRoot",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:energy_vortex",
+        "clientSpellId":  58,
+        "name":  "Energy Vortex",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7057,
+                         "powerWords":  "Vas Corp Por",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "BlackPearl",
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "Nightshade"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:resurrection",
+        "clientSpellId":  59,
+        "name":  "Resurrection",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7058,
+                         "powerWords":  "An Corp",
+                         "targetType":  "Beneficial",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "Ginseng",
+                                          "Garlic"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:air_elemental",
+        "clientSpellId":  60,
+        "name":  "Air Elemental",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7059,
+                         "powerWords":  "Kal Vas Xen Hur",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:summon_daemon",
+        "clientSpellId":  61,
+        "name":  "Summon Daemon",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7060,
+                         "powerWords":  "Kal Vas Xen Corp",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:earth_elemental",
+        "clientSpellId":  62,
+        "name":  "Earth Elemental",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7061,
+                         "powerWords":  "Kal Vas Xen Ylem",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:fire_elemental",
+        "clientSpellId":  63,
+        "name":  "Fire Elemental",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7062,
+                         "powerWords":  "Kal Vas Xen Flam",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk",
+                                          "SulfurousAsh"
+                                      ]
+                     }
+    },
+    {
+        "key":  "magery:water_elemental",
+        "clientSpellId":  64,
+        "name":  "Water Elemental",
+        "metadata":  {
+                         "school":  "magery",
+                         "circle":  8,
+                         "iconId":  7063,
+                         "powerWords":  "Kal Vas Xen An Flam",
+                         "targetType":  "Neutral",
+                         "reagents":  [
+                                          "Bloodmoss",
+                                          "MandrakeRoot",
+                                          "SpidersSilk"
+                                      ]
+                     }
+    }
+]

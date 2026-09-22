@@ -8,6 +8,7 @@ import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGa
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.command.*;
 import com.github.mayconr.shard.skills.crafting.mining.*;
+import com.github.mayconr.shard.spells.HealSpellTrigger;
 import com.github.mayconr.shard.storage.PsqlAccountStorage;
 import com.github.mayconr.shard.storage.PsqlItemStorage;
 import com.github.mayconr.shard.storage.PsqlMobileStorage;
@@ -104,7 +105,11 @@ public class ShardImplConfiguration {
                 return new MiningToolTrigger(service);
             });
 
+            // Combat
             cfg.combatSkillGainPolicy(DefaultCombatSkillGainPolicy::new);
+
+            // Spell
+            cfg.addSpellTrigger(runtime->new HealSpellTrigger(runtime.world()));
 
             // Listeners
             cfg.addEventListener(Goto::new);
@@ -117,6 +122,7 @@ public class ShardImplConfiguration {
             cfg.addEventListener(runtime->new CreateEquippedItem(runtime.world()));
             cfg.addEventListener(runtime -> new Info(runtime.world()));
             cfg.addEventListener(runtime->new MoveTo(runtime.world()));
+            cfg.addEventListener(runtime->new Debug(runtime.world()));
             cfg.addEventListener(Mount::new);
             cfg.addEventListener(Unmount::new);
             cfg.addEventListener(Region::new);

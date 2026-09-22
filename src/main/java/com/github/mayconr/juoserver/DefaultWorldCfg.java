@@ -7,6 +7,7 @@ import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillSystemFactory;
 import com.github.mayconr.juoserver.game.economy.ScarcityBasedPricingStrategy;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.spell.trigger.SpellCastTrigger;
 import com.github.mayconr.juoserver.game.wallet.PhisycalGoldWallet;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.World;
@@ -59,6 +60,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     // ===== Item trigger ====
     private final List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList = new ArrayList<>();
+    private final List<Function<ServerRuntime, SpellCastTrigger>> spellTriggerList = new ArrayList<>();
 
     // Event listener
     private final List<Function<ServerRuntime, EventRegistry<GameEvent>>> eventListenerList = new ArrayList<>();
@@ -88,6 +90,16 @@ public class DefaultWorldCfg implements WorldCfg {
     @Override
     public void addItemTrigger(Function<ServerRuntime, ItemUseTrigger> triggerFactory) {
         itemTriggerList.add(triggerFactory);
+    }
+
+    @Override
+    public void addSpellTrigger(Function<ServerRuntime, SpellCastTrigger> triggerFactory) {
+        spellTriggerList.add(java.util.Objects.requireNonNull(triggerFactory, "Spell trigger factory is required"));
+    }
+
+    @Override
+    public List<Function<ServerRuntime, SpellCastTrigger>> spellTriggerList() {
+        return List.copyOf(spellTriggerList);
     }
 
     @Override

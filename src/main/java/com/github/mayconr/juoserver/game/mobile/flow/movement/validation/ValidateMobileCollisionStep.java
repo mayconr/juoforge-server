@@ -22,10 +22,11 @@ public class ValidateMobileCollisionStep extends AbstractFlowStep<MovementContex
             return StepResult.success();
         }
 
-        var mobiles = storage.getMobilesAtLocation(context.getTargetLocation());
+        var mobiles = storage.getMobilesAtLocation(context.getTargetLocation(), true);
         if (mobiles.isEmpty()) {
             return StepResult.success();
         }
+
         return StepResult.failure("There are mobiles at target location");
     }
 }

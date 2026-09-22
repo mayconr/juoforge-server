@@ -5,6 +5,7 @@ import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 
 import java.util.List;
@@ -14,6 +15,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public interface WorldView {
+
+    /** Resolves an optional client ID mapping; custom spells may have no client ID. */
+    Optional<SpellTemplate> getSpellByClientId(int clientSpellId);
 
     Optional<UOMobile> getMobileBySerialId(int serial);
 

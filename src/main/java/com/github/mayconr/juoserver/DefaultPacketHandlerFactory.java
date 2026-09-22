@@ -18,7 +18,7 @@ public class DefaultPacketHandlerFactory {
                 new DoubleClickHandler(world),
                 new UnicodeSpeachRequestHandler(world),
                 new TooltipRequestHandler(world),
-                new GeneralInformationHandler(),
+                new GeneralInformationHandler(world),
                 new SingleClickHandler(world),
                 new ItemUnequippedHandler(world),
                 new DropItemHandler(world),

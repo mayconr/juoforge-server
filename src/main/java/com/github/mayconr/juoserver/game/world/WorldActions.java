@@ -14,6 +14,9 @@ import java.util.function.Consumer;
 
 public interface WorldActions {
 
+    /** Resolves a spell cast request by key and dispatches it to the first supporting shard trigger. */
+    void castSpell(UOMobile caster, String spellKey);
+
     // =========================
     // Entity creation / removal
     // =========================

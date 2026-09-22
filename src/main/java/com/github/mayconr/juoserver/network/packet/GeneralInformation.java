@@ -13,17 +13,19 @@ public class GeneralInformation extends AbstractPacket {
 
     public static final int CODE = (byte)0xBF;
     private final ExtendedCommand command;
+    private final int subCommand;
 
     public GeneralInformation(ByteBuf buffer) {
         super(CODE, extractLength(buffer));
         int length = getLength();
-        int subCommand = buffer.readUnsignedShort();
+        this.subCommand = buffer.readUnsignedShort();
 
         this.command = switch (subCommand) {
             case ClientVersionExtendedCommand.SUB_COMMAND -> new ClientVersionExtendedCommand(buffer, getLength());
             case LanguageExtendedCommand.SUB_COMMAND -> new LanguageExtendedCommand(buffer);
             case ScreenSizeExtendedCommand.SUB_COMMAND -> new ScreenSizeExtendedCommand(buffer);
             case SpellSelectionExtendedCommand.SUB_COMMAND -> new SpellSelectionExtendedCommand(buffer);
+            case CloseStatusExtendedCommand.SUB_COMMAND -> new CloseStatusExtendedCommand(buffer);
 
             default -> {
                 String hex = HexFormat.of().toHexDigits(subCommand);
@@ -31,8 +33,6 @@ public class GeneralInformation extends AbstractPacket {
                 yield new UnknownExtendedCommand(buffer, length);
             }
         };
-
-        System.out.println(command);
     }
 
     private static int extractLength(ByteBuf buf) {

@@ -4,6 +4,10 @@ import com.github.mayconr.juoforge.reader.view.LandTile;
 import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.WorldCfg;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.spell.SpellModule;
+import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
+import com.github.mayconr.juoserver.game.spell.SpellModuleImpl;
+import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
 import com.github.mayconr.juoserver.game.ai.AIEngineImpl;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.ai.AIModuleImpl;
@@ -101,6 +105,7 @@ public class DefaultWorld implements WorldInternal, World {
     private AIModule aiModule;
     private UIModule uiModule;
     private SkillModule skillModule;
+    private SpellModule spellModule;
     private ItemModule itemModule;
     private PlayerModule playerModule;
     private CombatModule combatModule;
@@ -123,6 +128,7 @@ public class DefaultWorld implements WorldInternal, World {
     private final UOFileReaderImpl fileReader;
     private final PolicyService policyService;
     private final ItemUseService itemUseService;
+    private final SpellCastRegistry spellCastRegistry;
     private final RNG rng;
 
     /*
@@ -138,6 +144,7 @@ public class DefaultWorld implements WorldInternal, World {
     private final TemplateRegistry<Integer, StartKitTemplate> startKitTemplateBySkillId;
     private final TemplateRegistry<String, MountTemplate> mountTemplateByNpcName;
     private final TemplateRegistry<String, MountTemplate> mountTemplateByItemName;
+    private final TemplateRegistry<String, SpellTemplate> spellTemplateByKey;
     /*
      * ==========
      * Properties
@@ -159,6 +166,7 @@ public class DefaultWorld implements WorldInternal, World {
         initializeAiModule();
         initializeUiModule();
         initializeSkillModule();
+        this.spellModule = new SpellModuleImpl(spellTemplateByKey, spellCastRegistry);
         initializeItemModule();
         initializePlayerModule();
         initializeCombatModule();
@@ -177,6 +185,7 @@ public class DefaultWorld implements WorldInternal, World {
         playerModule.update(delta);
         mobileModule.update(delta);
         combatModule.update(delta);
+        spellModule.update(delta);
     }
 
     /*
@@ -340,6 +349,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.aiModule.initialize(context);
         this.interactionModule.initialize(context);
         this.skillModule.initialize(context);
+        this.spellModule.initialize(context);
         this.combatModule.initialize(context);
     }
 
@@ -775,6 +785,16 @@ public class DefaultWorld implements WorldInternal, World {
     @Override
     public void useSkill(UOPlayer player, int skillId) {
         skillModule.useSkill(player, skillId);
+    }
+
+    @Override
+    public void castSpell(UOMobile caster, String spellKey) {
+        spellModule.castSpell(caster, spellKey);
+    }
+
+    @Override
+    public Optional<SpellTemplate> getSpellByClientId(int clientSpellId) {
+        return spellModule.getSpellByClientId(clientSpellId);
     }
 
     @Override

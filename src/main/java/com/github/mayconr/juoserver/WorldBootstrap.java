@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.DefaultWorldCfg.TemplateData;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
+import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
 import com.github.mayconr.juoserver.game.item.template.CachedItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
@@ -45,6 +47,7 @@ import java.util.Map;
 public final class WorldBootstrap {
 
     public static final String GAMEPLAY_CONFIG = "GAMEPLAY_CONFIG_BY_NAME";
+    public static final String SPELL_TEMPLATE_BY_KEY = "SPELL_TEMPLATE_BY_KEY";
     public static final String NPC_BY_NAME = "NPC_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_NAME = "ITEM_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_MODEL_ID = "ITEM_TEMPLATE_BY_MODEL_ID";
@@ -60,6 +63,7 @@ public final class WorldBootstrap {
 
         configuration.addCustomTemplate(GAMEPLAY_CONFIG, GamePlaySettings.class, GamePlaySettings::name, Path.of("template/config/gameplay.json"));
         configuration.addCustomTemplate(NPC_BY_NAME, NpcTemplate.class, NpcTemplate::name, Path.of("template/npcs"));
+        configuration.addCustomTemplate(SPELL_TEMPLATE_BY_KEY, SpellTemplate.class, SpellTemplate::key, Path.of("template/spells/spells.json"));
 
         final var itemsPath = Path.of("template/items");
         configuration.addCustomTemplate(ITEM_TEMPLATE_BY_NAME, ItemTemplate.class, ItemTemplate::name, itemsPath);
@@ -95,6 +99,7 @@ public final class WorldBootstrap {
         // --- Item use
         ItemUseRegistry itemUseRegistry = new ItemUseRegistry();
         ItemUseService itemUseService = new ItemUseService(itemUseRegistry);
+        SpellCastRegistry spellCastRegistry = new SpellCastRegistry();
 
         // --- Templates
 
@@ -108,6 +113,7 @@ public final class WorldBootstrap {
         final TemplateRegistry<Integer, StartKitTemplate> startKitTemplateBySkillId = registryMap.get(START_KIT_TEMPLATE_BY_SKILL_ID);
         final TemplateRegistry<String, MountTemplate> mountTemplateByNpcName = registryMap.get(MOUNT_TEMPLATE_BY_NPC_NAME);
         final TemplateRegistry<String, MountTemplate> mountTemplateByItemName = registryMap.get(MOUNT_TEMPLATE_BY_ITEM_NAME);
+        final TemplateRegistry<String, SpellTemplate> spellTemplateByKey = registryMap.get(SPELL_TEMPLATE_BY_KEY);
 
 
         // --- Region
@@ -139,6 +145,7 @@ public final class WorldBootstrap {
                 uoFileReader,
                 policyService,
                 itemUseService,
+                spellCastRegistry,
                 rng,
 
                 // Templates
@@ -150,6 +157,7 @@ public final class WorldBootstrap {
                 startKitTemplateBySkillId,
                 mountTemplateByNpcName,
                 mountTemplateByItemName,
+                spellTemplateByKey,
 
                 settings,
                 configuration
@@ -157,18 +165,21 @@ public final class WorldBootstrap {
 
         world.initialize();
 
-        gameLoop.addTask(new GameTask() {
-            @Override public void execute(long currentTick, double delta) { world.update(delta); }
-            @Override public boolean isDone() { return false; }
-        });
-
         final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, uoFileReader, gameLoop);
+        for (var factory : configuration.spellTriggerList()) {
+            spellCastRegistry.register(factory.apply(runtime));
+        }
         for (var factory : configuration.itemTriggerList()) {
             itemUseRegistry.register(factory.apply(runtime));
         }
         for (var factory : configuration.eventListenerList()) {
             eventBus.register(factory.apply(runtime));
         }
+
+        gameLoop.addTask(new GameTask() {
+            @Override public void execute(long currentTick, double delta) { world.update(delta); }
+            @Override public boolean isDone() { return false; }
+        });
 
         return runtime;
     }
