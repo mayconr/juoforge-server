@@ -20,6 +20,13 @@ import java.util.function.Supplier;
 
 public interface WorldCfg {
 
+    /** Registers a shard flow factory. Context types must be unique across core and shard flows. */
+    <T extends com.github.mayconr.juoserver.infrastructure.flow.AbstractContext> void addFlow(
+            Class<T> contextType,
+            Function<ServerRuntime, com.github.mayconr.juoserver.infrastructure.flow.Flow<T>> factory);
+
+    List<ShardFlowRegistration<?>> flowList();
+
     /** Replaces the default weapon-skill and Tactics gain policy for combat swings. */
     void combatSkillGainPolicy(Supplier<CombatSkillGainPolicy> factory);
 

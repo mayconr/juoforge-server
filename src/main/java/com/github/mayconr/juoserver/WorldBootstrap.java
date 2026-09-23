@@ -21,6 +21,8 @@ import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderImpl;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
+import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
 import com.github.mayconr.juoserver.infrastructure.gameloop.DefaultGameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
@@ -41,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -131,7 +134,6 @@ public final class WorldBootstrap {
         // --- Game loop (ciclo de vida explícito)
         DefaultGameLoop gameLoop = new DefaultGameLoop(settings);
         Runtime.getRuntime().addShutdownHook(new Thread(gameLoop::stop));
-        gameLoop.start();
 
         // --- World
         var uoFileReader = new UOFileReaderImpl(settings);
@@ -165,7 +167,11 @@ public final class WorldBootstrap {
 
         world.initialize();
 
-        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, uoFileReader, gameLoop);
+        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, uoFileReader, gameLoop, world.flows());
+        for (var registration : configuration.flowList()) {
+            registerShardFlow(world, runtime, registration);
+        }
+
         for (var factory : configuration.spellTriggerList()) {
             spellCastRegistry.register(factory.apply(runtime));
         }
@@ -181,7 +187,16 @@ public final class WorldBootstrap {
             @Override public boolean isDone() { return false; }
         });
 
+        gameLoop.start();
+
         return runtime;
+    }
+
+    static <T extends AbstractContext> void registerShardFlow(
+            DefaultWorld world, ServerRuntime runtime, ShardFlowRegistration<T> registration) {
+        var flow = Objects.requireNonNull(registration.factory().apply(runtime),
+                "Flow factory returned null for " + registration.contextType().getName());
+        world.registerFlow(registration.contextType(), flow);
     }
 
     private record InternalServerRuntime(World world,
@@ -190,7 +205,8 @@ public final class WorldBootstrap {
                                          EventBus eventBus,
                                          RealmStorage storage,
                                          UOFileReader fileReader,
-                                         GameLoop gameLoop) implements ServerRuntime {
+                                         GameLoop gameLoop,
+                                         FlowExecutor flows) implements ServerRuntime {
 
             @Override
             public <K, V> TemplateRegistry<K, V> getTemplateRegistry(String templateName, Class<V> clazz) {

@@ -21,7 +21,7 @@ class SpellModuleTest {
     @Test
     void loadsShardTemplatesAndLogsKnownAndUnknownSpellsWithoutMutatingCaster() {
         var templates = new JsonTemplateLoaderNew<>(Path.of("template/spells/spells.json"), SpellTemplate.class).loadAll();
-        var module = new SpellModuleImpl(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry());
+        var module = SpellTestSupport.module(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry());
         assertEquals(64, templates.size());
         for (var template : templates) {
             assertEquals(template, module.getSpellByClientId(template.clientSpellId()).orElseThrow());
@@ -29,7 +29,7 @@ class SpellModuleTest {
         var caster = mock(UOMobile.class);
         when(caster.getName()).thenReturn("Caster");
         when(caster.getSerialId()).thenReturn(42);
-        var logger = (Logger) LoggerFactory.getLogger(SpellModuleImpl.class);
+        var logger = (Logger) LoggerFactory.getLogger("com.github.mayconr.juoserver.game.spell.flow.cast");
         var appender = new ListAppender<ILoggingEvent>();
         appender.start();
         logger.addAppender(appender);
@@ -55,7 +55,7 @@ class SpellModuleTest {
     void rejectsDuplicateSpellIds() {
         var templates = List.of(new SpellTemplate("shard:first", 1, "First", null), new SpellTemplate("shard:second", 1, "Second", null));
         assertThrows(IllegalArgumentException.class,
-                () -> new SpellModuleImpl(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry()));
+                () -> SpellTestSupport.module(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry()));
     }
 
     @Test
@@ -73,7 +73,7 @@ class SpellModuleTest {
                 new SpellTemplate("shard:nova", null, "Nova", null),
                 new SpellTemplate("shard:nova", null, "Another Nova", null));
         assertThrows(IllegalArgumentException.class,
-                () -> new SpellModuleImpl(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry()));
+                () -> SpellTestSupport.module(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry()));
     }
 
     @Test
@@ -81,10 +81,10 @@ class SpellModuleTest {
         var templates = List.of(
                 new SpellTemplate("shard:arcane_nova", null, "Arcane Nova", null),
                 new SpellTemplate("shard:other", null, "Other", null));
-        var module = new SpellModuleImpl(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry());
+        var module = SpellTestSupport.module(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry());
         assertTrue(module.getSpellByClientId(10000).isEmpty());
         var caster = mock(UOMobile.class);
-        var logger = (Logger) LoggerFactory.getLogger(SpellModuleImpl.class);
+        var logger = (Logger) LoggerFactory.getLogger("com.github.mayconr.juoserver.game.spell.flow.cast");
         var appender = new ListAppender<ILoggingEvent>();
         appender.start();
         logger.addAppender(appender);

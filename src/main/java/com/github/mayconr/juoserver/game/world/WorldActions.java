@@ -14,6 +14,18 @@ import java.util.function.Consumer;
 
 public interface WorldActions {
 
+    /**
+     * Sends a packet for debugging through the normal encoder and compression pipeline.
+     * The packet must not be modified after this asynchronous call.
+     */
+    void sendRawPacket(UOPlayer player, com.github.mayconr.juoserver.network.packet.Packet packet);
+
+    /**
+     * Sends debug packets in list order, with a single flush. The list is copied;
+     * packet instances must not be modified after this asynchronous call.
+     */
+    void sendRawPackets(UOPlayer player, List<? extends com.github.mayconr.juoserver.network.packet.Packet> packets);
+
     /** Resolves a spell cast request by key and dispatches it to the first supporting shard trigger. */
     void castSpell(UOMobile caster, String spellKey);
 
@@ -61,6 +73,15 @@ public interface WorldActions {
     void sendAnimation(UOMobile mobile, AnimationOptions options);
 
     void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler);
+
+    /**
+     * Validates access, then requests the book's contents and window for the player.
+     * The book must be held by the player or within interaction range on the ground
+     * (directly or through its parent containers).
+     * The book's model ID determines its graphic. Mask bit 0 represents the first
+     * spell of the supplied type; -1L includes all 64 spells.
+     */
+    void openSpellBook(UOPlayer player, UOItem book, SpellbookType type, long spellMask);
 
     void sendTarget(UOPlayer player, CursorType type, Consumer<TargetResult> consumer);
 

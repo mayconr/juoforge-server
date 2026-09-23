@@ -62,6 +62,7 @@ import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
 import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistry;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
@@ -72,6 +73,9 @@ import com.github.mayconr.juoserver.game.world.transition.TeleportTransitionServ
 import com.github.mayconr.juoserver.game.world.transition.VisibilityTransitionServiceImpl;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderImpl;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
+import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
@@ -166,7 +170,7 @@ public class DefaultWorld implements WorldInternal, World {
         initializeAiModule();
         initializeUiModule();
         initializeSkillModule();
-        this.spellModule = new SpellModuleImpl(spellTemplateByKey, spellCastRegistry);
+        this.spellModule = new SpellModuleImpl(spellTemplateByKey);
         initializeItemModule();
         initializePlayerModule();
         initializeCombatModule();
@@ -300,8 +304,20 @@ public class DefaultWorld implements WorldInternal, World {
      * ===================
      */
 
+    private FlowRegistry flowRegistry;
+    private DefaultFlowFacade flowFacade;
+
+    public FlowExecutor flows() {
+        return flowFacade;
+    }
+
+    /** Called by bootstrap after module initialization and before enabling world updates. */
+    public <T extends AbstractContext> void registerFlow(Class<T> contextType, Flow<T> flow) {
+        flowRegistry.register(contextType.getName(), flow, contextType);
+    }
+
     private void initializeModules() {
-        final var flowRegistry = FlowRegistryFactory.builder()
+        this.flowRegistry = FlowRegistryFactory.builder()
                 .modules(GameModules.builder()
                     .message(messageModule)
                     .ai(aiModule)
@@ -312,6 +328,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .skill(skillModule)
                     .build())
                 .infra(GameInfra.builder()
+                    .spellCastRegistry(spellCastRegistry)
                     .serialGenerator(serialGenerator)
                     .eventBus(eventBus)
                     .storage(storage)
@@ -322,6 +339,7 @@ public class DefaultWorld implements WorldInternal, World {
                             worldCfg.combatSkillGainPolicy().get(), "Combat skill gain policy factory returned null"))
                     .build())
                 .templates(GameTemplates.builder()
+                    .spellByKey(spellTemplateByKey)
                     .itemByModelId(itemTemplateByModelId)
                     .itemByName(itemTemplateByName)
                     .npcByName(npcTemplateByName)
@@ -333,7 +351,7 @@ public class DefaultWorld implements WorldInternal, World {
                 .build()
                 .buildRegistry();
 
-        final var flowFacade = DefaultFlowFacade.builder()
+        this.flowFacade = DefaultFlowFacade.builder()
                 .registry(flowRegistry)
                 .build();
         final var context = DefaultModuleContext.builder()
@@ -590,6 +608,21 @@ public class DefaultWorld implements WorldInternal, World {
     @Override
     public void handleAction(UOPlayer player, ActionRequest request) {
         interactionModule.handleAction(player, request);
+    }
+
+    @Override
+    public void openSpellBook(UOPlayer player, UOItem book, SpellbookType type, long spellMask) {
+        spellModule.openSpellBook(player, book, type, spellMask);
+    }
+
+    @Override
+    public void sendRawPacket(UOPlayer player, Packet packet) {
+        eventBus.publish(new RawPacketSent(player, packet));
+    }
+
+    @Override
+    public void sendRawPackets(UOPlayer player, List<? extends Packet> packets) {
+        eventBus.publish(new RawPacketsSent(player, List.copyOf(packets)));
     }
 
     @Override

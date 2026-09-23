@@ -37,7 +37,7 @@ class SpellCastTriggerTest {
         var registry = new SpellCastRegistry();
         cfg.spellTriggerList().forEach(factory -> registry.register(factory.apply(runtime)));
         when(first.supports(context)).thenReturn(true);
-        var module = new SpellModuleImpl(new InMemoryTemplateRegistry<>(List.of(spell), SpellTemplate::key), registry);
+        var module = SpellTestSupport.module(new InMemoryTemplateRegistry<>(List.of(spell), SpellTemplate::key), registry);
 
         module.castSpell(caster, spell.key());
         module.castSpell(caster, spell.key());
@@ -53,7 +53,7 @@ class SpellCastTriggerTest {
         var registry = new SpellCastRegistry();
         var trigger = mock(SpellCastTrigger.class);
         registry.register(trigger);
-        var module = new SpellModuleImpl(new InMemoryTemplateRegistry<>(List.of(spell), SpellTemplate::key), registry);
+        var module = SpellTestSupport.module(new InMemoryTemplateRegistry<>(List.of(spell), SpellTemplate::key), registry);
         module.castSpell(caster, "shard:unknown");
         verifyNoInteractions(trigger);
     }

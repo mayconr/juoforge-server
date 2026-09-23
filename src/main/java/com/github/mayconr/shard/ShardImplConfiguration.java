@@ -9,6 +9,9 @@ import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.command.*;
 import com.github.mayconr.shard.skills.crafting.mining.*;
 import com.github.mayconr.shard.spells.HealSpellTrigger;
+import com.github.mayconr.shard.spells.heal.HealContext;
+import com.github.mayconr.shard.spells.heal.HealFlowDefinition;
+import com.github.mayconr.shard.spells.SpellbookUseTrigger;
 import com.github.mayconr.shard.storage.PsqlAccountStorage;
 import com.github.mayconr.shard.storage.PsqlItemStorage;
 import com.github.mayconr.shard.storage.PsqlMobileStorage;
@@ -98,6 +101,7 @@ public class ShardImplConfiguration {
             cfg.accountStorage(new PsqlAccountStorage(sessionFactory, databaseExecutor));
 
             // Item trigger
+            cfg.addItemTrigger(runtime -> new SpellbookUseTrigger(runtime.world()));
             cfg.addItemTrigger(runtime->{
                 final TemplateRegistry<String, Ore> oreRegistry = runtime.getTemplateRegistry("oreByName", Ore.class);
                 final var oreResourceRoller = new OreResourceRoller(runtime.world(), oreRegistry);
@@ -109,7 +113,8 @@ public class ShardImplConfiguration {
             cfg.combatSkillGainPolicy(DefaultCombatSkillGainPolicy::new);
 
             // Spell
-            cfg.addSpellTrigger(runtime->new HealSpellTrigger(runtime.world()));
+            cfg.addFlow(HealContext.class, runtime -> HealFlowDefinition.build(runtime.world()));
+            cfg.addSpellTrigger(runtime -> new HealSpellTrigger(runtime.flows()));
 
             // Listeners
             cfg.addEventListener(Goto::new);
@@ -123,6 +128,7 @@ public class ShardImplConfiguration {
             cfg.addEventListener(runtime -> new Info(runtime.world()));
             cfg.addEventListener(runtime->new MoveTo(runtime.world()));
             cfg.addEventListener(runtime->new Debug(runtime.world()));
+            cfg.addEventListener(runtime->new DevTest(runtime.world()));
             cfg.addEventListener(Mount::new);
             cfg.addEventListener(Unmount::new);
             cfg.addEventListener(Region::new);

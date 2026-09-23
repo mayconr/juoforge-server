@@ -7,7 +7,5 @@ public interface ModuleContext {
 
     FlowFacade flows();
 
-    interface FlowFacade {
-        <T extends AbstractContext> StepResult execute(T context);
-    }
+    interface FlowFacade extends com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor {}
 }
