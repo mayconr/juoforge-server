@@ -24,6 +24,10 @@ public class CreateNpcEquippedItemsStep extends AbstractFlowStep<NpcCreationCont
     public StepResult execute(NpcCreationContext context) {
         var template = context.getTemplate();
 
+        if (template.equippedItems().isEmpty()) {
+            return StepResult.skip();
+        }
+
         final Map<Layer, Integer> equippedItems = new HashMap<>();
         for (String itemName : template.equippedItems()) {
             final var request = ItemRequest.byName(itemName);

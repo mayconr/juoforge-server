@@ -1,11 +1,7 @@
-[
-  {
+{
     "name" : "DEFAULT",
     "vitals" : {
       "saturationFactor" : 100
-    },
-    "gameLoop" : {
-      "tps" : 20
     },
     "skills" : {
       "minGainChance" : 0.0,
@@ -26,9 +22,6 @@
         "range" : 24
       }
     },
-    "files" : {
-      "dataFileRoot" : "C:\\Program Files (x86)\\Electronic Arts\\Ultima Online Classic"
-    },
     "client": {
       "unlockedFeatures" : ["AOS"]
     },
@@ -36,4 +29,3 @@
       "goldCoinItem" : "gold_coin"
     }
   }
-]

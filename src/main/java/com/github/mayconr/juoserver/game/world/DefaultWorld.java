@@ -25,7 +25,6 @@ import com.github.mayconr.juoserver.game.economy.EconomyModuleImpl;
 import com.github.mayconr.juoserver.game.economy.StockHandler;
 import com.github.mayconr.juoserver.game.economy.VendorHandler;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
-import com.github.mayconr.juoserver.game.economy.template.RegionStockTemplate;
 import com.github.mayconr.juoserver.game.interaction.InteractionModuleImpl;
 import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
@@ -84,13 +83,11 @@ import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
-import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -199,7 +196,7 @@ public class DefaultWorld implements WorldInternal, World {
      */
 
     private void initializeMessagingModule() {
-        final var styles = new JsonTemplateLoader<>(Path.of("template/config/message-styles.json"), MessageStyleTemplate.class).load().values();
+        final var styles = worldCfg.content().messageStyles().loadAll();
         var messageStyleRegistry = new InMemoryTemplateRegistry<>(styles, MessageStyleTemplate::name);
         this.messageModule = new MessageModuleImpl(eventBus, messageStyleRegistry);
     }
@@ -208,7 +205,7 @@ public class DefaultWorld implements WorldInternal, World {
         final var pricingStrategy = worldCfg.pricingStrategy().get();
         final var vendorHandler = new VendorHandler(eventBus, serialGenerator, pricingStrategy);
         final var stockHandler = new StockHandler();
-        final var templateLoader = new JsonTemplateLoader<>(Path.of("template/stock"), RegionStockTemplate.class);
+        final var templateLoader = worldCfg.content().stocks();
 
         this.economyModule = new EconomyModuleImpl(vendorHandler, stockHandler, wallet, templateLoader);
     }

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "skeleton",
+    "displayName": "Skeleton",
+    "modelId": 57,
+    "maxHitpoints": 50,
+    "maxStamina": 50,
+    "maxMana": 50,
+    "strength": 50,
+    "dexterity": 50,
+    "intelligence": 50,
+    "notoriety": "CRIMINAL",
+    "behavior": {
+      "profile" : "ANIMAL",
+      "ai" : "PASSIVE_ANIMAL"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
+    }
+  }
+]

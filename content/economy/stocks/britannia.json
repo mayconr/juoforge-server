@@ -1,7 +1,7 @@
 [
   {
     "name" : "brittania-initial-stock",
-    "region": "province-britannia",
+    "region": "world-britannia",
     "initialStock": [
       {
         "itemName": "iron_ore",

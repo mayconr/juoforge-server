@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class SpellModuleTest {
     @Test
     void loadsShardTemplatesAndLogsKnownAndUnknownSpellsWithoutMutatingCaster() {
-        var templates = new JsonTemplateLoaderNew<>(Path.of("template/spells/spells.json"), SpellTemplate.class).loadAll();
+        var templates = new JsonTemplateLoaderNew<>(Path.of("content/spells/magery.json"), SpellTemplate.class).loadAll();
         var module = SpellTestSupport.module(new InMemoryTemplateRegistry<>(templates, SpellTemplate::key), new SpellCastRegistry());
         assertEquals(64, templates.size());
         for (var template : templates) {

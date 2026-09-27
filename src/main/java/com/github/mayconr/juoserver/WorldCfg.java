@@ -9,6 +9,8 @@ import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
+import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
@@ -20,10 +22,14 @@ import java.util.function.Supplier;
 
 public interface WorldCfg {
 
+    void content(WorldContent content);
+
+    WorldContent content();
+
     /** Registers a shard flow factory. Context types must be unique across core and shard flows. */
-    <T extends com.github.mayconr.juoserver.infrastructure.flow.AbstractContext> void addFlow(
+    <T extends AbstractContext> void addFlow(
             Class<T> contextType,
-            Function<ServerRuntime, com.github.mayconr.juoserver.infrastructure.flow.Flow<T>> factory);
+            Function<ServerRuntime, Flow<T>> factory);
 
     List<ShardFlowRegistration<?>> flowList();
 

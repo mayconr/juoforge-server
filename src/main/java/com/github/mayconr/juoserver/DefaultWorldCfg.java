@@ -33,6 +33,18 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class DefaultWorldCfg implements WorldCfg {
 
+    private WorldContent content;
+
+    @Override
+    public void content(WorldContent content) {
+        this.content = java.util.Objects.requireNonNull(content, "World content is required");
+    }
+
+    @Override
+    public WorldContent content() {
+        return java.util.Objects.requireNonNull(content, "Shard must configure world content");
+    }
+
     private final List<ShardFlowRegistration<?>> flowList = new ArrayList<>();
 
     @Override

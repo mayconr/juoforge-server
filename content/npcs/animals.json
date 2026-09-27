@@ -12,7 +12,6 @@
     "attr": {
       "behavior.radius": 3,
       "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
-    },
-    "equippedItems": []
+    }
   }
 ]

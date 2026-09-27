@@ -1,0 +1,62 @@
+[
+  {
+    "name": "robe",
+    "displayName": "a Robe",
+    "layer": "OUTER_TORSO",
+    "modelId": 7935,
+    "movable": true,
+    "hue": 0,
+    "flags": [
+      "WEARABLE"
+    ],
+    "attr": {}
+  },
+  {
+    "name": "hat",
+    "displayName": "hat",
+    "layer": "HEAD",
+    "modelId": 5907,
+    "movable": true,
+    "hue": 0,
+    "flags": [
+      "WEARABLE"
+    ],
+    "attr": {}
+  },
+  {
+    "name": "shirt",
+    "displayName": "shirt",
+    "layer": "SHIRT",
+    "modelId": 5399,
+    "movable": true,
+    "hue": 0,
+    "flags": [
+      "WEARABLE"
+    ],
+    "attr": {}
+  },
+  {
+    "name": "pants",
+    "displayName": "pants",
+    "layer": "PANTS",
+    "modelId": 5422,
+    "movable": true,
+    "hue": 0,
+    "flags": [
+      "WEARABLE"
+    ],
+    "attr": {}
+  },
+  {
+    "name": "shoes",
+    "displayName": "shoes",
+    "layer": "SHOES",
+    "modelId": 5903,
+    "movable": true,
+    "hue": 0,
+    "flags": [
+      "WEARABLE"
+    ],
+    "attr": {}
+  }
+]
