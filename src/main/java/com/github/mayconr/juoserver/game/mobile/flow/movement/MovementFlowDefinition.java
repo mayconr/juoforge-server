@@ -33,7 +33,6 @@ public class MovementFlowDefinition {
                 .step(new UpdateSequenceStep())
                 // Apply the movement
                 .step(new ApplyMoveStep(infra.eventBus(), infra.storage()))
-
                 // Hooks
                 .hook(new MovementFailureHook(infra.eventBus()))
                 .build();

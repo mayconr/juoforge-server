@@ -7,11 +7,14 @@ import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
 import com.github.mayconr.juoserver.game.skill.SkillSystemFactory;
 import com.github.mayconr.juoserver.game.economy.ScarcityBasedPricingStrategy;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.spell.trigger.SpellCastTrigger;
 import com.github.mayconr.juoserver.game.wallet.PhisycalGoldWallet;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
+import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
@@ -29,6 +32,24 @@ import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 public class DefaultWorldCfg implements WorldCfg {
+
+    private final List<ShardFlowRegistration<?>> flowList = new ArrayList<>();
+
+    @Override
+    public <T extends AbstractContext> void addFlow(
+            Class<T> contextType,
+            Function<ServerRuntime, Flow<T>> factory) {
+        var registration = new ShardFlowRegistration<>(contextType, factory);
+        if (flowList.stream().anyMatch(entry -> entry.contextType().equals(contextType))) {
+            throw new IllegalArgumentException("Flow already configured for " + contextType.getName());
+        }
+        flowList.add(registration);
+    }
+
+    @Override
+    public List<ShardFlowRegistration<?>> flowList() {
+        return List.copyOf(flowList);
+    }
 
     private Supplier<CombatSkillGainPolicy> combatSkillGainPolicy = DefaultCombatSkillGainPolicy::new;
     private SkillSystemFactory skillSystem = DefaultSkillSystem::new;
@@ -59,6 +80,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     // ===== Item trigger ====
     private final List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList = new ArrayList<>();
+    private final List<Function<ServerRuntime, SpellCastTrigger>> spellTriggerList = new ArrayList<>();
 
     // Event listener
     private final List<Function<ServerRuntime, EventRegistry<GameEvent>>> eventListenerList = new ArrayList<>();
@@ -88,6 +110,16 @@ public class DefaultWorldCfg implements WorldCfg {
     @Override
     public void addItemTrigger(Function<ServerRuntime, ItemUseTrigger> triggerFactory) {
         itemTriggerList.add(triggerFactory);
+    }
+
+    @Override
+    public void addSpellTrigger(Function<ServerRuntime, SpellCastTrigger> triggerFactory) {
+        spellTriggerList.add(java.util.Objects.requireNonNull(triggerFactory, "Spell trigger factory is required"));
+    }
+
+    @Override
+    public List<Function<ServerRuntime, SpellCastTrigger>> spellTriggerList() {
+        return List.copyOf(spellTriggerList);
     }
 
     @Override

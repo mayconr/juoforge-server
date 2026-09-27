@@ -569,6 +569,42 @@ public class NettyPlayerSession implements PlayerSession {
         }
     }
 
+    public void onSpellBookOpened(SpellBookOpened event) {
+        if (player == null || !player.equals(event.player())) {
+            return;
+        }
+        runInEventLoop(() -> {
+            if (channel.isActive()) {
+                channel.write(new GeneralInformation(new NewSpellbookExtendedCommand(
+                        event.bookSerialId(), event.modelId(), event.type(), event.spellMask())));
+                channel.writeAndFlush(new DrawContainer(event.bookSerialId(), 0xFFFF));
+            }
+        });
+    }
+
+    public void onRawPacketSent(RawPacketSent event) {
+        sendDebugPackets(event.player(), List.of(event.packet()));
+    }
+
+    public void onRawPacketsSent(RawPacketsSent event) {
+        sendDebugPackets(event.player(), event.packets());
+    }
+
+    private void sendDebugPackets(UOPlayer recipient, List<Packet> packets) {
+        if (player == null || !player.getId().equals(recipient.getId()) || packets.isEmpty()) {
+            return;
+        }
+        runInEventLoop(() -> {
+            if (channel.isActive()) {
+                for (var packet : packets) {
+                    channel.write(packet);
+                    log.debug("Raw packet [{}] sent to client.", packet);
+                }
+                channel.flush();
+            }
+        });
+    }
+
     /*
      * ================================
      * Skills, Status and Combat Events

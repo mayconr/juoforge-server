@@ -89,7 +89,22 @@ public interface RealmStorage {
 
     List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);
 
+    /**
+     * Returns all mobiles at the specified location, regardless of whether they are alive or dead.
+     *
+     * @param location the location to query
+     * @return all mobiles at the location, or an empty list if none are found
+     */
     List<UOMobile> getMobilesAtLocation(Location location);
+
+    /**
+     * Returns mobiles at the specified location filtered by whether they are alive or dead.
+     *
+     * @param location the location to query
+     * @param alive {@code true} to return only living mobiles; {@code false} to return only dead mobiles
+     * @return mobiles at the location matching the requested state, or an empty list if none are found
+     */
+    List<UOMobile> getMobilesAtLocation(Location location, boolean alive);
 
     List<UOItem> getItemsInRange(Location location);
 

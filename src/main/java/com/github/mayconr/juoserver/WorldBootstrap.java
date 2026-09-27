@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.DefaultWorldCfg.TemplateData;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
+import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
 import com.github.mayconr.juoserver.game.item.template.CachedItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
@@ -19,6 +21,8 @@ import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderImpl;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
+import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
 import com.github.mayconr.juoserver.infrastructure.gameloop.DefaultGameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
@@ -39,12 +43,14 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
 public final class WorldBootstrap {
 
     public static final String GAMEPLAY_CONFIG = "GAMEPLAY_CONFIG_BY_NAME";
+    public static final String SPELL_TEMPLATE_BY_KEY = "SPELL_TEMPLATE_BY_KEY";
     public static final String NPC_BY_NAME = "NPC_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_NAME = "ITEM_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_MODEL_ID = "ITEM_TEMPLATE_BY_MODEL_ID";
@@ -60,6 +66,7 @@ public final class WorldBootstrap {
 
         configuration.addCustomTemplate(GAMEPLAY_CONFIG, GamePlaySettings.class, GamePlaySettings::name, Path.of("template/config/gameplay.json"));
         configuration.addCustomTemplate(NPC_BY_NAME, NpcTemplate.class, NpcTemplate::name, Path.of("template/npcs"));
+        configuration.addCustomTemplate(SPELL_TEMPLATE_BY_KEY, SpellTemplate.class, SpellTemplate::key, Path.of("template/spells/spells.json"));
 
         final var itemsPath = Path.of("template/items");
         configuration.addCustomTemplate(ITEM_TEMPLATE_BY_NAME, ItemTemplate.class, ItemTemplate::name, itemsPath);
@@ -95,6 +102,7 @@ public final class WorldBootstrap {
         // --- Item use
         ItemUseRegistry itemUseRegistry = new ItemUseRegistry();
         ItemUseService itemUseService = new ItemUseService(itemUseRegistry);
+        SpellCastRegistry spellCastRegistry = new SpellCastRegistry();
 
         // --- Templates
 
@@ -108,6 +116,7 @@ public final class WorldBootstrap {
         final TemplateRegistry<Integer, StartKitTemplate> startKitTemplateBySkillId = registryMap.get(START_KIT_TEMPLATE_BY_SKILL_ID);
         final TemplateRegistry<String, MountTemplate> mountTemplateByNpcName = registryMap.get(MOUNT_TEMPLATE_BY_NPC_NAME);
         final TemplateRegistry<String, MountTemplate> mountTemplateByItemName = registryMap.get(MOUNT_TEMPLATE_BY_ITEM_NAME);
+        final TemplateRegistry<String, SpellTemplate> spellTemplateByKey = registryMap.get(SPELL_TEMPLATE_BY_KEY);
 
 
         // --- Region
@@ -125,7 +134,6 @@ public final class WorldBootstrap {
         // --- Game loop (ciclo de vida explícito)
         DefaultGameLoop gameLoop = new DefaultGameLoop(settings);
         Runtime.getRuntime().addShutdownHook(new Thread(gameLoop::stop));
-        gameLoop.start();
 
         // --- World
         var uoFileReader = new UOFileReaderImpl(settings);
@@ -139,6 +147,7 @@ public final class WorldBootstrap {
                 uoFileReader,
                 policyService,
                 itemUseService,
+                spellCastRegistry,
                 rng,
 
                 // Templates
@@ -150,6 +159,7 @@ public final class WorldBootstrap {
                 startKitTemplateBySkillId,
                 mountTemplateByNpcName,
                 mountTemplateByItemName,
+                spellTemplateByKey,
 
                 settings,
                 configuration
@@ -157,12 +167,14 @@ public final class WorldBootstrap {
 
         world.initialize();
 
-        gameLoop.addTask(new GameTask() {
-            @Override public void execute(long currentTick, double delta) { world.update(delta); }
-            @Override public boolean isDone() { return false; }
-        });
+        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, uoFileReader, gameLoop, world.flows());
+        for (var registration : configuration.flowList()) {
+            registerShardFlow(world, runtime, registration);
+        }
 
-        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, uoFileReader, gameLoop);
+        for (var factory : configuration.spellTriggerList()) {
+            spellCastRegistry.register(factory.apply(runtime));
+        }
         for (var factory : configuration.itemTriggerList()) {
             itemUseRegistry.register(factory.apply(runtime));
         }
@@ -170,7 +182,21 @@ public final class WorldBootstrap {
             eventBus.register(factory.apply(runtime));
         }
 
+        gameLoop.addTask(new GameTask() {
+            @Override public void execute(long currentTick, double delta) { world.update(delta); }
+            @Override public boolean isDone() { return false; }
+        });
+
+        gameLoop.start();
+
         return runtime;
+    }
+
+    static <T extends AbstractContext> void registerShardFlow(
+            DefaultWorld world, ServerRuntime runtime, ShardFlowRegistration<T> registration) {
+        var flow = Objects.requireNonNull(registration.factory().apply(runtime),
+                "Flow factory returned null for " + registration.contextType().getName());
+        world.registerFlow(registration.contextType(), flow);
     }
 
     private record InternalServerRuntime(World world,
@@ -179,7 +205,8 @@ public final class WorldBootstrap {
                                          EventBus eventBus,
                                          RealmStorage storage,
                                          UOFileReader fileReader,
-                                         GameLoop gameLoop) implements ServerRuntime {
+                                         GameLoop gameLoop,
+                                         FlowExecutor flows) implements ServerRuntime {
 
             @Override
             public <K, V> TemplateRegistry<K, V> getTemplateRegistry(String templateName, Class<V> clazz) {

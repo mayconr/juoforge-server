@@ -4,6 +4,12 @@ import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
+import com.github.mayconr.juoserver.game.spell.flow.cast.CastSpellContext;
+import com.github.mayconr.juoserver.game.spell.flow.cast.CastSpellFlowDefinition;
+import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
+import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
+import com.github.mayconr.juoserver.game.spell.flow.open.OpenSpellBookContext;
+import com.github.mayconr.juoserver.game.spell.flow.open.OpenSpellBookFlowDefinition;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
 import com.github.mayconr.juoserver.game.ai.AIModule;
@@ -89,6 +95,7 @@ public class FlowRegistryFactory {
 
     @Builder
     public record GameInfra(
+            SpellCastRegistry spellCastRegistry,
             EventBus eventBus,
             RealmStorage storage,
             SerialGenerator serialGenerator,
@@ -106,6 +113,7 @@ public class FlowRegistryFactory {
 
     @Builder
     public record GameTemplates(
+            TemplateRegistry<String, SpellTemplate> spellByKey,
             TemplateRegistry<String, NpcTemplate> npcByName,
 
             TemplateRegistry<String, ItemTemplate> itemByName,
@@ -121,6 +129,9 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(CastSpellFlowDefinition.class.getSimpleName(),
+                CastSpellFlowDefinition.build(templates.spellByKey(), infra.spellCastRegistry()), CastSpellContext.class);
+        registry.register(OpenSpellBookFlowDefinition.class.getSimpleName(), OpenSpellBookFlowDefinition.build(infra), OpenSpellBookContext.class);
         registry.register(DeathFlowDefinition.class.getSimpleName(), DeathFlowDefinition.build(modules, infra), DeathContext.class);
         registry.register(DamageFlowDefinition.class.getSimpleName(), DamageFlowDefinition.build(modules, infra), DamageContext.class);
         registry.register(NpcCreationFlowDefinition.class.getSimpleName(), NpcCreationFlowDefinition.build(modules, infra, templates), NpcCreationContext.class);

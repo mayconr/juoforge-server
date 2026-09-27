@@ -130,6 +130,8 @@ public class CachedRealmStorage implements RealmStorage {
     public void unloadMobile(UOMobile mobile) {
         // TODO save mobile to database
         mobileCache.remove(mobile);
+        worldMobileIndex.remove(mobile);
+
         var backpack = (UOContainer) itemCache.get(mobile.getBackpack());
         for (Integer itemSerial : backpack.getContainerItems()) {
             itemCache.remove(itemCache.get(itemSerial));
@@ -137,6 +139,7 @@ public class CachedRealmStorage implements RealmStorage {
         for (Integer itemSerial : mobile.getEquippedItems().values()) {
             itemCache.remove(itemCache.get(itemSerial));
         }
+
         log.info("Unloaded mobile {}", mobile);
     }
 
@@ -222,8 +225,6 @@ public class CachedRealmStorage implements RealmStorage {
 
             result.add(mobile);
         }
-
-
         return result;
     }
 
@@ -231,6 +232,16 @@ public class CachedRealmStorage implements RealmStorage {
     public List<UOMobile> getMobilesAtLocation(Location location) {
         return worldMobileIndex.getNearbySerials(location, 1)
                 .stream().map(mobileCache::get)
+                .filter(mobile->mobile.getX() == location.getX() && mobile.getY() == location.getY())
+                .toList();
+    }
+
+    @Override
+    public List<UOMobile> getMobilesAtLocation(Location location, boolean alive) {
+        return worldMobileIndex.getNearbySerials(location, 1)
+                .stream()
+                .map(mobileCache::get)
+                .filter(mobile->alive == mobile.isAlive())
                 .filter(mobile->mobile.getX() == location.getX() && mobile.getY() == location.getY())
                 .toList();
     }
