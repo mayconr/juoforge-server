@@ -10,6 +10,7 @@ import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
@@ -68,8 +69,12 @@ public final class WorldBootstrap {
         final Map<String, TemplateRegistry> registryMap = new HashMap<>();
         final var items = content.items().load();
         final var mounts = content.mounts().loadAll();
+        final var npcs = content.npcs().loadAll();
+        final var npcStatsResolver = new NpcStatsResolver(content.npcStatProfiles().loadAll());
+        // Validate every NPC before starting storage, modules or the game loop.
+        npcs.forEach(npcStatsResolver::resolve);
         registryMap.put(GAMEPLAY_CONFIG, new InMemoryTemplateRegistry<>(java.util.List.of(content.settings()), GamePlaySettings::name));
-        registryMap.put(NPC_BY_NAME, new InMemoryTemplateRegistry<>(content.npcs().loadAll(), NpcTemplate::name));
+        registryMap.put(NPC_BY_NAME, new InMemoryTemplateRegistry<>(npcs, NpcTemplate::name));
         registryMap.put(SPELL_TEMPLATE_BY_KEY, new InMemoryTemplateRegistry<>(content.spells().loadAll(), SpellTemplate::key));
         registryMap.put(ITEM_TEMPLATE_BY_NAME, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::name));
         registryMap.put(ITEM_TEMPLATE_BY_MODEL_ID, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::modelId));
@@ -149,6 +154,7 @@ public final class WorldBootstrap {
                 // Templates
                 itemTemplateRegistry,
                 npcTemplateByName,
+                npcStatsResolver,
                 itemTemplateByName,
                 itemTemplateByModelId,
                 bodyTemplateByName,

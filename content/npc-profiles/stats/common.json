@@ -1,0 +1,20 @@
+[
+  {
+    "name": "animal_basic",
+    "strength": 100,
+    "dexterity": 100,
+    "intelligence": 100,
+    "maxHitpoints": 100,
+    "maxStamina": 100,
+    "maxMana": 100
+  },
+  {
+    "name": "vendor_basic",
+    "strength": 100,
+    "dexterity": 100,
+    "intelligence": 100,
+    "maxHitpoints": 100,
+    "maxStamina": 100,
+    "maxMana": 100
+  }
+]

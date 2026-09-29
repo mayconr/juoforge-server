@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.game.mobile.npc;
 
 import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.npc.NpcModule;
+import com.github.mayconr.juoserver.game.npc.NpcRequester;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.AllArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.Map;
 public class NpcDespawnService implements WorldModule {
 
     private final RealmStorage storage;
+    private final NpcModule npcModule;
     private final Map<Integer, DespawnEntry> scheduled = new HashMap<>();
 
     @Override
@@ -45,7 +48,7 @@ public class NpcDespawnService implements WorldModule {
                         }
                     }
 
-                    storage.deleteMobile(npc);
+                    npcModule.removeNpc(new NpcRequester.AsyncProcess("npc-despawn"), npc);
                 }
 
                 iterator.remove();

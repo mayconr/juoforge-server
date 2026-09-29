@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.npc.NpcRequester;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.model.TargetResult;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
@@ -33,11 +34,12 @@ public interface WorldActions {
     // Entity creation / removal
     // =========================
 
-    UONpc createNpc(String name, Location location);
+    /** @param requester player or asynchronous process requesting creation */
+    UONpc createNpc(NpcRequester requester, String name, Location location);
 
     UOItem createItem(ItemRequest request, ItemTarget target);
 
-    void deleteMobile(UOMobile mobile);
+    void deleteMobile(NpcRequester requester, UOMobile mobile);
 
     void deleteItem(int serial);
 

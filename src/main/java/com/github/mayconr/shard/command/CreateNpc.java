@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.command;
 
+import com.github.mayconr.juoserver.game.npc.NpcRequester;
 import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.TileTargetResult;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
@@ -26,7 +27,7 @@ public class CreateNpc extends AbstractCommand {
             if (result instanceof TileTargetResult staticResult) {
                 System.out.println(staticResult.staticsTile());
             }
-            world.createNpc(npcName, result.location());
+            world.createNpc(new NpcRequester.Player(player), npcName, result.location());
         });
 
     }

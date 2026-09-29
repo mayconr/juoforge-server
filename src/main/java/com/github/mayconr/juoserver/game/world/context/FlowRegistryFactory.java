@@ -57,6 +57,7 @@ import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationContext;
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationFlowDefinition;
+import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalContext;
 import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalFlowDefinition;
 import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationContext;
@@ -115,6 +116,7 @@ public class FlowRegistryFactory {
     public record GameTemplates(
             TemplateRegistry<String, SpellTemplate> spellByKey,
             TemplateRegistry<String, NpcTemplate> npcByName,
+            NpcStatsResolver npcStatsResolver,
 
             TemplateRegistry<String, ItemTemplate> itemByName,
             TemplateRegistry<Integer, ItemTemplate> itemByModelId,

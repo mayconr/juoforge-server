@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.npc.NpcRequester;
 import com.github.mayconr.juoforge.reader.view.LandTile;
 import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.WorldCfg;
@@ -41,6 +42,7 @@ import com.github.mayconr.juoserver.game.mobile.MobileModuleImpl;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
@@ -139,6 +141,7 @@ public class DefaultWorld implements WorldInternal, World {
      */
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final TemplateRegistry<String, NpcTemplate> npcTemplateByName;
+    private final NpcStatsResolver npcStatsResolver;
     private final TemplateRegistry<String, ItemTemplate> itemTemplateByName;
     private final TemplateRegistry<Integer, ItemTemplate> itemTemplateByModelId;
     private final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateByBodyKey;
@@ -274,7 +277,8 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeMobileModule(Wallet wallet) {
-        final var npcDespawnService = new NpcDespawnService(storage);
+        this.npcModule = new NpcModuleImpl();
+        final var npcDespawnService = new NpcDespawnService(storage, npcModule);
 
         this.mobileModule = new MobileModuleImpl(npcDespawnService, wallet, eventBus, storage);
     }
@@ -292,7 +296,6 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeNpcModule() {
-        this.npcModule = new NpcModuleImpl();
     }
 
     /*
@@ -340,6 +343,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .itemByModelId(itemTemplateByModelId)
                     .itemByName(itemTemplateByName)
                     .npcByName(npcTemplateByName)
+                    .npcStatsResolver(npcStatsResolver)
                     .bodyByKey(bodyTemplateByBodyKey)
                     .startKitBySkillId(startKitTemplateBySkillId)
                     .mountByItemName(mountTemplateByItemName)
@@ -773,14 +777,14 @@ public class DefaultWorld implements WorldInternal, World {
      */
 
     @Override
-    public UONpc createNpc(String template, Location location) {
-        return npcModule.createNpc(template, location);
+    public UONpc createNpc(NpcRequester requester, String template, Location location) {
+        return npcModule.createNpc(requester, template, location);
     }
 
     @Override
-    public void deleteMobile(UOMobile mobile) {
+    public void deleteMobile(NpcRequester requester, UOMobile mobile) {
         switch (mobile) {
-            case UONpc npc -> npcModule.removeNpc(npc);
+            case UONpc npc -> npcModule.removeNpc(requester, npc);
             case UOPlayer player -> log.info("Remove a player is not allowed yet {}", player.getId());
             default -> throw new IllegalStateException("Unexpected value: " + mobile);
         }

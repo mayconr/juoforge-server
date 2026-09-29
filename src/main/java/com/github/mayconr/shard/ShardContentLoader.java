@@ -9,6 +9,7 @@ import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.mobile.template.NpcStatProfile;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
@@ -42,6 +43,7 @@ public final class ShardContentLoader {
                 settings(root.resolve("config")),
                 snapshot(items),
                 json(content.resolve("npcs"), NpcTemplate.class),
+                json(content.resolve("npc-profiles/stats"), NpcStatProfile.class),
                 new JsonTemplateLoaderNew<>(content.resolve("spells"), SpellTemplate.class),
                 json(content.resolve("players/bodies"), BodyTemplate.class),
                 json(content.resolve("players/starting-kits"), StartKitTemplate.class),

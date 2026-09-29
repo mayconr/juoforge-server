@@ -9,6 +9,7 @@ during bootstrap.
 | --- | --- |
 | `items/` | Item definitions, grouped by kind; `resources/` contains raw materials |
 | `npcs/` | NPC definitions and their behavior parameters |
+| `npc-profiles/stats/` | Complete NPC stat profiles, without inheritance |
 | `mounts/` | Relationships between NPC and item identifiers |
 | `players/bodies/` | Race and gender body definitions |
 | `players/starting-kits/` | Items granted at character creation |
@@ -22,10 +23,20 @@ Each template JSON file contains an array. Each loaded directory and its
 subdirectories must contain only one template type. File names organize content;
 existing identifiers remain stable when files move. Restart after editing.
 
-NPCs accept positive `maxHitpoints`, `maxStamina`, `maxMana`, `strength`, `dexterity` and
-`intelligence` values. New NPCs start with full hitpoints, stamina and mana, and the
-configured strength, dexterity and intelligence.
-Each omitted or null value defaults to 100.
+NPCs can reference a `statProfile`, for example `"statProfile": "undead_basic"`.
+Each profile defines all six positive values: `strength`, `dexterity`,
+`intelligence`, `maxHitpoints`, `maxStamina` and `maxMana`. Profiles do not
+reference or inherit from other profiles.
+
+An explicit stat on the NPC overrides that field in the profile. Omitted or null
+stats use the profile value. NPCs without a profile must provide all six values;
+there is no implicit default of 100. Unknown profiles, missing stats and
+non-positive values fail validation during bootstrap, before the world starts.
+
+`NpcStatsResolver` produces immutable resolved stats. `ResolveNpcStatsStep` supplies
+them to `NpcTemplate.toData(..., stats)` during creation. New NPCs start with full
+hitpoints, stamina and mana. The skeleton uses `undead_basic` (all values 50);
+animals and vendors use explicit profiles preserving their previous values of 100.
 Changing a template affects newly created NPCs, not already persisted NPCs.
 
 ## Configuration and development
