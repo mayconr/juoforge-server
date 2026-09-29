@@ -3,6 +3,7 @@
     "name": "banker",
     "displayName": "Gary the banker",
     "modelId": 400 ,
+    "statProfile": "vendor_basic",
     "notoriety": "INNOCENT",
     "hue": 33770,
     "behavior": {
@@ -19,6 +20,7 @@
     "name": "blacksmith",
     "displayName": "Jay the blacksmith",
     "modelId": 400 ,
+    "statProfile": "vendor_basic",
     "notoriety": "INNOCENT",
     "hue": 33770,
     "behavior": {
@@ -38,6 +40,7 @@
     "name": "miner",
     "displayName": "Olaf the miner",
     "modelId": 400 ,
+    "statProfile": "vendor_basic",
     "notoriety": "INNOCENT",
     "hue": 33770,
     "behavior": {

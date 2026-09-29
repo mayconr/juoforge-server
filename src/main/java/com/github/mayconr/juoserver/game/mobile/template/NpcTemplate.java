@@ -3,6 +3,8 @@ package com.github.mayconr.juoserver.game.mobile.template;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 
+import com.github.mayconr.juoserver.game.npc.stats.NpcStats;
+
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +13,13 @@ public record NpcTemplate(String name,
                           int modelId,
                           Notoriety notoriety,
                           int hue,
+                          String statProfile,
+                          Integer maxHitpoints,
+                          Integer maxStamina,
+                          Integer maxMana,
+                          Integer strength,
+                          Integer dexterity,
+                          Integer intelligence,
                           BehaviorDefinition behavior,
                           Race race,
                           Gender gender,
@@ -19,13 +28,28 @@ public record NpcTemplate(String name,
                           List<String> roles)
         implements BaseTemplate {
 
-    public UOMobileData toData(int serialId, Map<Layer, Integer> equippedItems, Location location) {
+    public NpcTemplate {
+        attr = attr == null ? Map.of() : attr;
+        equippedItems = equippedItems == null ? List.of() : equippedItems;
+        roles = roles == null ? List.of() : roles;
+    }
+
+    public UOMobileData toData(int serialId, Map<Layer, Integer> equippedItems, Location location, NpcStats stats) {
         UOMobileData data = new UOMobileData();
         data.setSerialId(serialId);
         data.setName(name);
         data.setDisplayName(displayName);
         data.setModelId(modelId);
         data.setHue(hue);
+        data.setMaxHitpoints(stats.maxHitpoints());
+        data.setHitpoints(stats.maxHitpoints());
+        data.setMaxStamina(stats.maxStamina());
+        data.setStamina(stats.maxStamina());
+        data.setMaxMana(stats.maxMana());
+        data.setMana(stats.maxMana());
+        data.setStrength(stats.strength());
+        data.setDexterity(stats.dexterity());
+        data.setIntelligence(stats.intelligence());
         data.setNotoriety(notoriety);
         data.setPersistentAttrMap(new DefaultAttributeMap(attr));
         data.setDirection(Direction.NORTH);
@@ -35,7 +59,7 @@ public record NpcTemplate(String name,
         data.setX(location.getX());
         data.setY(location.getY());
         data.setZ(location.getZ());
-        //  Defautls
+        //  Defaults
         data.setType("N");
         data.setAlive(true);
         data.setRunning(false);

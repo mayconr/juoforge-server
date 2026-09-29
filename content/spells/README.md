@@ -1,6 +1,6 @@
 # Spell templates
 
-`spells.json` contains the shard's spell definitions, loaded at startup.
+`magery.json` contains the shard's spell definitions, loaded at startup.
 Each entry has a unique `key` (`namespace:name`, lowercase letters, digits and
 underscores), a nonblank `name`, an optional `clientSpellId` (0-65535), and an
 optional `metadata` object for future spell settings. Restart the server after editing.

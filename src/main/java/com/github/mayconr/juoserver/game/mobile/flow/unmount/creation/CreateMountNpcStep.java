@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.game.mobile.flow.unmount.creation;
 
+import com.github.mayconr.juoserver.game.npc.NpcRequester;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
@@ -21,7 +23,13 @@ public class CreateMountNpcStep extends AbstractFlowStep<UnmountContext> {
         final var mountName = context.getMountNpcName();
         final var mobile = context.getMobile();
 
-        var npc = npcModule.createNpc(mountName, mobile);
+        NpcRequester requester = mobile instanceof UOPlayer player
+                ? new NpcRequester.Player(player)
+                : new NpcRequester.AsyncProcess("unmount");
+        var npc = npcModule.createNpc(requester, mountName, mobile);
+        if (npc == null) {
+            return StepResult.stop();
+        }
         if (log.isDebugEnabled()) {
             log.debug("Created NPC {}", npc.getName());
         }

@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.game.npc.flow.creation.creation.CreateNpcSte
 import com.github.mayconr.juoserver.game.npc.flow.creation.identity.NpcSerialGenStep;
 import com.github.mayconr.juoserver.game.npc.flow.creation.notification.NotifyNpcCreation;
 import com.github.mayconr.juoserver.game.npc.flow.creation.resolve.ResolveNpcTemplateStep;
+import com.github.mayconr.juoserver.game.npc.flow.creation.resolve.ResolveNpcStatsStep;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
@@ -19,7 +20,8 @@ public final class NpcCreationFlowDefinition {
     public static Flow<NpcCreationContext> build(GameModules modules, GameInfra infra, GameTemplates templates) {
         return FlowFactory.<NpcCreationContext>builder()
                 .step(new NpcSerialGenStep(infra.serialGenerator()))
-                .step(new ResolveNpcTemplateStep(templates.npcByName()))
+                .step(new ResolveNpcTemplateStep(templates.npcByName(), modules.message()))
+                .step(new ResolveNpcStatsStep(templates.npcStatsResolver()))
                 .step(new CreateNpcEquippedItemsStep(modules.item()))
                 .step(new CreateNpcStep(infra.storage()))
                 .step(new AttachAIStep(modules.ai()))

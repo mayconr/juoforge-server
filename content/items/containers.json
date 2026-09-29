@@ -1,0 +1,29 @@
+[
+  {
+    "name": "mochila",
+    "displayName": "mochila",
+    "layer": null,
+    "modelId": 3701,
+    "movable": false,
+    "hue": 0,
+    "flags": [
+      "WEARABLE",
+      "CONTAINER"
+    ],
+    "attr": {
+      "gumpId": 60
+    }
+  },
+  {
+    "name": "backpack",
+    "displayName": "Backpack",
+    "layer": "BACKPACK",
+    "modelId": 3701,
+    "movable": false,
+    "flags": [
+      "WEARABLE",
+      "CONTAINER"
+    ],
+    "containerGumpId": 60
+  }
+]

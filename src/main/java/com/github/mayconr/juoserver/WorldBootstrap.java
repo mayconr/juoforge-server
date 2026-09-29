@@ -10,6 +10,7 @@ import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
@@ -30,17 +31,14 @@ import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystemImpl;
-import com.github.mayconr.juoserver.infrastructure.region.RegionTemplate;
 import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.*;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
-import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -64,31 +62,34 @@ public final class WorldBootstrap {
     public ServerRuntime start() {
         final var configuration = new DefaultWorldCfg();
 
-        configuration.addCustomTemplate(GAMEPLAY_CONFIG, GamePlaySettings.class, GamePlaySettings::name, Path.of("template/config/gameplay.json"));
-        configuration.addCustomTemplate(NPC_BY_NAME, NpcTemplate.class, NpcTemplate::name, Path.of("template/npcs"));
-        configuration.addCustomTemplate(SPELL_TEMPLATE_BY_KEY, SpellTemplate.class, SpellTemplate::key, Path.of("template/spells/spells.json"));
-
-        final var itemsPath = Path.of("template/items");
-        configuration.addCustomTemplate(ITEM_TEMPLATE_BY_NAME, ItemTemplate.class, ItemTemplate::name, itemsPath);
-        configuration.addCustomTemplate(ITEM_TEMPLATE_BY_MODEL_ID, ItemTemplate.class, ItemTemplate::modelId, itemsPath);
-
-        configuration.addCustomTemplate(BODY_TEMPLATE_BY_BODY_KEY, BodyTemplate.class, body -> new BodyKey(body.gender(), body.race()), Path.of("template/bodies"));
-        configuration.addCustomTemplate(START_KIT_TEMPLATE_BY_SKILL_ID, StartKitTemplate.class, StartKitTemplate::skillId, Path.of("template/startkit"));
-
-        final var mountsPath = Path.of("template/config/mounts.json");
-        configuration.addCustomTemplate(MOUNT_TEMPLATE_BY_NPC_NAME, MountTemplate.class, MountTemplate::npcName, mountsPath);
-        configuration.addCustomTemplate(MOUNT_TEMPLATE_BY_ITEM_NAME, MountTemplate.class, MountTemplate::itemName, mountsPath);
         shardBootstrap.configure(configuration);
+        final var content = configuration.content();
 
         // --- Templates
         final Map<String, TemplateRegistry> registryMap = new HashMap<>();
+        final var items = content.items().load();
+        final var mounts = content.mounts().loadAll();
+        final var npcs = content.npcs().loadAll();
+        final var npcStatsResolver = new NpcStatsResolver(content.npcStatProfiles().loadAll());
+        // Validate every NPC before starting storage, modules or the game loop.
+        npcs.forEach(npcStatsResolver::resolve);
+        registryMap.put(GAMEPLAY_CONFIG, new InMemoryTemplateRegistry<>(java.util.List.of(content.settings()), GamePlaySettings::name));
+        registryMap.put(NPC_BY_NAME, new InMemoryTemplateRegistry<>(npcs, NpcTemplate::name));
+        registryMap.put(SPELL_TEMPLATE_BY_KEY, new InMemoryTemplateRegistry<>(content.spells().loadAll(), SpellTemplate::key));
+        registryMap.put(ITEM_TEMPLATE_BY_NAME, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::name));
+        registryMap.put(ITEM_TEMPLATE_BY_MODEL_ID, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::modelId));
+        registryMap.put(BODY_TEMPLATE_BY_BODY_KEY, new InMemoryTemplateRegistry<>(content.bodies().loadAll(), body -> new BodyKey(body.gender(), body.race())));
+        registryMap.put(START_KIT_TEMPLATE_BY_SKILL_ID, new InMemoryTemplateRegistry<>(content.startingKits().loadAll(), StartKitTemplate::skillId));
+        registryMap.put(MOUNT_TEMPLATE_BY_NPC_NAME, new InMemoryTemplateRegistry<>(mounts, MountTemplate::npcName));
+        registryMap.put(MOUNT_TEMPLATE_BY_ITEM_NAME, new InMemoryTemplateRegistry<>(mounts, MountTemplate::itemName));
         for (TemplateData data : configuration.templateList()) {
             var templates = data.templateLoader().loadAll();
-            registryMap.put(data.templateName(), new InMemoryTemplateRegistry<>(templates, data.keyExtractor()));
+            if (registryMap.putIfAbsent(data.templateName(),
+                    new InMemoryTemplateRegistry<>(templates, data.keyExtractor())) != null) {
+                throw new IllegalArgumentException("Template already registered: " + data.templateName());
+            }
         }
-
-        // Core Templates
-        final GamePlaySettings settings = (GamePlaySettings) registryMap.get(GAMEPLAY_CONFIG).get("DEFAULT").getFirst();
+        final GamePlaySettings settings = content.settings();
 
         // --- Core infra
         EventBus eventBus = new DefaultEventBus();
@@ -107,7 +108,7 @@ public final class WorldBootstrap {
         // --- Templates
 
         ItemTemplateRegistry itemTemplateRegistry =
-                new CachedItemTemplateRegistry(new JsonTemplateLoader<>(Path.of("template/items"), ItemTemplate.class).load());
+                new CachedItemTemplateRegistry(items);
 
         final TemplateRegistry<String, NpcTemplate> npcTemplateByName = registryMap.get(NPC_BY_NAME);
         final TemplateRegistry<String, ItemTemplate> itemTemplateByName = registryMap.get(ITEM_TEMPLATE_BY_NAME);
@@ -120,7 +121,7 @@ public final class WorldBootstrap {
 
 
         // --- Region
-        RegionSystem regionSystem = new RegionSystemImpl(new JsonTemplateLoader<>(Path.of("template/regions"), RegionTemplate.class));
+        RegionSystem regionSystem = new RegionSystemImpl(content.regions());
 
         MobileStorage mobileStorage = configuration.mobileStorage();
         ItemStorage itemStorage = configuration.itemStorage();
@@ -153,6 +154,7 @@ public final class WorldBootstrap {
                 // Templates
                 itemTemplateRegistry,
                 npcTemplateByName,
+                npcStatsResolver,
                 itemTemplateByName,
                 itemTemplateByModelId,
                 bodyTemplateByName,

@@ -1,0 +1,20 @@
+[
+  {
+    "name": "undead_basic",
+    "strength": 50,
+    "dexterity": 50,
+    "intelligence": 50,
+    "maxHitpoints": 50,
+    "maxStamina": 50,
+    "maxMana": 50
+  },
+  {
+    "name": "undead_level2",
+    "strength": 100,
+    "dexterity": 70,
+    "intelligence": 50,
+    "maxHitpoints": 120,
+    "maxStamina": 80,
+    "maxMana": 50
+  }
+]

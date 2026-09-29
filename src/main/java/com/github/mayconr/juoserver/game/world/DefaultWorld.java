@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.npc.NpcRequester;
 import com.github.mayconr.juoforge.reader.view.LandTile;
 import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.WorldCfg;
@@ -25,7 +26,6 @@ import com.github.mayconr.juoserver.game.economy.EconomyModuleImpl;
 import com.github.mayconr.juoserver.game.economy.StockHandler;
 import com.github.mayconr.juoserver.game.economy.VendorHandler;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
-import com.github.mayconr.juoserver.game.economy.template.RegionStockTemplate;
 import com.github.mayconr.juoserver.game.interaction.InteractionModuleImpl;
 import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
@@ -42,6 +42,7 @@ import com.github.mayconr.juoserver.game.mobile.MobileModuleImpl;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
+import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
@@ -84,13 +85,11 @@ import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
-import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoader;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -142,6 +141,7 @@ public class DefaultWorld implements WorldInternal, World {
      */
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final TemplateRegistry<String, NpcTemplate> npcTemplateByName;
+    private final NpcStatsResolver npcStatsResolver;
     private final TemplateRegistry<String, ItemTemplate> itemTemplateByName;
     private final TemplateRegistry<Integer, ItemTemplate> itemTemplateByModelId;
     private final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateByBodyKey;
@@ -199,7 +199,7 @@ public class DefaultWorld implements WorldInternal, World {
      */
 
     private void initializeMessagingModule() {
-        final var styles = new JsonTemplateLoader<>(Path.of("template/config/message-styles.json"), MessageStyleTemplate.class).load().values();
+        final var styles = worldCfg.content().messageStyles().loadAll();
         var messageStyleRegistry = new InMemoryTemplateRegistry<>(styles, MessageStyleTemplate::name);
         this.messageModule = new MessageModuleImpl(eventBus, messageStyleRegistry);
     }
@@ -208,7 +208,7 @@ public class DefaultWorld implements WorldInternal, World {
         final var pricingStrategy = worldCfg.pricingStrategy().get();
         final var vendorHandler = new VendorHandler(eventBus, serialGenerator, pricingStrategy);
         final var stockHandler = new StockHandler();
-        final var templateLoader = new JsonTemplateLoader<>(Path.of("template/stock"), RegionStockTemplate.class);
+        final var templateLoader = worldCfg.content().stocks();
 
         this.economyModule = new EconomyModuleImpl(vendorHandler, stockHandler, wallet, templateLoader);
     }
@@ -277,7 +277,8 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeMobileModule(Wallet wallet) {
-        final var npcDespawnService = new NpcDespawnService(storage);
+        this.npcModule = new NpcModuleImpl();
+        final var npcDespawnService = new NpcDespawnService(storage, npcModule);
 
         this.mobileModule = new MobileModuleImpl(npcDespawnService, wallet, eventBus, storage);
     }
@@ -295,7 +296,6 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeNpcModule() {
-        this.npcModule = new NpcModuleImpl();
     }
 
     /*
@@ -343,6 +343,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .itemByModelId(itemTemplateByModelId)
                     .itemByName(itemTemplateByName)
                     .npcByName(npcTemplateByName)
+                    .npcStatsResolver(npcStatsResolver)
                     .bodyByKey(bodyTemplateByBodyKey)
                     .startKitBySkillId(startKitTemplateBySkillId)
                     .mountByItemName(mountTemplateByItemName)
@@ -776,14 +777,14 @@ public class DefaultWorld implements WorldInternal, World {
      */
 
     @Override
-    public UONpc createNpc(String template, Location location) {
-        return npcModule.createNpc(template, location);
+    public UONpc createNpc(NpcRequester requester, String template, Location location) {
+        return npcModule.createNpc(requester, template, location);
     }
 
     @Override
-    public void deleteMobile(UOMobile mobile) {
+    public void deleteMobile(NpcRequester requester, UOMobile mobile) {
         switch (mobile) {
-            case UONpc npc -> npcModule.removeNpc(npc);
+            case UONpc npc -> npcModule.removeNpc(requester, npc);
             case UOPlayer player -> log.info("Remove a player is not allowed yet {}", player.getId());
             default -> throw new IllegalStateException("Unexpected value: " + mobile);
         }

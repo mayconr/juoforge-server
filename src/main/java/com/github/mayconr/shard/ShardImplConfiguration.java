@@ -24,6 +24,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -34,6 +35,12 @@ import java.util.concurrent.Executors;
 
 @Configuration
 public class ShardImplConfiguration {
+
+    @Value("${shard.root:.}")
+    private String shardRoot;
+
+    @Value("${shard.development-content:false}")
+    private boolean developmentContent;
 
     // Database
     @Bean
@@ -96,6 +103,7 @@ public class ShardImplConfiguration {
     public ServerRuntime runtime(Executor databaseExecutor, SqlSessionFactory sessionFactory) {
 
         var serverRuntime = new WorldBootstrap(cfg -> {
+            cfg.content(ShardContentLoader.load(Path.of(shardRoot), developmentContent));
             cfg.mobileStorage(new PsqlMobileStorage(databaseExecutor, sessionFactory));
             cfg.itemStorage(new PsqlItemStorage(databaseExecutor, sessionFactory));
             cfg.accountStorage(new PsqlAccountStorage(sessionFactory, databaseExecutor));
@@ -138,7 +146,7 @@ public class ShardImplConfiguration {
             cfg.addEventListener(Resurrect::new);
             cfg.addEventListener(SystemCmd::new);
             cfg.addEventListener(r->new Save(r.storage()));
-            cfg.addCustomTemplate("oreByName", Ore.class, Ore::name, Path.of("template/skills/mining"));
+            cfg.addCustomTemplate("oreByName", Ore.class, Ore::name, Path.of(shardRoot).resolve("content/skills/mining"));
 
         }).start();
 

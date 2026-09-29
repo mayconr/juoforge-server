@@ -31,6 +31,11 @@ public class JsonTemplateLoader<T extends BaseTemplate> implements TemplateLoade
     }
 
     @Override
+    public List<T> loadAll() {
+        return List.copyOf(load().values());
+    }
+
+    @Override
     public Map<String, T> load() {
         final Map<String, T> templates = new HashMap<>();
 

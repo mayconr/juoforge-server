@@ -3,6 +3,7 @@
     "name": "horse",
     "displayName": "horse",
     "modelId": 200,
+    "statProfile": "animal_basic",
     "notoriety": "INNOCENT",
     "hue": 0,
     "behavior": {
@@ -12,7 +13,6 @@
     "attr": {
       "behavior.radius": 3,
       "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
-    },
-    "equippedItems": []
+    }
   }
 ]

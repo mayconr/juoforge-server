@@ -6,31 +6,11 @@
     "modelId": 3939,
     "movable": true,
     "hue": 0,
-    "flags": ["WEARABLE","WEAPON"],
+    "flags": [
+      "WEARABLE",
+      "WEAPON"
+    ],
     "attr": {}
-  },
-  {
-    "name": "robe",
-    "displayName": "a Robe",
-    "layer": "OUTER_TORSO",
-    "modelId": 7935,
-    "movable": true,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
-  },
-
-  {
-    "name": "mochila",
-    "displayName": "mochila",
-    "layer": null,
-    "modelId": 3701,
-    "movable": false,
-    "hue": 0,
-    "flags": ["WEARABLE", "CONTAINER"],
-    "attr": {
-      "gumpId": 60
-    }
   },
   {
     "name": "sword",
@@ -39,7 +19,10 @@
     "modelId": 526,
     "movable": true,
     "hue": 0,
-    "flags": ["WEARABLE","WEAPON"],
+    "flags": [
+      "WEARABLE",
+      "WEAPON"
+    ],
     "attr": {}
   },
   {
@@ -47,19 +30,25 @@
     "displayName": "a Kite",
     "layer": "TWO_HANDED",
     "modelId": 7028,
-    "flags": ["WEARABLE","WEAPON"]
+    "flags": [
+      "WEARABLE",
+      "WEAPON"
+    ]
   },
   {
     "name": "katana",
     "displayName": "a Katana",
     "layer": "ONE_HANDED",
     "modelId": 5118,
-    "flags": ["WEARABLE","WEAPON"],
+    "flags": [
+      "WEARABLE",
+      "WEAPON"
+    ],
     "weapon": {
-      "style" : "KATANA",
-      "baseDamage" : {
+      "style": "KATANA",
+      "baseDamage": {
         "min": 10,
-        "max" : 15
+        "max": 15
       },
       "radius": 1
     }
@@ -69,12 +58,15 @@
     "displayName": "a Crossbow",
     "layer": "ONE_HANDED",
     "modelId": 3919,
-    "flags": ["WEARABLE","WEAPON"],
+    "flags": [
+      "WEARABLE",
+      "WEAPON"
+    ],
     "weapon": {
-      "style" : "CROSSBOW",
-      "baseDamage" : {
+      "style": "CROSSBOW",
+      "baseDamage": {
         "min": 10,
-        "max" : 15
+        "max": 15
       },
       "radius": 8
     }
@@ -84,12 +76,15 @@
     "displayName": "a Bow",
     "layer": "ONE_HANDED",
     "modelId": 5041,
-    "flags": ["WEARABLE","WEAPON"],
+    "flags": [
+      "WEARABLE",
+      "WEAPON"
+    ],
     "weapon": {
-      "style" : "BOW",
-      "baseDamage" : {
+      "style": "BOW",
+      "baseDamage": {
         "min": 10,
-        "max" : 15
+        "max": 15
       },
       "radius": 8
     }
@@ -99,24 +94,17 @@
     "displayName": "a Black Staff",
     "layer": "TWO_HANDED",
     "modelId": 3568,
-    "flags": ["WEARABLE","WEAPON"],
+    "flags": [
+      "WEARABLE",
+      "WEAPON"
+    ],
     "weapon": {
-      "style" : "STAFF",
-      "baseDamage" : {
+      "style": "STAFF",
+      "baseDamage": {
         "min": 10,
-        "max" : 15
+        "max": 15
       },
       "radius": 2
     }
-  },
-  {
-    "name": "hat",
-    "displayName": "hat",
-    "layer": "HEAD",
-    "modelId": 5907,
-    "movable": true,
-    "hue": 0,
-    "flags": ["WEARABLE"],
-    "attr": {}
   }
 ]

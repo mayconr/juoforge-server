@@ -1,0 +1,8 @@
+{
+  "gameLoop": {
+    "tps": 20
+  },
+  "files": {
+    "dataFileRoot": "C:\\Program Files (x86)\\Electronic Arts\\Ultima Online Classic"
+  }
+}

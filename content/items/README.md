@@ -1,4 +1,4 @@
-﻿# Items
+# Items
 
 The `.json` files in this directory define the shard's item templates.
 Each file contains an array of objects. The server loads these templates during
@@ -27,7 +27,7 @@ There is no property named `props`: additional data belongs in `attr`.
 | `flags` | array of enums | `[]` | Classifications used by item systems. |
 | `attr` | JSON object | `{}` | Custom attributes copied into the instance's persistent attributes. |
 | `containerGumpId` | integer | `0` | Gump used to open a container. This is a top-level template property. |
-| `mountName` | string | `null` | Present in the contract but unused by the current mount flow. The active mapping is configured in `template/config/mounts.json`. |
+| `mountName` | string | `null` | Present in the contract but unused by the current mount flow. The active mapping is configured in `content/mounts/mounts.json`. |
 | `weapon` | object | `null` | Weapon combat configuration: style, base damage, and radius. |
 
 These defaults describe current loading behavior; they do not guarantee that an

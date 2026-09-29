@@ -1,0 +1,32 @@
+[
+  {
+    "name": "skeleton",
+    "displayName": "Skeleton",
+    "modelId": 57,
+    "statProfile": "undead_level2",
+    "notoriety": "MURDERER",
+    "behavior": {
+      "profile" : "ANIMAL",
+      "ai" : "PASSIVE_ANIMAL"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
+    }
+  },
+  {
+    "name": "wraith",
+    "displayName": "Wraith",
+    "modelId": 26,
+    "statProfile": "undead_level2",
+    "notoriety": "MURDERER",
+    "behavior": {
+      "profile" : "ANIMAL",
+      "ai" : "PASSIVE_ANIMAL"
+    },
+    "attr": {
+      "behavior.radius": 3,
+      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
+    }
+  }
+]
