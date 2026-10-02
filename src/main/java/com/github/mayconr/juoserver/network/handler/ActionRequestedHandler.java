@@ -15,6 +15,6 @@ public class ActionRequestedHandler extends PlayerSessionChannelInboundHandler<A
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, ActionRequest msg) {
-        world.handleAction(session.getPlayer(), new ActionRequest(msg.getSubCommand()));
+        world.interaction().handleAction(session.getPlayer(), new ActionRequest(msg.getSubCommand()));
     }
 }

@@ -16,6 +16,6 @@ public class CreateEquippedItem extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        world.createItem(ItemRequest.byName(event.arguments()[0]), ItemTarget.equip(event.player()));
+        world.item().createItem(ItemRequest.byName(event.arguments()[0]), ItemTarget.equip(event.player()));
     }
 }

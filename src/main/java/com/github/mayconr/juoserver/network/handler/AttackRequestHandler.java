@@ -15,6 +15,6 @@ public class AttackRequestHandler extends PlayerSessionChannelInboundHandler<Att
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, AttackRequest msg) {
-        world.attack(session.getPlayer(), msg);
+        world.combat().requestAttack(session.getPlayer(), msg.getOpponentSerialId());
     }
 }

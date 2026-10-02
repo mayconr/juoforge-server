@@ -16,9 +16,9 @@ public class Destroy extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        world.sendTarget(event.player(), CursorType.NEUTRAL, target->{
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, target->{
             if (target instanceof ItemTargetResult result) {
-                world.deleteItem(result.item());
+                world.item().deleteItem(result.item());
             }
         });
     }

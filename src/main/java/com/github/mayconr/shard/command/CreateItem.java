@@ -38,22 +38,22 @@ public class CreateItem extends AbstractCommand {
     }
 
     private void sendCursor(UOPlayer player, Consumer<TargetResult> resultConsumer) {
-        world.sendTarget(player, CursorType.NEUTRAL, resultConsumer);
+        world.interaction().sendTarget(player, CursorType.NEUTRAL, resultConsumer);
     }
 
     private void createEquippedItem(TargetResult result, String template) {
         if (result instanceof MobileTargetResult rs) {
-            world.createItem(ItemRequest.byName(template), ItemTarget.equip(rs.mobile()));
+            world.item().createItem(ItemRequest.byName(template), ItemTarget.equip(rs.mobile()));
         }
     }
 
     private void createGroundItem(TargetResult result, String template) {
-        world.createItem(ItemRequest.byName(template), ItemTarget.dropAt(result.location()));
+        world.item().createItem(ItemRequest.byName(template), ItemTarget.dropAt(result.location()));
     }
 
     private void createContainerItem(TargetResult result, String template) {
         if (result instanceof ItemTargetResult rs) {
-            world.createItem(ItemRequest.byName(template), ItemTarget.container((UOContainer) rs.item()));
+            world.item().createItem(ItemRequest.byName(template), ItemTarget.container((UOContainer) rs.item()));
         }
     }
 }

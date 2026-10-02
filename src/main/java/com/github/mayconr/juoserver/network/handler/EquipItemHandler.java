@@ -15,6 +15,7 @@ public class EquipItemHandler extends PlayerSessionChannelInboundHandler<EquipIt
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, EquipItemRequest msg) {
-        world.equipItem(session.getPlayer(), msg);
+        world.item().getItemBySerialId(msg.getItemSerialId())
+                .ifPresent(item -> world.mobile().equipItem(session.getPlayer(), item));
     }
 }

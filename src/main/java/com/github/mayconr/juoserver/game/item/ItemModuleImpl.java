@@ -7,8 +7,12 @@ import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.RequiredArgsConstructor;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -17,6 +21,8 @@ public class ItemModuleImpl implements ItemModule {
 
     private final ItemHandler itemHandler;
     private final ContainerHandler containerHandler;
+    private final RealmStorage storage;
+    private final ItemTemplateRegistry itemTemplateRegistry;
     private FlowFacade flows;
 
     @Override
@@ -36,6 +42,36 @@ public class ItemModuleImpl implements ItemModule {
         var context = new ItemCreationContext(request, target, options);
         flows.execute(context);
         return context.result("Cannot create item for request "+request);
+    }
+
+    @Override
+    public void deleteItem(int serial) {
+        if (!UOItem.isItem(serial)) {
+            throw new IllegalArgumentException("Serial [" + serial + "] is not an item");
+        }
+        final var item = getItemBySerialId(serial)
+                .orElseThrow(() -> new IllegalArgumentException("Item [" + serial + "] not found"));
+        deleteItem(item);
+    }
+
+    @Override
+    public Optional<UOItem> getItemBySerialId(int serial) {
+        return storage.getItem(serial);
+    }
+
+    @Override
+    public Optional<UOContainer> getContainerBySerialId(int serial) {
+        return storage.getContainer(serial);
+    }
+
+    @Override
+    public List<UOItem> getItemsInRange(Location location, int radius) {
+        return storage.getItemsInRange(location);
+    }
+
+    @Override
+    public List<ItemTemplate> getItemsTemplate(String stockType) {
+        return itemTemplateRegistry.getItemTemplates(stockType);
     }
 
     @Override

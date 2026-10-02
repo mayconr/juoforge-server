@@ -39,24 +39,24 @@ public class MiningSwingTask implements GameTask {
         } else {
             options = AnimationOptions.simpleForward(AnimationType.ATTACK_ONE_HANDED_WIDE, 20);
         }
-        world.sendAnimation(player, options);
-        world.tryGainSkill(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
+        world.interaction().sendAnimation(player, options);
+        world.skill().tryGain(player, Skills.MINING.getId(), 100, SkillGainContext.of(player));
 
         final var skill = player.getSkills().get(Skills.MINING.getId());
         final var ore = resourceRoller.apply(skill.getValue());
 
         if (ore == null) {
-            world.sendMessage(player, new PlainTextMessageContent("You loosen some rocks but find nothing of value."));
+            world.message().send(player, new PlainTextMessageContent("You loosen some rocks but find nothing of value."));
             return;
         }
         final var itemRequest = ItemRequest.byName(ore.itemName())
                 .withAmount(2);
         UOContainer container = null;
-        final var oreItem = world.createItem(itemRequest, ContainerItemTarget.of(container, cfg->{
+        final var oreItem = world.item().createItem(itemRequest, ContainerItemTarget.of(container, cfg->{
             cfg.tryStack(true);
         }));
 
-        world.sendMessage(player, MessageContent.plain("you finished "+oreItem.getAmount()));
+        world.message().send(player, MessageContent.plain("you finished "+oreItem.getAmount()));
 
         if (log.isDebugEnabled()) {
             log.debug("Ore [{}] created in [{}-{}] backpackItem", oreItem.getName(), player.getSerialId(), player.getName());
@@ -70,6 +70,6 @@ public class MiningSwingTask implements GameTask {
 
     @Override
     public void onDone(long currentTick, double delta) {
-        world.sendMessage(player, new PlainTextMessageContent("You are done of mining"));
+        world.message().send(player, new PlainTextMessageContent("You are done of mining"));
     }
 }

@@ -143,7 +143,6 @@ public final class WorldBootstrap {
                 eventBus,
                 serialGenerator,
                 storage,
-                gameLoop,
                 regionSystem,
                 uoFileReader,
                 policyService,

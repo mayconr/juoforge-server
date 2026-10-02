@@ -10,7 +10,6 @@ import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.WarModeType;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
-import com.github.mayconr.juoserver.network.packet.AttackRequest;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -92,8 +91,8 @@ public class CombatModuleImpl implements CombatModule {
     }
 
     @Override
-    public void requestAttack(UOPlayer player, AttackRequest request) {
-        commandQueue.add(new AttackCommand(player, request.getOpponentSerialId(), CombatOrigin.ofRequest()));
+    public void requestAttack(UOPlayer player, int targetSerial) {
+        commandQueue.add(new AttackCommand(player, targetSerial, CombatOrigin.ofRequest()));
     }
 
     @Override

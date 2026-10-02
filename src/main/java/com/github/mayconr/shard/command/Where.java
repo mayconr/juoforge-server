@@ -26,15 +26,15 @@ public class Where extends AbstractCommand{
     public void handle(Prompt event) {
         var message = "You are here "+event.player().getX()+" - "+ event.player().getY()+" - "+event.player().getZ();
 
-        world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, result->{
             if (result instanceof MobileTargetResult rs) {
-                world.printTextAbove(rs.mobile(), new PlainTextMessageContent(message), event.player());
+                world.message().printTextAbove(rs.mobile(), new PlainTextMessageContent(message), event.player());
             }
             if (result instanceof ItemTargetResult rs) {
-                world.printTextAbove(rs.item(), new PlainTextMessageContent(message));
+                world.message().printTextAbove(rs.item(), new PlainTextMessageContent(message));
             }
         });
-        world.sendMessage(event.player(), MessageContent.localized(message, Map.of()));
+        world.message().send(event.player(), MessageContent.localized(message, Map.of()));
 
         log.debug(message);
     }

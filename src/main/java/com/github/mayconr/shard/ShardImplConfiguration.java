@@ -109,11 +109,11 @@ public class ShardImplConfiguration {
             cfg.accountStorage(new PsqlAccountStorage(sessionFactory, databaseExecutor));
 
             // Item trigger
-            cfg.addItemTrigger(runtime -> new SpellbookUseTrigger(runtime.world()));
+            cfg.addItemTrigger(runtime -> new SpellbookUseTrigger(runtime.world().spell()));
             cfg.addItemTrigger(runtime->{
                 final TemplateRegistry<String, Ore> oreRegistry = runtime.getTemplateRegistry("oreByName", Ore.class);
-                final var oreResourceRoller = new OreResourceRoller(runtime.world(), oreRegistry);
-                final var service = new MiningUseService(oreResourceRoller, runtime, new MiningTargetValidator());
+                final var oreResourceRoller = new OreResourceRoller(runtime.world().random()::roll, oreRegistry);
+                final var service = new MiningUseService(oreResourceRoller, runtime.world(), runtime.gameLoop(), new MiningTargetValidator());
                 return new MiningToolTrigger(service);
             });
 
@@ -121,7 +121,7 @@ public class ShardImplConfiguration {
             cfg.combatSkillGainPolicy(DefaultCombatSkillGainPolicy::new);
 
             // Spell
-            cfg.addFlow(HealContext.class, runtime -> HealFlowDefinition.build(runtime.world()));
+            cfg.addFlow(HealContext.class, runtime -> HealFlowDefinition.build(runtime.world().message()));
             cfg.addSpellTrigger(runtime -> new HealSpellTrigger(runtime.flows()));
 
             // Listeners

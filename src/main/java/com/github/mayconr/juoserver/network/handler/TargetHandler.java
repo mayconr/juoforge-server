@@ -15,6 +15,6 @@ public class TargetHandler extends PlayerSessionChannelInboundHandler<Target> {
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, Target msg) {
-        world.resolveTarget(session.getPlayer(), msg);
+        world.interaction().resolveTarget(session.getPlayer(), msg);
     }
 }

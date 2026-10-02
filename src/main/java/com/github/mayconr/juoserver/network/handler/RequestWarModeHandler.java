@@ -15,6 +15,6 @@ public class RequestWarModeHandler extends PlayerSessionChannelInboundHandler<Re
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, RequestWarMode msg) {
-        world.toggleWarMode(session.getPlayer(), msg.getType());
+        world.combat().toggleWarMode(session.getPlayer(), msg.getType());
     }
 }

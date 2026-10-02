@@ -17,6 +17,6 @@ public class DoubleClickHandler extends PlayerSessionChannelInboundHandler<Doubl
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, DoubleClick msg) {
-        world.doubleClick(session.getPlayer(), msg);
+        world.ui().doubleClick(session.getPlayer(), msg);
     }
 }

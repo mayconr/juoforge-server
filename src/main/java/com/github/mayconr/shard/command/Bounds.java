@@ -35,7 +35,7 @@ public class Bounds extends AbstractCommand{
             case "refresh" -> refresh(player);
             case "clear" -> clear(player);
             case "info" -> info(player);
-            default -> world.sendMessage(player, "Invalid sub-command");
+            default -> world.message().send(player, "Invalid sub-command");
         }
     }
 
@@ -50,32 +50,32 @@ public class Bounds extends AbstractCommand{
                     .append(" ");
         }
         log.info(info.toString());
-        world.sendMessage(player, info.toString());
+        world.message().send(player, info.toString());
     }
 
     private void set(UOPlayer player, String index) {
-        world.sendMessage(player, "Select a region");
-        world.sendTarget(player, CursorType.NEUTRAL, result->{
+        world.message().send(player, "Select a region");
+        world.interaction().sendTarget(player, CursorType.NEUTRAL, result->{
             var attributes = player.runtimeAttributes();
 
             attributes.getOrDefault(LOCATIONS, Collections.<Location>emptyList()).set(Integer.parseInt(index) - 1, result.location());
 
             refresh(player);
 
-            world.sendMessage(player, "Location updated!");
+            world.message().send(player, "Location updated!");
         });
     }
 
     private void add(UOPlayer player) {
         var attributes = player.runtimeAttributes();
-        world.sendMessage(player, "Select a region");
-        world.sendTarget(player, CursorType.NEUTRAL, result->{
+        world.message().send(player, "Select a region");
+        world.interaction().sendTarget(player, CursorType.NEUTRAL, result->{
             attributes.computeIfAbsent(LOCATIONS, ArrayList::new)
                     .add(result.location());
 
             refresh(player);
 
-            world.sendMessage(player, "Location added!");
+            world.message().send(player, "Location added!");
         });
     }
 
@@ -83,7 +83,7 @@ public class Bounds extends AbstractCommand{
         var attributes = player.runtimeAttributes();
 
         for (Integer serial : attributes.getOrDefault(ITEMS, Collections.<Integer>emptyList())) {
-            world.deleteItem(serial);
+            world.item().deleteItem(serial);
         }
 
         draw(player);
@@ -93,12 +93,12 @@ public class Bounds extends AbstractCommand{
         var attributes = player.runtimeAttributes();
 
         for (Integer serial : attributes.getOrDefault(ITEMS, Collections.<Integer>emptyList())) {
-            world.deleteItem(serial);
+            world.item().deleteItem(serial);
         }
         attributes.remove(LOCATIONS);
         attributes.remove(ITEMS);
 
-        world.sendMessage(player, "Bounds cleared!");
+        world.message().send(player, "Bounds cleared!");
     }
 
     private void draw(UOPlayer player) {
@@ -132,7 +132,7 @@ public class Bounds extends AbstractCommand{
     }
 
     private void createItem(List<Integer> boundItems, String name, Location location) {
-        int serialFlag = world.createItem(ItemRequest.byName(name), ItemTarget.dropAt(location))
+        int serialFlag = world.item().createItem(ItemRequest.byName(name), ItemTarget.dropAt(location))
                 .getSerialId();
         boundItems.add(serialFlag);
     }

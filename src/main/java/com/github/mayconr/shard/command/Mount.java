@@ -18,10 +18,10 @@ public class Mount extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, result->{
             if (result instanceof MobileTargetResult rs) {
                 if (rs.mobile() instanceof UONpc npc) {
-                    world.mount(event.player(), npc);
+                    world.mobile().mount(event.player(), npc);
                 }
             }
         });

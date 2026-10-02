@@ -12,7 +12,7 @@ public class PhisycalGoldWallet implements Wallet {
 
     @Override
     public int getBalance(UOMobile mobile) {
-        return world.getItemsInContainer(mobile.getBackpack(), item -> item.getName().equals("gold_coin"))
+        return world.item().getItemsInContainer(mobile.getBackpack(), item -> item.getName().equals("gold_coin"))
                 .stream()
                 .map(UOItem::getAmount)
                 .reduce(0, Integer::sum);
@@ -20,7 +20,7 @@ public class PhisycalGoldWallet implements Wallet {
 
     @Override
     public boolean withdraw(UOMobile mobile, int amount) {
-        return world.consumeItem(mobile.getBackpack(), "gold_coin", amount, true).success();
+        return world.item().consumeItem(mobile.getBackpack(), "gold_coin", amount, true).success();
     }
 
     @Override

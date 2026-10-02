@@ -15,6 +15,6 @@ public class GumpSelectionHandler extends PlayerSessionChannelInboundHandler<Gum
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, GumpSelection msg) {
-        world.gumpResponse(session.getPlayer(), msg);
+        world.ui().onGumpSelection(session.getPlayer(), msg);
     }
 }

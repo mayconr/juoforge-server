@@ -33,7 +33,7 @@ public class Debug extends AbstractCommand {
         } else {
             logUsage();
         }
-        world.sendMessage(event.player(), "All the information were printed in the server console!");
+        world.message().send(event.player(), "All the information were printed in the server console!");
     }
 
     private void logUsage() {
@@ -49,7 +49,7 @@ public class Debug extends AbstractCommand {
     }
 
     private void logOnlinePlayers() {
-        var onlinePlayers = world.getOnlinePlayers();
+        var onlinePlayers = world.player().getOnlinePlayers();
         var details = onlinePlayers.stream()
                 .map(player -> "  - Serial: %d | Name: %s | Position: (%d, %d, %d) | Connected: %s | State: %s".formatted(
                         player.getSerialId(), player.getName(), player.getX(), player.getY(), player.getZ(),
@@ -66,7 +66,7 @@ public class Debug extends AbstractCommand {
     }
 
     private void logMobilesInRange(UOPlayer source) {
-        var mobiles = world.getMobilesInRange(source, DEBUG_RADIUS, mobile -> true);
+        var mobiles = world.storage().getMobilesInRange(source, DEBUG_RADIUS, mobile -> true);
         var details = mobiles.stream()
                 .map(mobile -> "  - Class: %s | Serial: %d | Name: %s | Position: (%d, %d, %d) | State: %s".formatted(
                         mobile.getClass().getSimpleName(), mobile.getSerialId(), mobile.getName(),

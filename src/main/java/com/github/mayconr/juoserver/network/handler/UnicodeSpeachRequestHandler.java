@@ -15,6 +15,6 @@ public class UnicodeSpeachRequestHandler extends PlayerSessionChannelInboundHand
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, UnicodeSpeachRequest msg) {
-        world.speech(session.getPlayer(), msg);
+        world.interaction().speech(session.getPlayer(), msg);
     }
 }

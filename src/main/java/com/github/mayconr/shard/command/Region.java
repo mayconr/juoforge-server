@@ -16,8 +16,8 @@ public class Region extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        var region = world.getRegion(event.player())
+        var region = world.map().getRegion(event.player())
                 .orElseThrow(()->new IllegalStateException("Region has no region"));
-        world.sendMessage(event.player(), new PlainTextMessageContent("Voce esta em "+region.getDisplayName()));
+        world.message().send(event.player(), new PlainTextMessageContent("Voce esta em "+region.getDisplayName()));
     }
 }

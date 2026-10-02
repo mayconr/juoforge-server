@@ -17,6 +17,6 @@ public class MoveRequestHandler extends PlayerSessionChannelInboundHandler<MoveR
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, MoveRequest msg) {
-        worldInternal.move(session.getPlayer(), msg);
+        worldInternal.mobile().move(session.getPlayer(), msg);
     }
 }

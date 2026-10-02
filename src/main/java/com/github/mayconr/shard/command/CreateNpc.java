@@ -22,12 +22,12 @@ public class CreateNpc extends AbstractCommand {
         final var player = event.player();
         final var npcName = event.arguments()[0];
 
-        world.sendMessage(player, MessageContent.plain("Select a location to create the NPC"));
-        world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
+        world.message().send(player, MessageContent.plain("Select a location to create the NPC"));
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, result->{
             if (result instanceof TileTargetResult staticResult) {
                 System.out.println(staticResult.staticsTile());
             }
-            world.createNpc(new NpcRequester.Player(player), npcName, result.location());
+            world.npc().createNpc(new NpcRequester.Player(player), npcName, result.location());
         });
 
     }

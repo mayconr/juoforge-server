@@ -15,6 +15,6 @@ public class VendorBuyRequestHandler extends PlayerSessionChannelInboundHandler<
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, VendorBuyRequest msg) {
-        world.completeVendorPurchase(session.getPlayer(), msg);
+        world.economy().completeVendorPurchase(session.getPlayer(), msg);
     }
 }
