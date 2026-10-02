@@ -1,52 +1,38 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
-import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.game.economy.EconomyModule;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import com.github.mayconr.juoserver.game.ui.UICommands;
+import com.github.mayconr.juoserver.game.player.PlayerCommands;
+import com.github.mayconr.juoserver.game.mobile.MobileModule;
+import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.skill.SkillModule;
+import com.github.mayconr.juoserver.game.interaction.InteractionModule;
 
-public interface WorldInternal extends WorldActions, WorldView, CombatInternal, UiInternal {
+/** Engine access to module commands and operations without a module equivalent. */
+public interface WorldInternal extends WorldModules {
+
+    @Override
+    UICommands ui();
+
+    @Override
+    PlayerCommands player();
+
+    @Override
+    MobileModule mobile();
+
+    @Override
+    ItemModule item();
+
+    @Override
+    SkillModule skill();
+
+    @Override
+    InteractionModule interaction();
 
     void initialize();
 
-    void speech(UOPlayer player, UnicodeSpeachRequest request);
-
-    void move(UOMobile mobile, MoveRequest moveRequest);
-
-    CompletableFuture<UOMobile> loadMobile(int serialId);
-
-    CompletableFuture<UOPlayer> createPlayerMobile(CreateCharacter character, Map<Integer, RegionNode> startingLocations, UOAccount account);
-
-    boolean isMobile(int serialId);
-
-    void handleAction(UOPlayer player, ActionRequest request);
-
-    void completeVendorPurchase(UOPlayer player, VendorBuyRequest vendorBuyRequest);
-
-    void doubleClick(UOPlayer player, DoubleClick doubleClick);
-
-    void singleClick(UOPlayer player, SingleClickRequest singleClick);
-
-    void equipItem(UOPlayer player, EquipItemRequest equipItem);
-
-    void unequipItem(UOPlayer player, UnequipItem pickedUpItem);
-
-    void dropItem(UOPlayer player, DropItem dropItem);
-
-    void useSkill(UOPlayer player, int skillId);
-
-    void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills);
-
-    CompletableFuture<Void> deletePlayerMobile(int serialId);
-
-    List<RegionNode> getRegionsByType(RegionType type);
-
-    CompletableFuture<UOAccount> getAccountByUsername(String username);
-
-    void resync(UOPlayer player, MoveResyncAck resyncAck);
+    @Override
+    EconomyModule economy();
 
 }

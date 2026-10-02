@@ -15,7 +15,7 @@ public class PlayerVitalsHandler {
         double regenAccumulator = attributes.getOrDefault("REGEN_ACCUMULATOR", 0d) + delta;
 
         if (regenAccumulator > 10) {
-            world.regen(player, delta);
+            world.combat().regen(player, delta);
             regenAccumulator -= 10;
         }
 

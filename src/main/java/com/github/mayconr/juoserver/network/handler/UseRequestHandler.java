@@ -21,7 +21,7 @@ public class UseRequestHandler extends PlayerSessionChannelInboundHandler<UseReq
                 String[] parts = msg.getValue().split(" ");
                 int skillId = Integer.parseInt(parts[0]);
                 //int targetMode = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
-                world.useSkill((UOPlayer) session.getPlayer(), skillId);
+                world.skill().useSkill((UOPlayer) session.getPlayer(), skillId);
             }
             case MACRO_SPELL -> System.out.println("speel");
             case ACTION -> System.out.println("Action");

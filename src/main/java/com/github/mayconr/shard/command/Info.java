@@ -17,7 +17,7 @@ public class Info extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.sendTarget(event.player(), CursorType.NEUTRAL, res -> {
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, res -> {
             if (res instanceof TileTargetResult statics) {
                 logStatics(statics);
             } else if (res instanceof MobileTargetResult mobile) {

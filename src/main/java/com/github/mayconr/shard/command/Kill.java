@@ -18,10 +18,10 @@ public class Kill extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        world.sendTarget(event.player(), CursorType.NEUTRAL, result->{
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, result->{
             if (result instanceof MobileTargetResult rs) {
-                world.kill(rs.mobile(), event.player(), DamageSourceKind.COMMAND);
-                world.sendMessage(event.player(), new PlainTextMessageContent(String.format("%s has been killed", rs.mobile().getDisplayName())));
+                world.damage().kill(rs.mobile(), event.player(), DamageSourceKind.COMMAND);
+                world.message().send(event.player(), new PlainTextMessageContent(String.format("%s has been killed", rs.mobile().getDisplayName())));
             }
         });
     }

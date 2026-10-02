@@ -2,7 +2,9 @@ package com.github.mayconr.shard.skills.crafting.lumberjacking;
 
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.world.WorldActions;
+import com.github.mayconr.juoserver.game.item.WorldItem;
+import com.github.mayconr.juoserver.game.skill.WorldSkill;
+import com.github.mayconr.juoserver.game.interaction.WorldInteraction;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.shard.skills.Skills;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
@@ -14,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 public class LumberjackSwingTask implements GameTask {
 
     private final UOPlayer player;
-    private final WorldActions worldActions;
+    private final WorldItem items;
+    private final WorldSkill skills;
+    private final WorldInteraction interaction;
     private final ResourceRoller resourceRoller;
 
     private static final int SWING_INTERVAL_TICKS = 30;
@@ -35,15 +39,15 @@ public class LumberjackSwingTask implements GameTask {
         } else {
             options = AnimationOptions.simpleForward(AnimationType.ATTACK_ONE_HANDED_WIDE, 20);
         }
-        worldActions.sendAnimation(player, options);
+        interaction.sendAnimation(player, options);
 
-        worldActions.tryGainSkill(player, Skills.LUMBERJACK.getId(), 100, SkillGainContext.of(player));
+        skills.tryGain(player, Skills.LUMBERJACK.getId(), 100, SkillGainContext.of(player));
 
         var item = resourceRoller.rollResource(50);
 
         if (item != null) {
             UOContainer container = null;//
-            final var woodItem = worldActions.createItem(ItemRequest.byName(item.toString().toLowerCase()), ItemTarget.container(container));
+            final var woodItem = items.createItem(ItemRequest.byName(item.toString().toLowerCase()), ItemTarget.container(container));
             if (log.isDebugEnabled()) {
                 log.debug("Wood [{}] created in [{}-{}] backpackItem", woodItem.getName(), player.getSerialId(), player.getName());
             }

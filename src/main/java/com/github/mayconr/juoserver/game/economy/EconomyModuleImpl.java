@@ -4,6 +4,10 @@ import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.economy.stock.StockPool;
 import com.github.mayconr.juoserver.game.economy.template.RegionStockTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.event.VendorPurchaseFailed;
+import com.github.mayconr.juoserver.game.model.event.VendorPurchaseCompleted;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.VendorPurchaseResult;
@@ -15,6 +19,7 @@ import com.github.mayconr.juoserver.network.packet.VendorBuyRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +29,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public final class EconomyModuleImpl implements EconomyModule {
 
+    private final EventBus eventBus;
     private final VendorHandler vendorHandler;
     private final StockHandler stockHandler;
     private final Wallet wallet;
@@ -73,4 +79,25 @@ public final class EconomyModuleImpl implements EconomyModule {
 
         return pool.map(stockPool -> stockPool.getStockEntry(template));
     }
+    @Override
+    public void completeVendorPurchase(UOPlayer player, VendorBuyRequest vendorBuyRequest) {
+        var result = resolveVendorPurchase(player, vendorBuyRequest);
+
+        if (!result.success()) {
+            eventBus.publish(new VendorPurchaseFailed(player));
+            return;
+        }
+
+        final List<UOItem> items = new ArrayList<>();
+        for (var item : result.items()) {
+            // TODO get backpack by serial
+            /*items.add(item().createItem(
+                    ItemRequest.byTemplate(item.template()),
+                    ContainerItemTarget.of(player.getBackpack())
+            ));*/
+        }
+
+        eventBus.publish(new VendorPurchaseCompleted(player, items));
+    }
+
 }

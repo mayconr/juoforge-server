@@ -47,8 +47,8 @@ public class GeneralInformationHandler
                 log.warn("Ignoring spell cast request without an active player | Spell ID: {}", spell.spellId());
                 return;
             }
-            world.getSpellByClientId(spell.spellId()).ifPresentOrElse(
-                    template -> world.castSpell(caster, template.key()),
+            world.spell().getSpellByClientId(spell.spellId()).ifPresentOrElse(
+                    template -> world.spell().castSpell(caster, template.key()),
                     () -> log.warn("Unknown client spell ID: {} | Caster serial: {}", spell.spellId(), caster.getSerialId()));
         }
     }

@@ -3,6 +3,8 @@ package com.github.mayconr.juoserver.game.player;
 import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationContext;
 import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.AccountMobile;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedIn;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedOut;
 import com.github.mayconr.juoserver.game.world.WorldModule;
@@ -76,5 +78,18 @@ public class PlayerModule implements WorldModule, PlayerCommands {
     @Override
     public List<UOPlayer> getOnlinePlayers() {
         return List.copyOf(onlinePlayers.values());
+    }
+
+    @Override
+    public CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount account) {
+        return storage.getAccountMobiles(account);
+    }
+
+    @Override
+    public CompletableFuture<UOMobile> loadMobile(int serialId) {
+        if (!UOMobile.isMobile(serialId)) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Serial [" + serialId + "] is not a player"));
+        }
+        return storage.loadMobile(serialId);
     }
 }

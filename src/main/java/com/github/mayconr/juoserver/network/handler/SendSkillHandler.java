@@ -15,6 +15,6 @@ public class SendSkillHandler extends PlayerSessionChannelInboundHandler<SendSki
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, SendSkill msg) {
-        world.sendSkillsLock(session.getPlayer(), msg.getSkills());
+        world.skill().sendSkillsLock(session.getPlayer(), msg.getSkills());
     }
 }

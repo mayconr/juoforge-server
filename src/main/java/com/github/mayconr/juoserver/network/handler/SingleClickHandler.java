@@ -15,6 +15,6 @@ public class SingleClickHandler extends PlayerSessionChannelInboundHandler<Singl
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, SingleClickRequest msg) {
-        world.singleClick(session.getPlayer(), msg);
+        world.ui().singleClick(session.getPlayer(), msg);
     }
 }

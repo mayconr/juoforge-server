@@ -17,9 +17,9 @@ public class Resurrect extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.sendTarget(event.player(), CursorType.NEUTRAL, targetResult -> {
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, targetResult -> {
             if (targetResult instanceof MobileTargetResult result) {
-                world.resurrect(result.mobile());
+                world.mobile().resurrect(result.mobile());
             }
         });
     }

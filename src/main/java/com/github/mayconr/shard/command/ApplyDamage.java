@@ -23,9 +23,9 @@ public class ApplyDamage extends AbstractCommand {
 
     @Override
     public void handle(Prompt event) {
-        world.sendTarget(event.player(), CursorType.HARMFUL, targetResult -> {
+        world.interaction().sendTarget(event.player(), CursorType.HARMFUL, targetResult -> {
             if (targetResult instanceof MobileTargetResult rs) {
-                world.applyDamage(new DamageRequest(event.player(), rs.mobile(), DamageSourceKind.COMMAND, List.of(new DamageComponent(DamageType.PHYSICAL, Integer.parseInt(event.arguments()[0])))));
+                world.damage().applyDamage(new DamageRequest(event.player(), rs.mobile(), DamageSourceKind.COMMAND, List.of(new DamageComponent(DamageType.PHYSICAL, Integer.parseInt(event.arguments()[0])))));
             }
         });
 

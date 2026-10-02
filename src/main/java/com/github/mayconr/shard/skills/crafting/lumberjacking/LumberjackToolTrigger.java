@@ -7,8 +7,11 @@ import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.TargetResult;
-import com.github.mayconr.juoserver.game.world.WorldActions;
-import com.github.mayconr.juoserver.game.world.WorldView;
+import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
+import com.github.mayconr.juoserver.game.item.WorldItem;
+import com.github.mayconr.juoserver.game.skill.WorldSkill;
+import com.github.mayconr.juoserver.game.interaction.WorldInteraction;
+import com.github.mayconr.juoserver.game.map.WorldMap;
 import com.github.mayconr.shard.skills.crafting.ResourceRoller;
 import lombok.RequiredArgsConstructor;
 
@@ -18,8 +21,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LumberjackToolTrigger implements ItemUseTrigger {
 
-    private final WorldActions worldActions;
-    private final WorldView worldView;
+    private final GameLoop gameLoop;
+    private final WorldItem items;
+    private final WorldSkill skills;
+    private final WorldInteraction interaction;
+    private final WorldMap map;
     private final ResourceRoller resourceRoller;
 
     @Override
@@ -30,7 +36,7 @@ public class LumberjackToolTrigger implements ItemUseTrigger {
     @Override
     public void execute(ItemUseContext ctx) {
         final var initialLocation = new PointInTheWorld(ctx.player());
-        worldActions.sendTarget(ctx.player(), CursorType.NEUTRAL, result -> handleLumberjack(initialLocation, result));
+        interaction.sendTarget(ctx.player(), CursorType.NEUTRAL, result -> handleLumberjack(initialLocation, result));
     }
 
     private void handleLumberjack(Location initialLocation, TargetResult result) {
@@ -40,12 +46,12 @@ public class LumberjackToolTrigger implements ItemUseTrigger {
             return;
         }
 
-        final var statics = worldView.getStatics(result.location());
+        final var statics = map.getStatics(result.location());
         if (!canLumberjack(statics)) {
             return;
         }
 
-        worldActions.scheduleTask(new LumberjackSwingTask(player, worldActions, resourceRoller));
+        gameLoop.addTask(new LumberjackSwingTask(player, items, skills, interaction, resourceRoller));
     }
 
     private boolean canLumberjack(List<StaticTile> statics) {

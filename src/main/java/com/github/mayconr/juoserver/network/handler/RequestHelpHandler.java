@@ -17,6 +17,6 @@ public class RequestHelpHandler extends PlayerSessionChannelInboundHandler<Reque
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, RequestHelp msg) {
-        world.handleAction(session.getPlayer(), new ActionRequest(ActionSubCommand.HELP_BUTTON));
+        world.interaction().handleAction(session.getPlayer(), new ActionRequest(ActionSubCommand.HELP_BUTTON));
     }
 }

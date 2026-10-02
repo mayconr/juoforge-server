@@ -6,19 +6,9 @@ import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
 import com.github.mayconr.juoserver.network.packet.UnequipItem;
 
-import java.util.Map;
-
-public interface MobileModule extends WorldModule {
-
-    void mount(UOPlayer player, UONpc npc);
-
-    void unmount(UOPlayer player);
-
-    void move(UOMobile mobile, Direction direction);
+public interface MobileModule extends WorldMobile, WorldModule {
 
     void move(UOMobile mobile, MoveRequest request);
-
-    void teleport(UOMobile mobile, Location location);
 
     void resync(UOPlayer player, MoveResyncAck resyncAck);
 
@@ -32,9 +22,6 @@ public interface MobileModule extends WorldModule {
 
     void scheduleDespawn(UONpc npc, int secs);
 
-    void resurrect(UOMobile mobile);
-
     void die(DeathRequest request);
 
-    Map<Layer, UOItem> getEquippedItems(UOMobile mobile);
 }

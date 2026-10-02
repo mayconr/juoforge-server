@@ -17,12 +17,12 @@ public class DevTest extends AbstractCommand {
     @Override
     public void handle(Prompt event) {
         if (event.arguments()[0].equals("1")) {
-            var item = world.createItem(ItemRequest.byName("spellbook"), ItemTarget.dropAt(event.player()));
+            var item = world.item().createItem(ItemRequest.byName("spellbook"), ItemTarget.dropAt(event.player()));
             System.out.println(item.getSerialId()+" gerado");
         } else {
             var id = Integer.parseInt(event.arguments()[0]);
-            world.getItemBySerialId(id).ifPresent(book ->
-                    world.openSpellBook(event.player(), book, SpellbookType.MAGERY, -1L));
+            world.item().getItemBySerialId(id).ifPresent(book ->
+                    world.spell().openSpellBook(event.player(), book, SpellbookType.MAGERY, -1L));
         }
     }
 }

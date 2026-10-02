@@ -24,17 +24,17 @@ public class SystemCmd extends AbstractCommand {
 
         switch (arg) {
             case "move" ->{
-                world.sendTarget(player, CursorType.NEUTRAL, res->{
+                world.interaction().sendTarget(player, CursorType.NEUTRAL, res->{
                     if (res instanceof MobileTargetResult mobileResult) {
-                        world.move(mobileResult.mobile(), Direction.NORTH);
+                        world.mobile().move(mobileResult.mobile(), Direction.NORTH);
                     }
 
                 });
             }
             case "detach" ->{
-                world.sendTarget(player, CursorType.NEUTRAL, res->{
+                world.interaction().sendTarget(player, CursorType.NEUTRAL, res->{
                     if (res instanceof MobileTargetResult mobileResult) {
-                        world.detachAI((UONpc) mobileResult.mobile());
+                        world.ai().detach((UONpc) mobileResult.mobile());
                     }
 
                 });

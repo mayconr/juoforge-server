@@ -1,8 +1,20 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.game.npc.NpcRequester;
-import com.github.mayconr.juoforge.reader.view.LandTile;
-import com.github.mayconr.juoforge.reader.view.StaticTile;
+import com.github.mayconr.juoserver.game.map.WorldMap;
+import com.github.mayconr.juoserver.game.storage.WorldStorage;
+import com.github.mayconr.juoserver.game.storage.StorageModule;
+import com.github.mayconr.juoserver.game.storage.StorageModuleImpl;
+import com.github.mayconr.juoserver.game.random.WorldRandom;
+import com.github.mayconr.juoserver.game.random.RandomModule;
+import com.github.mayconr.juoserver.game.random.RandomModuleImpl;
+import com.github.mayconr.juoserver.game.devtools.WorldDevTools;
+import com.github.mayconr.juoserver.game.devtools.DevToolsModule;
+import com.github.mayconr.juoserver.game.devtools.DevToolsModuleImpl;
+import com.github.mayconr.juoserver.game.map.MapModule;
+import com.github.mayconr.juoserver.game.messaging.WorldMessage;
+import com.github.mayconr.juoserver.game.npc.WorldNpc;
+import com.github.mayconr.juoserver.game.spell.WorldSpell;
+import com.github.mayconr.juoserver.game.damage.WorldDamage;
 import com.github.mayconr.juoserver.WorldCfg;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.spell.SpellModule;
@@ -11,12 +23,14 @@ import com.github.mayconr.juoserver.game.spell.SpellModuleImpl;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
 import com.github.mayconr.juoserver.game.ai.AIEngineImpl;
 import com.github.mayconr.juoserver.game.ai.AIModule;
+import com.github.mayconr.juoserver.game.ai.WorldAI;
 import com.github.mayconr.juoserver.game.ai.AIModuleImpl;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.combat.CombatHandler;
 import com.github.mayconr.juoserver.game.combat.CombatModule;
+import com.github.mayconr.juoserver.game.combat.WorldCombat;
 import com.github.mayconr.juoserver.game.combat.CombatModuleImpl;
 import com.github.mayconr.juoserver.game.combat.VitalsHandler;
 import com.github.mayconr.juoserver.game.damage.DamageModule;
@@ -25,8 +39,8 @@ import com.github.mayconr.juoserver.game.economy.EconomyModule;
 import com.github.mayconr.juoserver.game.economy.EconomyModuleImpl;
 import com.github.mayconr.juoserver.game.economy.StockHandler;
 import com.github.mayconr.juoserver.game.economy.VendorHandler;
-import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.interaction.InteractionModuleImpl;
+import com.github.mayconr.juoserver.game.interaction.InteractionModule;
 import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
 import com.github.mayconr.juoserver.game.interaction.speech.SpeechHandler;
@@ -45,10 +59,10 @@ import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
-import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.NpcModuleImpl;
 import com.github.mayconr.juoserver.game.player.PlayerModule;
+import com.github.mayconr.juoserver.game.player.PlayerCommands;
 import com.github.mayconr.juoserver.game.player.PlayerVitalsHandler;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
@@ -57,9 +71,7 @@ import com.github.mayconr.juoserver.game.skill.SkillHandler;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
 import com.github.mayconr.juoserver.game.skill.SkillModuleImpl;
 import com.github.mayconr.juoserver.game.ui.*;
-import com.github.mayconr.juoserver.game.ui.gump.DeclarativeGumpUI;
 import com.github.mayconr.juoserver.game.ui.gump.DefaultGumpSystem;
-import com.github.mayconr.juoserver.game.ui.gump.GumpHandler;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
 import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
@@ -77,10 +89,7 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
-import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
 import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
-import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -91,19 +100,106 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
 public class DefaultWorld implements WorldInternal, World {
+
+    @Override
+    public WorldStorage storage() {
+        return Objects.requireNonNull(storageModule, "World storage module is not initialized");
+    }
+
+    @Override
+    public WorldRandom random() {
+        return Objects.requireNonNull(randomModule, "World random module is not initialized");
+    }
+
+    @Override
+    public WorldAI ai() {
+        return Objects.requireNonNull(aiModule, "World AI module is not initialized");
+    }
+
+    @Override
+    public EconomyModule economy() {
+        return Objects.requireNonNull(economyModule, "World economy module is not initialized");
+    }
+
+    @Override
+    public PlayerCommands player() {
+        return Objects.requireNonNull(playerModule, "World player module is not initialized");
+    }
+
+    @Override
+    public WorldCombat combat() {
+        return Objects.requireNonNull(combatModule, "World combat module is not initialized");
+    }
+
+    @Override
+    public ItemModule item() {
+        return Objects.requireNonNull(itemModule, "World item module is not initialized");
+    }
+
+    private MapModule mapModule;
+
+    @Override
+    public WorldMap map() {
+        return Objects.requireNonNull(mapModule, "World map module is not initialized");
+    }
+
+    @Override
+    public InteractionModule interaction() {
+        return Objects.requireNonNull(interactionModule, "World interaction module is not initialized");
+    }
+
+    @Override
+    public MobileModule mobile() {
+        return Objects.requireNonNull(mobileModule, "World mobile module is not initialized");
+    }
+
+    @Override
+    public UICommands ui() {
+        return Objects.requireNonNull(uiModule, "World UI module is not initialized");
+    }
+
+    @Override
+    public SkillModule skill() {
+        return Objects.requireNonNull(skillModule, "World skill module is not initialized");
+    }
+
+    @Override
+    public WorldDamage damage() {
+        return Objects.requireNonNull(damageModule, "World damage module is not initialized");
+    }
+
+    @Override
+    public WorldSpell spell() {
+        return Objects.requireNonNull(spellModule, "World spell module is not initialized");
+    }
+
+    @Override
+    public WorldNpc npc() {
+        return Objects.requireNonNull(npcModule, "World NPC module is not initialized");
+    }
+
+    @Override
+    public WorldMessage message() {
+        return Objects.requireNonNull(messageModule, "World message module is not initialized");
+    }
 
     /*
      * =========
      * Modules
      * =========
      */
+    @Override
+    public WorldDevTools devTools() {
+        return Objects.requireNonNull(devToolsModule, "World dev tools module is not initialized");
+    }
+
+    private StorageModule storageModule;
+    private RandomModule randomModule;
+    private DevToolsModule devToolsModule;
     private EconomyModule economyModule;
     private AIModule aiModule;
     private UIModule uiModule;
@@ -113,7 +209,7 @@ public class DefaultWorld implements WorldInternal, World {
     private PlayerModule playerModule;
     private CombatModule combatModule;
     private MobileModule mobileModule;
-    private InteractionModuleImpl interactionModule;
+    private InteractionModule interactionModule;
     private MessageModule messageModule;
     private DamageModule damageModule;
     private NpcModule npcModule;
@@ -126,7 +222,6 @@ public class DefaultWorld implements WorldInternal, World {
     private final EventBus eventBus;
     private final SerialGenerator serialGenerator;
     private final RealmStorage storage;
-    private final GameLoop gameLoop;
     private final RegionSystem regionSystem;
     private final UOFileReaderImpl fileReader;
     private final PolicyService policyService;
@@ -160,11 +255,15 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void initialize() {
+        this.storageModule = new StorageModuleImpl(storage);
+        this.randomModule = new RandomModuleImpl(rng);
         serialGenerator.initialize();
         fileReader.loadFiles();
+        this.mapModule = new MapModule(fileReader, regionSystem);
 
         final var wallet = worldCfg.wallet().apply(this);
 
+        this.devToolsModule = new DevToolsModuleImpl(eventBus);
         initializeMessagingModule();
         initializeEconomyModule(wallet);
         initializeAiModule();
@@ -210,7 +309,7 @@ public class DefaultWorld implements WorldInternal, World {
         final var stockHandler = new StockHandler();
         final var templateLoader = worldCfg.content().stocks();
 
-        this.economyModule = new EconomyModuleImpl(vendorHandler, stockHandler, wallet, templateLoader);
+        this.economyModule = new EconomyModuleImpl(eventBus, vendorHandler, stockHandler, wallet, templateLoader);
     }
 
     private void initializeAiModule() {
@@ -220,10 +319,14 @@ public class DefaultWorld implements WorldInternal, World {
         var engine = new AIEngineImpl(this, e->{
 
             switch (e) {
-                //case SpeechAction say -> world.printTextAbove(, say.content(), say.speechTo());
-                case WalkAction walkAction -> move(walkAction.npc(), walkAction.direction());
-                case SellListAction buyList -> beginVendorPurchase(buyList.buyer(), buyList.seller(), buyList.itemsToSell());
-                case SpeechAction speech -> printTextAbove(speech.speaker(), speech.content(), speech.target());
+                //case SpeechAction say -> world.message().printTextAbove(, say.content(), say.speechTo());
+                case WalkAction walkAction -> mobile().move(walkAction.npc(), walkAction.direction());
+                case SellListAction buyList -> {
+                    var region = map().getRegion(buyList.buyer())
+                            .orElseThrow(() -> new RuntimeException("Region not found"));
+                    economy().beginVendorPurchase(buyList.buyer(), buyList.seller(), region, buyList.itemsToSell());
+                }
+                case SpeechAction speech -> message().printTextAbove(speech.speaker(), speech.content(), speech.target());
                 default -> throw new IllegalStateException("Unexpected value: " + e);
             }
 
@@ -258,10 +361,10 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeItemModule() {
-        final var itemHandler = new ItemHandler(serialGenerator, itemTemplateRegistry, storage, eventBus);
+        final var itemHandler = new ItemHandler(storage, eventBus);
         final var containerHandler = new ContainerHandler(eventBus, storage);
 
-        this.itemModule = new ItemModuleImpl(itemHandler, containerHandler);
+        this.itemModule = new ItemModuleImpl(itemHandler, containerHandler, storage, itemTemplateRegistry);
     }
 
     private void initializePlayerModule() {
@@ -359,6 +462,9 @@ public class DefaultWorld implements WorldInternal, World {
                 .flowFacade(flowFacade)
                 .build();
 
+        this.storageModule.initialize(context);
+        this.randomModule.initialize(context);
+        this.devToolsModule.initialize(context);
         this.economyModule.initialize(context);
         this.mobileModule.initialize(context);
         this.playerModule.initialize(context);
@@ -456,498 +562,4 @@ public class DefaultWorld implements WorldInternal, World {
         }
     }
 
-    /*
-     * ======================
-     * Loading / World Query
-     * ======================
-     */
-
-    @Override
-    public CompletableFuture<UOMobile> loadMobile(int serialId) {
-        if (!UOMobile.isMobile(serialId)) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Serial [" + serialId + "] is not a player"));
-        }
-        return storage.loadMobile(serialId);
-    }
-
-    @Override
-    public List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter) {
-        return storage.getMobilesInRange(location, radius, filter);
-    }
-
-    @Override
-    public List<UOItem> getItemsInRange(Location location, int radius) {
-        return storage.getItemsInRange(location);
-    }
-
-    @Override
-    public List<UOItem> getItemsInContainer(Integer container, Predicate<UOItem> predicate) {
-        return itemModule.getItemsInContainer(container, predicate);
-    }
-
-    @Override
-    public Map<Layer, UOItem> getEquippedItems(UOMobile mobile) {
-        return mobileModule.getEquippedItems(mobile);
-    }
-
-    @Override
-    public boolean isMobile(int serialId) {
-        return UOMobile.isMobile(serialId);
-    }
-
-    @Override
-    public Optional<UOMobile> getMobileBySerialId(int serial) {
-        return storage.getMobile(serial);
-    }
-
-    @Override
-    public Optional<UOItem> getItemBySerialId(int serial) {
-        return storage.getItem(serial);
-    }
-
-    @Override
-    public Optional<UOContainer> getContainerBySerialId(int serial) {
-        return storage.getContainer(serial);
-    }
-
-    @Override
-    public Optional<RegionNode> getRegion(String name) {
-        return regionSystem.getRegion(name);
-    }
-
-    @Override
-    public Optional<RegionNode> getRegion(Location location) {
-        return regionSystem.getRegion(location);
-    }
-
-    @Override
-    public List<RegionNode> getRegionsByType(RegionType type) {
-        return regionSystem.getRegionsByType(type);
-    }
-
-    @Override
-    public CompletableFuture<List<AccountMobile>> getPlayerMobiles(UOAccount uoAccount) {
-        return storage.getAccountMobiles(uoAccount);
-    }
-
-    /*
-     * ===========
-     * Map / Files
-     * ===========
-     */
-
-    @Override
-    public List<StaticTile> getStatics(Location location) {
-        return fileReader.getStatics(location);
-    }
-
-    @Override
-    public List<StaticTile> getStatics(int x, int y) {
-        return fileReader.getStatics(x, y);
-    }
-
-    @Override
-    public LandTile getLandTile(int x, int y) {
-        return fileReader.getLandTile(x, y);
-    }
-
-    @Override
-    public LandTile getLandTile(Location location) {
-        return fileReader.getLandTile(location);
-    }
-
-    /*
-     * =================
-     * Interaction / UI
-     * =================
-     */
-
-    @Override
-    public void sendAnimation(UOMobile mobile, AnimationOptions options) {
-        interactionModule.sendAnimation(mobile, options);
-    }
-
-    @Override
-    public void sendTarget(UOPlayer player, CursorType type, Consumer<TargetResult> consumer) {
-        interactionModule.sendTarget(player, type, consumer);
-    }
-
-    @Override
-    public void resolveTarget(UOPlayer player, Target target) {
-        interactionModule.resolveTarget(player, target);
-    }
-
-    @Override
-    public void speech(UOPlayer player, UnicodeSpeachRequest request) {
-        interactionModule.speech(player, request);
-    }
-
-    @Override
-    public void playerStatusRequested(UOPlayer player, GetPlayerStatus getPlayerStatus) {
-        switch (getPlayerStatus.getType()) {
-            case BASIC_STATUS -> uiModule.sendStatusGump(player, getPlayerStatus.getSerialId());
-            case REQUEST_SKILL -> uiModule.sendSkillGump(player, getPlayerStatus.getSerialId());
-            case GOD_CLIENT -> System.out.println("god client");
-        }
-    }
-
-    @Override
-    public void tooltipRequest(UOPlayer player, List<Integer> serials) {
-        uiModule.tooltipRequest(player, serials);
-    }
-
-    @Override
-    public void doubleClick(UOPlayer player, DoubleClick doubleClick) {
-        uiModule.doubleClick(player, doubleClick);
-    }
-
-    @Override
-    public void singleClick(UOPlayer player, SingleClickRequest singleClick) {
-        uiModule.singleClick(player, singleClick);
-    }
-
-    @Override
-    public void handleAction(UOPlayer player, ActionRequest request) {
-        interactionModule.handleAction(player, request);
-    }
-
-    @Override
-    public void openSpellBook(UOPlayer player, UOItem book, SpellbookType type, long spellMask) {
-        spellModule.openSpellBook(player, book, type, spellMask);
-    }
-
-    @Override
-    public void sendRawPacket(UOPlayer player, Packet packet) {
-        eventBus.publish(new RawPacketSent(player, packet));
-    }
-
-    @Override
-    public void sendRawPackets(UOPlayer player, List<? extends Packet> packets) {
-        eventBus.publish(new RawPacketsSent(player, List.copyOf(packets)));
-    }
-
-    @Override
-    public void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler) {
-        uiModule.sendGump(player, gumpUI, handler);
-    }
-
-    @Override
-    public void gumpResponse(UOPlayer player, GumpSelection gumpSelection) {
-        uiModule.onGumpSelection(player, gumpSelection);
-    }
-
-    /*
-     * =================
-     * Messaging
-     * =================
-     */
-    @Override
-    public void sendMessage(UOPlayer player, MessageContent content) {
-        messageModule.send(player, content);
-    }
-
-    @Override
-    public void sendMessage(UOPlayer player, String message) {
-        messageModule.send(player, message);
-    }
-
-    @Override
-    public void printTextAbove(UOObject source, MessageContent content) {
-        messageModule.printTextAbove(source, content);
-    }
-
-    @Override
-    public void printTextAbove(UOObject source, MessageContent content, UOPlayer player) {
-        messageModule.printTextAbove(source, content, player);
-    }
-
-    @Override
-    public void broadcast(MessageContent message) {
-        messageModule.broadcast(message);
-    }
-
-    /*
-     * ========
-     * Movement
-     * ========
-     */
-    @Override
-    public void move(UOMobile mobile, MoveRequest moveRequest) {
-        mobileModule.move(mobile, moveRequest);
-    }
-
-    @Override
-    public void move(UOMobile mobile, Direction direction) {
-        mobileModule.move(mobile, direction);
-    }
-
-    @Override
-    public void teleport(UOMobile mobile, Location location) {
-        mobileModule.teleport(mobile, location);
-    }
-
-    @Override
-    public void resync(UOPlayer player, MoveResyncAck resyncAck) {
-        mobileModule.resync(player, resyncAck);
-    }
-
-    /*
-     * =====
-     * Items
-     * =====
-     */
-
-    @Override
-    public void deleteItem(int serial) {
-        if (!UOItem.isItem(serial)) {
-            throw new IllegalArgumentException("Serial [" + serial + "] is not an item");
-        }
-
-        final var item = storage.getItem(serial)
-                .orElseThrow(() -> new IllegalArgumentException("Item [" + serial + "] not found"));
-
-        itemModule.deleteItem(item);
-    }
-
-    @Override
-    public void deleteItem(UOItem item) {
-        itemModule.deleteItem(item);
-    }
-
-    @Override
-    public void equipItem(UOPlayer player, EquipItemRequest equipItem) {
-        getItemBySerialId(equipItem.getItemSerialId())
-                .ifPresent(item -> mobileModule.equipItem(player, item));
-    }
-
-    @Override
-    public void unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
-        mobileModule.unequipItem(player, pickedUpItem);
-    }
-
-    @Override
-    public void dropItem(UOPlayer player, DropItem dropItem) {
-        itemModule.dropItem(player, dropItem);
-    }
-
-    @Override
-    public UOItem createItem(ItemRequest request, ItemTarget target) {
-        return itemModule.createItem(request, target);
-    }
-
-    @Override
-    public ConsumeResult consumeItem(Integer containerSerial, String itemName, int amount, boolean searchNestedContainers) {
-        return itemModule.consumeItem(containerSerial, itemName, amount, searchNestedContainers);
-    }
-
-    @Override
-    public List<ItemTemplate> getItemsTemplate(String stockType) {
-        return itemTemplateRegistry.getItemTemplates(stockType);
-    }
-
-    /*
-     * =======
-     * Players
-     * =======
-     */
-
-    @Override
-    public CompletableFuture<UOPlayer> createPlayerMobile(
-            CreateCharacter character,
-            Map<Integer, RegionNode> startingLocations,
-            UOAccount account
-    ) {
-        return playerModule.createPlayerMobile(character, startingLocations, account);
-    }
-
-    @Override
-    public CompletableFuture<Void> deletePlayerMobile(int serialId) {
-        return playerModule.deletePlayerMobile(serialId);
-    }
-
-    @Override
-    public List<UOPlayer> getOnlinePlayers() {
-        return Collections.emptyList();
-    }
-
-    /*
-     * ====
-     * NPCs
-     * ====
-     */
-
-    @Override
-    public UONpc createNpc(NpcRequester requester, String template, Location location) {
-        return npcModule.createNpc(requester, template, location);
-    }
-
-    @Override
-    public void deleteMobile(NpcRequester requester, UOMobile mobile) {
-        switch (mobile) {
-            case UONpc npc -> npcModule.removeNpc(requester, npc);
-            case UOPlayer player -> log.info("Remove a player is not allowed yet {}", player.getId());
-            default -> throw new IllegalStateException("Unexpected value: " + mobile);
-        }
-    }
-
-    @Override
-    public void applyDamage(DamageRequest request) {
-        damageModule.applyDamage(request);
-    }
-
-    @Override
-    public void kill(UOMobile target, UOMobile source, DamageSourceKind kind) {
-        damageModule.kill(target, source, kind);
-    }
-
-    @Override
-    public void resurrect(UOMobile mobile) {
-        mobileModule.resurrect(mobile);
-    }
-
-    /*
-     * ========
-     * Skills
-     * ========
-     */
-
-    @Override
-    public void tryGainSkill(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
-        skillModule.tryGain(mobile, skillId, difficulty, context);
-    }
-
-    @Override
-    public void useSkill(UOPlayer player, int skillId) {
-        skillModule.useSkill(player, skillId);
-    }
-
-    @Override
-    public void castSpell(UOMobile caster, String spellKey) {
-        spellModule.castSpell(caster, spellKey);
-    }
-
-    @Override
-    public Optional<SpellTemplate> getSpellByClientId(int clientSpellId) {
-        return spellModule.getSpellByClientId(clientSpellId);
-    }
-
-    @Override
-    public void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills) {
-        skillModule.sendSkillsLock(player, skills);
-    }
-
-    /*
-     * ========
-     * Combat
-     * ========
-     */
-
-    @Override
-    public void toggleWarMode(UOPlayer player, WarModeType type) {
-        combatModule.toggleWarMode(player, type);
-    }
-
-    @Override
-    public void attack(UOPlayer player, AttackRequest request) {
-        combatModule.requestAttack(player, request);
-    }
-
-    @Override
-    public void regen(UOMobile mobile, double interval) {
-        combatModule.regen(mobile, interval);
-    }
-
-    /*
-     * ========
-     * Vendors
-     * ========
-     */
-
-    @Override
-    public void beginVendorPurchase(UOPlayer player, UOMobile vendor, List<StockEntry> items) {
-        var region = regionSystem.getRegion(player)
-                .orElseThrow(() -> new RuntimeException("Region not found"));
-
-        economyModule.beginVendorPurchase(player, vendor, region, items);
-    }
-
-    @Override
-    public void completeVendorPurchase(UOPlayer player, VendorBuyRequest vendorBuyRequest) {
-        var result = economyModule.resolveVendorPurchase(player, vendorBuyRequest);
-
-        if (!result.success()) {
-            eventBus.publish(new VendorPurchaseFailed(player));
-            return;
-        }
-
-        final List<UOItem> items = new ArrayList<>();
-        for (var item : result.items()) {
-            // TODO get backpack by serial
-            /*items.add(itemModule.createItem(
-                    ItemRequest.byTemplate(item.template()),
-                    ContainerItemTarget.of(player.getBackpack())
-            ));*/
-        }
-
-        eventBus.publish(new VendorPurchaseCompleted(player, items));
-    }
-
-    @Override
-    public Optional<StockEntry> getStockEntry(ItemTemplate template, RegionNode regionNode) {
-        return economyModule.getStockEntry(template, regionNode);
-    }
-
-    /*
-     * ===========
-     * Mount / Pets
-     * ===========
-     */
-
-    @Override
-    public void mount(UOPlayer player, UONpc npc) {
-        mobileModule.mount(player, npc);
-    }
-
-    @Override
-    public void unmount(UOPlayer player) {
-        mobileModule.unmount(player);
-    }
-
-    /*
-     * =========
-     * Scheduling
-     * =========
-     */
-
-    @Override
-    public void scheduleTask(GameTask task) {
-        gameLoop.addTask(task);
-    }
-
-    /*
-     * ==========
-     * Utilities
-     * ==========
-     */
-
-    @Override
-    public boolean roll(double chance) {
-        return rng.roll(chance);
-    }
-
-    @Override
-    public CompletableFuture<UOAccount> getAccountByUsername(String username) {
-        return storage.getAccountByUsername(username);
-    }
-
-    /*
-     * ==========
-     * AI
-     * ==========
-     */
-
-    @Override
-    public void detachAI(UONpc npc) {
-        aiModule.detach(npc);
-    }
 }

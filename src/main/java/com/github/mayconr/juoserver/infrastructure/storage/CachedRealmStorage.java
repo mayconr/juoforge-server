@@ -241,6 +241,7 @@ public class CachedRealmStorage implements RealmStorage {
         return worldMobileIndex.getNearbySerials(location, 1)
                 .stream()
                 .map(mobileCache::get)
+                .filter(Objects::nonNull)
                 .filter(mobile->alive == mobile.isAlive())
                 .filter(mobile->mobile.getX() == location.getX() && mobile.getY() == location.getY())
                 .toList();

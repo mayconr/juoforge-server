@@ -16,10 +16,10 @@ public class MoveTo extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.sendTarget(event.player(), CursorType.NEUTRAL, t1->{
+        world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, t1->{
             if (t1 instanceof MobileTargetResult result) {
-                world.sendTarget(event.player(), CursorType.NEUTRAL, t2->{
-                   world.teleport(result.mobile(), t2.location());
+                world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, t2->{
+                   world.mobile().teleport(result.mobile(), t2.location());
                 });
             }
         });

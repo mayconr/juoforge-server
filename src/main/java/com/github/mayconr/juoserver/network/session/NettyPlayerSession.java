@@ -114,12 +114,12 @@ public class NettyPlayerSession implements PlayerSession {
             throw new IllegalStateException("Session is not connected. Session state is " + state);
         }
 
-        world.getAccountByUsername(username)
+        world.storage().getAccountByUsername(username)
                 .thenApply(account->{
                     this.account = account;
                     return this.account;
                 })
-                .thenCompose(world::getPlayerMobiles)
+                .thenCompose(world.player()::getPlayerMobiles)
                 .thenAccept(mobiles->{
                     availableStartingLocations.clear();
                     availableMobiles.clear();
@@ -130,7 +130,7 @@ public class NettyPlayerSession implements PlayerSession {
                     }
 
                     final var counter = new AtomicInteger(0);
-                    world.getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> availableStartingLocations.put(counter.getAndIncrement(), region));
+                    world.map().getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> availableStartingLocations.put(counter.getAndIncrement(), region));
 
                     updateAndNotifyStatus(SessionState.AUTHENTICATED);
 
@@ -170,7 +170,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     @Override
     public CompletableFuture<UOPlayer> createCharacter(CreateCharacter character) {
-        return world.createPlayerMobile(character, availableStartingLocations, account)
+        return world.player().createPlayerMobile(character, availableStartingLocations, account)
                 .exceptionally(throwable -> {
                     var error = unwrap(throwable);
 
@@ -196,7 +196,7 @@ public class NettyPlayerSession implements PlayerSession {
         if (selectedMobile == null) {
             throw  new IllegalStateException("Cannot delete character that is already selected");
         }
-        world.deletePlayerMobile(selectedMobile.serialId())
+        world.player().deletePlayerMobile(selectedMobile.serialId())
                 .thenAccept(unused -> {
                     reject(LoginReject.Reason.CHAR_DOES_NOT_EXIST);
                 });
@@ -204,7 +204,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     @Override
     public CompletableFuture<UOPlayer> enteringWorld() {
-        return world.loadMobile(mobileSerialId)
+        return world.player().loadMobile(mobileSerialId)
                 .thenApply(mobile -> {
                     if (!(mobile instanceof UOPlayer pl)) {
                         log.error("Mobile [{}] is not a player", mobile.getName());
@@ -228,7 +228,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     @Override
     public void resync(MoveResyncAck resyncAck) {
-        world.resync(player, resyncAck);
+        world.mobile().resync(player, resyncAck);
         //runInEventLoop(()->{
 
             //channel.write(new MoveResyncAck(resyncAck.getSequence(), resyncAck.getNotoriety()));
@@ -266,14 +266,14 @@ public class NettyPlayerSession implements PlayerSession {
         if (!mobile.isAlive()) {
             return;
         }
-        runInEventLoop(() -> channel.writeAndFlush(new DrawMobile(mobile, world.getEquippedItems(mobile))));
+        runInEventLoop(() -> channel.writeAndFlush(new DrawMobile(mobile, world.mobile().getEquippedItems(mobile))));
     }
 
     private void handlePlayerMovement(MobileMoved moved) {
         int visibility = settings.world().visibility().range();
 
-        var mobiles = world.getMobilesInRange(player, visibility, UOMobile::isAlive);
-        var items   = world.getItemsInRange(player, visibility);
+        var mobiles = world.storage().getMobilesInRange(player, visibility, UOMobile::isAlive);
+        var items   = world.item().getItemsInRange(player, visibility);
 
         // Acknowledge movement
         channel.write(new MoveResyncAck(moved.sequence(), player.getNotoriety()));
@@ -281,7 +281,7 @@ public class NettyPlayerSession implements PlayerSession {
         // Draw nearby mobiles
         for (UOMobile mobile : mobiles) {
             if (!mobile.equals(player)) {
-                channel.write(new DrawMobile(mobile, world.getEquippedItems(mobile)));
+                channel.write(new DrawMobile(mobile, world.mobile().getEquippedItems(mobile)));
             }
         }
 
@@ -331,12 +331,12 @@ public class NettyPlayerSession implements PlayerSession {
         if (player.equals(event.target())) {
             var mobile = event.observer();
 
-            channel.write(new DrawMobile(mobile, world.getEquippedItems(mobile)));
+            channel.write(new DrawMobile(mobile, world.mobile().getEquippedItems(mobile)));
         }
     }
 
     public void onNpcCreated(NpcCreated event) {
-        channel.writeAndFlush(new DrawMobile(event.npc(), world.getEquippedItems(event.npc())));
+        channel.writeAndFlush(new DrawMobile(event.npc(), world.mobile().getEquippedItems(event.npc())));
     }
 
     public void onMobileDeleted(NpcRemoved event) {
@@ -356,15 +356,15 @@ public class NettyPlayerSession implements PlayerSession {
     public void onPlayerLoggedIn(PlayerLoggedIn event) {
         if (player.equals(event.player())) {
             final var visibility = settings.world().visibility().range();
-            final var mobiles = world.getMobilesInRange(player, visibility, UOMobile::isAlive);
-            final var items = world.getItemsInRange(player, visibility);
+            final var mobiles = world.storage().getMobilesInRange(player, visibility, UOMobile::isAlive);
+            final var items = world.item().getItemsInRange(player, visibility);
 
             channel.write(new LoginConfirm(player, 7168, 4096));
             channel.write(new SeasonalInformation(Season.Summer, true));
 
             for (UOMobile someone : mobiles) {
                 if (!someone.equals(player)) {
-                    channel.write(new DrawMobile(someone, world.getEquippedItems(someone)));
+                    channel.write(new DrawMobile(someone, world.mobile().getEquippedItems(someone)));
                 }
             }
 
@@ -374,7 +374,7 @@ public class NettyPlayerSession implements PlayerSession {
 
             channel.write(new SendSkill(player));
             channel.write(new DrawGamePlayer(player));
-            channel.write(new DrawMobile(player, world.getEquippedItems(player)));
+            channel.write(new DrawMobile(player, world.mobile().getEquippedItems(player)));
             channel.write(new StatusBarInfo(player));
             channel.write(new LoginComplete());
             channel.flush();
@@ -406,7 +406,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onItemUnequipped(ItemUnequipped itemUnequipped) {
         if (player.equals(itemUnequipped.mobile())) {
-            channelGroup.writeAndFlush(new DrawMobile(itemUnequipped.mobile(), world.getEquippedItems(itemUnequipped.mobile())));
+            channelGroup.writeAndFlush(new DrawMobile(itemUnequipped.mobile(), world.mobile().getEquippedItems(itemUnequipped.mobile())));
         }
     }
 
@@ -452,7 +452,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onEquippedItemCreated(EquippedItemCreated event) {
         if (shouldReceiveUpdate(event.mobile())) {
-            channel.writeAndFlush(new DrawMobile(event.mobile(), world.getEquippedItems(event.mobile())));
+            channel.writeAndFlush(new DrawMobile(event.mobile(), world.mobile().getEquippedItems(event.mobile())));
         }
     }
 
@@ -541,7 +541,7 @@ public class NettyPlayerSession implements PlayerSession {
             if (!container.getContainerItems().isEmpty()) {
                 var items = new ArrayList<UOItem>(container.getContainerItems().size());
                 for (var item : container.getContainerItems()) {
-                    world.getItemBySerialId(item).ifPresent(items::add);
+                    world.item().getItemBySerialId(item).ifPresent(items::add);
                 }
                 channel.write(AddMultipleItemsToContainer.ofUOItem(container, items));
             }
@@ -652,7 +652,7 @@ public class NettyPlayerSession implements PlayerSession {
         if (player.equals(event.player())) {
             final var vendor = event.vendor();
             final var sellContainerSerialId = vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
-            final var sellContainer = world.getContainerBySerialId(sellContainerSerialId)
+            final var sellContainer = world.item().getContainerBySerialId(sellContainerSerialId)
                     .orElseThrow(() -> new RuntimeException("Sell container not found for serial "+sellContainerSerialId));
 
             channel.write(AddMultipleItemsToContainer.ofStockItem(sellContainer, event.session().items().values()));
@@ -695,7 +695,7 @@ public class NettyPlayerSession implements PlayerSession {
             final List<CorpseClothing.Entry> items = new ArrayList<>();
             var containerItems = ((Container) corpse).getContainerItems();
             for (Integer itemSerial : containerItems) {
-                var item = world.getItemBySerialId(itemSerial)
+                var item = world.item().getItemBySerialId(itemSerial)
                         .orElse(null);
 
                 if (item != null) {
@@ -715,7 +715,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     public void onMobileResurrect(MobileResurrectEvent event) {
         channel.write(new StatusBarInfo(player));
-        channel.write(new DrawMobile(player, world.getEquippedItems(player)));
+        channel.write(new DrawMobile(player, world.mobile().getEquippedItems(player)));
         channel.writeAndFlush(new DeathScreen(DeathScreenType.RESURRECT));
     }
 

@@ -47,7 +47,7 @@ public class VendorStep extends AbstractFlowStep<VendorAIContext> {
         var player = (UOPlayer) event.mobile();
 
         // 2. region
-        var region = world.getRegion(npc)
+        var region = world.map().getRegion(npc)
                 .orElseThrow(() -> new IllegalStateException(
                         "Region not found for npc [" + npc.getId() + "]"
                 ));
@@ -55,13 +55,13 @@ public class VendorStep extends AbstractFlowStep<VendorAIContext> {
         // 3. stock type
         var stockType = ctx.getStockType();
 
-        var templates = world.getItemsTemplate(stockType);
+        var templates = world.item().getItemsTemplate(stockType);
 
         // 4. create stock
         List<StockEntry> entries = new ArrayList<>();
 
         for (ItemTemplate template : templates) {
-            world.getStockEntry(template, region)
+            world.economy().getStockEntry(template, region)
                     .ifPresent(entries::add);
         }
 

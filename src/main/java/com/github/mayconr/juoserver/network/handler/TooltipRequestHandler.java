@@ -20,6 +20,6 @@ public class TooltipRequestHandler extends PlayerSessionChannelInboundHandler<To
         if (log.isDebugEnabled()) {
             log.debug("Tooltip requested for serials {}", msg.getSerialList());
         }
-        world.tooltipRequest(session.getPlayer(), msg.getSerialList());
+        world.ui().tooltipRequest(session.getPlayer(), msg.getSerialList());
     }
 }

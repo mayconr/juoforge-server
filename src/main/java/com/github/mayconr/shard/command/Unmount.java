@@ -15,6 +15,6 @@ public class Unmount extends AbstractCommand{
 
     @Override
     public void handle(Prompt event) {
-        world.unmount(event.player());
+        world.mobile().unmount(event.player());
     }
 }
