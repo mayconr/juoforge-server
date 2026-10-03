@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.ai.engine;
 
+import com.github.mayconr.juoserver.WorldCfg;
 import com.github.mayconr.juoserver.game.ai.session.AISession;
 import com.github.mayconr.juoserver.game.ai.session.AISessionImpl;
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
@@ -8,7 +9,7 @@ import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.animal.PassiveAnimalAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.vendor.VendorAIContext;
 import com.github.mayconr.juoserver.game.model.UONpc;
@@ -35,13 +36,13 @@ public class AIEngineImpl implements AIEngine {
     private ModuleContext.FlowFacade flows;
 
     public AIEngineImpl(World world, Consumer<NpcAction> actionDispatcher,
-                        AIActivationPolicy activationPolicy, AISpeechPolicy speechPolicy,
-                        GamePlaySettings.Ai settings) {
+                        WorldCfg worldCfg) {
+        Objects.requireNonNull(worldCfg, "World configuration is required");
         this.world = world;
         this.actionDispatcher = actionDispatcher;
-        this.activationPolicy = activationPolicy;
-        this.speechPolicy = speechPolicy;
-        this.settings = Objects.requireNonNull(settings, "AI settings are required");
+        this.activationPolicy = Objects.requireNonNull(worldCfg.aiActivationPolicy().get(), "AI activation policy is required");
+        this.speechPolicy = Objects.requireNonNull(worldCfg.aiSpeechPolicy().get(), "AI speech policy is required");
+        this.settings = Objects.requireNonNull(worldCfg.ai(), "AI settings are required");
     }
 
     @Override
@@ -145,7 +146,7 @@ public class AIEngineImpl implements AIEngine {
             }
 
             case "PASSIVE_ANIMAL" -> new PassiveAnimalAIContext(npc, world);
-            case "COMBAT" -> new CombatAIContext(npc, world);
+            case "AGGRESSIVE" -> new AggressiveAIContext(npc, world);
 
             case "banker" -> null;
 

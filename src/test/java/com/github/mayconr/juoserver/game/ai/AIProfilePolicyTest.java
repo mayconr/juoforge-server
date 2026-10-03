@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.ai;
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.vendor.VendorAIContext;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
@@ -22,11 +22,11 @@ class AIProfilePolicyTest {
         var npc = mock(UONpc.class);
         var player = mock(UOPlayer.class);
         var context = new AIFlowContext(npc, world);
-        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("COMBAT", 8, 3, null, List.of()));
+        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", 8, 3, null, List.of()));
         when(world.storage().getMobilesInRange(eq(npc), eq(8), any())).thenReturn(List.of(player));
         assertTrue(new NearbyPlayerActivationPolicy(24).isActive(context));
         verify(world.storage()).getMobilesInRange(eq(npc), eq(8), any());
-        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("COMBAT", null, 3, null, List.of()));
+        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", null, 3, null, List.of()));
         new NearbyPlayerActivationPolicy(24).isActive(context);
         verify(world.storage()).getMobilesInRange(eq(npc), eq(24), any());
     }
@@ -46,7 +46,7 @@ class AIProfilePolicyTest {
         when(player.getX()).thenReturn(4);
         assertFalse(policy.accepts(context, new MobileSpeech(player, "buy", null)));
         when(player.getX()).thenReturn(0);
-        assertFalse(policy.accepts(new CombatAIContext(npc, world), new MobileSpeech(player, "buy", null)));
+        assertFalse(policy.accepts(new AggressiveAIContext(npc, world), new MobileSpeech(player, "buy", null)));
         when(player.isConnected()).thenReturn(false);
         assertFalse(policy.accepts(context, new MobileSpeech(player, "buy", null)));
     }

@@ -22,7 +22,7 @@
   },
   {
     "name": "undead_combat",
-    "ai": "COMBAT",
+    "ai": "AGGRESSIVE",
     "activationRadius": 24,
     "perceptionRadius": 3
   },

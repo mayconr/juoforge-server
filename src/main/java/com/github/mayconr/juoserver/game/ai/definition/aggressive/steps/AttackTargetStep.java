@@ -1,7 +1,7 @@
-package com.github.mayconr.juoserver.game.ai.definition.combat.steps;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive.steps;
 
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIState;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
 import com.github.mayconr.juoserver.game.ai.actions.AttackAction;
 import com.github.mayconr.juoserver.game.combat.CombatAttackRange;
 import com.github.mayconr.juoserver.game.model.GameMath;
@@ -9,13 +9,13 @@ import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
 /** Requests combat while the target is available and within attack range. */
-public final class AttackTargetStep extends AbstractFlowStep<CombatAIContext> {
+public final class AttackTargetStep extends AbstractFlowStep<AggressiveAIContext> {
     public AttackTargetStep() {
         super("AttackTargetStep");
     }
 
     @Override
-    public StepResult execute(CombatAIContext context) {
+    public StepResult execute(AggressiveAIContext context) {
         if (isSurviving(context) || context.getTarget() == null) return StepResult.skip();
         if (!context.npc().isAlive()) return StepResult.stop();
         if (isTargetUnavailable(context)) {
@@ -31,15 +31,15 @@ public final class AttackTargetStep extends AbstractFlowStep<CombatAIContext> {
         return StepResult.stop();
     }
 
-    private boolean isSurviving(CombatAIContext context) {
+    private boolean isSurviving(AggressiveAIContext context) {
         return context.getState() == CombatAIState.FLEEING || context.getState() == CombatAIState.RECOVERING;
     }
 
-    private boolean isTargetUnavailable(CombatAIContext context) {
+    private boolean isTargetUnavailable(AggressiveAIContext context) {
         return !context.getTarget().isAlive() || !context.getTarget().isConnected();
     }
 
-    private boolean isTargetInAttackRange(CombatAIContext context) {
+    private boolean isTargetInAttackRange(AggressiveAIContext context) {
         return GameMath.isInRange(context.npc(), context.getTarget(),
                 CombatAttackRange.resolve(context.npc(), context.world().mobile()));
     }

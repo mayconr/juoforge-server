@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
@@ -43,6 +46,31 @@ public class DefaultWorldCfg implements WorldCfg {
     @Override
     public WorldContent content() {
         return java.util.Objects.requireNonNull(content, "Shard must configure world content");
+    }
+
+    private Supplier<AIActivationPolicy> aiActivationPolicy =
+            () -> new NearbyPlayerActivationPolicy(content().settings().world().visibility().range());
+    private Supplier<AISpeechPolicy> aiSpeechPolicy =
+            () -> AISpeechPolicy.nearbyVendor(content().settings().world().visibility().range());
+
+    @Override
+    public void aiActivationPolicy(Supplier<AIActivationPolicy> factory) {
+        this.aiActivationPolicy = java.util.Objects.requireNonNull(factory, "AI activation policy factory is required");
+    }
+
+    @Override
+    public Supplier<AIActivationPolicy> aiActivationPolicy() {
+        return aiActivationPolicy;
+    }
+
+    @Override
+    public void aiSpeechPolicy(Supplier<AISpeechPolicy> factory) {
+        this.aiSpeechPolicy = java.util.Objects.requireNonNull(factory, "AI speech policy factory is required");
+    }
+
+    @Override
+    public Supplier<AISpeechPolicy> aiSpeechPolicy() {
+        return aiSpeechPolicy;
     }
 
     private final List<ShardFlowRegistration<?>> flowList = new ArrayList<>();
