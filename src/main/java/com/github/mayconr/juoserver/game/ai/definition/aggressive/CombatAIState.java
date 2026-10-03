@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.ai.definition.combat;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive;
 
 public enum CombatAIState {
     IDLE,

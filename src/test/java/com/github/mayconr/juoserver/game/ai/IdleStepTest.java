@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.ai;
 
 import com.github.mayconr.juoserver.game.ai.actions.CancelAttackAction;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIState;
-import com.github.mayconr.juoserver.game.ai.definition.combat.steps.IdleStep;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.steps.IdleStep;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.World;
@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class IdleStepTest {
-    private final CombatAIContext context = new CombatAIContext(mock(UONpc.class), mock(World.class));
+    private final AggressiveAIContext context = new AggressiveAIContext(mock(UONpc.class), mock(World.class));
     private final IdleStep step = new IdleStep();
 
     @Test

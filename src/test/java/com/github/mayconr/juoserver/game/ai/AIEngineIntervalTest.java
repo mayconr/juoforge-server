@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.ai;
 
+import com.github.mayconr.juoserver.DefaultWorldCfg;
 import com.github.mayconr.juoserver.game.ai.engine.AIEngineImpl;
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
@@ -16,8 +17,12 @@ class AIEngineIntervalTest {
     private final ModuleContext.FlowFacade flows = mock(ModuleContext.FlowFacade.class);
 
     private AIEngineImpl engine(double interval) {
-        var engine = new AIEngineImpl(mock(World.class), action -> {},
-                context -> true, (context, speech) -> false, new GamePlaySettings.Ai(interval));
+        var settings = new GamePlaySettings.Ai(interval);
+        var cfg = spy(new DefaultWorldCfg());
+        cfg.aiActivationPolicy(() -> context -> true);
+        cfg.aiSpeechPolicy(() -> (context, speech) -> false);
+        doReturn(settings).when(cfg).ai();
+        var engine = new AIEngineImpl(mock(World.class), action -> {}, cfg);
         engine.initialize(flows);
         var npc = mock(UONpc.class, RETURNS_DEEP_STUBS);
         when(npc.getBehavior().ai()).thenReturn("PASSIVE_ANIMAL");

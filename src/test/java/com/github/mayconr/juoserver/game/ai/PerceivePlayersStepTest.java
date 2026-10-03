@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.ai;
 
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.steps.PerceivePlayersStep;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.steps.PerceivePlayersStep;
 import com.github.mayconr.juoserver.game.model.BehaviorDefinition;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UONpc;
@@ -18,7 +18,7 @@ class PerceivePlayersStepTest {
     void filtersCandidatesAndReplacesPreviousPerceptionWithoutSelectingTarget() {
         var world = mock(World.class, RETURNS_DEEP_STUBS);
         var npc = mock(UONpc.class);
-        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("COMBAT", 24, 3, null, List.of()));
+        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", 24, 3, null, List.of()));
         var alive = player(true, true);
         var dead = player(true, false);
         var offline = player(false, true);
@@ -28,7 +28,7 @@ class PerceivePlayersStepTest {
             Predicate<UOMobile> filter = invocation.getArgument(2);
             return candidates.stream().filter(filter).toList();
         });
-        var context = new CombatAIContext(npc, world);
+        var context = new AggressiveAIContext(npc, world);
         context.setNearbyPlayers(List.of(offline));
         context.setTarget(offline);
         var step = new PerceivePlayersStep();
@@ -45,8 +45,8 @@ class PerceivePlayersStepTest {
     void missingRadiusClearsStalePerceptionAndStopsFlow() {
         var npc = mock(UONpc.class);
         var world = mock(World.class);
-        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("COMBAT", 24, null, null, List.of()));
-        var context = new CombatAIContext(npc, world);
+        when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", 24, null, null, List.of()));
+        var context = new AggressiveAIContext(npc, world);
         context.setNearbyPlayers(List.of(mock(UOPlayer.class)));
         var result = new PerceivePlayersStep().execute(context);
         assertEquals("AI_PERCEPTION_RADIUS_MISSING", result.code());

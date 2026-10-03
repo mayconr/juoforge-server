@@ -1,7 +1,7 @@
-package com.github.mayconr.juoserver.game.ai.definition.combat.steps;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive.steps;
 
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIState;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.GameMath;
@@ -12,13 +12,13 @@ import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
 /** Requests one movement per AI update until the target is within attack range. */
-public final class PursueTargetStep extends AbstractFlowStep<CombatAIContext> {
+public final class PursueTargetStep extends AbstractFlowStep<AggressiveAIContext> {
     public PursueTargetStep() {
         super("PursueTargetStep");
     }
 
     @Override
-    public StepResult execute(CombatAIContext context) {
+    public StepResult execute(AggressiveAIContext context) {
         if (isSurviving(context)) {
             return StepResult.skip();
         }
@@ -39,12 +39,12 @@ public final class PursueTargetStep extends AbstractFlowStep<CombatAIContext> {
         return StepResult.stop();
     }
 
-    private boolean isSurviving(CombatAIContext context) {
+    private boolean isSurviving(AggressiveAIContext context) {
         return context.getState() == CombatAIState.FLEEING
                 || context.getState() == CombatAIState.RECOVERING;
     }
 
-    private boolean isWithoutTarget(CombatAIContext context) {
+    private boolean isWithoutTarget(AggressiveAIContext context) {
         return context.getTarget() == null;
     }
 
@@ -52,12 +52,12 @@ public final class PursueTargetStep extends AbstractFlowStep<CombatAIContext> {
         return !target.isConnected() || !target.isAlive();
     }
 
-    private boolean isTargetInAttackRange(CombatAIContext context) {
+    private boolean isTargetInAttackRange(AggressiveAIContext context) {
         return GameMath.isInRange(context.npc(), context.getTarget(),
                 CombatAttackRange.resolve(context.npc(), context.world().mobile()));
     }
 
-    private void enqueueMovementTowardTarget(CombatAIContext context) {
+    private void enqueueMovementTowardTarget(AggressiveAIContext context) {
         var npc = context.npc();
         var target = context.getTarget();
         // Different elevation on the same tile needs navigation, not a horizontal direction.

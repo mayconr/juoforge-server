@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.skill.SkillSystemFactory;
@@ -30,6 +32,16 @@ public interface WorldCfg {
     default com.github.mayconr.juoserver.game.GamePlaySettings.Ai ai() {
         return content().settings().ai();
     }
+
+    /** Replaces the policy that decides whether an AI session may execute. */
+    void aiActivationPolicy(Supplier<AIActivationPolicy> factory);
+
+    Supplier<AIActivationPolicy> aiActivationPolicy();
+
+    /** Replaces the policy that decides which speech events an AI session accepts. */
+    void aiSpeechPolicy(Supplier<AISpeechPolicy> factory);
+
+    Supplier<AISpeechPolicy> aiSpeechPolicy();
 
     /** Registers a shard flow factory. Context types must be unique across core and shard flows. */
     <T extends AbstractContext> void addFlow(

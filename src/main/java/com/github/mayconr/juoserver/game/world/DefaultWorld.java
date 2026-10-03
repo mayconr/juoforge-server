@@ -25,8 +25,6 @@ import com.github.mayconr.juoserver.game.ai.engine.AIEngineImpl;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.ai.WorldAI;
 import com.github.mayconr.juoserver.game.ai.AIModuleImpl;
-import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
-import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
@@ -338,9 +336,7 @@ public class DefaultWorld implements WorldInternal, World {
                 default -> throw new IllegalStateException("Unexpected value: " + e);
             }
 
-        }, new NearbyPlayerActivationPolicy(settings.world().visibility().range()),
-                AISpeechPolicy.nearbyVendor(settings.world().visibility().range()),
-                worldCfg.ai());
+        }, worldCfg);
         this.aiModule = new AIModuleImpl(engine, eventBus);
     }
 

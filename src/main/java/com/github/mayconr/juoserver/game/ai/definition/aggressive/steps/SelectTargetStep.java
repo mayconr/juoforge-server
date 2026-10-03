@@ -1,7 +1,7 @@
-package com.github.mayconr.juoserver.game.ai.definition.combat.steps;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive.steps;
 
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIState;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
 import com.github.mayconr.juoserver.game.ai.actions.CancelAttackAction;
 import com.github.mayconr.juoserver.game.ai.policy.TargetEligibilityPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.TargetSelectionPolicy;
@@ -10,7 +10,7 @@ import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
 /** Retains a valid perceived target, otherwise selects among eligible perceived players. */
-public final class SelectTargetStep extends AbstractFlowStep<CombatAIContext> {
+public final class SelectTargetStep extends AbstractFlowStep<AggressiveAIContext> {
     private final TargetEligibilityPolicy eligibility;
     private final TargetSelectionPolicy selection;
 
@@ -25,7 +25,7 @@ public final class SelectTargetStep extends AbstractFlowStep<CombatAIContext> {
     }
 
     @Override
-    public StepResult execute(CombatAIContext context) {
+    public StepResult execute(AggressiveAIContext context) {
         if (context.getState() == CombatAIState.FLEEING || context.getState() == CombatAIState.RECOVERING) {
             return StepResult.skip();
         }

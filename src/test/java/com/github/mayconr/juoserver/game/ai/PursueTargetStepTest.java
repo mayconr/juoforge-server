@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.ai;
 
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIState;
-import com.github.mayconr.juoserver.game.ai.definition.combat.steps.PursueTargetStep;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.steps.PursueTargetStep;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.World;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ class PursueTargetStepTest {
     private final UONpc npc = mock(UONpc.class);
     private final UOPlayer target = mock(UOPlayer.class);
     private final World world = mock(World.class, RETURNS_DEEP_STUBS);
-    private final CombatAIContext context = new CombatAIContext(npc, world);
+    private final AggressiveAIContext context = new AggressiveAIContext(npc, world);
     private final PursueTargetStep step = new PursueTargetStep();
 
     private void targetAt(int x, int y) {

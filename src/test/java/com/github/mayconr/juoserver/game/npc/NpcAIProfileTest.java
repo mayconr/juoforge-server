@@ -54,7 +54,7 @@ class NpcAIProfileTest {
         assertEquals(List.of("hello"), profile.speechTriggers());
         assertFalse(mapper.readTree(mapper.writeValueAsString(profile)).has("profile"));
         assertThrows(com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class,
-                () -> mapper.readValue("{\"ai\":\"COMBAT\",\"typo\":1}",
+                () -> mapper.readValue("{\"ai\":\"AGGRESSIVE\",\"typo\":1}",
                         com.github.mayconr.juoserver.game.model.BehaviorDefinition.class));
     }
 

@@ -1,9 +1,9 @@
 package com.github.mayconr.juoserver.game.ai;
 
 import com.github.mayconr.juoserver.game.ai.actions.AttackAction;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIState;
-import com.github.mayconr.juoserver.game.ai.definition.combat.steps.AttackTargetStep;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.steps.AttackTargetStep;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.World;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 class AttackTargetStepTest {
     private final UONpc npc = mock(UONpc.class);
     private final UOPlayer target = mock(UOPlayer.class);
-    private final CombatAIContext context = new CombatAIContext(npc, mock(World.class, RETURNS_DEEP_STUBS));
+    private final AggressiveAIContext context = new AggressiveAIContext(npc, mock(World.class, RETURNS_DEEP_STUBS));
     private final AttackTargetStep step = new AttackTargetStep();
 
     private void prepareTarget() {
