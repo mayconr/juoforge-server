@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver.game.ai.definition;
 
 import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
 import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
+import java.util.function.Predicate;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
@@ -95,6 +97,10 @@ public class AIFlowContext extends AbstractSyncFlowContext<Void> {
 
     public <T extends GameEvent> void enqueueEvent(T event) {
         events.add(event);
+    }
+
+    public void discardSpeech(Predicate<MobileSpeech> predicate) {
+        events.removeIf(event -> event instanceof MobileSpeech speech && predicate.test(speech));
     }
 
     @SuppressWarnings("unchecked")

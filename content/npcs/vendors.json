@@ -2,57 +2,64 @@
   {
     "name": "banker",
     "displayName": "Gary the banker",
-    "modelId": 400 ,
+    "modelId": 400,
     "statProfile": "vendor_basic",
     "notoriety": "INNOCENT",
     "hue": 33770,
-    "behavior": {
-      "profile" : "BANKER",
-      "ai" : "DIALOGUE_REACTIVE"
-    },
-    "attr": {
-      "behavior.radius": 3,
-      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
-    },
-    "equippedItems" : ["vendor_sell","vendor_buy_restock","vendor_buy", "hat"]
+    "equippedItems": [
+      "vendor_sell",
+      "vendor_buy_restock",
+      "vendor_buy",
+      "hat"
+    ],
+    "aiProfile": "banker_dialogue"
   },
   {
     "name": "blacksmith",
     "displayName": "Jay the blacksmith",
-    "modelId": 400 ,
+    "modelId": 400,
     "statProfile": "vendor_basic",
     "notoriety": "INNOCENT",
     "hue": 33770,
-    "behavior": {
-      "profile" : "VENDOR",
-      "ai" : "DIALOGUE_REACTIVE"
-    },
     "attr": {
-      "behavior.radius": 3,
-      "behavior.supports": ["buy"],
-      "behavior.stockType": "ORE",
       "speech.messageStyle": "NPC_BLACKSMITH"
     },
-    "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat", "robe", "long_hair", "short_beard", "backpack"],
-    "roles": ["vendor"]
+    "equippedItems": [
+      "vendor_buy_restock",
+      "vendor_buy",
+      "hat",
+      "robe",
+      "long_hair",
+      "short_beard",
+      "backpack"
+    ],
+    "roles": [
+      "vendor"
+    ],
+    "aiProfile": "vendor_ore",
+    "stockType": "ORE"
   },
   {
     "name": "miner",
     "displayName": "Olaf the miner",
-    "modelId": 400 ,
+    "modelId": 400,
     "statProfile": "vendor_basic",
     "notoriety": "INNOCENT",
     "hue": 33770,
-    "behavior": {
-      "profile" : "VENDOR",
-      "ai" : "DIALOGUE_REACTIVE"
-    },
-    "attr": {
-      "behavior.radius": 3,
-      "behavior.supports": ["buy"],
-      "behavior.stockType": "MINING_TOOL"
-    },
-    "equippedItems" : ["vendor_buy_restock","vendor_buy", "hat", "robe", "long_hair", "short_beard", "backpack", "pickaxe"],
-    "roles": ["vendor"]
+    "equippedItems": [
+      "vendor_buy_restock",
+      "vendor_buy",
+      "hat",
+      "robe",
+      "long_hair",
+      "short_beard",
+      "backpack",
+      "pickaxe"
+    ],
+    "roles": [
+      "vendor"
+    ],
+    "aiProfile": "vendor_mining_tool",
+    "stockType": "MINING_TOOL"
   }
 ]

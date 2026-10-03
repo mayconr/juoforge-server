@@ -4,14 +4,14 @@ import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class CombatSessionRegistryImpl implements CombatSessionRegistry {
 
-    private final Map<UUID, CombatSession> sessionsByID = new HashMap<>();
-    private final Map<Integer, CombatSession> sessionsBySerialId = new HashMap<>();
+    private final Map<UUID, CombatSession> sessionsByID = new ConcurrentHashMap<>();
+    private final Map<Integer, CombatSession> sessionsBySerialId = new ConcurrentHashMap<>();
 
     @Override
     public CombatSession getById(UUID id) {
@@ -25,6 +25,7 @@ public class CombatSessionRegistryImpl implements CombatSessionRegistry {
 
     @Override
     public void register(CombatSession session) {
+        unregister(session.getAttacker());
         sessionsByID.put(session.getId(), session);
         sessionsBySerialId.put(session.getAttacker().getSerialId(), session);
     }
@@ -33,14 +34,16 @@ public class CombatSessionRegistryImpl implements CombatSessionRegistry {
     public void unregister(UOMobile mobile) {
         var session = sessionsBySerialId.remove(mobile.getSerialId());
         if (session != null) {
+            session.close();
             sessionsByID.remove(session.getId());
         }
     }
 
     @Override
     public void unregister(CombatSession session) {
+        session.close();
         sessionsByID.remove(session.getId());
-        sessionsBySerialId.remove(session.getAttacker().getSerialId());
+        sessionsBySerialId.remove(session.getAttacker().getSerialId(), session);
     }
 
     @Override

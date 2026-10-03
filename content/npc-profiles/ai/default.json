@@ -1,0 +1,39 @@
+[
+  {
+    "name": "banker_dialogue",
+    "ai": "DIALOGUE_REACTIVE",
+    "activationRadius": 24,
+    "speechRadius": 3,
+    "speechTriggers": ["bank", "balance", "withdraw", "deposit"]
+  },
+  {
+    "name": "vendor_ore",
+    "ai": "DIALOGUE_REACTIVE",
+    "activationRadius": 24,
+    "speechRadius": 3,
+    "speechTriggers": ["buy"]
+  },
+  {
+    "name": "vendor_mining_tool",
+    "ai": "DIALOGUE_REACTIVE",
+    "activationRadius": 24,
+    "speechRadius": 3,
+    "speechTriggers": ["buy"]
+  },
+  {
+    "name": "undead_combat",
+    "ai": "COMBAT",
+    "activationRadius": 24,
+    "perceptionRadius": 3
+  },
+  {
+    "name": "undead_passive",
+    "ai": "PASSIVE_ANIMAL",
+    "activationRadius": 24
+  },
+  {
+    "name": "animal_passive",
+    "ai": "PASSIVE_ANIMAL",
+    "activationRadius": 24
+  }
+]

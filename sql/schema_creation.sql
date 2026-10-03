@@ -47,6 +47,7 @@ CREATE TABLE mobiles (
     -- npc only
      roles JSONB DEFAULT '[]'::jsonb,
      behavior jsonb,
+     stock_type VARCHAR(255),
 
     -- attributes
      strength INT NOT NULL,

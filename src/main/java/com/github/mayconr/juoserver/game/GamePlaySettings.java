@@ -13,11 +13,19 @@ public record GamePlaySettings(
         World world,
         Files files,
         Client client,
-        Economy economy
+        Economy economy,
+        Ai ai
 ) {
     public record Mobile(String backpackItem) {}
     public record Vitals(int saturationFactor) {}
     public record GameLoop(int tps) {}
+    public record Ai(double updateIntervalSeconds) {
+        public Ai {
+            if (!Double.isFinite(updateIntervalSeconds) || updateIntervalSeconds <= 0) {
+                throw new IllegalArgumentException("ai.updateIntervalSeconds must be finite and positive");
+            }
+        }
+    }
     public record Skills(
             double minGainChance,
             double maxGainChance,

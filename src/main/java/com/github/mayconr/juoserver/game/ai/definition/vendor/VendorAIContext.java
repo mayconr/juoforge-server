@@ -1,4 +1,6 @@
-package com.github.mayconr.juoserver.game.ai.definition;
+package com.github.mayconr.juoserver.game.ai.definition.vendor;
+
+import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.world.World;

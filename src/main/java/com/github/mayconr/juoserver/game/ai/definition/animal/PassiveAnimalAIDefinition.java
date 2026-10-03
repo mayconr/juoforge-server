@@ -1,6 +1,6 @@
-package com.github.mayconr.juoserver.game.ai.definition;
+package com.github.mayconr.juoserver.game.ai.definition.animal;
 
-import com.github.mayconr.juoserver.game.ai.definition.steps.WanderStep;
+import com.github.mayconr.juoserver.game.ai.definition.shared.steps.WanderStep;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
 

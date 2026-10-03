@@ -25,6 +25,7 @@ public class CreateNpcStep extends AbstractFlowStep<NpcCreationContext> {
         final Map<Layer, Integer> equippedItems = context.getEquippedItems() == null ? new HashMap<>() : context.getEquippedItems();
 
         var data = template.toData(context.getSerialId(), equippedItems, context.getLocation(), context.getStats());
+        if (context.getBehavior() != null) data.setBehavior(context.getBehavior());
         var npc = (UONpc) storage.createMobile(data);
 
         context.setNpc(npc);

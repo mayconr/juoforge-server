@@ -86,6 +86,7 @@
                 typeHandler="com.github.mayconr.shard.storage.types.UUIDTypeHandler"/>
 
         <!-- NPC -->
+        <result property="stockType" column="stock_type"/>
         <result property="roles"
                 column="roles"
                 typeHandler="com.github.mayconr.shard.storage.types.RolesJsonTypeHandler"/>
@@ -179,6 +180,7 @@
         account_id,
         roles,
         behavior,
+        stock_type,
         strength,
         dexterity,
         intelligence,
@@ -215,6 +217,7 @@
         #{accountId},
         #{roles, typeHandler=com.github.mayconr.shard.storage.types.RolesJsonTypeHandler}::jsonb,
         #{behavior, typeHandler=com.github.mayconr.shard.storage.types.BehaviorDefinitionTypeHandler}::jsonb,
+        #{stockType},
         #{strength},
         #{dexterity},
         #{intelligence},
@@ -241,6 +244,7 @@
         ON CONFLICT (serial_id)
         DO UPDATE SET
         type               = EXCLUDED.type,
+        stock_type         = EXCLUDED.stock_type,
         name               = EXCLUDED.name,
         display_name       = EXCLUDED.display_name,
         model_id           = EXCLUDED.model_id,

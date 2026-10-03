@@ -13,6 +13,7 @@ public class UONpc extends UOMobile {
     private int speechHue;
     private int speechFont;
     private BehaviorDefinition behavior;
+    private String stockType;
     private List<String> roles;
 
     public UONpc(UOMobileData data) {
@@ -20,6 +21,7 @@ public class UONpc extends UOMobile {
         this.speechHue = data.getSpeechHue();
         this.speechFont = data.getSpeechFont();
         this.behavior = data.getBehavior();
+        this.stockType = data.getStockType();
         this.roles = data.getRoles();
     }
 
@@ -29,6 +31,7 @@ public class UONpc extends UOMobile {
         data.setSpeechHue(speechHue);
         data.setSpeechFont(speechFont);
         data.setBehavior(behavior);
+        data.setStockType(stockType);
         data.setRoles(roles);
     }
 }

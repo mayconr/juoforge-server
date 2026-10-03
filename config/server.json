@@ -2,6 +2,9 @@
   "gameLoop": {
     "tps": 20
   },
+  "ai": {
+    "updateIntervalSeconds": 0.2
+  },
   "files": {
     "dataFileRoot": "C:\\Program Files (x86)\\Electronic Arts\\Ultima Online Classic"
   }

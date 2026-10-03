@@ -14,6 +14,8 @@ public record NpcTemplate(String name,
                           Notoriety notoriety,
                           int hue,
                           String statProfile,
+                          String aiProfile,
+                          String stockType,
                           Integer maxHitpoints,
                           Integer maxStamina,
                           Integer maxMana,
@@ -55,6 +57,7 @@ public record NpcTemplate(String name,
         data.setDirection(Direction.NORTH);
         data.setEquippedItems(equippedItems);
         data.setBehavior(behavior);
+        data.setStockType(stockType);
         data.setRoles(roles);
         data.setX(location.getX());
         data.setY(location.getY());

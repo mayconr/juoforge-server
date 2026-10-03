@@ -1,8 +1,8 @@
-package com.github.mayconr.juoserver.game.ai.definition;
+package com.github.mayconr.juoserver.game.ai.definition.vendor;
 
-import com.github.mayconr.juoserver.game.ai.definition.steps.SpeechFallbackStep;
-import com.github.mayconr.juoserver.game.ai.definition.steps.VendorStep;
-import com.github.mayconr.juoserver.game.ai.definition.steps.WanderStep;
+import com.github.mayconr.juoserver.game.ai.definition.shared.steps.SpeechFallbackStep;
+import com.github.mayconr.juoserver.game.ai.definition.vendor.steps.VendorStep;
+import com.github.mayconr.juoserver.game.ai.definition.shared.steps.WanderStep;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
 
