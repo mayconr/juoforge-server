@@ -12,6 +12,27 @@ import static org.mockito.Mockito.*;
 
 class CombatModuleTest {
     @Test
+    void queuedNpcCancellationRemovesCombatBeforeItExecutes() {
+        var module = new CombatModuleImpl(mock(CombatHandler.class), mock(VitalsHandler.class));
+        var flows = mock(ModuleContext.FlowFacade.class);
+        var context = mock(ModuleContext.class);
+        when(context.flows()).thenReturn(flows);
+        module.initialize(context);
+        var npc = mock(com.github.mayconr.juoserver.game.model.UONpc.class);
+        var registry = (CombatSessionRegistry) org.springframework.test.util.ReflectionTestUtils
+                .getField(module, "registry");
+        var session = new CombatSession(java.util.UUID.randomUUID(), npc, mock(UOPlayer.class),
+                new CombatSession.PhysicalTrigger());
+        registry.register(session);
+        module.requestCancelAttack(npc);
+        assertFalse(session.isActive());
+        assertSame(session, registry.getByPlayer(npc));
+        module.update(1);
+        assertNull(registry.getByPlayer(npc));
+        verifyNoInteractions(flows);
+    }
+
+    @Test
     void publicApiAndPacketAdapterQueueEquivalentAttacks() {
         var module = new CombatModuleImpl(mock(CombatHandler.class), mock(VitalsHandler.class));
         var flows = mock(ModuleContext.FlowFacade.class);
@@ -30,7 +51,7 @@ class CombatModuleTest {
         module.update(1);
 
         var requests = ArgumentCaptor.forClass(CombatPreparationContext.class);
-        verify(flows, times(2)).execute(requests.capture());
+        verify(flows).execute(requests.capture());
         for (var request : requests.getAllValues()) {
             assertSame(player, request.getAttacker());
             assertEquals(42, request.getTargetSerial());

@@ -16,6 +16,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ShardContentLoaderTest {
     @Test
+    void loadsAiTimingIntoWorldConfiguration() {
+        var content = ShardContentLoader.load(Path.of("."), false);
+        assertEquals(0.2, content.settings().ai().updateIntervalSeconds());
+        var worldCfg = new com.github.mayconr.juoserver.DefaultWorldCfg();
+        worldCfg.content(content);
+        assertSame(content.settings().ai(), worldCfg.ai());
+        assertThrows(IllegalArgumentException.class,
+                () -> new com.github.mayconr.juoserver.game.GamePlaySettings.Ai(0));
+    }
+
+    @Test
     void loadsShippedContentWithValidReferences() {
         var content = ShardContentLoader.load(Path.of("."), false);
         var items = content.items().load();
@@ -88,6 +99,10 @@ class ShardContentLoaderTest {
             }
         }
         assertEquals(64, ShardContentLoader.load(root, false).spells().loadAll().size());
+        var serverConfig = root.resolve("config/server.json");
+        Files.writeString(serverConfig, Files.readString(serverConfig)
+                .replace("\"updateIntervalSeconds\": 0.2", "\"updateIntervalSeconds\": 0.5"));
+        assertEquals(0.5, ShardContentLoader.load(root, false).settings().ai().updateIntervalSeconds());
         var devItems = root.resolve("dev/content/items");
         Files.createDirectories(devItems);
         Files.writeString(devItems.resolve("duplicate.json"), "[{\"name\":\"backpack\",\"modelId\":3701}]");

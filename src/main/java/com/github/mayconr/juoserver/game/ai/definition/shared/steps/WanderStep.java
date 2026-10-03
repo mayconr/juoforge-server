@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.ai.definition.steps;
+package com.github.mayconr.juoserver.game.ai.definition.shared.steps;
 
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;

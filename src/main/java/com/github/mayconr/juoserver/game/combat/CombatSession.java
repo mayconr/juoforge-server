@@ -13,7 +13,7 @@ public final class CombatSession {
     private final long startedAt;
     private final Trigger trigger;
     private long lastAggressionAt;
-    private boolean active;
+    private volatile boolean active;
 
     public CombatSession(UUID id, UOMobile attacker, UOMobile target, Trigger trigger) {
         this.id = id;

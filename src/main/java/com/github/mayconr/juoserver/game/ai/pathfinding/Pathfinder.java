@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.ai;
+package com.github.mayconr.juoserver.game.ai.pathfinding;
 
 import java.util.*;
 

@@ -13,6 +13,7 @@ import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.ResolveC
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.WeaponResolverStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.swing.CombatHitFrameDelayStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.validation.ValidateTargetDistanceStep;
+import com.github.mayconr.juoserver.game.combat.flow.execution.validation.ValidateCombatSessionStep;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowBuilder;
@@ -26,6 +27,8 @@ public class CombatExecutionFlow {
         return FlowFactory.<CombatExecutionContext>builder()
             .appendGroup("CombatSetup", setup(infra))
             .appendGroup("CombatSwing", swing(infra))
+            .step(new ValidateCombatSessionStep())
+            .step(new ValidateTargetDistanceStep())
             .appendGroup("CombatHitResolution", hitResolution(infra))
             .appendGroup("CombatSkillGain", skillGain(modules, infra))
             .appendGroup("CombatDamage", damage(modules))
@@ -34,6 +37,7 @@ public class CombatExecutionFlow {
 
     private static FlowBuilder<CombatExecutionContext> setup(FlowRegistryFactory.GameInfra infra) {
         return FlowFactory.<CombatExecutionContext>builder()
+            .step(new ValidateCombatSessionStep())
             .step(new WeaponResolverStep(infra.storage()))
             .step(new CombatTypeResolverStep())
             .step(new ResolveCombatMaxDistanceStep())

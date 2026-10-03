@@ -26,6 +26,11 @@ public interface WorldCfg {
 
     WorldContent content();
 
+    /** AI timing loaded from the server configuration. */
+    default com.github.mayconr.juoserver.game.GamePlaySettings.Ai ai() {
+        return content().settings().ai();
+    }
+
     /** Registers a shard flow factory. Context types must be unique across core and shard flows. */
     <T extends AbstractContext> void addFlow(
             Class<T> contextType,

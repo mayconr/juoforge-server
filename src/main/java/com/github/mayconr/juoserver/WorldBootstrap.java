@@ -11,6 +11,7 @@ import com.github.mayconr.juoserver.game.item.trigger.ItemUseRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
+import com.github.mayconr.juoserver.game.npc.ai.NpcAIProfileResolver;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
@@ -73,6 +74,9 @@ public final class WorldBootstrap {
         final var npcStatsResolver = new NpcStatsResolver(content.npcStatProfiles().loadAll());
         // Validate every NPC before starting storage, modules or the game loop.
         npcs.forEach(npcStatsResolver::resolve);
+        final var npcAIProfileResolver = new NpcAIProfileResolver(
+                content.npcAIProfiles().loadAll());
+        npcs.forEach(npcAIProfileResolver::resolve);
         registryMap.put(GAMEPLAY_CONFIG, new InMemoryTemplateRegistry<>(java.util.List.of(content.settings()), GamePlaySettings::name));
         registryMap.put(NPC_BY_NAME, new InMemoryTemplateRegistry<>(npcs, NpcTemplate::name));
         registryMap.put(SPELL_TEMPLATE_BY_KEY, new InMemoryTemplateRegistry<>(content.spells().loadAll(), SpellTemplate::key));
@@ -154,6 +158,7 @@ public final class WorldBootstrap {
                 itemTemplateRegistry,
                 npcTemplateByName,
                 npcStatsResolver,
+                npcAIProfileResolver,
                 itemTemplateByName,
                 itemTemplateByModelId,
                 bodyTemplateByName,

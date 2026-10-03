@@ -1,10 +1,14 @@
 package com.github.mayconr.juoserver.game.ai;
 
+import com.github.mayconr.juoserver.game.ai.engine.AIEngine;
+import com.github.mayconr.juoserver.game.ai.session.AISession;
+
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +22,7 @@ public class AIModuleImpl implements AIModule {
     private final AIEngine engine;
     private final EventBus eventBus;
     private final Map<Integer, AISession<?>> sessions = new ConcurrentHashMap<>();
+    private final Map<Integer, EventHandler<MobileSpeech>> speechListeners = new ConcurrentHashMap<>();
 
     @Override
     public void initialize(ModuleContext context) {
@@ -33,10 +38,14 @@ public class AIModuleImpl implements AIModule {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends AIFlowContext> AISession<T> attach(UONpc npc) {
+        var existing = sessions.get(npc.getSerialId());
+        if (existing != null) return (AISession<T>) existing;
         var session = engine.attach(npc);
 
         // Register default events
-        eventBus.register(MobileSpeech.class, session::onSpeech);
+        EventHandler<MobileSpeech> listener = session::onSpeech;
+        eventBus.register(MobileSpeech.class, listener);
+        speechListeners.put(npc.getSerialId(), listener);
 
         sessions.put(npc.getSerialId(), session);
 
@@ -47,6 +56,7 @@ public class AIModuleImpl implements AIModule {
 
     @Override
     public void detach(UONpc npc) {
+        unregisterSpeech(npc.getSerialId());
 
         var removed = sessions.remove(npc.getSerialId());
 
@@ -65,6 +75,7 @@ public class AIModuleImpl implements AIModule {
     public void detachAll() {
 
         for (var entry : sessions.entrySet()) {
+            unregisterSpeech(entry.getKey());
             try {
                 engine.detachById(entry.getKey());
             } catch (Exception e) {
@@ -73,5 +84,10 @@ public class AIModuleImpl implements AIModule {
         }
 
         sessions.clear();
+    }
+
+    private void unregisterSpeech(int npcId) {
+        var listener = speechListeners.remove(npcId);
+        if (listener != null) eventBus.unregister(MobileSpeech.class, listener);
     }
 }

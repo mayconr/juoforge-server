@@ -1,4 +1,6 @@
-package com.github.mayconr.juoserver.game.ai;
+package com.github.mayconr.juoserver.game.ai.engine;
+
+import com.github.mayconr.juoserver.game.ai.session.AISession;
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.model.UONpc;

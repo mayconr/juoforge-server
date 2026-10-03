@@ -1,9 +1,9 @@
-package com.github.mayconr.juoserver.game.ai.definition.steps;
+package com.github.mayconr.juoserver.game.ai.definition.vendor.steps;
 
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
-import com.github.mayconr.juoserver.game.ai.definition.VendorAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.vendor.VendorAIContext;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;

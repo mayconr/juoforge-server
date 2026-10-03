@@ -21,13 +21,17 @@ import com.github.mayconr.juoserver.game.spell.SpellModule;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
 import com.github.mayconr.juoserver.game.spell.SpellModuleImpl;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
-import com.github.mayconr.juoserver.game.ai.AIEngineImpl;
+import com.github.mayconr.juoserver.game.ai.engine.AIEngineImpl;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.ai.WorldAI;
 import com.github.mayconr.juoserver.game.ai.AIModuleImpl;
+import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.actions.SellListAction;
 import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
+import com.github.mayconr.juoserver.game.ai.actions.CancelAttackAction;
+import com.github.mayconr.juoserver.game.ai.actions.AttackAction;
 import com.github.mayconr.juoserver.game.combat.CombatHandler;
 import com.github.mayconr.juoserver.game.combat.CombatModule;
 import com.github.mayconr.juoserver.game.combat.WorldCombat;
@@ -57,6 +61,7 @@ import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
+import com.github.mayconr.juoserver.game.npc.ai.NpcAIProfileResolver;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
@@ -237,6 +242,7 @@ public class DefaultWorld implements WorldInternal, World {
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final TemplateRegistry<String, NpcTemplate> npcTemplateByName;
     private final NpcStatsResolver npcStatsResolver;
+    private final NpcAIProfileResolver npcAIProfileResolver;
     private final TemplateRegistry<String, ItemTemplate> itemTemplateByName;
     private final TemplateRegistry<Integer, ItemTemplate> itemTemplateByModelId;
     private final TemplateRegistry<BodyKey, BodyTemplate> bodyTemplateByBodyKey;
@@ -321,6 +327,8 @@ public class DefaultWorld implements WorldInternal, World {
             switch (e) {
                 //case SpeechAction say -> world.message().printTextAbove(, say.content(), say.speechTo());
                 case WalkAction walkAction -> mobile().move(walkAction.npc(), walkAction.direction());
+                case CancelAttackAction cancel -> combat().requestCancelAttack(cancel.npc());
+                case AttackAction attack -> combat().requestAttack(attack.npc(), attack.targetSerial());
                 case SellListAction buyList -> {
                     var region = map().getRegion(buyList.buyer())
                             .orElseThrow(() -> new RuntimeException("Region not found"));
@@ -330,7 +338,9 @@ public class DefaultWorld implements WorldInternal, World {
                 default -> throw new IllegalStateException("Unexpected value: " + e);
             }
 
-        });
+        }, new NearbyPlayerActivationPolicy(settings.world().visibility().range()),
+                AISpeechPolicy.nearbyVendor(settings.world().visibility().range()),
+                worldCfg.ai());
         this.aiModule = new AIModuleImpl(engine, eventBus);
     }
 
@@ -447,6 +457,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .itemByName(itemTemplateByName)
                     .npcByName(npcTemplateByName)
                     .npcStatsResolver(npcStatsResolver)
+                    .npcAIProfileResolver(npcAIProfileResolver)
                     .bodyByKey(bodyTemplateByBodyKey)
                     .startKitBySkillId(startKitTemplateBySkillId)
                     .mountByItemName(mountTemplateByItemName)

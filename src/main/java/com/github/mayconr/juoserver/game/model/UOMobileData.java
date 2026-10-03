@@ -86,6 +86,7 @@ public class UOMobileData extends UOObjectData {
     private int speechHue;
     private int speechFont;
     private BehaviorDefinition behavior;
+    private String stockType;
     private List<String> roles;
 
     // Player

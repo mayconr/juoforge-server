@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.ai;
+package com.github.mayconr.juoserver.game.ai.session;
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;

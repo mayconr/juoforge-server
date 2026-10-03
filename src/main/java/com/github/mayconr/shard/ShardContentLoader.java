@@ -10,6 +10,7 @@ import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcStatProfile;
+import com.github.mayconr.juoserver.game.mobile.template.NpcAIProfile;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
@@ -44,6 +45,7 @@ public final class ShardContentLoader {
                 snapshot(items),
                 json(content.resolve("npcs"), NpcTemplate.class),
                 json(content.resolve("npc-profiles/stats"), NpcStatProfile.class),
+                json(content.resolve("npc-profiles/ai"), NpcAIProfile.class),
                 new JsonTemplateLoaderNew<>(content.resolve("spells"), SpellTemplate.class),
                 json(content.resolve("players/bodies"), BodyTemplate.class),
                 json(content.resolve("players/starting-kits"), StartKitTemplate.class),
@@ -66,7 +68,8 @@ public final class ShardContentLoader {
             // Preserve the engine settings contract while keeping machine settings in a separate file.
             return new GamePlaySettings(gameplay.name(), gameplay.vitals(), server.gameLoop(),
                     gameplay.skills(), gameplay.mobile(), gameplay.world(), server.files(),
-                    gameplay.client(), gameplay.economy());
+                    gameplay.client(), gameplay.economy(), java.util.Objects.requireNonNull(server.ai(),
+                    "Server configuration must include ai"));
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load shard configuration from " + config, e);
         }
@@ -91,5 +94,6 @@ public final class ShardContentLoader {
         };
     }
 
-    private record ServerSettings(GamePlaySettings.GameLoop gameLoop, GamePlaySettings.Files files) {}
+    private record ServerSettings(GamePlaySettings.GameLoop gameLoop, GamePlaySettings.Files files,
+                                  GamePlaySettings.Ai ai) {}
 }

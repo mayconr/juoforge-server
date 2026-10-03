@@ -14,8 +14,11 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 public class CombatModuleImpl implements CombatModule {
@@ -26,6 +29,7 @@ public class CombatModuleImpl implements CombatModule {
     private final VitalsHandler vitalsHandler;
 
     private final Queue<CombatCommand> commandQueue = new ConcurrentLinkedQueue<>();
+    private final Map<Integer, AttackCommand> pendingAttacks = new ConcurrentHashMap<>();
     private final CombatSessionRegistry registry = new CombatSessionRegistryImpl();
 
     private ModuleContext.FlowFacade flows;
@@ -52,6 +56,10 @@ public class CombatModuleImpl implements CombatModule {
         while ((command = commandQueue.poll()) != null) {
             switch (command) {
                 case AttackCommand attack -> {
+                    if (attack.origin() instanceof CombatPreparationContext.RequestOrigin) {
+                        if (!claimPendingAttack(attack)) continue;
+                        if (isAttackAlreadyActive(attack)) continue;
+                    }
                     var context = CombatPreparationContext.of(attack.attacker(), attack.targetSerial(), attack.origin());
                     flows.execute(context);
 
@@ -86,13 +94,39 @@ public class CombatModuleImpl implements CombatModule {
     public void toggleWarMode(UOPlayer player, WarModeType type) {
         combatHandler.toggleWarMode(player, type);
         if (type == WarModeType.NORMAL) {
-            commandQueue.add(new CancelAttackCommand(player));
+            requestCancelAttack(player);
         }
     }
 
     @Override
-    public void requestAttack(UOPlayer player, int targetSerial) {
-        commandQueue.add(new AttackCommand(player, targetSerial, CombatOrigin.ofRequest()));
+    public synchronized void requestAttack(UOMobile attacker, int targetSerial) {
+        var pending = pendingAttacks.get(attacker.getSerialId());
+        if (pending != null && pending.targetSerial() == targetSerial) return;
+        var command = new AttackCommand(attacker, targetSerial, CombatOrigin.ofRequest());
+        pendingAttacks.put(attacker.getSerialId(), command);
+        commandQueue.add(command);
+    }
+
+    private synchronized boolean claimPendingAttack(AttackCommand command) {
+        int serial = command.attacker().getSerialId();
+        if (pendingAttacks.get(serial) != command) return false;
+        pendingAttacks.remove(serial);
+        return true;
+    }
+
+    private boolean isAttackAlreadyActive(AttackCommand command) {
+        var session = registry.getByPlayer(command.attacker());
+        return session != null && session.isActive()
+                && session.getTarget().getSerialId() == command.targetSerial();
+    }
+
+    @Override
+    public synchronized void requestCancelAttack(UOMobile mobile) {
+        Objects.requireNonNull(mobile);
+        pendingAttacks.remove(mobile.getSerialId());
+        var session = registry.getByPlayer(mobile);
+        if (session != null) session.close();
+        commandQueue.add(new CancelAttackCommand(mobile));
     }
 
     @Override

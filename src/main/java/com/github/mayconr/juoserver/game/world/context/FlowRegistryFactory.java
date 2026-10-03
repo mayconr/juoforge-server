@@ -13,10 +13,12 @@ import com.github.mayconr.juoserver.game.spell.flow.open.OpenSpellBookFlowDefini
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
 import com.github.mayconr.juoserver.game.ai.AIModule;
-import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.PassiveAnimalAIDefinition;
-import com.github.mayconr.juoserver.game.ai.definition.VendorAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.VendorAIDefinition;
+import com.github.mayconr.juoserver.game.ai.definition.animal.PassiveAnimalAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.combat.CombatAIDefinition;
+import com.github.mayconr.juoserver.game.ai.definition.animal.PassiveAnimalAIDefinition;
+import com.github.mayconr.juoserver.game.ai.definition.vendor.VendorAIContext;
+import com.github.mayconr.juoserver.game.ai.definition.vendor.VendorAIDefinition;
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionFlow;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
@@ -58,6 +60,7 @@ import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationContext;
 import com.github.mayconr.juoserver.game.npc.flow.creation.NpcCreationFlowDefinition;
 import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
+import com.github.mayconr.juoserver.game.npc.ai.NpcAIProfileResolver;
 import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalContext;
 import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalFlowDefinition;
 import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationContext;
@@ -117,6 +120,7 @@ public class FlowRegistryFactory {
             TemplateRegistry<String, SpellTemplate> spellByKey,
             TemplateRegistry<String, NpcTemplate> npcByName,
             NpcStatsResolver npcStatsResolver,
+            NpcAIProfileResolver npcAIProfileResolver,
 
             TemplateRegistry<String, ItemTemplate> itemByName,
             TemplateRegistry<Integer, ItemTemplate> itemByModelId,
@@ -147,6 +151,7 @@ public class FlowRegistryFactory {
         registry.register(MountFlowDefinition.class.getSimpleName(), MountFlowDefinition.build(modules, templates), MountContext.class);
         registry.register(PassiveAnimalAIDefinition.class.getSimpleName(), PassiveAnimalAIDefinition.build(), PassiveAnimalAIContext.class);
         registry.register(VendorAIDefinition.class.getSimpleName(), VendorAIDefinition.build(), VendorAIContext.class);
+        registry.register(CombatAIDefinition.class.getSimpleName(), CombatAIDefinition.build(), CombatAIContext.class);
         registry.register(SendTargetFlowDefinition.class.getSimpleName(), SendTargetFlowDefinition.build(modules, infra), SendTargetContext.class);
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);

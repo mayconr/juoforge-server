@@ -7,6 +7,7 @@ import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcStatProfile;
+import com.github.mayconr.juoserver.game.mobile.template.NpcAIProfile;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
@@ -19,6 +20,7 @@ public record WorldContent(
         TemplateLoader<ItemTemplate> items,
         TemplateLoader<NpcTemplate> npcs,
         TemplateLoader<NpcStatProfile> npcStatProfiles,
+        TemplateLoader<NpcAIProfile> npcAIProfiles,
         TemplateLoader<SpellTemplate> spells,
         TemplateLoader<BodyTemplate> bodies,
         TemplateLoader<StartKitTemplate> startingKits,

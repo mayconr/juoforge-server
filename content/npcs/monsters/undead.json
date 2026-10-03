@@ -5,14 +5,7 @@
     "modelId": 57,
     "statProfile": "undead_level2",
     "notoriety": "MURDERER",
-    "behavior": {
-      "profile" : "ANIMAL",
-      "ai" : "PASSIVE_ANIMAL"
-    },
-    "attr": {
-      "behavior.radius": 3,
-      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
-    }
+    "aiProfile": "undead_combat"
   },
   {
     "name": "wraith",
@@ -20,13 +13,6 @@
     "modelId": 26,
     "statProfile": "undead_level2",
     "notoriety": "MURDERER",
-    "behavior": {
-      "profile" : "ANIMAL",
-      "ai" : "PASSIVE_ANIMAL"
-    },
-    "attr": {
-      "behavior.radius": 3,
-      "behavior.supports": ["bank", "balance", "withdraw", "deposit"]
-    }
+    "aiProfile": "undead_passive"
   }
 ]
