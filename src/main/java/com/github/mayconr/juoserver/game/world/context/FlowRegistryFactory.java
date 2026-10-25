@@ -1,5 +1,12 @@
 package com.github.mayconr.juoserver.game.world.context;
 
+import com.github.mayconr.juoserver.game.economy.VendorHandler;
+import com.github.mayconr.juoserver.game.wallet.Wallet;
+import com.github.mayconr.juoserver.game.economy.flow.begin.BeginVendorPurchaseContext;
+import com.github.mayconr.juoserver.game.economy.flow.begin.BeginVendorPurchaseFlowDefinition;
+import com.github.mayconr.juoserver.game.economy.flow.purchase.VendorPurchaseContext;
+import com.github.mayconr.juoserver.game.economy.flow.purchase.VendorPurchaseFlowDefinition;
+
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
@@ -99,6 +106,8 @@ public class FlowRegistryFactory {
 
     @Builder
     public record GameInfra(
+            VendorHandler vendorHandler,
+            Wallet wallet,
             SpellCastRegistry spellCastRegistry,
             EventBus eventBus,
             RealmStorage storage,
@@ -135,6 +144,10 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(VendorPurchaseFlowDefinition.class.getSimpleName(),
+                VendorPurchaseFlowDefinition.build(infra.vendorHandler(), infra.wallet(), modules.item(), infra.eventBus()), VendorPurchaseContext.class);
+        registry.register(BeginVendorPurchaseFlowDefinition.class.getSimpleName(),
+                BeginVendorPurchaseFlowDefinition.build(infra.vendorHandler(), infra.eventBus()), BeginVendorPurchaseContext.class);
         registry.register(CastSpellFlowDefinition.class.getSimpleName(),
                 CastSpellFlowDefinition.build(templates.spellByKey(), infra.spellCastRegistry()), CastSpellContext.class);
         registry.register(OpenSpellBookFlowDefinition.class.getSimpleName(), OpenSpellBookFlowDefinition.build(infra), OpenSpellBookContext.class);
