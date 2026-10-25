@@ -4,14 +4,13 @@ import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.economy.stock.StockPool;
 import com.github.mayconr.juoserver.game.economy.template.RegionStockTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
-import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.economy.flow.purchase.VendorPurchaseContext;
+import com.github.mayconr.juoserver.game.economy.flow.begin.BeginVendorPurchaseContext;
 import com.github.mayconr.juoserver.game.model.event.VendorPurchaseFailed;
-import com.github.mayconr.juoserver.game.model.event.VendorPurchaseCompleted;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.model.VendorPurchaseResult;
-import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
@@ -19,31 +18,30 @@ import com.github.mayconr.juoserver.network.packet.VendorBuyRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 @Slf4j
 @RequiredArgsConstructor
 public final class EconomyModuleImpl implements EconomyModule {
 
     private final EventBus eventBus;
-    private final VendorHandler vendorHandler;
     private final StockHandler stockHandler;
-    private final Wallet wallet;
     private final TemplateLoader<RegionStockTemplate> templateLoader;
+    private final ItemTemplateRegistry itemTemplateRegistry;
 
     private ModuleContext.FlowFacade flows;
 
-    public void initialize(Function<String, ItemTemplate> itemTemplateFunction) {
+    @Override
+    public void initialize(ModuleContext context) {
+        this.flows = context.flows();
         var stock = new HashMap<String, StockPool>();
         for (var entry : templateLoader.load().entrySet()) {
 
             var entries = new HashMap<ItemTemplate, StockEntry>();
             for (var template : entry.getValue().initialStock()) {
-                var itemTemplate = itemTemplateFunction.apply(template.itemName());
+                var itemTemplate = itemTemplateRegistry.get(template.itemName());
                 entries.put(itemTemplate, new StockEntry(itemTemplate, template.maxStock(), template.elasticity(), template.amount()));
             }
 
@@ -51,21 +49,6 @@ public final class EconomyModuleImpl implements EconomyModule {
             stock.put(region, new StockPool(region, entries));
         }
         stockHandler.initialStock(stock);
-    }
-
-    @Override
-    public void initialize(ModuleContext context) {
-        this.flows = context.flows();
-    }
-
-    @Override
-    public void beginVendorPurchase(UOPlayer player, UOMobile vendor, RegionNode region, List<StockEntry> items) {
-        vendorHandler.beginVendorPurchase(player, vendor, region, items);
-    }
-
-    @Override
-    public VendorPurchaseResult resolveVendorPurchase(UOPlayer player, VendorBuyRequest vendorBuyRequest) {
-        return vendorHandler.resolveVendorPurchase(player, vendorBuyRequest, wallet);
     }
 
     @Override
@@ -79,25 +62,18 @@ public final class EconomyModuleImpl implements EconomyModule {
 
         return pool.map(stockPool -> stockPool.getStockEntry(template));
     }
+
+    @Override
+    public void beginVendorPurchase(UOPlayer player, UOMobile vendor, RegionNode region, List<StockEntry> items) {
+        flows.execute(new BeginVendorPurchaseContext(player, vendor, region, items));
+    }
+
     @Override
     public void completeVendorPurchase(UOPlayer player, VendorBuyRequest vendorBuyRequest) {
-        var result = resolveVendorPurchase(player, vendorBuyRequest);
-
-        if (!result.success()) {
+        var result = flows.execute(new VendorPurchaseContext(player, vendorBuyRequest, player.getVendorSession()));
+        if (result.flowFailed()) {
             eventBus.publish(new VendorPurchaseFailed(player));
-            return;
         }
-
-        final List<UOItem> items = new ArrayList<>();
-        for (var item : result.items()) {
-            // TODO get backpack by serial
-            /*items.add(item().createItem(
-                    ItemRequest.byTemplate(item.template()),
-                    ContainerItemTarget.of(player.getBackpack())
-            ));*/
-        }
-
-        eventBus.publish(new VendorPurchaseCompleted(player, items));
     }
 
 }

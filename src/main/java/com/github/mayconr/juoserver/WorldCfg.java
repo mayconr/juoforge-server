@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings.Ai;
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
@@ -29,7 +30,7 @@ public interface WorldCfg {
     WorldContent content();
 
     /** AI timing loaded from the server configuration. */
-    default com.github.mayconr.juoserver.game.GamePlaySettings.Ai ai() {
+    default Ai ai() {
         return content().settings().ai();
     }
 

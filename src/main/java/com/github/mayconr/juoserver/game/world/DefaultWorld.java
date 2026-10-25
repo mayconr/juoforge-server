@@ -204,6 +204,8 @@ public class DefaultWorld implements WorldInternal, World {
     private RandomModule randomModule;
     private DevToolsModule devToolsModule;
     private EconomyModule economyModule;
+    private VendorHandler vendorHandler;
+    private Wallet economyWallet;
     private AIModule aiModule;
     private UIModule uiModule;
     private SkillModule skillModule;
@@ -309,11 +311,12 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeEconomyModule(Wallet wallet) {
         final var pricingStrategy = worldCfg.pricingStrategy().get();
-        final var vendorHandler = new VendorHandler(eventBus, serialGenerator, pricingStrategy);
+        this.vendorHandler = new VendorHandler(serialGenerator, pricingStrategy);
+        this.economyWallet = wallet;
         final var stockHandler = new StockHandler();
         final var templateLoader = worldCfg.content().stocks();
 
-        this.economyModule = new EconomyModuleImpl(eventBus, vendorHandler, stockHandler, wallet, templateLoader);
+        this.economyModule = new EconomyModuleImpl(eventBus, stockHandler, templateLoader, itemTemplateRegistry);
     }
 
     private void initializeAiModule() {
@@ -437,6 +440,8 @@ public class DefaultWorld implements WorldInternal, World {
                     .skill(skillModule)
                     .build())
                 .infra(GameInfra.builder()
+                    .vendorHandler(vendorHandler)
+                    .wallet(economyWallet)
                     .spellCastRegistry(spellCastRegistry)
                     .serialGenerator(serialGenerator)
                     .eventBus(eventBus)
