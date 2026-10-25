@@ -71,6 +71,8 @@ import com.github.mayconr.juoserver.game.npc.ai.NpcAIProfileResolver;
 import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalContext;
 import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalFlowDefinition;
 import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationContext;
+import com.github.mayconr.juoserver.game.player.flow.deletion.DeletePlayerContext;
+import com.github.mayconr.juoserver.game.player.flow.deletion.DeletePlayerFlowDefinition;
 import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationFlowDefinition;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
@@ -144,6 +146,8 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(DeletePlayerFlowDefinition.class.getSimpleName(),
+                DeletePlayerFlowDefinition.build(infra.storage()), DeletePlayerContext.class);
         registry.register(VendorPurchaseFlowDefinition.class.getSimpleName(),
                 VendorPurchaseFlowDefinition.build(infra.vendorHandler(), infra.wallet(), modules.item(), infra.eventBus()), VendorPurchaseContext.class);
         registry.register(BeginVendorPurchaseFlowDefinition.class.getSimpleName(),
