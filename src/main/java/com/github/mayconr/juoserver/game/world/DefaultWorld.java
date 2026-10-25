@@ -65,7 +65,7 @@ import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.NpcModuleImpl;
 import com.github.mayconr.juoserver.game.player.PlayerModule;
-import com.github.mayconr.juoserver.game.player.PlayerCommands;
+import com.github.mayconr.juoserver.game.player.PlayerModuleImpl;
 import com.github.mayconr.juoserver.game.player.PlayerVitalsHandler;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
@@ -129,7 +129,7 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public PlayerCommands player() {
+    public PlayerModule player() {
         return Objects.requireNonNull(playerModule, "World player module is not initialized");
     }
 
@@ -378,7 +378,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializePlayerModule() {
         final var vitals = new PlayerVitalsHandler(this);
-        this.playerModule = new PlayerModule(vitals, storage, eventBus);
+        this.playerModule = new PlayerModuleImpl(vitals, storage, eventBus);
     }
 
     private void initializeCombatModule() {
