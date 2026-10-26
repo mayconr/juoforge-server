@@ -19,8 +19,6 @@ public class BroadcastAttackAnimationStep extends AbstractFlowStep<CombatExecuti
 
     @Override
     public StepResult execute(CombatExecutionContext context) {
-        log.info(context.toString());
-
         final var attacker = context.getSession().getAttacker();
         final var target = context.getSession().getTarget();
         final var weapon = context.getWeapon();

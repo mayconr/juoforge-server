@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.mobile.flow.death;
 
 import com.github.mayconr.juoserver.game.model.DeathCause;
 import com.github.mayconr.juoserver.game.model.UOCorpse;
+import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOObject;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
@@ -18,6 +19,7 @@ public class DeathContext extends AbstractSyncFlowContext<Void> {
     private final UOObject<?> killer;
     private final DeathCause cause;
     private UOCorpse corpse;
+    private UOItem mountItem;
 
     public void corpse(UOCorpse corpse) {
         this.corpse = corpse;

@@ -46,6 +46,8 @@ import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.messaging.MessageModule;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
+import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionContext;
+import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemFlowDefinition;
@@ -146,6 +148,8 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(ResurrectionFlowDefinition.class.getSimpleName(),
+                ResurrectionFlowDefinition.build(infra.eventBus()), ResurrectionContext.class);
         registry.register(DeletePlayerFlowDefinition.class.getSimpleName(),
                 DeletePlayerFlowDefinition.build(infra.storage()), DeletePlayerContext.class);
         registry.register(VendorPurchaseFlowDefinition.class.getSimpleName(),
@@ -155,7 +159,7 @@ public class FlowRegistryFactory {
         registry.register(CastSpellFlowDefinition.class.getSimpleName(),
                 CastSpellFlowDefinition.build(templates.spellByKey(), infra.spellCastRegistry()), CastSpellContext.class);
         registry.register(OpenSpellBookFlowDefinition.class.getSimpleName(), OpenSpellBookFlowDefinition.build(infra), OpenSpellBookContext.class);
-        registry.register(DeathFlowDefinition.class.getSimpleName(), DeathFlowDefinition.build(modules, infra), DeathContext.class);
+        registry.register(DeathFlowDefinition.class.getSimpleName(), DeathFlowDefinition.build(modules, infra, templates), DeathContext.class);
         registry.register(DamageFlowDefinition.class.getSimpleName(), DamageFlowDefinition.build(modules, infra), DamageContext.class);
         registry.register(NpcCreationFlowDefinition.class.getSimpleName(), NpcCreationFlowDefinition.build(modules, infra, templates), NpcCreationContext.class);
         registry.register(NpcRemovalFlowDefinition.class.getSimpleName(), NpcRemovalFlowDefinition.build(modules, infra), NpcRemovalContext.class);
@@ -165,7 +169,7 @@ public class FlowRegistryFactory {
         registry.register(DropItemFlowDefinition.class.getSimpleName(), DropItemFlowDefinition.build(modules, infra), DropItemContext.class);
         registry.register(PlayerCreationFlowDefinition.class.getSimpleName(), PlayerCreationFlowDefinition.build(modules, infra, templates), PlayerCreationContext.class);
         registry.register(UnmountFlowDefinition.class.getSimpleName(), UnmountFlowDefinition.build(modules, infra, templates), UnmountContext.class);
-        registry.register(MountFlowDefinition.class.getSimpleName(), MountFlowDefinition.build(modules, templates), MountContext.class);
+        registry.register(MountFlowDefinition.class.getSimpleName(), MountFlowDefinition.build(modules, infra, templates), MountContext.class);
         registry.register(PassiveAnimalAIDefinition.class.getSimpleName(), PassiveAnimalAIDefinition.build(), PassiveAnimalAIContext.class);
         registry.register(VendorAIDefinition.class.getSimpleName(), VendorAIDefinition.build(), VendorAIContext.class);
         registry.register(AggressiveAIDefinition.class.getSimpleName(), AggressiveAIDefinition.build(), AggressiveAIContext.class);

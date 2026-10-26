@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.network.packet;
 
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
@@ -12,6 +13,7 @@ public class DrawGamePlayer extends AbstractPacket {
     private int serialId;
     private int modelId;
     private int hue;
+    private int flags;
     private int x;
     private int y;
     private int z;
@@ -34,6 +36,11 @@ public class DrawGamePlayer extends AbstractPacket {
         this.serialId = mobile.getSerialId();
         this.modelId = mobile.getModelId();
         this.hue = mobile.getHue();
+        if (mobile instanceof UOPlayer player && !player.isAlive()) {
+            this.modelId = player.getGhostModelId();
+            this.hue = 0;
+        }
+        this.flags = mobile.getStatus().getCode();
         this.x = mobile.getX();
         this.y = mobile.getY();
         this.z = mobile.getZ();
@@ -47,7 +54,7 @@ public class DrawGamePlayer extends AbstractPacket {
         buf.writeShort(modelId);
         buf.writeByte(0);
         buf.writeShort(hue);
-        buf.writeByte(0); // flags
+        buf.writeByte(flags);
         buf.writeShort(x);
         buf.writeShort(y);
         buf.writeShort(0);

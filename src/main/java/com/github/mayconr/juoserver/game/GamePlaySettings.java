@@ -16,7 +16,16 @@ public record GamePlaySettings(
         Economy economy,
         Ai ai
 ) {
-    public record Mobile(String backpackItem) {}
+    public record Mobile(String backpackItem, Integer mountRange) {
+        public static final int DEFAULT_MOUNT_RANGE = 2;
+
+        public Mobile {
+            mountRange = mountRange == null ? DEFAULT_MOUNT_RANGE : mountRange;
+            if (mountRange < 0) {
+                throw new IllegalArgumentException("mobile.mountRange must not be negative");
+            }
+        }
+    }
     public record Vitals(int saturationFactor) {}
     public record GameLoop(int tps) {}
     public record Ai(double updateIntervalSeconds) {

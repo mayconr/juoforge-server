@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +33,23 @@ public class ItemModuleImpl implements ItemModule {
 
     @Override
     public UOItem createItem(ItemRequest request, ItemTarget target) {
-        var context = new ItemCreationContext(request, target);
-        flows.execute(context);
-        return context.result("Cannot create item for request "+request);
+        return createItem(request, target, null);
     }
 
     @Override
     public UOItem createItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> options) {
-        var context = new ItemCreationContext(request, target, options);
-        flows.execute(context);
-        return context.result("Cannot create item for request "+request);
+        try {
+            var context = new ItemCreationContext(request, target, options);
+            var result = flows.execute(context);
+            if (result.flowFailed()) {
+                throw ModuleOperationException.fromFailure("createItem", result, "{item.creation_failed}");
+            }
+            return context.result("Cannot create item for request " + request);
+        } catch (ModuleOperationException error) {
+            throw error;
+        } catch (RuntimeException error) {
+            throw ModuleOperationException.unexpected("createItem", error, "{item.creation_failed}");
+        }
     }
 
     @Override

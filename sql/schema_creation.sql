@@ -47,7 +47,7 @@ CREATE TABLE mobiles (
     -- npc only
      roles JSONB DEFAULT '[]'::jsonb,
      behavior jsonb,
-     stock_type VARCHAR(255),
+     stock_type VARCHAR(255) DEFAULT NULL, -- vendor stock category; NULL for players and NPCs without stock
 
     -- attributes
      strength INT NOT NULL,

@@ -48,7 +48,7 @@ As prioridades representam ordem de execução, sem estimativa de calendário. C
 1. Conferir o MVP original e ajustar esta hipótese de escopo; fixar um cenário de entrada, uma região, um vendedor de ferramentas e um inimigo.
 2. Revisar o tempo de combate: `CombatHitFrameDelayStep` usa scheduler, mas `Flow.resolve` espera com `join()`. A evidência atual aponta para espera bloqueante do chamador; não permite repetir como fato a hipótese antiga de continuação assíncrona com swings sobrepostos. Verificar o impacto no game loop e implementar agendamento sem bloquear o loop, mantendo no máximo um swing pendente por sessão.
 3. Preservar as validações de sessão, participantes e distância após o delay e antes do dano. Testar cancelamento, troca de alvo, morte e saída de alcance durante o swing.
-4. Aplicar e validar `sql/migrations/001_npc_stock_type.sql` em banco de teste existente; conferir schema novo e carga de NPCs persistidos.
+4. Validar a criação das tabelas com `sql/schema_creation.sql`, incluindo a coluna `mobiles.stock_type`, e conferir a gravação e a carga dos NPCs. A base será recriada; não há migration incremental para esta alteração.
 
 Aceite: durante um swing longo, movimentação e outros jogadores continuam sendo processados; cancelamento/morte impedem dano posterior; nenhuma sessão acumula swings; NPC persistido mantém sua categoria de estoque após migração e reinício.
 

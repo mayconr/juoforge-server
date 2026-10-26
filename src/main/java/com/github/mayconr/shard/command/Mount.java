@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.game.model.CursorType;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.world.World;
+import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 
 public class Mount extends AbstractCommand{
 
@@ -21,7 +22,11 @@ public class Mount extends AbstractCommand{
         world.interaction().sendTarget(event.player(), CursorType.NEUTRAL, result->{
             if (result instanceof MobileTargetResult rs) {
                 if (rs.mobile() instanceof UONpc npc) {
-                    world.mobile().mount(event.player(), npc);
+                    try {
+                        world.mobile().mount(event.player(), npc);
+                    } catch (ModuleOperationException error) {
+                        world.message().send(event.player(), error.getDisplayMessage());
+                    }
                 }
             }
         });

@@ -57,7 +57,7 @@ public class Flow<T extends AbstractContext> {
 
             // Failure Hook
             executeHook(step, HookPosition.AFTER_FAILURE, context);
-            return StepResult.failure("FLOW_EXCEPTION", "Step '%s' failed: %s".formatted(step.name(), e.getMessage()));
+            return StepResult.failure("FLOW_EXCEPTION", "Step '%s' failed: %s".formatted(step.name(), e.getMessage()), null, e);
         }
     }
 

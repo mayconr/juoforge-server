@@ -708,15 +708,31 @@ public class NettyPlayerSession implements PlayerSession {
 
             if (player.equals(target)) {
                 channel.write(new DeathScreen(DeathScreenType.SERVER));
+                channel.write(new DrawGamePlayer(target));
+            }
+            if (target instanceof UOPlayer) {
+                channel.write(new DrawMobile(target, world.mobile().getEquippedItems(target)));
             }
             channel.flush();
         });
     }
 
     public void onMobileResurrect(MobileResurrectEvent event) {
-        channel.write(new StatusBarInfo(player));
-        channel.write(new DrawMobile(player, world.mobile().getEquippedItems(player)));
-        channel.writeAndFlush(new DeathScreen(DeathScreenType.RESURRECT));
+        if (player == null) {
+            return;
+        }
+        var target = event.mobile();
+        if (!player.equals(target) && !shouldReceiveUpdate(target)) {
+            return;
+        }
+        runInEventLoop(() -> {
+            if (player.equals(target)) {
+                channel.write(new StatusBarInfo(target));
+                channel.write(new DeathScreen(DeathScreenType.RESURRECT));
+                channel.write(new DrawGamePlayer(target));
+            }
+            channel.writeAndFlush(new DrawMobile(target, world.mobile().getEquippedItems(target)));
+        });
     }
 
     /*

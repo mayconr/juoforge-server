@@ -27,7 +27,8 @@ public class CreateMountItemStep extends AbstractFlowStep<MountContext> {
         final var mountTemplate = mountTemplateByNpcName.get(mountNpc.getName()).stream().findFirst().orElse(null);
 
         if (mountTemplate == null) {
-            return StepResult.failure("Mount template not found for NPC: " + mountNpc.getName());
+            return StepResult.failure("MOUNT_TEMPLATE_NOT_FOUND", "Mount template not found for NPC: " + mountNpc.getName(),
+                    "{mount.not_mountable}");
         }
 
         var item = itemModule.createItem(ItemRequest.byName(mountTemplate.itemName()), ItemTarget.orphan());

@@ -11,9 +11,10 @@ import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
-import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
+import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionContext;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
@@ -47,7 +48,22 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void mount(UOPlayer player, UONpc npc) {
-        flows.execute(new MountContext(player, npc));
+        try {
+            var context = new MountContext(player, npc);
+            var result = flows.execute(context);
+            if (result.flowFailed()) {
+                throw ModuleOperationException.fromFailure("mount", result, "{mount.failed}");
+            }
+            if (!context.isMounted()) {
+                throw new ModuleOperationException("mount", "MOUNT_INCOMPLETE",
+                        result.reason() != null ? result.reason() : "Mount action did not complete",
+                        result.displayMessage() != null ? result.displayMessage() : "{mount.failed}", null);
+            }
+        } catch (ModuleOperationException error) {
+            throw error;
+        } catch (RuntimeException error) {
+            throw ModuleOperationException.unexpected("mount", error, "{mount.failed}");
+        }
     }
 
     @Override
@@ -85,8 +101,8 @@ public class MobileModuleImpl implements MobileModule {
     @Override
     public boolean equipItem(UOMobile mobile, UOItem item) {
         var context = new EquipItemContext(mobile, item);
-        flows.execute(context);
-        return context.isEquipped();
+        var result = flows.execute(context);
+        return !result.flowFailed() && context.isEquipped();
     }
 
     @Override
@@ -110,12 +126,7 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void resurrect(UOMobile mobile) {
-        mobile.setMana(5);
-        mobile.setStamina(5);
-        mobile.setHitpoints(5);
-        mobile.setAlive(true);
-
-        eventBus.publish(new MobileResurrectEvent(mobile));
+        flows.execute(new ResurrectionContext(mobile));
     }
 
     @Override

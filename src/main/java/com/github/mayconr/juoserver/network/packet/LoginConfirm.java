@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.network.packet;
 
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 
 import io.netty.buffer.ByteBuf;
@@ -43,6 +44,9 @@ public class LoginConfirm extends AbstractPacket {
         super(CODE, 37);
         this.serialId = mobile.getSerialId();
         this.modelId = mobile.getModelId();
+        if (mobile instanceof UOPlayer player && !player.isAlive()) {
+            this.modelId = player.getGhostModelId();
+        }
         this.x = mobile.getX();
         this.y = mobile.getY();
         this.z = mobile.getZ();

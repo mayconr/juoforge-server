@@ -47,11 +47,7 @@ public class DrawMobile extends AbstractPacket {
 
         boolean isDead = mobile instanceof UOPlayer player && !player.isAlive();
 
-        int serial = mobile.getSerialId();
-        if (isDead) {
-            serial = serial | 0x80000000;
-        }
-        buf.writeInt(serial);
+        buf.writeInt(mobile.getSerialId());
 
         int modelId = mobile.getModelId();
         if (mobile instanceof  UOPlayer player && isDead) {

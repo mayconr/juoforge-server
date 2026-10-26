@@ -15,7 +15,9 @@
       "beginnerGainThreshold" : 30.0
     },
     "mobile" : {
-      "backpackItem" : "backpack"
+      "backpackItem" : "backpack",
+      // Distancia maxima em tiles para montar em um NPC.
+      "mountRange" : 2
     },
     "world" : {
       "visibility" : {

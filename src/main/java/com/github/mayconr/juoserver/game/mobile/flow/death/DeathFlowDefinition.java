@@ -14,13 +14,14 @@ public final class DeathFlowDefinition {
     private DeathFlowDefinition() {
     }
 
-    public static Flow<DeathContext> build(FlowRegistryFactory.GameModules modules, FlowRegistryFactory.GameInfra infra) {
+    public static Flow<DeathContext> build(FlowRegistryFactory.GameModules modules, FlowRegistryFactory.GameInfra infra,
+                                         FlowRegistryFactory.GameTemplates templates) {
         return FlowFactory.<DeathContext>builder()
                 .step(new ValidateDeathStep())
                 .step(new CorpseCreationStep(modules.item()))
                 .step(new MoveItemsToCorpseStep(modules.mobile(), modules.item(), infra.storage()))
                 .step(new UpdateMobileDeathStatusStep())
-                .step(new SpawnMobileMountStep())
+                .step(new SpawnMobileMountStep(modules.npc(), templates.mountByItemName()))
                 .step(new NotifyDeathStep(infra.eventBus()))
                 .build();
     }

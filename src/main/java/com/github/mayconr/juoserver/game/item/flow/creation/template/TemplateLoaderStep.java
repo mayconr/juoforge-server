@@ -33,7 +33,7 @@ public class TemplateLoaderStep extends AbstractFlowStep<ItemCreationContext> {
 
         if (request.name() != null) {
             template = itemTemplateByName.get(request.name())
-                    .getFirst();
+                    .stream().findFirst().orElse(null);
         }
 
         if (request.template() != null) {
@@ -41,7 +41,8 @@ public class TemplateLoaderStep extends AbstractFlowStep<ItemCreationContext> {
         }
 
         if (template == null) {
-            return StepResult.failure("Template not found. Request: " + request);
+            return StepResult.failure("ITEM_TEMPLATE_NOT_FOUND", "Item template not found. Request: " + request,
+                    "{item.template_not_found}");
         }
 
         context.setTemplate(template);
