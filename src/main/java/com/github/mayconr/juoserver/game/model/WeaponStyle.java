@@ -64,7 +64,8 @@ public enum WeaponStyle {
 
     WRESTLING(
             CombatType.WRESTLING,
-            AnimationType.ATTACK_ONE_HANDED_DOWN,
+            AnimationType.ATTACK_ONE_HANDED_WIDE,
+            //AnimationType.ATTACK_ONE_HANDED_DOWN,
             AnimationType.MOUNTED_ATTACK_MELEE
     );
 

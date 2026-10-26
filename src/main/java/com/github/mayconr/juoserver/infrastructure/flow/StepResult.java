@@ -6,8 +6,28 @@ public record StepResult(
         ResultStatus status,
         CompletableFuture<StepResult> next,
         String code,
-        String reason
+        String reason,
+        String displayMessage,
+        Throwable cause
 ) {
+
+    /** Creates a result without a player-facing message. */
+    public StepResult(ResultStatus status, CompletableFuture<StepResult> next, String code, String reason) {
+        this(status, next, code, reason, null, null);
+    }
+
+    public StepResult(ResultStatus status, CompletableFuture<StepResult> next, String code, String reason, String displayMessage) {
+        this(status, next, code, reason, displayMessage, null);
+    }
+
+    public static StepResult failure(String code, String reason, String displayMessage, Throwable cause) {
+        return new StepResult(ResultStatus.FAILURE, null, code, reason, displayMessage, cause);
+    }
+
+    /** Keeps the technical reason separate from the text or localization key shown to the player. */
+    public static StepResult failure(String code, String reason, String displayMessage) {
+        return new StepResult(ResultStatus.FAILURE, null, code, reason, displayMessage);
+    }
 
     public static StepResult success() {
         return new StepResult(

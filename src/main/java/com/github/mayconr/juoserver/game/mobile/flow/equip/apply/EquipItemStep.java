@@ -17,6 +17,7 @@ public class EquipItemStep extends AbstractFlowStep<EquipItemContext> {
 
         item.setCurrentLocation(new EquippedLocation(mobile.getSerialId()));
         mobile.equipItem(item);
+        context.setEquipped(true);
 
         return StepResult.success();
     }

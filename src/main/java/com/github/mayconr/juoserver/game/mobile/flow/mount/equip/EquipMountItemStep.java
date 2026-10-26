@@ -19,7 +19,10 @@ public class EquipMountItemStep extends AbstractFlowStep<MountContext> {
         final var mobile = context.getMobile();
         final var mountItem = context.getMountItem();
 
-        mobileModule.equipItem(mobile, mountItem);
+        if (!mobileModule.equipItem(mobile, mountItem)) {
+            return StepResult.failure("MOUNT_EQUIP_FAILED", "Cannot equip mount item", "{mount.equip_failed}");
+        }
+        context.setMounted(true);
 
         return StepResult.success();
     }

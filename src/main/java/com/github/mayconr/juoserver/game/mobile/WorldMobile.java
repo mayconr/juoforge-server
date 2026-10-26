@@ -7,6 +7,7 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 
 import java.util.Map;
 
@@ -18,13 +19,16 @@ public interface WorldMobile {
     /** Runs the teleport flow to relocate the mobile. */
     void teleport(UOMobile mobile, Location location);
 
-    /** Runs the mount flow using the given NPC as the player's mount. */
+    /**
+     * Runs the mount flow using the given NPC as the player's mount.
+     * @throws ModuleOperationException if mounting fails or does not complete
+     */
     void mount(UOPlayer player, UONpc npc);
 
     /** Runs the unmount flow for the player. */
     void unmount(UOPlayer player);
 
-    /** Restores life with initial vitals and publishes a resurrection event. */
+    /** Runs resurrection for a dead player, restoring initial vitals within their maximum values. */
     void resurrect(UOMobile mobile);
 
     /** Resolves equipped item serials into items grouped by equipment layer. */

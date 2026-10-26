@@ -16,4 +16,5 @@ public class MountContext extends AbstractSyncFlowContext<Void> {
     private final UONpc mountNpc;
 
     private UOItem mountItem;
+    private boolean mounted;
 }

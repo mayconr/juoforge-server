@@ -51,6 +51,8 @@ public class CharacterAnimationFactory {
             WeaponStyle style,
             int animationFrame
     ) {
+        Objects.requireNonNull(attacker, "Attacker cannot be null");
+        // TODO Select the animation family from the mobile body before applying weapon rules.
         AnimationType animation = style.animationFor(attacker.isMounted());
 
         return create(

@@ -125,6 +125,7 @@ public class ShardImplConfiguration {
             cfg.addSpellTrigger(runtime -> new HealSpellTrigger(runtime.flows()));
 
             // Listeners
+            cfg.addEventListener(Broadcast::new);
             cfg.addEventListener(Goto::new);
             cfg.addEventListener(runtime->new CreateNpc(runtime.world()));
             cfg.addEventListener(runtime->new CreateStack(runtime.world()));

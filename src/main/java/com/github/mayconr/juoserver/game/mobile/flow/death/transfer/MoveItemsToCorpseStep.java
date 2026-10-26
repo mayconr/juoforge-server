@@ -10,6 +10,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
+import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -29,13 +30,15 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathContext> {
     @Override
     public StepResult execute(DeathContext context) {
         var victim = context.getVictim();
-        var equippedItems = victim.getEquippedItems().values();
+        var equippedItems = List.copyOf(victim.getEquippedItems().values());
         var corpse = Objects.requireNonNull(context.getCorpse(), "Corpse");
 
         var random = new Random();
         for (Integer itemSerial : equippedItems) {
             var item = storage.getItem(itemSerial).orElseThrow(()->new IllegalStateException("Item Not Found"));
             if (item.getFlags().contains(ItemFlag.MOUNT)) {
+                context.setMountItem(item);
+                victim.unequipItem(item);
                 itemModule.deleteItem(item);
                 log.debug("Mount item {} has been deleted", item);
                 continue;

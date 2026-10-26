@@ -217,7 +217,7 @@
         #{accountId},
         #{roles, typeHandler=com.github.mayconr.shard.storage.types.RolesJsonTypeHandler}::jsonb,
         #{behavior, typeHandler=com.github.mayconr.shard.storage.types.BehaviorDefinitionTypeHandler}::jsonb,
-        #{stockType},
+        #{stockType, jdbcType=VARCHAR},
         #{strength},
         #{dexterity},
         #{intelligence},

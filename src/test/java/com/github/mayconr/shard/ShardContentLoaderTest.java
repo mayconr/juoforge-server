@@ -19,6 +19,7 @@ class ShardContentLoaderTest {
     void loadsAiTimingIntoWorldConfiguration() {
         var content = ShardContentLoader.load(Path.of("."), false);
         assertEquals(0.2, content.settings().ai().updateIntervalSeconds());
+        assertEquals(2, content.settings().mobile().mountRange());
         var worldCfg = new com.github.mayconr.juoserver.DefaultWorldCfg();
         worldCfg.content(content);
         assertSame(content.settings().ai(), worldCfg.ai());
