@@ -14,5 +14,4 @@ public interface WorldCombat {
     /** Queues cancellation before attacks are executed on the next combat update. */
     void requestCancelAttack(UOMobile mobile);
 
-    void regen(UOMobile mobile, double interval);
 }

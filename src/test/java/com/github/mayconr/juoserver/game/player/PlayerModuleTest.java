@@ -14,7 +14,7 @@ class PlayerModuleTest {
     @Test
     void onlinePlayersReflectSessionsAndReturnIndependentSnapshot() {
         var storage = mock(RealmStorage.class);
-        PlayerModule module = new PlayerModuleImpl(mock(PlayerVitalsHandler.class), storage, mock(EventBus.class));
+        PlayerModule module = new PlayerModuleImpl(storage, mock(EventBus.class));
         WorldPlayer players = module;
         var player = mock(UOPlayer.class);
         when(player.getSerialId()).thenReturn(42);

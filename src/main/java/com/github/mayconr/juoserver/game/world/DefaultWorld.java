@@ -34,7 +34,9 @@ import com.github.mayconr.juoserver.game.combat.CombatHandler;
 import com.github.mayconr.juoserver.game.combat.CombatModule;
 import com.github.mayconr.juoserver.game.combat.WorldCombat;
 import com.github.mayconr.juoserver.game.combat.CombatModuleImpl;
-import com.github.mayconr.juoserver.game.combat.VitalsHandler;
+import com.github.mayconr.juoserver.game.vitals.VitalsModule;
+import com.github.mayconr.juoserver.game.vitals.VitalsModuleImpl;
+import com.github.mayconr.juoserver.game.vitals.WorldVitals;
 import com.github.mayconr.juoserver.game.damage.DamageModule;
 import com.github.mayconr.juoserver.game.damage.DamageModuleImpl;
 import com.github.mayconr.juoserver.game.economy.EconomyModule;
@@ -66,7 +68,6 @@ import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.NpcModuleImpl;
 import com.github.mayconr.juoserver.game.player.PlayerModule;
 import com.github.mayconr.juoserver.game.player.PlayerModuleImpl;
-import com.github.mayconr.juoserver.game.player.PlayerVitalsHandler;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
@@ -131,6 +132,11 @@ public class DefaultWorld implements WorldInternal, World {
     @Override
     public PlayerModule player() {
         return Objects.requireNonNull(playerModule, "World player module is not initialized");
+    }
+
+    @Override
+    public WorldVitals vitals() {
+        return Objects.requireNonNull(vitalsModule, "World vitals module is not initialized");
     }
 
     @Override
@@ -213,6 +219,7 @@ public class DefaultWorld implements WorldInternal, World {
     private ItemModule itemModule;
     private PlayerModule playerModule;
     private CombatModule combatModule;
+    private VitalsModule vitalsModule;
     private MobileModule mobileModule;
     private InteractionModule interactionModule;
     private MessageModule messageModule;
@@ -278,6 +285,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.spellModule = new SpellModuleImpl(spellTemplateByKey);
         initializeItemModule();
         initializePlayerModule();
+        this.vitalsModule = new VitalsModuleImpl(playerModule);
         initializeCombatModule();
         initializeMobileModule(wallet);
         initializeInteractionModule();
@@ -292,6 +300,7 @@ public class DefaultWorld implements WorldInternal, World {
     public void update(double delta) {
         aiModule.update(delta);
         playerModule.update(delta);
+        vitalsModule.update(delta);
         mobileModule.update(delta);
         combatModule.update(delta);
         spellModule.update(delta);
@@ -377,15 +386,13 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializePlayerModule() {
-        final var vitals = new PlayerVitalsHandler(this);
-        this.playerModule = new PlayerModuleImpl(vitals, storage, eventBus);
+        this.playerModule = new PlayerModuleImpl(storage, eventBus);
     }
 
     private void initializeCombatModule() {
-        final var vitalsService = new VitalsHandler(eventBus, settings);
         final var combatService = new CombatHandler(eventBus);
 
-        this.combatModule = new CombatModuleImpl(combatService, vitalsService);
+        this.combatModule = new CombatModuleImpl(combatService);
     }
 
     private void initializeMobileModule(Wallet wallet) {
@@ -480,6 +487,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.economyModule.initialize(context);
         this.mobileModule.initialize(context);
         this.playerModule.initialize(context);
+        this.vitalsModule.initialize(context);
         this.damageModule.initialize(context);
         this.npcModule.initialize(context);
         this.itemModule.initialize(context);

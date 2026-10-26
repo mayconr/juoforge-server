@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
+
 import com.github.mayconr.juoserver.game.model.SpellbookType;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.SpellBookOpened;
@@ -19,17 +21,20 @@ class SpellBookSessionTest {
         var channel = new EmbeddedChannel();
         try {
             var session = new NettyPlayerSession(channel, null, null, null, null);
+            var sessionHandler = new PlayerInterfaceHandler(
+                    new SessionView(session::getPlayer, session::getLocale, null),
+                    new SessionPacketWriter(channel, null), null);
             var player = mock(UOPlayer.class);
             var event = new SpellBookOpened(player, 0x40000001, 0x0EFA, SpellbookType.MAGERY, 8L);
-            session.onSpellBookOpened(event);
+            sessionHandler.onSpellBookOpened(event);
             channel.runPendingTasks();
             assertNull(channel.readOutbound());
             ReflectionTestUtils.setField(session, "player", mock(UOPlayer.class));
-            session.onSpellBookOpened(event);
+            sessionHandler.onSpellBookOpened(event);
             channel.runPendingTasks();
             assertNull(channel.readOutbound());
             ReflectionTestUtils.setField(session, "player", player);
-            session.onSpellBookOpened(event);
+            sessionHandler.onSpellBookOpened(event);
             channel.runPendingTasks();
             var contents = assertInstanceOf(GeneralInformation.class, channel.readOutbound());
             var open = assertInstanceOf(DrawContainer.class, channel.readOutbound());

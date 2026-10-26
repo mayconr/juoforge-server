@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PlayerModuleImpl implements PlayerModule {
 
     private final Map<Integer, UOPlayer> onlinePlayers = new ConcurrentHashMap<>();
-    private final PlayerVitalsHandler playerVitalsHandler;
     private final RealmStorage storage;
     private final EventBus eventBus;
 
@@ -35,13 +34,6 @@ public class PlayerModuleImpl implements PlayerModule {
     @Override
     public void initialize(ModuleContext context) {
         this.flows = context.flows();
-    }
-
-    @Override
-    public void update(double delta) {
-        for (UOPlayer player : onlinePlayers.values()) {
-            playerVitalsHandler.update(player, delta);
-        }
     }
 
     @Override

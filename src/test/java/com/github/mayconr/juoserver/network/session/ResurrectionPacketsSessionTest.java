@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.network.session.handler.CombatEventHandler;
+
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
@@ -36,12 +38,18 @@ class ResurrectionPacketsSessionTest {
         var observerChannel = new EmbeddedChannel();
         try {
             var ownSession = new NettyPlayerSession(targetChannel, null, settings, null, world);
+            var ownSessionHandler = new CombatEventHandler(
+                    new SessionView(ownSession::getPlayer, ownSession::getLocale, settings),
+                    new SessionPacketWriter(targetChannel, null), world);
             var otherSession = new NettyPlayerSession(observerChannel, null, settings, null, world);
+            var otherSessionHandler = new CombatEventHandler(
+                    new SessionView(otherSession::getPlayer, otherSession::getLocale, settings),
+                    new SessionPacketWriter(observerChannel, null), world);
             ReflectionTestUtils.setField(ownSession, "player", target);
             ReflectionTestUtils.setField(otherSession, "player", observer);
             var event = new MobileResurrectEvent(target);
-            ownSession.onMobileResurrect(event);
-            otherSession.onMobileResurrect(event);
+            ownSessionHandler.onMobileResurrect(event);
+            otherSessionHandler.onMobileResurrect(event);
             targetChannel.runPendingTasks();
             observerChannel.runPendingTasks();
 

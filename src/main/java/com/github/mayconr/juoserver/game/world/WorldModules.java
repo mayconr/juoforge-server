@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.map.WorldMap;
+import com.github.mayconr.juoserver.game.vitals.WorldVitals;
 import com.github.mayconr.juoserver.game.storage.WorldStorage;
 import com.github.mayconr.juoserver.game.random.WorldRandom;
 import com.github.mayconr.juoserver.game.ai.WorldAI;
@@ -35,6 +36,8 @@ public interface WorldModules {
     WorldPlayer player();
 
     WorldCombat combat();
+
+    WorldVitals vitals();
 
     WorldMap map();
 

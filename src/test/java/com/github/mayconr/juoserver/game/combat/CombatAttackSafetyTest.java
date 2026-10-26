@@ -30,7 +30,7 @@ class CombatAttackSafetyTest {
     }
 
     private CombatModuleImpl module(ModuleContext.FlowFacade flows) {
-        var module = new CombatModuleImpl(mock(CombatHandler.class), mock(VitalsHandler.class));
+        var module = new CombatModuleImpl(mock(CombatHandler.class));
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);
         module.initialize(context);
