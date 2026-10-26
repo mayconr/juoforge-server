@@ -60,20 +60,22 @@ public final class CombatEventHandler {
             return;
         }
         packetWriter.enqueue(packets -> {
-            final var corpse = event.corpse();
+            final var corpse = (UOCorpse) event.corpse();
             final var target = event.target();
 
+            // Remove transferred items from the client's old equipment/container view first.
+            for (var serial : corpse.getContainerItems()) packets.write(new DeleteObject(serial));
             packets.write(new UpdateHealth(target));
             packets.write(new ObjectInfo(corpse));
             // Send corpse items
             final List<CorpseClothing.Entry> items = new ArrayList<>();
-            var containerItems = ((Container) corpse).getContainerItems();
-            for (Integer itemSerial : containerItems) {
-                var item = world.item().getItemBySerialId(itemSerial)
+            var equippedItems = corpse.getEquippedItems();
+            for (var entry : equippedItems.entrySet()) {
+                var item = world.item().getItemBySerialId(entry.getValue())
                         .orElse(null);
 
                 if (item != null) {
-                    items.add(new CorpseClothing.Entry(item.getLayer(), item));
+                    items.add(new CorpseClothing.Entry(entry.getKey(), item));
                     packets.write(new ObjectInfo(item));
                 }
             }

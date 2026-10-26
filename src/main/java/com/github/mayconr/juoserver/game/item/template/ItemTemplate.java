@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.game.item.template;
 
 import com.github.mayconr.juoserver.game.model.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 
 import java.util.*;
@@ -27,6 +29,26 @@ public record ItemTemplate(String name,
     public ItemTemplate {
         attr = attr == null ? Map.of() : Map.copyOf(attr);
         flags = flags == null ? Collections.emptyList() : flags;
+    }
+
+    /** Nullable JSON input distinguishes an omitted movable flag from explicit false. */
+    @JsonCreator
+    public ItemTemplate(
+            @JsonProperty("name") String name,
+            @JsonProperty("displayName") String displayName,
+            @JsonProperty("layer") Layer layer,
+            @JsonProperty("modelId") int modelId,
+            @JsonProperty("movable") Boolean movable,
+            @JsonProperty("hue") int hue,
+            @JsonProperty("stockType") String stockType,
+            @JsonProperty("basePrice") int basePrice,
+            @JsonProperty("flags") List<ItemFlag> flags,
+            @JsonProperty("attr") Map<String, Object> attr,
+            @JsonProperty("containerGumpId") int containerGumpId,
+            @JsonProperty("mountName") String mountName,
+            @JsonProperty("weapon") Weapon weapon) {
+        this(name, displayName, layer, modelId, movable == null || movable.booleanValue(), hue,
+                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon);
     }
 
     public record Weapon(WeaponStyle style, BaseDamage baseDamage, int radius) { }

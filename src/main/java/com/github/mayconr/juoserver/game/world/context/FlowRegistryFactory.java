@@ -1,5 +1,12 @@
 package com.github.mayconr.juoserver.game.world.context;
 
+import com.github.mayconr.juoserver.game.loot.LootModule;
+import com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootContext;
+import com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootFlowDefinition;
+import com.github.mayconr.juoserver.game.loot.LootPolicy;
+import com.github.mayconr.juoserver.game.loot.flow.generate.GenerateLootContext;
+import com.github.mayconr.juoserver.game.loot.flow.generate.GenerateLootFlowDefinition;
+
 import com.github.mayconr.juoserver.game.economy.VendorHandler;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.economy.flow.begin.BeginVendorPurchaseContext;
@@ -107,6 +114,7 @@ public class FlowRegistryFactory {
             MessageModule message,
             NpcModule npc,
             DamageModule damage,
+            LootModule loot,
             SkillModule skill
     ) {}
 
@@ -121,10 +129,12 @@ public class FlowRegistryFactory {
             GamePlaySettings settings,
             UOFileReader fileReader,
             RNG rng,
-            CombatSkillGainPolicy combatSkillGainPolicy
+            CombatSkillGainPolicy combatSkillGainPolicy,
+            LootPolicy lootPolicy
     ) {
         public GameInfra {
             rng = rng == null ? new DefaultRNG() : rng;
+            lootPolicy = lootPolicy == null ? LootPolicy.none() : lootPolicy;
             combatSkillGainPolicy = combatSkillGainPolicy == null
                     ? new DefaultCombatSkillGainPolicy() : combatSkillGainPolicy;
         }
@@ -150,6 +160,10 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(MaterializeLootFlowDefinition.class.getSimpleName(),
+                MaterializeLootFlowDefinition.build(modules.item()), MaterializeLootContext.class);
+        registry.register(GenerateLootFlowDefinition.class.getSimpleName(),
+                GenerateLootFlowDefinition.build(infra.lootPolicy(), infra.rng(), templates.itemByName(), templates.itemByModelId()), GenerateLootContext.class);
         registry.register(RegenFlowDefinition.class.getSimpleName(),
                 RegenFlowDefinition.build(infra.settings(), infra.eventBus()), RegenContext.class);
         registry.register(ResurrectionFlowDefinition.class.getSimpleName(),

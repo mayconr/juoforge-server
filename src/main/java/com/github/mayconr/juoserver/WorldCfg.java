@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.game.loot.LootPolicy;
+
 import com.github.mayconr.juoserver.game.GamePlaySettings.Ai;
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
@@ -24,6 +26,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface WorldCfg {
+
+    void lootPolicy(Supplier<LootPolicy> factory);
+
+    Supplier<LootPolicy> lootPolicy();
 
     void content(WorldContent content);
 

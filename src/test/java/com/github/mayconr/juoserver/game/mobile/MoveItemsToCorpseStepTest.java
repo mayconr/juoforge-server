@@ -30,10 +30,6 @@ class MoveItemsToCorpseStepTest {
         when(storage.getItem(100)).thenReturn(Optional.of(mount));
         when(storage.getItem(101)).thenReturn(Optional.of(weapon));
         var mobiles = mock(MobileModule.class);
-        when(mobiles.unequipItem(victim, weapon)).thenAnswer(call -> {
-            victim.unequipItem(weapon);
-            return true;
-        });
         var items = mock(ItemModule.class);
         doAnswer(call -> {
             assertFalse(victim.isMounted());
@@ -50,6 +46,7 @@ class MoveItemsToCorpseStepTest {
         assertSame(mount, context.getMountItem());
         assertTrue(victim.getEquippedItems().isEmpty());
         verify(items).deleteItem(mount);
+        verify(mobiles, never()).unequipItem(any(UOMobile.class), any(UOItem.class));
         verify(corpse).addEquippedItem(weapon);
         verify(corpse, never()).addEquippedItem(mount);
     }
