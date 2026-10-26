@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -87,13 +88,20 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void activate() {
+    public synchronized void activate() {
+        requireOpenSession();
+        if (state != SessionState.ENTERING_WORLD || player == null) {
+            throw new IllegalStateException("Session is not entering the world");
+        }
         this.player.setConnected(true);
         updateAndNotifyStatus(SessionState.ACTIVE);
     }
 
     @Override
-    public void disconnect() {
+    public synchronized void disconnect() {
+        if (state == SessionState.DISCONNECTED) {
+            return;
+        }
         // session can be disconnected before player assigned
         if (player != null) {
             player.setConnected(false);
@@ -157,7 +165,11 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     @Override
-    public AccountMobile selectCharacter(int index) {
+    public synchronized AccountMobile selectCharacter(int index) {
+        requireOpenSession();
+        if (state != SessionState.AUTHENTICATED && state != SessionState.CHARACTER_SELECTED) {
+            throw new IllegalStateException("Session cannot select a character in state " + state);
+        }
         var mobile = availableMobiles.get(index);
         if (mobile == null) {
             throw new IllegalStateException("No mobile found for index: " + index);
@@ -183,10 +195,12 @@ public class NettyPlayerSession implements PlayerSession {
                     throw new CompletionException(throwable);
                 })
                 .thenApply(mobile->{
-                    this.mobileSerialId = mobile.getSerialId();
-                    this.player = mobile;
-                    updateAndNotifyStatus(SessionState.ACTIVE);
-                    return mobile;
+                    synchronized (this) {
+                        requireOpenSession();
+                        this.mobileSerialId = mobile.getSerialId();
+                        updateAndNotifyStatus(SessionState.CHARACTER_SELECTED);
+                        return mobile;
+                    }
                 });
     }
 
@@ -203,23 +217,30 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     @Override
-    public CompletableFuture<UOPlayer> enteringWorld() {
+    public synchronized CompletableFuture<UOPlayer> enteringWorld() {
+        requireOpenSession();
+        if (state != SessionState.CHARACTER_SELECTED) {
+            return CompletableFuture.failedFuture(new IllegalStateException("No character selected"));
+        }
+        updateAndNotifyStatus(SessionState.ENTERING_WORLD);
         return world.player().loadMobile(mobileSerialId)
                 .thenApply(mobile -> {
-                    if (!(mobile instanceof UOPlayer pl)) {
-                        log.error("Mobile [{}] is not a player", mobile.getName());
-                        reject(LoginReject.Reason.SYNCHRONIZATION_ERROR);
-                        return null;
+                    synchronized (this) {
+                        if (!isOpenSession()) {
+                            if (mobile instanceof UOPlayer loadedPlayer) {
+                                world.player().despawn(loadedPlayer);
+                            }
+                            throw new CancellationException("Session closed during character loading");
+                        }
+                        if (!(mobile instanceof UOPlayer pl)) {
+                            throw new IllegalStateException("Loaded mobile is not a player: " + mobileSerialId);
+                        }
+                        this.player = pl;
+                        return pl;
                     }
-
-                    this.player = pl;
-
-                    updateAndNotifyStatus(SessionState.ENTERING_WORLD);
-
-                    return this.player;
                 })
                 .whenComplete((mobile, throwable) -> {
-                    if (throwable != null) {
+                    if (throwable != null && !(unwrap(throwable) instanceof CancellationException)) {
                         log.error("Failed to load mobile {}", mobileSerialId, throwable);
                         reject(LoginReject.Reason.SYNCHRONIZATION_ERROR);
                     }
@@ -263,7 +284,7 @@ public class NettyPlayerSession implements PlayerSession {
         if (!shouldReceiveUpdate(mobile)) {
             return;
         }
-        if (!mobile.isAlive()) {
+        if (!MobileVisibility.isVisible(mobile)) {
             return;
         }
         runInEventLoop(() -> channel.writeAndFlush(new DrawMobile(mobile, world.mobile().getEquippedItems(mobile))));
@@ -272,7 +293,7 @@ public class NettyPlayerSession implements PlayerSession {
     private void handlePlayerMovement(MobileMoved moved) {
         int visibility = settings.world().visibility().range();
 
-        var mobiles = world.storage().getMobilesInRange(player, visibility, UOMobile::isAlive);
+        var mobiles = world.storage().getMobilesInRange(player, visibility, MobileVisibility::isVisible);
         var items   = world.item().getItemsInRange(player, visibility);
 
         // Acknowledge movement
@@ -280,7 +301,7 @@ public class NettyPlayerSession implements PlayerSession {
 
         // Draw nearby mobiles
         for (UOMobile mobile : mobiles) {
-            if (!mobile.equals(player)) {
+            if (!mobile.equals(player) && MobileVisibility.isVisible(mobile)) {
                 channel.write(new DrawMobile(mobile, world.mobile().getEquippedItems(mobile)));
             }
         }
@@ -328,8 +349,11 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onEnteredLineOfSight(MobileEnteredLineOfSight event) {
-        if (player.equals(event.target())) {
+        if (player != null && player.equals(event.target())) {
             var mobile = event.observer();
+            if (!MobileVisibility.isVisible(mobile)) {
+                return;
+            }
 
             channel.write(new DrawMobile(mobile, world.mobile().getEquippedItems(mobile)));
         }
@@ -354,16 +378,16 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     public void onPlayerLoggedIn(PlayerLoggedIn event) {
-        if (player.equals(event.player())) {
+        if (player != null && player.equals(event.player())) {
             final var visibility = settings.world().visibility().range();
-            final var mobiles = world.storage().getMobilesInRange(player, visibility, UOMobile::isAlive);
+            final var mobiles = world.storage().getMobilesInRange(player, visibility, MobileVisibility::isVisible);
             final var items = world.item().getItemsInRange(player, visibility);
 
             channel.write(new LoginConfirm(player, 7168, 4096));
             channel.write(new SeasonalInformation(Season.Summer, true));
 
             for (UOMobile someone : mobiles) {
-                if (!someone.equals(player)) {
+                if (!someone.equals(player) && MobileVisibility.isVisible(someone)) {
                     channel.write(new DrawMobile(someone, world.mobile().getEquippedItems(someone)));
                 }
             }
@@ -710,7 +734,7 @@ public class NettyPlayerSession implements PlayerSession {
                 channel.write(new DeathScreen(DeathScreenType.SERVER));
                 channel.write(new DrawGamePlayer(target));
             }
-            if (target instanceof UOPlayer) {
+            if (target instanceof UOPlayer && MobileVisibility.isPresent(target)) {
                 channel.write(new DrawMobile(target, world.mobile().getEquippedItems(target)));
             }
             channel.flush();
@@ -722,6 +746,9 @@ public class NettyPlayerSession implements PlayerSession {
             return;
         }
         var target = event.mobile();
+        if (!MobileVisibility.isPresent(target)) {
+            return;
+        }
         if (!player.equals(target) && !shouldReceiveUpdate(target)) {
             return;
         }
@@ -789,6 +816,16 @@ public class NettyPlayerSession implements PlayerSession {
      * ================
      */
 
+    private boolean isOpenSession() {
+        return channel.isActive() && state != SessionState.DISCONNECTED && state != SessionState.DISCONNECTING;
+    }
+
+    private void requireOpenSession() {
+        if (!isOpenSession()) {
+            throw new CancellationException("Session is closed");
+        }
+    }
+
     private void updateAndNotifyStatus(SessionState newState) {
         var oldState = state;
         this.state = newState;
@@ -813,6 +850,8 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     private boolean shouldReceiveUpdate(Location target) {
-        return GameMath.isInRange(player, target, settings.world().visibility().range());
+        return player != null
+                && (!(target instanceof UOMobile mobile) || MobileVisibility.isPresent(mobile))
+                && GameMath.isInRange(player, target, settings.world().visibility().range());
     }
 }
