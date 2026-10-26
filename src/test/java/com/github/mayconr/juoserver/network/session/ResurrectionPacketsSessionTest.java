@@ -25,10 +25,12 @@ class ResurrectionPacketsSessionTest {
         targetData.setAlive(true);
         targetData.setStatus(CharacterStatus.NORMAL);
         var target = new UOPlayer(targetData);
+        target.setConnected(true);
         var observerData = new UOMobileData();
         observerData.setSerialId(2);
         observerData.setStatus(CharacterStatus.NORMAL);
         var observer = new UOPlayer(observerData);
+        observer.setConnected(true);
         when(world.mobile().getEquippedItems(target)).thenReturn(Map.of());
         var targetChannel = new EmbeddedChannel();
         var observerChannel = new EmbeddedChannel();

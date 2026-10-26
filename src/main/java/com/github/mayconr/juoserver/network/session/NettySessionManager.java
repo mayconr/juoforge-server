@@ -40,6 +40,7 @@ public class NettySessionManager implements SessionManager {
         }
 
         channel.closeFuture().addListener((future) -> {
+            session.disconnect();
             for (Event event : eventList) {
                 eventBus.unregister(event.eventClass(), event.handler());
             }
