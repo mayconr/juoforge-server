@@ -8,6 +8,8 @@ import com.github.mayconr.juoserver.game.economy.flow.purchase.VendorPurchaseCon
 import com.github.mayconr.juoserver.game.economy.flow.purchase.VendorPurchaseFlowDefinition;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.vitals.flow.regen.RegenContext;
+import com.github.mayconr.juoserver.game.vitals.flow.regen.RegenFlowDefinition;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
@@ -148,6 +150,8 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(RegenFlowDefinition.class.getSimpleName(),
+                RegenFlowDefinition.build(infra.settings(), infra.eventBus()), RegenContext.class);
         registry.register(ResurrectionFlowDefinition.class.getSimpleName(),
                 ResurrectionFlowDefinition.build(infra.eventBus()), ResurrectionContext.class);
         registry.register(DeletePlayerFlowDefinition.class.getSimpleName(),

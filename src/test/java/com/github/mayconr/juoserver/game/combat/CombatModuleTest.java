@@ -13,7 +13,7 @@ import static org.mockito.Mockito.*;
 class CombatModuleTest {
     @Test
     void queuedNpcCancellationRemovesCombatBeforeItExecutes() {
-        var module = new CombatModuleImpl(mock(CombatHandler.class), mock(VitalsHandler.class));
+        var module = new CombatModuleImpl(mock(CombatHandler.class));
         var flows = mock(ModuleContext.FlowFacade.class);
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);
@@ -34,7 +34,7 @@ class CombatModuleTest {
 
     @Test
     void publicApiAndPacketAdapterQueueEquivalentAttacks() {
-        var module = new CombatModuleImpl(mock(CombatHandler.class), mock(VitalsHandler.class));
+        var module = new CombatModuleImpl(mock(CombatHandler.class));
         var flows = mock(ModuleContext.FlowFacade.class);
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);

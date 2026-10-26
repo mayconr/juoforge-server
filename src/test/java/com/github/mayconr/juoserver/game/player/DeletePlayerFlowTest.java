@@ -22,7 +22,7 @@ class DeletePlayerFlowTest {
     private PlayerModule module() {
         var registry = new DefaultFlowRegistry();
         registry.register("delete-player", DeletePlayerFlowDefinition.build(storage), DeletePlayerContext.class);
-        var module = new PlayerModuleImpl(mock(PlayerVitalsHandler.class), storage, mock(EventBus.class));
+        var module = new PlayerModuleImpl(storage, mock(EventBus.class));
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
         return module;

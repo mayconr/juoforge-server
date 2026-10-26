@@ -26,7 +26,6 @@ public class CombatModuleImpl implements CombatModule {
     private static final double UPDATE_DELAY_SECONDS = 1;
 
     private final CombatHandler combatHandler;
-    private final VitalsHandler vitalsHandler;
 
     private final Queue<CombatCommand> commandQueue = new ConcurrentLinkedQueue<>();
     private final Map<Integer, AttackCommand> pendingAttacks = new ConcurrentHashMap<>();
@@ -134,8 +133,4 @@ public class CombatModuleImpl implements CombatModule {
         commandQueue.add(new AttackCommand(player, target.getSerialId(), CombatOrigin.ofSpell()));
     }
 
-    @Override
-    public void regen(UOMobile mobile, double interval) {
-        vitalsHandler.regen(mobile, interval);
-    }
 }

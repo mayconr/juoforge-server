@@ -1,6 +1,10 @@
 package com.github.mayconr.juoserver.network.session;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.network.session.handler.CombatEventHandler;
+import com.github.mayconr.juoserver.network.session.handler.ItemEventHandler;
+import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
+import com.github.mayconr.juoserver.network.session.handler.WorldViewHandler;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.message.MessageSent;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
@@ -12,7 +16,7 @@ import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -20,21 +24,38 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class NettySessionManager implements SessionManager {
 
-    private final Set<PlayerSession> sessionMap = new HashSet<>();
+    private final Set<PlayerSession> sessionMap = ConcurrentHashMap.newKeySet();
     private final WorldInternal world;
     private final ChannelGroup channelGroup;
     private final GamePlaySettings settings;
     private final EventBus eventBus;
 
-    record Event<T extends GameEvent>(Class<T> eventClass, EventHandler<T> handler) { }
+    record Event<T extends GameEvent>(Class<T> eventClass, EventHandler<T> handler) {
+        Event<T> forSession(NettyPlayerSession session, SessionPacketWriter writer) {
+            return new Event<>(eventClass, event -> {
+                if (!session.isActive()) {
+                    return;
+                }
+                writer.enqueue(packets -> {
+                    synchronized (session) {
+                        if (session.isActive()) {
+                            handler.handle(event);
+                        }
+                    }
+                });
+            });
+        }
+    }
 
     @Override
     public PlayerSession createSession(Channel channel) {
-        final var session = new NettyPlayerSession(channel, channelGroup, settings, eventBus, world);
+        final var packetWriter = new SessionPacketWriter(channel, channelGroup);
+        final var session = new NettyPlayerSession(packetWriter, settings, eventBus, world);
 
         sessionMap.add(session);
 
-        final var eventList = eventList(session);
+        final var eventList = eventList(session, packetWriter).stream()
+                .map(event -> event.forSession(session, packetWriter)).toList();
         for (Event event : eventList) {
             eventBus.register(event.eventClass(), event.handler());
         }
@@ -53,51 +74,56 @@ public class NettySessionManager implements SessionManager {
         return session;
     }
 
-    private List<Event<?>> eventList(NettyPlayerSession session) {
+    private List<Event<?>> eventList(NettyPlayerSession session, SessionPacketWriter packetWriter) {
+        var view = new SessionView(session::getPlayer, session::getLocale, settings);
+        var worldView = new WorldViewHandler(view, packetWriter, world, settings);
+        var items = new ItemEventHandler(view, packetWriter, world);
+        var ui = new PlayerInterfaceHandler(view, packetWriter, world);
+        var combat = new CombatEventHandler(view, packetWriter, world);
         return List.of(
-                new Event<>(MobileMoved.class, session::onMobileMoved),
-                new Event<>(MobileMoveRejected.class, session::onMobileMoveRejected),
-                new Event<>(MobileMoveResync.class, session::onMobileResynced),
-                new Event<>(MobileSpeech.class, session::onMobileSpeech),
-                new Event<>(ItemEquipped.class, session::onItemEquipped),
-                new Event<>(ItemUnequipped.class, session::onItemUnequipped),
-                new Event<>(MobileEnteredLineOfSight.class, session::onEnteredLineOfSight),
-                new Event<>(NpcCreated.class, session::onNpcCreated),
-                new Event<>(NpcRemoved.class, session::onMobileDeleted),
-                new Event<>(PlayerDeleted.class, session::onPlayerDeleted),
-                new Event<>(SkillGained.class, session::onSkillGained),
-                new Event<>(SkillGumpRequested.class, session::onSkillGumpRequested),
-                new Event<>(StatusGumpRequested.class, session::onStatusGumpRequested),
-                new Event<>(TooltipRequested.class, session::onTooltipRequested),
-                new Event<>(ItemDroppedOnTheGround.class, session::onItemDroppedOnTheGround),
-                new Event<>(ItemDroppedInContainer.class, session::onItemDroppedInContainer),
-                new Event<>(ItemStacked.class, session::onItemStacked),
-                new Event<>(GroundedItemCreated.class, session::onItemCreated),
-                new Event<>(EquippedItemCreated.class, session::onEquippedItemCreated),
-                new Event<>(ItemCreatedInContainer.class, session::onItemCreatedInContainer),
-                new Event<>(ItemDeleted.class, session::onItemDeleted),
-                new Event<>(ItemUpdated.class, session::onItemUpdated),
-                new Event<>(AnimationSent.class, session::onAnimationSent),
-                new Event<>(PlayerLoggedIn.class, session::onPlayerLoggedIn),
-                new Event<>(MessageSent.class, session::onMessageSent),
-                new Event<>(TargetSent.class, session::onTargetSent),
-                new Event<>(PaperdollOpened.class, session::onPaperdollOpened),
-                new Event<>(ContainerOpenedEvent.class, session::onContainerOpened),
-                new Event<>(SkillLocked.class, session::onSkillLocked),
-                new Event<>(MobileStatusChanged.class, session::onMobileStatusChanged),
-                new Event<>(VendorSessionOpened.class, session::onVendorTradeSessionOpened),
-                new Event<>(VitalsChanged.class, session::onVitalsChanged),
-                new Event<>(GumpSent.class, session::onGumpSent),
-                new Event<>(SpellBookOpened.class, session::onSpellBookOpened),
-                new Event<>(RawPacketSent.class, session::onRawPacketSent),
-                new Event<>(RawPacketsSent.class, session::onRawPacketsSent),
-                new Event<>(PlayerLoggedOut.class, session::onPlayerLoggedOut),
-                new Event<>(MobileGoldChanged.class, session::onMobileGoldChanged),
-                new Event<>(MobileDamagedEvent.class, session::onMobileDamaged),
-                new Event<>(MobileDeathEvent.class, session::onMobileDeath),
-                new Event<>(MobileResurrectEvent.class, session::onMobileResurrect),
-                new Event<>(CombatStarted.class, session::onCombatStarted),
-                new Event<>(CombatOccurring.class, session::onCombatOccurring)
+                new Event<>(MobileMoved.class, worldView::onMobileMoved),
+                new Event<>(MobileMoveRejected.class, worldView::onMobileMoveRejected),
+                new Event<>(MobileMoveResync.class, worldView::onMobileResynced),
+                new Event<>(MobileSpeech.class, ui::onMobileSpeech),
+                new Event<>(ItemEquipped.class, items::onItemEquipped),
+                new Event<>(ItemUnequipped.class, items::onItemUnequipped),
+                new Event<>(MobileEnteredLineOfSight.class, worldView::onEnteredLineOfSight),
+                new Event<>(NpcCreated.class, worldView::onNpcCreated),
+                new Event<>(NpcRemoved.class, worldView::onMobileDeleted),
+                new Event<>(PlayerDeleted.class, worldView::onPlayerDeleted),
+                new Event<>(SkillGained.class, ui::onSkillGained),
+                new Event<>(SkillGumpRequested.class, ui::onSkillGumpRequested),
+                new Event<>(StatusGumpRequested.class, ui::onStatusGumpRequested),
+                new Event<>(TooltipRequested.class, ui::onTooltipRequested),
+                new Event<>(ItemDroppedOnTheGround.class, items::onItemDroppedOnTheGround),
+                new Event<>(ItemDroppedInContainer.class, items::onItemDroppedInContainer),
+                new Event<>(ItemStacked.class, items::onItemStacked),
+                new Event<>(GroundedItemCreated.class, items::onItemCreated),
+                new Event<>(EquippedItemCreated.class, items::onEquippedItemCreated),
+                new Event<>(ItemCreatedInContainer.class, items::onItemCreatedInContainer),
+                new Event<>(ItemDeleted.class, items::onItemDeleted),
+                new Event<>(ItemUpdated.class, items::onItemUpdated),
+                new Event<>(AnimationSent.class, combat::onAnimationSent),
+                new Event<>(PlayerLoggedIn.class, worldView::onPlayerLoggedIn),
+                new Event<>(MessageSent.class, ui::onMessageSent),
+                new Event<>(TargetSent.class, ui::onTargetSent),
+                new Event<>(PaperdollOpened.class, ui::onPaperdollOpened),
+                new Event<>(ContainerOpenedEvent.class, ui::onContainerOpened),
+                new Event<>(SkillLocked.class, ui::onSkillLocked),
+                new Event<>(MobileStatusChanged.class, combat::onMobileStatusChanged),
+                new Event<>(VendorSessionOpened.class, ui::onVendorTradeSessionOpened),
+                new Event<>(VitalsChanged.class, ui::onVitalsChanged),
+                new Event<>(GumpSent.class, ui::onGumpSent),
+                new Event<>(SpellBookOpened.class, ui::onSpellBookOpened),
+                new Event<>(RawPacketSent.class, ui::onRawPacketSent),
+                new Event<>(RawPacketsSent.class, ui::onRawPacketsSent),
+                new Event<>(PlayerLoggedOut.class, worldView::onPlayerLoggedOut),
+                new Event<>(MobileGoldChanged.class, ui::onMobileGoldChanged),
+                new Event<>(MobileDamagedEvent.class, combat::onMobileDamaged),
+                new Event<>(MobileDeathEvent.class, combat::onMobileDeath),
+                new Event<>(MobileResurrectEvent.class, combat::onMobileResurrect),
+                new Event<>(CombatStarted.class, combat::onCombatStarted),
+                new Event<>(CombatOccurring.class, combat::onCombatOccurring)
         );
     }
 
