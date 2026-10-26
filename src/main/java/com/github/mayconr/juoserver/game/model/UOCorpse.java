@@ -34,6 +34,7 @@ public class UOCorpse extends UOContainer {
         if (item.getLayer() == null) {
             throw new IllegalArgumentException("Item must have layer");
         }
+        item.setCurrentLocation(ItemLocation.container(getSerialId()));
         super.addItemToContainer(item);
         equippedItems.put(item.getLayer(), item.getSerialId());
     }

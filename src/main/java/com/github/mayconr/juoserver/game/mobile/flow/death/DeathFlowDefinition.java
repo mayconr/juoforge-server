@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.mobile.flow.death;
 
 import com.github.mayconr.juoserver.game.mobile.flow.death.creation.CorpseCreationStep;
+import com.github.mayconr.juoserver.game.mobile.flow.death.loot.GenerateDeathLootStep;
 import com.github.mayconr.juoserver.game.mobile.flow.death.notification.NotifyDeathStep;
 import com.github.mayconr.juoserver.game.mobile.flow.death.spawn.SpawnMobileMountStep;
 import com.github.mayconr.juoserver.game.mobile.flow.death.state.UpdateMobileDeathStatusStep;
@@ -22,6 +23,7 @@ public final class DeathFlowDefinition {
                 .step(new MoveItemsToCorpseStep(modules.mobile(), modules.item(), infra.storage()))
                 .step(new UpdateMobileDeathStatusStep())
                 .step(new SpawnMobileMountStep(modules.npc(), templates.mountByItemName()))
+                .step(new GenerateDeathLootStep(modules.loot()))
                 .step(new NotifyDeathStep(infra.eventBus()))
                 .build();
     }

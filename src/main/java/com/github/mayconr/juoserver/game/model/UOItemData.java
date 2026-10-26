@@ -16,7 +16,7 @@ public class UOItemData extends UOObjectData {
     private Layer layer;
     private int amount;
     private int hue;
-    private boolean movable;
+    private boolean movable = true;
     private boolean hidden;
     private Direction direction;
     private List<ItemFlag> flags;

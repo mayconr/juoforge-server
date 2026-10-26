@@ -16,7 +16,9 @@ public class NotifyItemCreatedStep extends AbstractFlowStep<ItemCreationContext>
 
     @Override
     public StepResult execute(ItemCreationContext context) {
-        eventBus.publish(context.getEvent());
+        if (context.getOptions().renderOnCreate()) {
+            eventBus.publish(context.getEvent());
+        }
         return StepResult.success();
     }
 }

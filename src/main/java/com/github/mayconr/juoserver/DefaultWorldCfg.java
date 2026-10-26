@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.game.loot.LootPolicy;
+
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
@@ -35,6 +37,19 @@ import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 public class DefaultWorldCfg implements WorldCfg {
+
+    private Supplier<LootPolicy> lootPolicy =
+            LootPolicy::none;
+
+    @Override
+    public void lootPolicy(Supplier<LootPolicy> factory) {
+        this.lootPolicy = java.util.Objects.requireNonNull(factory);
+    }
+
+    @Override
+    public Supplier<LootPolicy> lootPolicy() {
+        return lootPolicy;
+    }
 
     private WorldContent content;
 

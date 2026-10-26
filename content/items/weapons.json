@@ -30,6 +30,7 @@
     "displayName": "a Kite",
     "layer": "TWO_HANDED",
     "modelId": 7028,
+    "movable": true,
     "flags": [
       "WEARABLE",
       "WEAPON"
@@ -40,6 +41,7 @@
     "displayName": "a Katana",
     "layer": "ONE_HANDED",
     "modelId": 5118,
+    "movable": true,
     "flags": [
       "WEARABLE",
       "WEAPON"
@@ -58,6 +60,7 @@
     "displayName": "a Crossbow",
     "layer": "ONE_HANDED",
     "modelId": 3919,
+    "movable": true,
     "flags": [
       "WEARABLE",
       "WEAPON"
@@ -76,6 +79,7 @@
     "displayName": "a Bow",
     "layer": "ONE_HANDED",
     "modelId": 5041,
+    "movable": true,
     "flags": [
       "WEARABLE",
       "WEAPON"
@@ -94,6 +98,7 @@
     "displayName": "a Black Staff",
     "layer": "TWO_HANDED",
     "modelId": 3568,
+    "movable": true,
     "flags": [
       "WEARABLE",
       "WEAPON"

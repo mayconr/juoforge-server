@@ -13,14 +13,17 @@ public class DeleteObject extends AbstractPacket {
 
     private final int serialId;
 
-    public DeleteObject(UOItem uoItem) {
+    public DeleteObject(int serialId) {
         super(CODE, 5);
-        this.serialId = uoItem.getSerialId();
+        this.serialId = serialId;
+    }
+
+    public DeleteObject(UOItem uoItem) {
+        this(uoItem.getSerialId());
     }
 
     public DeleteObject(UOMobile mobile) {
-        super(CODE, 5);
-        this.serialId = mobile.getSerialId();
+        this(mobile.getSerialId());
     }
 
     @Override

@@ -5,6 +5,8 @@ import com.github.mayconr.juoserver.NetworkBootstrap;
 import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.WorldBootstrap;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
+import com.github.mayconr.juoserver.game.item.ItemRequest;
+import java.util.List;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.command.*;
 import com.github.mayconr.shard.skills.crafting.mining.*;
@@ -117,8 +119,14 @@ public class ShardImplConfiguration {
                 return new MiningToolTrigger(service);
             });
 
+
             // Combat
             cfg.combatSkillGainPolicy(DefaultCombatSkillGainPolicy::new);
+
+            // Loot rules belong to the shard; the library defaults to no additional drops.
+            cfg.lootPolicy(() -> (request, rng) -> "skeleton".equals(request.victim().getName())
+                    ? List.of(ItemRequest.byName("gold_coin").withAmount(10), ItemRequest.byName("spear"))
+                    : List.of());
 
             // Spell
             cfg.addFlow(HealContext.class, runtime -> HealFlowDefinition.build(runtime.world().message()));

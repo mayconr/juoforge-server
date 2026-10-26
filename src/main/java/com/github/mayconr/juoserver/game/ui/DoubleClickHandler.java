@@ -4,6 +4,8 @@ import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.item.trigger.Trigger;
 import com.github.mayconr.juoserver.game.model.Container;
+import com.github.mayconr.juoserver.game.model.UOCorpse;
+import com.github.mayconr.juoserver.game.loot.WorldLoot;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -26,6 +28,7 @@ public class DoubleClickHandler {
     private final RealmStorage storage;
     private final ItemUseService itemUseService;
     private final PolicyService policyService;
+    private final WorldLoot loot;
 
     public void doubleClick(UOPlayer player, DoubleClick doubleClick) {
         final var result = policyService.evaluate(DoubleClickPolicy.class, new DoubleClickPolicy(player, doubleClick.getSerialId()));
@@ -88,8 +91,17 @@ public class DoubleClickHandler {
     private void openContainer(UOPlayer player, Container container) {
         storage.loadContainerItems(container)
             .thenAccept(containerItems -> {
-                container.addItemsToContainer(containerItems);
-                eventBus.publish(new ContainerOpenedEvent(player, container));
+                synchronized (container) {
+                    container.addItemsToContainer(containerItems);
+                    if (container instanceof UOCorpse corpse) {
+                        try {
+                            loot.materialize(corpse);
+                        } catch (RuntimeException failure) {
+                            log.error("Cannot materialize loot for corpse {}", corpse.getSerialId(), failure);
+                        }
+                    }
+                    eventBus.publish(new ContainerOpenedEvent(player, container));
+                }
             });
     }
 }

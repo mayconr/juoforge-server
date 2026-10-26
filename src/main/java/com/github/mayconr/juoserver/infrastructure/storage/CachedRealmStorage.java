@@ -119,10 +119,11 @@ public class CachedRealmStorage implements RealmStorage {
     public CompletableFuture<List<UOItem>> loadContainerItems(Container container) {
         return itemStorage.loadContainerItems(container.getSerialId())
                 .thenApply(itemMapper::mapToItem)
-                .thenApply(items -> {
-                    itemCache.putAll(items);
-                    return items;
-                })
+                .thenApply(itemCache::putAll)
+                .thenApply(items -> items.stream()
+                        .filter(item -> item.getCurrentLocation() instanceof ContainerLocation location
+                                && location.containerSerialId() == container.getSerialId())
+                        .toList())
                 .whenComplete(this::logging);
     }
 

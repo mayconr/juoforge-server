@@ -1,5 +1,9 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.loot.WorldLoot;
+import com.github.mayconr.juoserver.game.loot.LootModule;
+import com.github.mayconr.juoserver.game.loot.LootModuleImpl;
+
 import com.github.mayconr.juoserver.game.map.WorldMap;
 import com.github.mayconr.juoserver.game.storage.WorldStorage;
 import com.github.mayconr.juoserver.game.storage.StorageModule;
@@ -135,6 +139,11 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
+    public WorldLoot loot() {
+        return Objects.requireNonNull(lootModule, "World loot module is not initialized");
+    }
+
+    @Override
     public WorldVitals vitals() {
         return Objects.requireNonNull(vitalsModule, "World vitals module is not initialized");
     }
@@ -220,6 +229,7 @@ public class DefaultWorld implements WorldInternal, World {
     private PlayerModule playerModule;
     private CombatModule combatModule;
     private VitalsModule vitalsModule;
+    private LootModule lootModule;
     private MobileModule mobileModule;
     private InteractionModule interactionModule;
     private MessageModule messageModule;
@@ -280,6 +290,7 @@ public class DefaultWorld implements WorldInternal, World {
         initializeMessagingModule();
         initializeEconomyModule(wallet);
         initializeAiModule();
+        this.lootModule = new LootModuleImpl();
         initializeUiModule();
         initializeSkillModule();
         this.spellModule = new SpellModuleImpl(spellTemplateByKey);
@@ -354,7 +365,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeUiModule() {
         final var tooltipHandler = new TooltipHandler(eventBus, storage);
-        final var doubleClickHandler = new DoubleClickHandler(eventBus, storage, itemUseService, policyService);
+        final var doubleClickHandler = new DoubleClickHandler(eventBus, storage, itemUseService, policyService, lootModule);
         final var singleClickHandler = new SingleClickHandler(storage);
         final var skillUIHandler = new SkillUIHandler(eventBus, storage);
         final var statusHandler = new StatusHandler(eventBus, storage);
@@ -444,6 +455,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .mobile(mobileModule)
                     .item(itemModule)
                     .damage(damageModule)
+                    .loot(lootModule)
                     .skill(skillModule)
                     .build())
                 .infra(GameInfra.builder()
@@ -456,6 +468,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .settings(settings)
                     .fileReader(fileReader)
                     .rng(rng)
+                    .lootPolicy(Objects.requireNonNull(worldCfg.lootPolicy().get(), "Loot policy factory returned null"))
                     .combatSkillGainPolicy(Objects.requireNonNull(
                             worldCfg.combatSkillGainPolicy().get(), "Combat skill gain policy factory returned null"))
                     .build())
@@ -491,6 +504,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.damageModule.initialize(context);
         this.npcModule.initialize(context);
         this.itemModule.initialize(context);
+        this.lootModule.initialize(context);
         this.aiModule.initialize(context);
         this.interactionModule.initialize(context);
         this.skillModule.initialize(context);

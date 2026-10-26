@@ -20,7 +20,13 @@ public class PlaceContainerItemStep extends AbstractFlowStep<ItemCreationContext
     @Override
     public StepResult execute(ItemCreationContext context) {
         if (context.getTarget() instanceof ContainerItemTarget(UOContainer container, Options options)) {
-            // TODO container on the ground
+            if (container.getCurrentLocation() instanceof GroundLocation) {
+                final var item = context.result();
+                item.setCurrentLocation(ItemLocation.container(container.getSerialId()));
+                container.addItemToContainer(item);
+                context.setEvent(new ItemCreatedInContainer(container, item, null));
+                return StepResult.success();
+            }
 
             if (container.getCurrentLocation() instanceof EquippedLocation(Integer ownerSerialId)) {
                 final var item = context.result();
