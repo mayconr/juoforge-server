@@ -20,6 +20,9 @@ public enum SendSkillType {
      */
     FULL_LIST_WITH_CAP(0x02),
 
+    /** Full list with caps that also opens the client's skills window. IDs are zero-based. */
+    FULL_LIST_WITH_CAP_AND_OPEN(0x03),
+
     /**
      * Single skill update including per-skill cap.
      */

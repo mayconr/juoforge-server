@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
+import com.github.mayconr.juoserver.game.item.trigger.Trigger;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -13,8 +16,17 @@ import static org.mockito.Mockito.*;
 class ItemModuleTest {
     private final RealmStorage storage = mock(RealmStorage.class);
     private final EventBus events = mock(EventBus.class);
+    private final ItemUseService itemUse = mock(ItemUseService.class);
     private final ItemModule module = new ItemModuleImpl(new ItemHandler(storage, events),
-            new ContainerHandler(events, storage), storage, mock(ItemTemplateRegistry.class));
+            new ContainerHandler(events, storage), storage, mock(ItemTemplateRegistry.class), itemUse);
+
+    @Test
+    void dispatchesItemUseToTheService() {
+        var context = new ItemUseContext(mock(com.github.mayconr.juoserver.game.model.UOPlayer.class),
+                mock(UOItem.class), Trigger.DOUBLE_CLICK);
+        module.use(context);
+        verify(itemUse).use(context);
+    }
 
     @Test
     void deletesResolvedItemAndPublishesEvent() {

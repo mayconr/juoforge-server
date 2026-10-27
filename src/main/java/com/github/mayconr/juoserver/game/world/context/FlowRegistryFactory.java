@@ -1,6 +1,18 @@
 package com.github.mayconr.juoserver.game.world.context;
 
 import com.github.mayconr.juoserver.game.loot.LootModule;
+import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickContext;
+import com.github.mayconr.juoserver.game.ui.flow.skill.SkillGumpContext;
+import com.github.mayconr.juoserver.game.ui.flow.singleclick.SingleClickContext;
+import com.github.mayconr.juoserver.game.ui.flow.singleclick.SingleClickFlowDefinition;
+import com.github.mayconr.juoserver.game.ui.flow.skill.SkillGumpFlowDefinition;
+import com.github.mayconr.juoserver.game.ui.UIModule;
+import com.github.mayconr.juoserver.game.ui.flow.paperdoll.OpenPaperdollContext;
+import com.github.mayconr.juoserver.game.ui.flow.paperdoll.OpenPaperdollFlowDefinition;
+import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickFlowDefinition;
+import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
+import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerContext;
+import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerFlowDefinition;
 import com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootContext;
 import com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootFlowDefinition;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
@@ -94,6 +106,8 @@ import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.serialization.DataMapper;
+import com.github.mayconr.juoserver.infrastructure.serialization.JacksonDataMapper;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
@@ -115,7 +129,8 @@ public class FlowRegistryFactory {
             NpcModule npc,
             DamageModule damage,
             LootModule loot,
-            SkillModule skill
+            SkillModule skill,
+            UIModule ui
     ) {}
 
     @Builder
@@ -130,9 +145,13 @@ public class FlowRegistryFactory {
             UOFileReader fileReader,
             RNG rng,
             CombatSkillGainPolicy combatSkillGainPolicy,
-            LootPolicy lootPolicy
+            LootPolicy lootPolicy,
+            DataMapper dataMapper,
+            DoubleClickPolicy doubleClickPolicy
     ) {
         public GameInfra {
+            doubleClickPolicy = doubleClickPolicy == null ? DoubleClickPolicy.allowAll() : doubleClickPolicy;
+            dataMapper = dataMapper == null ? new JacksonDataMapper() : dataMapper;
             rng = rng == null ? new DefaultRNG() : rng;
             lootPolicy = lootPolicy == null ? LootPolicy.none() : lootPolicy;
             combatSkillGainPolicy = combatSkillGainPolicy == null
@@ -160,10 +179,20 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(SingleClickFlowDefinition.class.getSimpleName(),
+                SingleClickFlowDefinition.build(infra.storage(), infra.eventBus()), SingleClickContext.class);
+        registry.register(SkillGumpFlowDefinition.class.getSimpleName(),
+                SkillGumpFlowDefinition.build(infra.eventBus(), infra.storage()), SkillGumpContext.class);
+        registry.register(DoubleClickFlowDefinition.class.getSimpleName(),
+                DoubleClickFlowDefinition.build(infra.storage(), infra.doubleClickPolicy(), modules.item()), DoubleClickContext.class);
+        registry.register(OpenPaperdollFlowDefinition.class.getSimpleName(),
+                OpenPaperdollFlowDefinition.build(infra.eventBus(), infra.storage()), OpenPaperdollContext.class);
+        registry.register(OpenContainerFlowDefinition.class.getSimpleName(),
+                OpenContainerFlowDefinition.build(infra.storage(), infra.eventBus(), modules.loot()), OpenContainerContext.class);
         registry.register(MaterializeLootFlowDefinition.class.getSimpleName(),
-                MaterializeLootFlowDefinition.build(modules.item()), MaterializeLootContext.class);
+                MaterializeLootFlowDefinition.build(modules.item(), infra.dataMapper()), MaterializeLootContext.class);
         registry.register(GenerateLootFlowDefinition.class.getSimpleName(),
-                GenerateLootFlowDefinition.build(infra.lootPolicy(), infra.rng(), templates.itemByName(), templates.itemByModelId()), GenerateLootContext.class);
+                GenerateLootFlowDefinition.build(infra.lootPolicy(), infra.rng(), templates.itemByName(), templates.itemByModelId(), infra.dataMapper()), GenerateLootContext.class);
         registry.register(RegenFlowDefinition.class.getSimpleName(),
                 RegenFlowDefinition.build(infra.settings(), infra.eventBus()), RegenContext.class);
         registry.register(ResurrectionFlowDefinition.class.getSimpleName(),

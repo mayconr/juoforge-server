@@ -60,12 +60,13 @@ public class SendSkill extends AbstractPacket {
         buf.writeByte(rawType);
 
         for (SkillValue skill : skills) {
-            buf.writeShort(skill.getSkillId());
+            // Legacy full lists use one-based IDs; explicit-open and single updates use zero-based IDs.
+            buf.writeShort(skill.getSkillId() + (rawType == 0x00 || rawType == 0x02 ? 1 : 0));
             buf.writeShort((int) (skill.getValue() * 10));
             buf.writeShort((int) (skill.getBase() * 10));
             buf.writeByte(skill.getLock().getCode());
 
-            if (rawType == 0x02 || (rawType & 0xFF) == 0xDF) {
+            if (rawType == 0x02 || rawType == 0x03 || (rawType & 0xFF) == 0xDF) {
                 buf.writeShort((int) (skill.getCap() * 10));
             }
         }
@@ -85,7 +86,7 @@ public class SendSkill extends AbstractPacket {
                         2 + // base value
                         1;  // lock
 
-        if (type == 0x02 || (type & 0xFF) == 0xDF) {
+        if (type == 0x02 || type == 0x03 || (type & 0xFF) == 0xDF) {
             perSkill += 2; // cap
         }
 

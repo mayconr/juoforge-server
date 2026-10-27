@@ -97,7 +97,6 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -176,7 +175,7 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
-    public UICommands ui() {
+    public UIModule ui() {
         return Objects.requireNonNull(uiModule, "World UI module is not initialized");
     }
 
@@ -246,7 +245,6 @@ public class DefaultWorld implements WorldInternal, World {
     private final RealmStorage storage;
     private final RegionSystem regionSystem;
     private final UOFileReaderImpl fileReader;
-    private final PolicyService policyService;
     private final ItemUseService itemUseService;
     private final SpellCastRegistry spellCastRegistry;
     private final RNG rng;
@@ -291,10 +289,10 @@ public class DefaultWorld implements WorldInternal, World {
         initializeEconomyModule(wallet);
         initializeAiModule();
         this.lootModule = new LootModuleImpl();
-        initializeUiModule();
         initializeSkillModule();
         this.spellModule = new SpellModuleImpl(spellTemplateByKey);
         initializeItemModule();
+        initializeUiModule();
         initializePlayerModule();
         this.vitalsModule = new VitalsModuleImpl(playerModule);
         initializeCombatModule();
@@ -365,17 +363,11 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeUiModule() {
         final var tooltipHandler = new TooltipHandler(eventBus, storage);
-        final var doubleClickHandler = new DoubleClickHandler(eventBus, storage, itemUseService, policyService, lootModule);
-        final var singleClickHandler = new SingleClickHandler(storage);
-        final var skillUIHandler = new SkillUIHandler(eventBus, storage);
         final var statusHandler = new StatusHandler(eventBus, storage);
         final var gumpSystem = new DefaultGumpSystem(eventBus);
 
-        this.uiModule = new UIModule(
+        this.uiModule = new UIModuleImpl(
                 tooltipHandler,
-                doubleClickHandler,
-                singleClickHandler,
-                skillUIHandler,
                 gumpSystem,
                 statusHandler
         );
@@ -393,7 +385,7 @@ public class DefaultWorld implements WorldInternal, World {
         final var itemHandler = new ItemHandler(storage, eventBus);
         final var containerHandler = new ContainerHandler(eventBus, storage);
 
-        this.itemModule = new ItemModuleImpl(itemHandler, containerHandler, storage, itemTemplateRegistry);
+        this.itemModule = new ItemModuleImpl(itemHandler, containerHandler, storage, itemTemplateRegistry, itemUseService);
     }
 
     private void initializePlayerModule() {
@@ -457,6 +449,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .damage(damageModule)
                     .loot(lootModule)
                     .skill(skillModule)
+                    .ui(uiModule)
                     .build())
                 .infra(GameInfra.builder()
                     .vendorHandler(vendorHandler)
@@ -468,6 +461,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .settings(settings)
                     .fileReader(fileReader)
                     .rng(rng)
+                    .doubleClickPolicy(Objects.requireNonNull(worldCfg.doubleClickPolicy().get(), "Double click policy factory returned null"))
                     .lootPolicy(Objects.requireNonNull(worldCfg.lootPolicy().get(), "Loot policy factory returned null"))
                     .combatSkillGainPolicy(Objects.requireNonNull(
                             worldCfg.combatSkillGainPolicy().get(), "Combat skill gain policy factory returned null"))
@@ -504,6 +498,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.damageModule.initialize(context);
         this.npcModule.initialize(context);
         this.itemModule.initialize(context);
+        this.uiModule.initialize(context);
         this.lootModule.initialize(context);
         this.aiModule.initialize(context);
         this.interactionModule.initialize(context);
@@ -556,10 +551,7 @@ public class DefaultWorld implements WorldInternal, World {
                 data -> {
                     for (UOMobile mobile : data.mobiles()) {
                         if (mobile instanceof UONpc npc) {
-                            /*var ai = aiModule.attach(npc);
-                            if (ai != null) {
-                                ai.wakeup(this);
-                            }*/
+                            aiModule.attach(npc);
                         }
                     }
                 }

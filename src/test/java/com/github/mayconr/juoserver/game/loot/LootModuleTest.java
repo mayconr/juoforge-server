@@ -2,19 +2,23 @@ package com.github.mayconr.juoserver.game.loot;
 
 import com.github.mayconr.juoserver.DefaultWorldCfg;
 import com.github.mayconr.juoserver.game.item.*;
+import com.github.mayconr.juoserver.infrastructure.serialization.JacksonDataMapper;
 import com.github.mayconr.juoserver.game.item.flow.creation.*;
+import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerContext;
+import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerFlowDefinition;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.loot.flow.generate.*;
 import com.github.mayconr.juoserver.game.loot.flow.materialize.*;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.ContainerOpenedEvent;
-import com.github.mayconr.juoserver.game.ui.DoubleClickHandler;
+import com.github.mayconr.juoserver.game.ui.UIModuleImpl;
+import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickContext;
+import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickFlowDefinition;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyResult;
+import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.network.packet.DoubleClick;
@@ -27,12 +31,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class LootModuleTest {
+    private final JacksonDataMapper dataMapper = new JacksonDataMapper();
+    private final PendingLoot pendingLoot = new PendingLoot(dataMapper);
     private final ItemTemplate gold = new ItemTemplate("gold_coin", "gold", null, 0xEED, true, 0, null, 0,
             List.of(ItemFlag.STACKABLE), Map.of(), 0, null, null);
 
     private LootModuleImpl module(WorldItem items, LootPolicy policy, RNG rng, DefaultFlowRegistry registry) {
-        registry.register("loot", GenerateLootFlowDefinition.build(policy, rng, null, null), GenerateLootContext.class);
-        registry.register("materialize", MaterializeLootFlowDefinition.build(items), MaterializeLootContext.class);
+        registry.register("loot", GenerateLootFlowDefinition.build(policy, rng, null, null, dataMapper), GenerateLootContext.class);
+        registry.register("materialize", MaterializeLootFlowDefinition.build(items, dataMapper), MaterializeLootContext.class);
         var module = new LootModuleImpl();
         module.initialize(DefaultModuleContext.builder().flowFacade(new DefaultFlowFacade(registry)).build());
         return module;
@@ -72,12 +78,13 @@ class LootModuleTest {
         registry.register("items", ItemCreationFlowDefinition.build(
                 FlowRegistryFactory.GameInfra.builder().storage(storage).eventBus(events).serialGenerator(serials).build(),
                 FlowRegistryFactory.GameTemplates.builder().build()), ItemCreationContext.class);
-        var items = new ItemModuleImpl(null, null, storage, null);
+        var items = new ItemModuleImpl(null, null, storage, null, null);
         items.initialize(DefaultModuleContext.builder().flowFacade(new DefaultFlowFacade(registry)).build());
         var rng = mock(RNG.class);
         when(rng.roll(0.5)).thenReturn(true);
         var loot = module(items, (request, random) -> random.roll(0.5)
                 ? List.of(ItemRequest.byTemplate(gold).withAmount(10).withHue(7)) : List.of(), rng, registry);
+        registry.register("open-container", OpenContainerFlowDefinition.build(storage, events, loot), OpenContainerContext.class);
         var corpse = corpse();
         var request = request(corpse);
         var plan = loot.generate(request);
@@ -87,12 +94,14 @@ class LootModuleTest {
         verifyNoInteractions(storage, serials, events);
         assertTrue(loot.generate(request).isEmpty());
 
-        var policy = mock(PolicyService.class);
-        when(policy.evaluate(any(), any())).thenReturn(PolicyResult.allow());
+        var policy = mock(DoubleClickPolicy.class);
+        when(policy.allows(any())).thenReturn(true);
         when(storage.getItem(corpse.getSerialId())).thenReturn(Optional.of(corpse));
         var loadedContents = new CompletableFuture<List<UOItem>>();
         when(storage.loadContainerItems(corpse)).thenReturn(loadedContents);
-        var handler = new DoubleClickHandler(events, storage, null, policy, loot);
+        var handler = new UIModuleImpl(null, null, null);
+        registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items), DoubleClickContext.class);
+        handler.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         var click = mock(DoubleClick.class);
         when(click.getSerialId()).thenReturn(corpse.getSerialId());
         var player = mock(UOPlayer.class);
@@ -184,14 +193,14 @@ class LootModuleTest {
 
         var reloaded = reloadThroughStorageMapping(corpse);
         assertTrue(reloaded.runtimeAttributes().toMap().isEmpty());
-        assertEquals(List.of(drop), PendingLoot.read(reloaded));
+        assertEquals(List.of(drop), pendingLoot.read(reloaded));
         assertTrue(loot.generate(request(reloaded)).isEmpty());
         var created = mock(UOItem.class);
         when(items.createItem(eq(drop), any(), any())).thenReturn(created);
         assertEquals(List.of(created), loot.materialize(reloaded));
         assertTrue(loot.materialize(reloaded).isEmpty());
         var reloadedAfterOpening = reloadThroughStorageMapping(reloaded);
-        assertTrue(PendingLoot.read(reloadedAfterOpening).isEmpty());
+        assertTrue(pendingLoot.read(reloadedAfterOpening).isEmpty());
         assertTrue(loot.generate(request(reloadedAfterOpening)).isEmpty());
         assertTrue(loot.materialize(reloadedAfterOpening).isEmpty());
         verify(policy, times(1)).resolve(request, rng);

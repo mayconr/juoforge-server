@@ -65,7 +65,6 @@ public class PsqlItemStorage implements ItemStorage {
                 try {
                     final var mapper = session.getMapper(ItemMapper.class);
                     mapper.upsert(item.toData());
-                    mapper.upsertItemState(item.toData());
                     session.commit();
                     return item;
                 } catch (Exception e) {
@@ -73,7 +72,7 @@ public class PsqlItemStorage implements ItemStorage {
                     throw new RuntimeException(e);
                 }
             }
-        });
+        }, executor);
     }
 
     @Override

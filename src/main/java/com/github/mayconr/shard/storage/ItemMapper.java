@@ -20,8 +20,6 @@ public interface ItemMapper {
 
     void upsert(UOItemData data);
 
-    int upsertItemState(UOItemData data);
-
     int deleteBySerialId(int serialId);
 
 }

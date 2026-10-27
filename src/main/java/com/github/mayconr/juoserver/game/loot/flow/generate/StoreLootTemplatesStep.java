@@ -14,11 +14,13 @@ import java.util.List;
 
 public final class StoreLootTemplatesStep extends AbstractFlowStep<GenerateLootContext> {
     private final TemplateLoaderStep templates;
+    private final PendingLoot pendingLoot;
 
     public StoreLootTemplatesStep(TemplateRegistry<String, ItemTemplate> names,
-                                  TemplateRegistry<Integer, ItemTemplate> models) {
+                                  TemplateRegistry<Integer, ItemTemplate> models, PendingLoot pendingLoot) {
         super("store-loot-templates");
         templates = new TemplateLoaderStep(names, models);
+        this.pendingLoot = pendingLoot;
     }
 
     @Override
@@ -34,7 +36,7 @@ public final class StoreLootTemplatesStep extends AbstractFlowStep<GenerateLootC
                     request.hue(), request.amount(), request.direction()));
         }
         var plan = List.copyOf(pending);
-        PendingLoot.store(corpse, plan);
+        pendingLoot.store(corpse, plan);
         context.complete(plan);
         return StepResult.success();
     }

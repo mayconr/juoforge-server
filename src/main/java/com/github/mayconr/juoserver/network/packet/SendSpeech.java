@@ -29,7 +29,7 @@ public class SendSpeech extends AbstractPacket {
             int font,
             String name,
             String message) {
-        super(CODE, 44 + message.length());
+        super(CODE, 45 + message.getBytes(StandardCharsets.US_ASCII).length);
         this.type = type;
         this.hue = hue;
         this.serialId = serialId;
@@ -70,7 +70,8 @@ public class SendSpeech extends AbstractPacket {
         buf.writeByte(type.getCode());
         buf.writeShort(hue);
         buf.writeShort(font);
-        buf.writeBytes(Arrays.copyOf(name.getBytes(StandardCharsets.UTF_8), 30));
-        buf.writeCharSequence(message, StandardCharsets.UTF_8);
+        buf.writeBytes(Arrays.copyOf(name.getBytes(StandardCharsets.US_ASCII), 30));
+        buf.writeBytes(message.getBytes(StandardCharsets.US_ASCII));
+        buf.writeByte(0);
     }
 }

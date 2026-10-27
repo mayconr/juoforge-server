@@ -28,8 +28,6 @@ import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
 import com.github.mayconr.juoserver.infrastructure.gameloop.DefaultGameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameTask;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyRegistry;
-import com.github.mayconr.juoserver.infrastructure.policy.PolicyService;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystemImpl;
 import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
@@ -100,10 +98,6 @@ public final class WorldBootstrap {
 
         RNG rng = new DefaultRNG();
 
-        // --- Policy
-        PolicyRegistry policyRegistry = new PolicyRegistry();
-        PolicyService policyService = new PolicyService(policyRegistry);
-
         // --- Item use
         ItemUseRegistry itemUseRegistry = new ItemUseRegistry();
         ItemUseService itemUseService = new ItemUseService(itemUseRegistry);
@@ -149,7 +143,6 @@ public final class WorldBootstrap {
                 storage,
                 regionSystem,
                 uoFileReader,
-                policyService,
                 itemUseService,
                 spellCastRegistry,
                 rng,

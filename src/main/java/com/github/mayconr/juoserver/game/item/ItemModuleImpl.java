@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
+import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerContext;
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
@@ -24,6 +27,7 @@ public class ItemModuleImpl implements ItemModule {
     private final ContainerHandler containerHandler;
     private final RealmStorage storage;
     private final ItemTemplateRegistry itemTemplateRegistry;
+    private final ItemUseService itemUseService;
     private FlowFacade flows;
 
     @Override
@@ -50,6 +54,16 @@ public class ItemModuleImpl implements ItemModule {
         } catch (RuntimeException error) {
             throw ModuleOperationException.unexpected("createItem", error, "{item.creation_failed}");
         }
+    }
+
+    @Override
+    public void use(ItemUseContext context) {
+        itemUseService.use(context);
+    }
+
+    @Override
+    public void openContainer(UOPlayer player, Container container) {
+        flows.execute(new OpenContainerContext(player, container));
     }
 
     @Override

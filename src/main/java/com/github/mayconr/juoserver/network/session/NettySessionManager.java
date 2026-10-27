@@ -95,6 +95,7 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(SkillGumpRequested.class, ui::onSkillGumpRequested),
                 new Event<>(StatusGumpRequested.class, ui::onStatusGumpRequested),
                 new Event<>(TooltipRequested.class, ui::onTooltipRequested),
+                new Event<>(ObjectLabelRequested.class, ui::onObjectLabelRequested),
                 new Event<>(ItemDroppedOnTheGround.class, items::onItemDroppedOnTheGround),
                 new Event<>(ItemDroppedInContainer.class, items::onItemDroppedInContainer),
                 new Event<>(ItemStacked.class, items::onItemStacked),

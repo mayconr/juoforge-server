@@ -194,7 +194,7 @@ CREATE TABLE items (
    container_gump_id INT,
    corpse_id INT,
 
-   flags JSONB NOT NULL DEFAULT '{}',
+   flags JSONB NOT NULL DEFAULT '[]',
 
 -- estado (ex item_state)
    x INT,
@@ -215,7 +215,8 @@ CREATE TABLE items (
    CONSTRAINT fk_items_container
        FOREIGN KEY (container_serial_id)
            REFERENCES items(serial_id)
-           ON DELETE CASCADE,
+           ON DELETE CASCADE
+           DEFERRABLE INITIALLY DEFERRED,
 
    CONSTRAINT chk_item_amount
        CHECK (amount > 0),
