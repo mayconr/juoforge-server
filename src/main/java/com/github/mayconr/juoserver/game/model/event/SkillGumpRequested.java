@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.game.model.event;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.SendSkillType;
 
-public record SkillGumpRequested(UOPlayer player, UOMobile skillsOf) implements GameEvent {
+public record SkillGumpRequested(UOPlayer player, UOMobile skillsOf, SendSkillType type) implements GameEvent {
 }

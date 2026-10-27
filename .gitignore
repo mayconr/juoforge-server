@@ -32,3 +32,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+AGENTS.md
+docs/references/

@@ -51,10 +51,6 @@
         <result property="containerGumpId" column="container_gump_id"/>
         <result property="corpseId" column="corpse_id"/>
 
-        <!-- Localização -->
-        <result property="locationType"
-                column="location_type"/>
-
     </resultMap>
 
 
@@ -90,6 +86,7 @@
         SELECT *
         FROM items
         WHERE owner_serial_id = #{ownerSerialId}
+        AND location_type = 3
         AND container_serial_id IS NULL
     </select>
 
@@ -97,6 +94,7 @@
         SELECT *
         FROM items
         WHERE owner_serial_id IS NULL
+        AND location_type = 1
         AND container_serial_id IS NULL
     </select>
 
@@ -104,6 +102,7 @@
         SELECT *
         FROM items
         WHERE container_serial_id = #{containerSerialId}
+        AND location_type = 2
     </select>
 
 
@@ -158,6 +157,7 @@
 
         ON CONFLICT (serial_id)
         DO UPDATE SET
+        container_serial_id = EXCLUDED.container_serial_id,
         owner_serial_id   = EXCLUDED.owner_serial_id,
         name              = EXCLUDED.name,
         display_name      = EXCLUDED.display_name,

@@ -150,6 +150,8 @@ public class ShardImplConfiguration {
             cfg.addEventListener(Unmount::new);
             cfg.addEventListener(Region::new);
             cfg.addEventListener(Where::new);
+            cfg.addEventListener(OpenPaperdoll::new);
+            cfg.addEventListener(SendSkillGump::new);
             cfg.addEventListener(Bounds::new);
             cfg.addEventListener(ApplyDamage::new);
             cfg.addEventListener(Resurrect::new);

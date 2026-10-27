@@ -32,6 +32,16 @@ public final class PlayerInterfaceHandler {
         }
     }
 
+    public void onObjectLabelRequested(ObjectLabelRequested event) {
+        if (!session.isPlayer(event.player())) return;
+        var object = event.object();
+        var name = object.getDisplayName();
+        if (name == null || name.isBlank()) name = object.getName();
+        if (name == null || name.isBlank()) return;
+        packetWriter.writeAndFlush(new SendSpeech(TextType.LABEL, 0x03B2, object.getSerialId(),
+                object.getModelId(), 3, name, name));
+    }
+
     public void onMessageSent(MessageSent event) {
         var speakerId = 0;
         var speakerName = "";
@@ -143,7 +153,7 @@ public final class PlayerInterfaceHandler {
     public void onSkillGumpRequested(SkillGumpRequested event) {
         if (session.isPlayer(event.player())) {
             log.info("Sending skills of {}", event.skillsOf());
-            packetWriter.writeAndFlush(new SendSkill(SendSkillType.FULL_LIST_WITH_CAP, event.skillsOf().getSkills().getSkillValues()));
+            packetWriter.writeAndFlush(new SendSkill(event.type(), event.skillsOf().getSkills().getSkillValues()));
         } else {
             log.info("Not implemented yet");
         }

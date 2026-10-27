@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
+import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings.Ai;
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
@@ -26,6 +27,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface WorldCfg {
+
+    /** Replaces double-click authorization; the default allows all requests. */
+    void doubleClickPolicy(Supplier<DoubleClickPolicy> factory);
+
+    Supplier<DoubleClickPolicy> doubleClickPolicy();
 
     void lootPolicy(Supplier<LootPolicy> factory);
 

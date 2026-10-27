@@ -54,7 +54,7 @@ class ItemCreationTemplateTest {
     void bothModuleOverloadsPreserveTemplateFailure(boolean withOptions) {
         var registry = new DefaultFlowRegistry();
         registry.register("create-item", flow(), ItemCreationContext.class);
-        var module = new ItemModuleImpl(null, null, storage, null);
+        var module = new ItemModuleImpl(null, null, storage, null, null);
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
         var request = ItemRequest.byName("missing_item");

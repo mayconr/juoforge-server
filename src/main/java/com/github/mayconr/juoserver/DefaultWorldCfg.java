@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
+import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
@@ -37,6 +38,18 @@ import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 public class DefaultWorldCfg implements WorldCfg {
+
+    private Supplier<DoubleClickPolicy> doubleClickPolicy = DoubleClickPolicy::allowAll;
+
+    @Override
+    public void doubleClickPolicy(Supplier<DoubleClickPolicy> factory) {
+        this.doubleClickPolicy = java.util.Objects.requireNonNull(factory, "Double click policy factory is required");
+    }
+
+    @Override
+    public Supplier<DoubleClickPolicy> doubleClickPolicy() {
+        return doubleClickPolicy;
+    }
 
     private Supplier<LootPolicy> lootPolicy =
             LootPolicy::none;

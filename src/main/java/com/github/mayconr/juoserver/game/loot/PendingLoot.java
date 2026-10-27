@@ -1,33 +1,36 @@
 package com.github.mayconr.juoserver.game.loot;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mayconr.juoserver.infrastructure.serialization.DataType;
+import com.github.mayconr.juoserver.infrastructure.serialization.DataMapper;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.UOCorpse;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-/** JSON-compatible template snapshots stored with the corpse's persistent attributes. */
+/** Template snapshots stored as plain data in the corpse's persistent attributes. */
 public final class PendingLoot {
     public static final String TEMPLATES = "loot.pendingTemplates";
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final TypeReference<List<Map<String, Object>>> STORED_PLAN = new TypeReference<>() { };
-    private static final TypeReference<List<ItemRequest>> ITEM_REQUESTS = new TypeReference<>() { };
+    private static final DataType<List<Map<String, Object>>> STORED_PLAN = new DataType<>() { };
+    private static final DataType<List<ItemRequest>> ITEM_REQUESTS = new DataType<>() { };
+    private final DataMapper dataMapper;
 
-    private PendingLoot() { }
-
-    public static void store(UOCorpse corpse, List<ItemRequest> plan) {
-        corpse.persistentAttributes().set(TEMPLATES, MAPPER.convertValue(plan, STORED_PLAN));
+    public PendingLoot(DataMapper dataMapper) {
+        this.dataMapper = Objects.requireNonNull(dataMapper, "DataMapper is required");
     }
 
-    public static List<ItemRequest> read(UOCorpse corpse) {
+    public void store(UOCorpse corpse, List<ItemRequest> plan) {
+        corpse.persistentAttributes().set(TEMPLATES, dataMapper.convert(plan, STORED_PLAN));
+    }
+
+    public List<ItemRequest> read(UOCorpse corpse) {
         var stored = corpse.persistentAttributes().get(TEMPLATES);
         if (stored == null) return List.of();
         // Attribute loading yields nested maps, not ItemRequest/ItemTemplate instances.
-        return List.copyOf(MAPPER.convertValue(stored, ITEM_REQUESTS));
+        return List.copyOf(dataMapper.convert(stored, ITEM_REQUESTS));
     }
 
-    public static void clear(UOCorpse corpse) {
+    public void clear(UOCorpse corpse) {
         corpse.persistentAttributes().remove(TEMPLATES);
     }
 }

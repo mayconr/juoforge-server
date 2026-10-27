@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.loot;
 
 import com.github.mayconr.juoserver.game.item.*;
+import com.github.mayconr.juoserver.infrastructure.serialization.JacksonDataMapper;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.loot.flow.generate.*;
@@ -15,6 +16,8 @@ import static org.mockito.Mockito.*;
 
 class GenerateLootFlowTest {
     private final WorldItem items = mock(WorldItem.class);
+    private final JacksonDataMapper dataMapper = new JacksonDataMapper();
+    private final PendingLoot pendingLoot = new PendingLoot(dataMapper);
     private final ItemTemplate gold = new ItemTemplate("gold_coin", "gold", null, 0xEED, true, 0, null, 0,
             List.of(ItemFlag.STACKABLE), Map.of(), 0, null, null);
     private final InMemoryTemplateRegistry<String, ItemTemplate> names =
@@ -34,7 +37,7 @@ class GenerateLootFlowTest {
 
     @Test
     void invalidRequestsFailBeforeReservingOrInvokingPolicy() {
-        var flow = GenerateLootFlowDefinition.build(policy, rng, names, models);
+        var flow = GenerateLootFlowDefinition.build(policy, rng, names, models, dataMapper);
         assertEquals("MISSING_LOOT_REQUEST", flow.execute(new GenerateLootContext(null)).code());
         var request = request();
         request.victim().setAlive(true);
@@ -50,7 +53,7 @@ class GenerateLootFlowTest {
     void completesEmptyLootAndStopsDuplicateAttempts() {
         var request = request();
         when(policy.resolve(request, rng)).thenReturn(List.of());
-        var flow = GenerateLootFlowDefinition.build(policy, rng, names, models);
+        var flow = GenerateLootFlowDefinition.build(policy, rng, names, models, dataMapper);
         var first = new GenerateLootContext(request);
         assertTrue(flow.execute(first).flowSucceeded());
         assertTrue(first.result().isEmpty());
@@ -66,7 +69,7 @@ class GenerateLootFlowTest {
         var request = request();
         var cause = new IllegalStateException("policy failed");
         when(policy.resolve(request, rng)).thenThrow(cause);
-        var flow = GenerateLootFlowDefinition.build(policy, rng, names, models);
+        var flow = GenerateLootFlowDefinition.build(policy, rng, names, models, dataMapper);
         var result = flow.execute(new GenerateLootContext(request));
         assertTrue(result.flowFailed());
         assertSame(cause, result.cause());
@@ -81,11 +84,11 @@ class GenerateLootFlowTest {
         var drop = ItemRequest.byName("gold_coin").withAmount(10);
         when(policy.resolve(request, rng)).thenReturn(List.of(drop));
         var context = new GenerateLootContext(request);
-        assertTrue(GenerateLootFlowDefinition.build(policy, rng, names, models).execute(context).flowSucceeded());
+        assertTrue(GenerateLootFlowDefinition.build(policy, rng, names, models, dataMapper).execute(context).flowSucceeded());
         assertSame(gold, context.result().getFirst().template());
         assertEquals(10, context.result().getFirst().amount());
         assertTrue(request.corpse().getContainerItems().isEmpty());
-        assertEquals(context.result(), PendingLoot.read(request.corpse()));
+        assertEquals(context.result(), pendingLoot.read(request.corpse()));
         assertThrows(UnsupportedOperationException.class, () -> context.result().clear());
         verify(policy).resolve(request, rng);
         verifyNoInteractions(items);
@@ -97,6 +100,7 @@ class GenerateLootFlowTest {
         assertNotNull(infra.lootPolicy());
         var dependencies = mock(FlowRegistryFactory.GameInfra.class, RETURNS_DEEP_STUBS);
         when(dependencies.lootPolicy()).thenReturn(infra.lootPolicy());
+        when(dependencies.dataMapper()).thenReturn(infra.dataMapper());
         var registry = FlowRegistryFactory.builder()
                 .infra(dependencies)
                 .modules(mock(FlowRegistryFactory.GameModules.class, RETURNS_DEEP_STUBS))
@@ -108,5 +112,30 @@ class GenerateLootFlowTest {
         var context = new GenerateLootContext(request());
         assertTrue(flow.execute(context).flowSucceeded());
         assertTrue(context.result().isEmpty());
+    }
+
+    @Test
+    void bothLootFlowsUseTheDataMapperInjectedThroughGameInfrastructure() {
+        var injected = spy(new JacksonDataMapper());
+        var dependencies = mock(FlowRegistryFactory.GameInfra.class, RETURNS_DEEP_STUBS);
+        when(dependencies.dataMapper()).thenReturn(injected);
+        when(dependencies.lootPolicy()).thenReturn(policy);
+        when(dependencies.rng()).thenReturn(rng);
+        var templates = mock(FlowRegistryFactory.GameTemplates.class, RETURNS_DEEP_STUBS);
+        when(templates.itemByName()).thenReturn(names);
+        when(templates.itemByModelId()).thenReturn(models);
+        var modules = mock(FlowRegistryFactory.GameModules.class, RETURNS_DEEP_STUBS);
+        var created = mock(UOItem.class);
+        when(modules.item().createItem(any(), any(), any())).thenReturn(created);
+        var registry = FlowRegistryFactory.builder().infra(dependencies).templates(templates)
+                .modules(modules).build().buildRegistry();
+        var request = request();
+        when(policy.resolve(request, rng)).thenReturn(List.of(ItemRequest.byTemplate(gold)));
+        assertTrue(registry.get(GenerateLootContext.class).execute(new GenerateLootContext(request)).flowSucceeded());
+        var materialize = new com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootContext(request.corpse());
+        assertTrue(registry.get(com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootContext.class)
+                .execute(materialize).flowSucceeded());
+        assertEquals(List.of(created), materialize.result());
+        verify(injected, times(2)).convert(any(), any(com.github.mayconr.juoserver.infrastructure.serialization.DataType.class));
     }
 }

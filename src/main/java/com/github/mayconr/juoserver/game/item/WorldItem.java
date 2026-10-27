@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 
 import java.util.List;
@@ -11,6 +12,12 @@ import java.util.function.Predicate;
 
 /** Public item operations for creation, removal, lookup and container contents. */
 public interface WorldItem {
+
+    /** Dispatches item use to the registered triggers. */
+    void use(ItemUseContext context);
+
+    /** Loads container contents, materializes pending corpse loot and publishes the opening event. */
+    void openContainer(UOPlayer player, Container container);
 
     /**
      * Creates and places an item using the default creation options.
