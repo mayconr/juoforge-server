@@ -43,6 +43,18 @@ public class RegionSystemImpl implements RegionSystem {
     }
 
     @Override
+    public Optional<RegionNode> findAiActivationRegion(RegionNode region) {
+        RegionNode current = region;
+        while (current != null) {
+            if (current.isAiActivationScope()) {
+                return Optional.of(current);
+            }
+            current = current.getParent().orElse(null);
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public List<RegionNode> getRegionsByType(RegionType type) {
         return regions.values().stream()
                 .filter(region->region.getType().equals(type))

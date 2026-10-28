@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
+import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 
@@ -23,6 +24,8 @@ public interface ServerRuntime {
     EventBus eventBus();
 
     RealmStorage storage();
+
+    RegionSystem regionSystem();
 
     UOFileReader fileReader();
 

@@ -1,5 +1,6 @@
 package com.github.mayconr.shard.command;
 
+import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.model.ItemTarget;
 import com.github.mayconr.juoserver.game.model.SpellbookType;
@@ -7,22 +8,19 @@ import com.github.mayconr.juoserver.game.model.event.Prompt;
 import com.github.mayconr.juoserver.game.world.World;
 
 public class DevTest extends AbstractCommand {
-    private final World world;
+    private final ServerRuntime runtime;
 
-    public DevTest(World world) {
+    public DevTest(ServerRuntime runtime) {
         super("devtest");
-        this.world = world;
+        this.runtime = runtime;
     }
 
     @Override
     public void handle(Prompt event) {
-        if (event.arguments()[0].equals("1")) {
-            var item = world.item().createItem(ItemRequest.byName("spellbook"), ItemTarget.dropAt(event.player()));
-            System.out.println(item.getSerialId()+" gerado");
-        } else {
-            var id = Integer.parseInt(event.arguments()[0]);
-            world.item().getItemBySerialId(id).ifPresent(book ->
-                    world.spell().openSpellBook(event.player(), book, SpellbookType.MAGERY, -1L));
-        }
+        var region = runtime.world().region().getRegion(event.player());
+
+        var ai = runtime.regionSystem().findAiActivationRegion(region.get()).orElseThrow();
+
+        System.out.println(ai.getName());
     }
 }

@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.game.mobile.flow.movement;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.region.shared.UpdateMobileRegionContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import lombok.Data;
@@ -12,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 @Data
-public class MovementContext extends AbstractSyncFlowContext<Void> {
+public class MovementContext extends AbstractSyncFlowContext<Void> implements UpdateMobileRegionContext {
 
     public enum MoveIntent {
         TURN, FORWARD;
@@ -33,6 +34,16 @@ public class MovementContext extends AbstractSyncFlowContext<Void> {
     }
 
     private Location targetLocation;
+    private Location from;
     private MoveIntent moveIntent;
     private int sequence;
+
+    @Override
+    public UOMobile mobile() { return mobile; }
+
+    @Override
+    public Location regionFrom() { return from; }
+
+    @Override
+    public Location regionTo() { return targetLocation; }
 }

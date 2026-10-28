@@ -6,7 +6,8 @@ import com.github.mayconr.juoserver.game.model.UOAccount;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.AccountMobile;
 import com.github.mayconr.juoserver.game.model.UOMobile;
-import com.github.mayconr.juoserver.game.model.event.PlayerLoggedIn;
+import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnContext;
+import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedOut;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -45,9 +46,10 @@ public class PlayerModuleImpl implements PlayerModule {
 
     @Override
     public void spawn(UOPlayer player) {
-        onlinePlayers.put(player.getSerialId(), player);
-
-        eventBus.publish(new PlayerLoggedIn(player));
+        var result = flows.execute(new PlayerSpawnContext(player, onlinePlayers));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("spawn", result, null);
+        }
     }
 
     @Override

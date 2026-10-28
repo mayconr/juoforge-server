@@ -57,7 +57,9 @@ class WorldViewHandlerTest {
                 assertInstanceOf(SeasonalInformation.class, channel.readOutbound());
             } else {
                 handler.onMobileMoved(new MobileMoved(player, null, player, player, false, 7, teleport));
-                assertInstanceOf(MoveResyncAck.class, channel.readOutbound());
+                if (!teleport) {
+                    assertInstanceOf(MoveResyncAck.class, channel.readOutbound());
+                }
             }
             assertInstanceOf(DrawMobile.class, channel.readOutbound());
             assertInstanceOf(DrawMobile.class, channel.readOutbound());

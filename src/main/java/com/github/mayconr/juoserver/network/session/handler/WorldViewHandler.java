@@ -63,8 +63,10 @@ public final class WorldViewHandler {
         var player = session.player();
         var nearbyView = loadNearbyView(player);
 
-        // Acknowledge movement
-        packetWriter.write(new MoveResyncAck(moved.sequence(), session.player().getNotoriety()));
+        // Teleports do not acknowledge a client walk request.
+        if (!moved.teleport()) {
+            packetWriter.write(new MoveResyncAck(moved.sequence(), player.getNotoriety()));
+        }
 
         writeNearbyView(player, nearbyView);
 
@@ -116,7 +118,6 @@ public final class WorldViewHandler {
         if (session.isPlayer(resync.player())) {
             packetWriter.enqueue(packets -> {
                 log.info("Mobile resynced");
-                packets.write(new MoveResyncAck(resync.sequence(), resync.player().getNotoriety()));
                 packets.writeAndFlush(new DrawGamePlayer(session.player()));
             });
         }

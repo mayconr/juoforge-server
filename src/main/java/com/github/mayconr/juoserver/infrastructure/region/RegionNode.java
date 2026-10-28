@@ -23,6 +23,9 @@ public class RegionNode {
     private final RegionArea area;
 
     @Setter
+    private boolean aiActivationScope;
+
+    @Setter
     private RegionNode parent;
     private final List<RegionNode> children = new ArrayList<>();
     private final Map<String, Object> properties = new HashMap<>();

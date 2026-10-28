@@ -4,6 +4,7 @@
     "displayName" : "Moonglow",
     "parentName": "world-britannia",
     "type": "CITY",
+    "aiActivationScope": true,
     "area": {
       "type": "rectangle",
       "x": 4171,

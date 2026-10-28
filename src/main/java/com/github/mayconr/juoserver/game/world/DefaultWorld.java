@@ -88,7 +88,8 @@ import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameI
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
 import com.github.mayconr.juoserver.game.world.transition.DespawnNpcOnDeath;
-import com.github.mayconr.juoserver.game.world.transition.RegionTransitionServiceImpl;
+import com.github.mayconr.juoserver.game.region.RegionModule;
+import com.github.mayconr.juoserver.game.region.RegionModuleImpl;
 import com.github.mayconr.juoserver.game.world.transition.TeleportTransitionServiceImpl;
 import com.github.mayconr.juoserver.game.world.transition.VisibilityTransitionServiceImpl;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderImpl;
@@ -213,6 +214,13 @@ public class DefaultWorld implements WorldInternal, World {
         return Objects.requireNonNull(devToolsModule, "World dev tools module is not initialized");
     }
 
+    private RegionModule regionModule;
+
+    @Override
+    public RegionModule region() {
+        return Objects.requireNonNull(regionModule, "World region module is not initialized");
+    }
+
     private StorageModule storageModule;
     private RandomModule randomModule;
     private DevToolsModule devToolsModule;
@@ -275,6 +283,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void initialize() {
+        this.regionModule = new RegionModuleImpl(regionSystem);
         this.storageModule = new StorageModuleImpl(storage);
         this.randomModule = new RandomModuleImpl(rng);
         serialGenerator.initialize();
@@ -435,6 +444,7 @@ public class DefaultWorld implements WorldInternal, World {
     private void initializeModules() {
         this.flowRegistry = FlowRegistryFactory.builder()
                 .modules(GameModules.builder()
+                    .region(regionModule)
                     .message(messageModule)
                     .ai(aiModule)
                     .npc(npcModule)
@@ -446,6 +456,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .ui(uiModule)
                     .build())
                 .infra(GameInfra.builder()
+                    .regionSystem(regionSystem)
                     .vendorHandler(vendorHandler)
                     .wallet(economyWallet)
                     .spellCastRegistry(spellCastRegistry)
@@ -482,6 +493,7 @@ public class DefaultWorld implements WorldInternal, World {
                 .flowFacade(flowFacade)
                 .build();
 
+        this.regionModule.initialize(context);
         this.storageModule.initialize(context);
         this.randomModule.initialize(context);
         this.devToolsModule.initialize(context);
@@ -514,12 +526,10 @@ public class DefaultWorld implements WorldInternal, World {
          * ==========
          */
         final var visibilityTransitionService = new VisibilityTransitionServiceImpl(storage, eventBus, settings);
-        final var regionTransitionService = new RegionTransitionServiceImpl(regionSystem, eventBus);
         final var teleportTransitionService = new TeleportTransitionServiceImpl(mobileModule);
         final var despawnNpcOnDeath = new DespawnNpcOnDeath(mobileModule, aiModule);
 
         eventBus.register(MobileMoved.class, visibilityTransitionService);
-        eventBus.register(MobileMoved.class, regionTransitionService);
         eventBus.register(teleportTransitionService);
         eventBus.register(despawnNpcOnDeath);
         eventBus.register(PlayerSessionStatusChanged.class, this::handleSessionStateChanged);
@@ -546,7 +556,6 @@ public class DefaultWorld implements WorldInternal, World {
                     for (UOMobile mobile : data.mobiles()) {
                         if (mobile instanceof UONpc npc) {
                             aiModule.attach(npc);
-                            aiModule.activate(npc);
                         }
                     }
                 }

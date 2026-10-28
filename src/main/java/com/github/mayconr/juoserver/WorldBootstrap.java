@@ -166,9 +166,13 @@ public final class WorldBootstrap {
 
         world.initialize();
 
-        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, uoFileReader, gameLoop, world.flows());
+        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, regionSystem, uoFileReader, gameLoop, world.flows());
         for (var registration : configuration.flowList()) {
             registerShardFlow(world, runtime, registration);
+        }
+
+        for (var entry : configuration.aiList().entrySet()) {
+            world.ai().registerAi(entry.getKey(), Objects.requireNonNull(entry.getValue().apply(runtime), "AI context factory returned null"));
         }
 
         for (var factory : configuration.spellTriggerList()) {
@@ -203,6 +207,7 @@ public final class WorldBootstrap {
                                          GamePlaySettings settings,
                                          EventBus eventBus,
                                          RealmStorage storage,
+                                         RegionSystem regionSystem,
                                          UOFileReader fileReader,
                                          GameLoop gameLoop,
                                          FlowExecutor flows) implements ServerRuntime {

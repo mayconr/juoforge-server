@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.game.mobile.flow.movement;
 
 import com.github.mayconr.juoserver.game.mobile.flow.movement.apply.ApplyMoveStep;
+import com.github.mayconr.juoserver.game.region.shared.UpdateMobileRegionStep;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.notification.NotifyMovementStep;
 import com.github.mayconr.juoserver.game.mobile.flow.movement.apply.UpdateSequenceStep;
 import com.github.mayconr.juoserver.game.mobile.flow.movement.hook.MovementFailureHook;
 import com.github.mayconr.juoserver.game.mobile.flow.movement.resolver.ResolveMoveIntentStep;
@@ -14,7 +16,7 @@ public class MovementFlowDefinition {
     private MovementFlowDefinition() {
     }
 
-    public static Flow<MovementContext> build(FlowRegistryFactory.GameInfra infra) {
+    public static Flow<MovementContext> build(FlowRegistryFactory.GameModules modules, FlowRegistryFactory.GameInfra infra) {
         return FlowFactory.<MovementContext>builder()
                 .step(new ValidateMovementParamsStep())
                 // Identify movement intent
@@ -32,7 +34,9 @@ public class MovementFlowDefinition {
                 // Update the sequence
                 .step(new UpdateSequenceStep())
                 // Apply the movement
-                .step(new ApplyMoveStep(infra.eventBus(), infra.storage()))
+                .step(new ApplyMoveStep(infra.storage()))
+                .step(new UpdateMobileRegionStep<>(modules.region()))
+                .step(new NotifyMovementStep(infra.eventBus()))
                 // Hooks
                 .hook(new MovementFailureHook(infra.eventBus()))
                 .build();

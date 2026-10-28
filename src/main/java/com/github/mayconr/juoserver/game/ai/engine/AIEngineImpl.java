@@ -9,16 +9,16 @@ import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
-import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.animal.PassiveAnimalAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.vendor.VendorAIContext;
+import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
+import com.github.mayconr.juoserver.game.ai.registry.AIContextRegistry;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
+import com.github.mayconr.juoserver.game.ai.AIStatus;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -26,7 +26,9 @@ import java.util.function.Consumer;
 @Slf4j
 public class AIEngineImpl implements AIEngine {
     private final Map<Integer, AISession<?>> sessions = new ConcurrentHashMap<>();
+    private final Map<Integer, String> aiTypes = new ConcurrentHashMap<>();
     private final Map<Integer, AISession<?>> activeSessions = new ConcurrentHashMap<>();
+    private final AIContextRegistry contextRegistry = new AIContextRegistry();
 
     private final World world;
     private final Consumer<NpcAction> actionDispatcher;
@@ -51,6 +53,17 @@ public class AIEngineImpl implements AIEngine {
         this.flows = flows;
     }
 
+    @Override
+    public void registerAi(String type, AIContextFactory<?> factory) {
+        contextRegistry.register(type, factory);
+    }
+
+    @Override
+    public Set<String> getRegisteredTypes() {
+        return contextRegistry.getRegisteredTypes();
+    }
+
+
     // =========================
     // Lifecycle
     // =========================
@@ -68,12 +81,15 @@ public class AIEngineImpl implements AIEngine {
 
         String aiType = npc.getBehavior().ai();
 
-        AIFlowContext context = createContext(npc, aiType);
+        AIFlowContext context = contextRegistry.create(aiType, npc, world);
 
+        var filter = context.speechFilter().orElse(null);
+        AISpeechPolicy sessionSpeechPolicy = filter == null ? speechPolicy : (ctx, speech) -> filter.test(speech);
         AISession<AIFlowContext> session = new AISessionImpl<>(flows, context, actionDispatcher,
-                activationPolicy, speechPolicy);
+                activationPolicy, sessionSpeechPolicy);
 
         sessions.put(id, session);
+        aiTypes.put(id, aiType);
 
         log.info("AI attached [{}] for NPC [{}]", aiType, npc.getName());
 
@@ -91,6 +107,13 @@ public class AIEngineImpl implements AIEngine {
     }
 
     @Override
+    public synchronized void deactivate(UONpc npc) {
+        var session = activeSessions.remove(npc.getSerialId());
+        if (session != null) session.deactivate();
+        if (activeSessions.isEmpty()) accumulatedDelta = 0;
+    }
+
+    @Override
     public void detach(UONpc npc) {
         detachById(npc.getSerialId());
     }
@@ -100,22 +123,30 @@ public class AIEngineImpl implements AIEngine {
 
         activeSessions.remove(npcId);
         var removed = sessions.remove(npcId);
+        aiTypes.remove(npcId);
 
         if (removed != null) {
             log.info("AI detached for npcId={}", npcId);
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends AIFlowContext> Optional<AISession<T>> get(UONpc npc) {
-        return Optional.ofNullable((AISession<T>) sessions.get(npc.getSerialId()));
+    public synchronized AIStatus getAiStatus(UONpc npc) {
+        int serial = npc.getSerialId();
+        var type = aiTypes.get(serial);
+        return new AIStatus(type, type != null, activeSessions.containsKey(serial));
+    }
+
+    @Override
+    public synchronized Set<Integer> getActiveNpcSerials() {
+        return Set.copyOf(activeSessions.keySet());
     }
 
     @Override
     public synchronized void detachAll() {
         activeSessions.clear();
         sessions.clear();
+        aiTypes.clear();
         accumulatedDelta = 0;
         log.info("All AI sessions detached");
     }
@@ -144,26 +175,4 @@ public class AIEngineImpl implements AIEngine {
         }
     }
 
-    // =========================
-    // Context factory
-    // =========================
-
-    private AIFlowContext createContext(UONpc npc, String aiType) {
-
-        return switch (aiType) {
-
-            case "DIALOGUE_REACTIVE" -> {
-                var stockType = npc.getStockType();
-
-                yield new VendorAIContext(npc, world, stockType);
-            }
-
-            case "PASSIVE_ANIMAL" -> new PassiveAnimalAIContext(npc, world);
-            case "AGGRESSIVE" -> new AggressiveAIContext(npc, world);
-
-            case "banker" -> null;
-
-            default -> new AIFlowContext(npc, world);
-        };
-    }
 }

@@ -80,7 +80,7 @@ class AIEngineIntervalTest {
         engine.detachById(npc.getSerialId());
         engine.update(0.25);
         verifyNoMoreInteractions(flows);
-        assertTrue(engine.get(npc).isEmpty());
+        assertFalse(engine.getAiStatus(npc).installed());
 
         engine.attach(npc);
         engine.update(0.25);
@@ -89,7 +89,7 @@ class AIEngineIntervalTest {
         engine.detachAll();
         engine.update(0.25);
         verifyNoMoreInteractions(flows);
-        assertTrue(engine.get(npc).isEmpty());
+        assertFalse(engine.getAiStatus(npc).installed());
     }
     @Test
     void rejectsInvalidIntervals() {

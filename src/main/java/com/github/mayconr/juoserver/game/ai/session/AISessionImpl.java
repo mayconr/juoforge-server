@@ -26,6 +26,13 @@ public class AISessionImpl<T extends AIFlowContext> implements AISession<T> {
     }
 
     @Override
+    public void deactivate() {
+        activated = false;
+        context.discardSpeech(speech -> true);
+        context.clearActions();
+    }
+
+    @Override
     public void update(double delta) {
         if (!activated) return;
         if (!activationPolicy.isActive(context)) {

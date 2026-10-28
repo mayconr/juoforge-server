@@ -4,6 +4,8 @@ import com.github.mayconr.juoserver.game.loot.LootPolicy;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
+import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
@@ -102,6 +104,31 @@ public class DefaultWorldCfg implements WorldCfg {
     }
 
     private final List<ShardFlowRegistration<?>> flowList = new ArrayList<>();
+    private final Map<String, Function<ServerRuntime, AIContextFactory<?>>> aiList = new HashMap<>();
+
+    @Override
+    public void addAi(String type, Function<ServerRuntime, AIContextFactory<?>> factory) {
+        java.util.Objects.requireNonNull(type, "AI type is required");
+        java.util.Objects.requireNonNull(factory, "AI context factory is required");
+        if (type.isBlank()) throw new IllegalArgumentException("AI type must not be blank");
+        if (aiList.putIfAbsent(type, factory) != null) {
+            throw new IllegalArgumentException("AI type already configured: " + type);
+        }
+    }
+
+    @Override
+    public <T extends AIFlowContext> void addAi(AIRegistration<T> registration) {
+        java.util.Objects.requireNonNull(registration, "AI registration is required");
+        var type = registration.type();
+        if (aiList.containsKey(type)) throw new IllegalArgumentException("AI type already configured: " + type);
+        addFlow(registration.contextType(), registration.flowFactory());
+        addAi(type, runtime -> registration.factory().apply(runtime));
+    }
+
+    @Override
+    public Map<String, Function<ServerRuntime, AIContextFactory<?>>> aiList() {
+        return Map.copyOf(aiList);
+    }
 
     @Override
     public <T extends AbstractContext> void addFlow(
