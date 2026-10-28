@@ -99,7 +99,7 @@ class LootModuleTest {
         when(storage.getItem(corpse.getSerialId())).thenReturn(Optional.of(corpse));
         var loadedContents = new CompletableFuture<List<UOItem>>();
         when(storage.loadContainerItems(corpse)).thenReturn(loadedContents);
-        var handler = new UIModuleImpl(null, null, null);
+        var handler = new UIModuleImpl(null);
         registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items), DoubleClickContext.class);
         handler.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         var click = mock(DoubleClick.class);

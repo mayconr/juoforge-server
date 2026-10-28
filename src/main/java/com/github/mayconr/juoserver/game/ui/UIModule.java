@@ -6,12 +6,9 @@ import com.github.mayconr.juoserver.network.packet.DoubleClick;
 import com.github.mayconr.juoserver.network.packet.GumpSelection;
 import com.github.mayconr.juoserver.network.packet.SingleClickRequest;
 
-import java.util.List;
 
 /** Internal UI operations and lifecycle, extending the public world UI API. */
 public interface UIModule extends WorldUI, WorldModule {
-    void tooltipRequest(UOPlayer player, List<Integer> serials);
-
     void doubleClick(UOPlayer player, DoubleClick doubleClick);
 
     void singleClick(UOPlayer player, SingleClickRequest request);

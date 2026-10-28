@@ -37,6 +37,7 @@ class CombatAIFlowTest {
                 "AGGRESSIVE", 24, 3, null, java.util.List.of()));
         when(world.storage().getMobilesInRange(eq(npc), eq(3), any())).thenReturn(java.util.List.of());
         engine.attach(npc);
+        engine.activate(npc);
 
         engine.update(0.25);
         verifyNoInteractions(flows);

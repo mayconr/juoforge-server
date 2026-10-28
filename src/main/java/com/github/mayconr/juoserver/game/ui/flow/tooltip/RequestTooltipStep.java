@@ -1,23 +1,30 @@
-package com.github.mayconr.juoserver.game.ui;
+package com.github.mayconr.juoserver.game.ui.flow.tooltip;
 
 import com.github.mayconr.juoserver.game.model.TooltipSupport;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.TooltipRequested;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
-import lombok.RequiredArgsConstructor;
+import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
+import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
 import java.util.ArrayList;
-import java.util.List;
 
-@RequiredArgsConstructor
-public class TooltipHandler {
+public final class RequestTooltipStep extends AbstractFlowStep<TooltipContext> {
 
     private final EventBus eventBus;
     private final RealmStorage storage;
 
-    public void tooltipRequest(UOPlayer player, List<Integer> serials) {
+    public RequestTooltipStep(EventBus eventBus, RealmStorage storage) {
+        super("request-tooltip");
+        this.eventBus = eventBus;
+        this.storage = storage;
+    }
+
+    @Override
+    public StepResult execute(TooltipContext context) {
+        var player = context.getPlayer();
+        var serials = context.getSerials();
         final var objects = new ArrayList<TooltipSupport>();
         for (int serialId : serials) {
             // Mobiles
@@ -40,9 +47,10 @@ public class TooltipHandler {
         }
 
         if (objects.isEmpty()) {
-            return;
+            return StepResult.success();
         }
         eventBus.publish(new TooltipRequested(player, objects));
+        return StepResult.success();
     }
 
 }

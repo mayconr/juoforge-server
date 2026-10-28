@@ -24,6 +24,7 @@ class AIActivationTest {
         var active = new AtomicBoolean(false);
         var session = new AISessionImpl<>(flows, context, action -> fail("Unexpected action"),
                 ctx -> active.get(), (ctx, speech) -> true);
+        session.activate();
         session.onSpeech(new MobileSpeech(mock(UONpc.class), "hello", null));
         session.update(10);
         verifyNoInteractions(flows);
@@ -41,6 +42,7 @@ class AIActivationTest {
         var accepts = new AtomicBoolean(true);
         var session = new AISessionImpl<>(flows, context, action -> {},
                 ctx -> true, (ctx, speech) -> accepts.get());
+        session.activate();
         session.onSpeech(new MobileSpeech(mock(UONpc.class), "buy", null));
         assertNotNull(context.peekEvent(MobileSpeech.class));
         accepts.set(false);

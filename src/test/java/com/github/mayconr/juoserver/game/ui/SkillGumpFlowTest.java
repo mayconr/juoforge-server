@@ -29,7 +29,7 @@ class SkillGumpFlowTest {
         when(storage.getMobile(42)).thenReturn(exists ? Optional.of(target) : Optional.empty());
         var registry = new DefaultFlowRegistry();
         registry.register("skills", SkillGumpFlowDefinition.build(events, storage), SkillGumpContext.class);
-        UIModule ui = new UIModuleImpl(null, null, null);
+        UIModule ui = new UIModuleImpl(null);
         ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
 
         if (exists) {

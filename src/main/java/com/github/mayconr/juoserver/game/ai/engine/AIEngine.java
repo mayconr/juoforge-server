@@ -14,6 +14,9 @@ public interface AIEngine {
 
     <T extends AIFlowContext> AISession<T> attach(UONpc npc);
 
+    /** Activates an attached AI session; repeated calls have no effect. */
+    void activate(UONpc npc);
+
     void detach(UONpc npc);
 
     void detachById(int npcId);

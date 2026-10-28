@@ -75,7 +75,6 @@ import com.github.mayconr.juoserver.game.player.PlayerModuleImpl;
 import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
-import com.github.mayconr.juoserver.game.skill.SkillHandler;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
 import com.github.mayconr.juoserver.game.skill.SkillModuleImpl;
 import com.github.mayconr.juoserver.game.ui.*;
@@ -362,23 +361,18 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeUiModule() {
-        final var tooltipHandler = new TooltipHandler(eventBus, storage);
-        final var statusHandler = new StatusHandler(eventBus, storage);
         final var gumpSystem = new DefaultGumpSystem(eventBus);
 
         this.uiModule = new UIModuleImpl(
-                tooltipHandler,
-                gumpSystem,
-                statusHandler
+                gumpSystem
         );
     }
 
     private void initializeSkillModule() {
         final var skillSystem = Objects.requireNonNull(
                 worldCfg.skillSystem().create(settings, rng, eventBus), "Skill system factory returned null");
-        final var skillHandler = new SkillHandler(eventBus);
 
-        this.skillModule = new SkillModuleImpl(skillHandler, skillSystem);
+        this.skillModule = new SkillModuleImpl(skillSystem);
     }
 
     private void initializeItemModule() {
@@ -552,6 +546,7 @@ public class DefaultWorld implements WorldInternal, World {
                     for (UOMobile mobile : data.mobiles()) {
                         if (mobile instanceof UONpc npc) {
                             aiModule.attach(npc);
+                            aiModule.activate(npc);
                         }
                     }
                 }

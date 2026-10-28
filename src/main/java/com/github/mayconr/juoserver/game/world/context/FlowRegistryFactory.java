@@ -7,6 +7,10 @@ import com.github.mayconr.juoserver.game.ui.flow.singleclick.SingleClickContext;
 import com.github.mayconr.juoserver.game.ui.flow.singleclick.SingleClickFlowDefinition;
 import com.github.mayconr.juoserver.game.ui.flow.skill.SkillGumpFlowDefinition;
 import com.github.mayconr.juoserver.game.ui.UIModule;
+import com.github.mayconr.juoserver.game.ui.flow.tooltip.TooltipContext;
+import com.github.mayconr.juoserver.game.ui.flow.tooltip.TooltipFlowDefinition;
+import com.github.mayconr.juoserver.game.ui.flow.status.StatusGumpContext;
+import com.github.mayconr.juoserver.game.ui.flow.status.StatusGumpFlowDefinition;
 import com.github.mayconr.juoserver.game.ui.flow.paperdoll.OpenPaperdollContext;
 import com.github.mayconr.juoserver.game.ui.flow.paperdoll.OpenPaperdollFlowDefinition;
 import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickFlowDefinition;
@@ -101,6 +105,8 @@ import com.github.mayconr.juoserver.game.player.template.BodyKey;
 import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockContext;
+import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
@@ -179,8 +185,14 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(SendSkillsLockFlowDefinition.class.getSimpleName(),
+                SendSkillsLockFlowDefinition.build(infra.eventBus()), SendSkillsLockContext.class);
+        registry.register(TooltipFlowDefinition.class.getSimpleName(),
+                TooltipFlowDefinition.build(infra.eventBus(), infra.storage()), TooltipContext.class);
         registry.register(SingleClickFlowDefinition.class.getSimpleName(),
                 SingleClickFlowDefinition.build(infra.storage(), infra.eventBus()), SingleClickContext.class);
+        registry.register(StatusGumpFlowDefinition.class.getSimpleName(),
+                StatusGumpFlowDefinition.build(infra.eventBus(), infra.storage()), StatusGumpContext.class);
         registry.register(SkillGumpFlowDefinition.class.getSimpleName(),
                 SkillGumpFlowDefinition.build(infra.eventBus(), infra.storage()), SkillGumpContext.class);
         registry.register(DoubleClickFlowDefinition.class.getSimpleName(),
