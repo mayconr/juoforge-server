@@ -5,6 +5,9 @@ import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
 
 public interface AISession<T extends AIFlowContext> {
 
+    /** Enables execution and speech handling without resetting the session. */
+    void activate();
+
     void update(double delta);
 
     void onSpeech(MobileSpeech speech);

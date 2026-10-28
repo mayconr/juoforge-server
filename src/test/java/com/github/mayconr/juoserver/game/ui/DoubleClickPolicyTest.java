@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class DoubleClickPolicyTest {
     private UIModule ui(EventBus events, RealmStorage storage, DoubleClickPolicy policy, WorldItem items) {
         var registry = new DefaultFlowRegistry();
-        var ui = new UIModuleImpl(null, null, null);
+        var ui = new UIModuleImpl(null);
         registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items), DoubleClickContext.class);
         registry.register("open-paperdoll", OpenPaperdollFlowDefinition.build(events, storage), OpenPaperdollContext.class);
         ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));

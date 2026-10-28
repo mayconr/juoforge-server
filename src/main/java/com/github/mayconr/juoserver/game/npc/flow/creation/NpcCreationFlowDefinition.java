@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.npc.flow.creation;
 
 import com.github.mayconr.juoserver.game.npc.flow.creation.ai.AttachAIStep;
+import com.github.mayconr.juoserver.game.npc.flow.creation.ai.ActivateAIStep;
 import com.github.mayconr.juoserver.game.npc.flow.creation.build.CreateNpcEquippedItemsStep;
 import com.github.mayconr.juoserver.game.npc.flow.creation.creation.CreateNpcStep;
 import com.github.mayconr.juoserver.game.npc.flow.creation.identity.NpcSerialGenStep;
@@ -27,6 +28,7 @@ public final class NpcCreationFlowDefinition {
                 .step(new CreateNpcEquippedItemsStep(modules.item()))
                 .step(new CreateNpcStep(infra.storage()))
                 .step(new AttachAIStep(modules.ai()))
+                .step(new ActivateAIStep(modules.ai()))
                 .step(new NotifyNpcCreation(infra.eventBus()))
                 .build();
     }

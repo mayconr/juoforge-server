@@ -27,6 +27,7 @@ class AIEngineIntervalTest {
         var npc = mock(UONpc.class, RETURNS_DEEP_STUBS);
         when(npc.getBehavior().ai()).thenReturn("PASSIVE_ANIMAL");
         engine.attach(npc);
+        engine.activate(npc);
         return engine;
     }
 
@@ -59,6 +60,37 @@ class AIEngineIntervalTest {
         verify(flows).execute(any(AIFlowContext.class));
     }
 
+    @Test
+    void attachedSessionsDoNotAccumulateTimeAndDetachRemovesActiveSession() {
+        var engine = engine(0.25);
+        engine.detachAll();
+        var npc = mock(UONpc.class, RETURNS_DEEP_STUBS);
+        when(npc.getBehavior().ai()).thenReturn("PASSIVE_ANIMAL");
+        engine.attach(npc);
+        engine.update(0.2);
+        verifyNoInteractions(flows);
+
+        engine.activate(npc);
+        engine.activate(npc);
+        engine.update(0.05);
+        verifyNoInteractions(flows);
+        engine.update(0.2);
+        verify(flows).execute(any(AIFlowContext.class));
+
+        engine.detachById(npc.getSerialId());
+        engine.update(0.25);
+        verifyNoMoreInteractions(flows);
+        assertTrue(engine.get(npc).isEmpty());
+
+        engine.attach(npc);
+        engine.update(0.25);
+        verifyNoMoreInteractions(flows);
+        engine.activate(npc);
+        engine.detachAll();
+        engine.update(0.25);
+        verifyNoMoreInteractions(flows);
+        assertTrue(engine.get(npc).isEmpty());
+    }
     @Test
     void rejectsInvalidIntervals() {
         for (double interval : new double[]{0, -1, Double.NaN, Double.POSITIVE_INFINITY}) {

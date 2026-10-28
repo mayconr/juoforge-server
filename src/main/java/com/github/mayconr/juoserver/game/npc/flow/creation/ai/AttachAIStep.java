@@ -16,11 +16,7 @@ public class AttachAIStep extends AbstractFlowStep<NpcCreationContext> {
 
     @Override
     public StepResult execute(NpcCreationContext context) {
-        var ai = aiModule.attach(context.getNpc());
-        if (ai != null) {
-            // TODO awake
-            //ai.wakeup(world);
-        }
+        aiModule.attach(context.getNpc());
         return StepResult.success();
     }
 }

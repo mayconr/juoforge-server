@@ -18,9 +18,16 @@ public class AISessionImpl<T extends AIFlowContext> implements AISession<T> {
     private final Consumer<NpcAction> dispatcher;
     private final AIActivationPolicy activationPolicy;
     private final AISpeechPolicy speechPolicy;
+    private volatile boolean activated;
+
+    @Override
+    public void activate() {
+        activated = true;
+    }
 
     @Override
     public void update(double delta) {
+        if (!activated) return;
         if (!activationPolicy.isActive(context)) {
             context.discardSpeech(speech -> true);
             context.clearActions();
@@ -38,7 +45,7 @@ public class AISessionImpl<T extends AIFlowContext> implements AISession<T> {
 
     @Override
     public void onSpeech(MobileSpeech speech) {
-        if (speechPolicy.accepts(context, speech) && activationPolicy.isActive(context)) {
+        if (activated && speechPolicy.accepts(context, speech) && activationPolicy.isActive(context)) {
             context.enqueueEvent(speech);
         }
     }

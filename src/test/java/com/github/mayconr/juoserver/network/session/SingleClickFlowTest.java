@@ -66,7 +66,7 @@ class SingleClickFlowTest {
             events.register(ObjectLabelRequested.class, other::onObjectLabelRequested);
             var registry = new DefaultFlowRegistry();
             registry.register("single-click", SingleClickFlowDefinition.build(storage, events), SingleClickContext.class);
-            UIModule ui = new UIModuleImpl(null, null, null);
+            UIModule ui = new UIModuleImpl(null);
             ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
 
             ui.singleClick(player, new SingleClickRequest(requestBytes));

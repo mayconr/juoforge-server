@@ -9,6 +9,8 @@ import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickContext;
 import com.github.mayconr.juoserver.game.ui.flow.paperdoll.OpenPaperdollContext;
 import com.github.mayconr.juoserver.game.ui.flow.skill.SkillGumpContext;
+import com.github.mayconr.juoserver.game.ui.flow.status.StatusGumpContext;
+import com.github.mayconr.juoserver.game.ui.flow.tooltip.TooltipContext;
 import com.github.mayconr.juoserver.game.ui.flow.singleclick.SingleClickContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.network.packet.DoubleClick;
@@ -21,9 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public final class UIModuleImpl implements UIModule {
 
-    private final TooltipHandler tooltipHandler;
     private final GumpSystem gumpSystem;
-    private final StatusHandler statusHandler;
     private ModuleContext.FlowFacade flows;
 
     @Override
@@ -33,7 +33,10 @@ public final class UIModuleImpl implements UIModule {
 
     @Override
     public void tooltipRequest(UOPlayer player, List<Integer> serialIds) {
-        tooltipHandler.tooltipRequest(player, serialIds);
+        var result = flows.execute(new TooltipContext(player, serialIds));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("tooltipRequest", result, null);
+        }
     }
 
     @Override
@@ -72,6 +75,9 @@ public final class UIModuleImpl implements UIModule {
 
     @Override
     public void sendStatusGump(UOPlayer player, int requestedStatusSerial) {
-        statusHandler.sendStatusGump(player, requestedStatusSerial);
+        var result = flows.execute(new StatusGumpContext(player, requestedStatusSerial));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("sendStatusGump", result, null);
+        }
     }
 }

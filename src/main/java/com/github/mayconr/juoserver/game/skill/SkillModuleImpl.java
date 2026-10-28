@@ -7,13 +7,14 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import lombok.RequiredArgsConstructor;
+import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockContext;
+import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 
 import java.util.Collection;
 
 @RequiredArgsConstructor
 public class SkillModuleImpl implements SkillModule {
 
-    private final SkillHandler skillHandler;
     private final SkillSystem skillSystem;
 
     private ModuleContext.FlowFacade flows;
@@ -25,13 +26,15 @@ public class SkillModuleImpl implements SkillModule {
 
     @Override
     public void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills) {
-        skillHandler.sendSkillsLock(player, skills);
+        var result = flows.execute(new SendSkillsLockContext(player, skills));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("sendSkillsLock", result, null);
+        }
     }
 
     @Override
     public void useSkill(UOPlayer player, int skillId) {
         flows.execute(new UseSkillContext(player, skillId));
-        //skillHandler.useSkill(player, skillId);
     }
 
     @Override

@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class AIEngineImpl implements AIEngine {
     private final Map<Integer, AISession<?>> sessions = new ConcurrentHashMap<>();
+    private final Map<Integer, AISession<?>> activeSessions = new ConcurrentHashMap<>();
 
     private final World world;
     private final Consumer<NpcAction> actionDispatcher;
@@ -55,7 +56,7 @@ public class AIEngineImpl implements AIEngine {
     // =========================
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends AIFlowContext> AISession<T> attach(UONpc npc) {
+    public synchronized <T extends AIFlowContext> AISession<T> attach(UONpc npc) {
         if (flows == null) {
             throw new IllegalStateException("flows not initialized");
         }
@@ -80,13 +81,24 @@ public class AIEngineImpl implements AIEngine {
     }
 
     @Override
+    public synchronized void activate(UONpc npc) {
+        var session = sessions.get(npc.getSerialId());
+        if (session == null) {
+            throw new IllegalStateException("No AI attached for npcId=" + npc.getSerialId());
+        }
+        session.activate();
+        activeSessions.put(npc.getSerialId(), session);
+    }
+
+    @Override
     public void detach(UONpc npc) {
         detachById(npc.getSerialId());
     }
 
     @Override
-    public void detachById(int npcId) {
+    public synchronized void detachById(int npcId) {
 
+        activeSessions.remove(npcId);
         var removed = sessions.remove(npcId);
 
         if (removed != null) {
@@ -101,7 +113,8 @@ public class AIEngineImpl implements AIEngine {
     }
 
     @Override
-    public void detachAll() {
+    public synchronized void detachAll() {
+        activeSessions.clear();
         sessions.clear();
         accumulatedDelta = 0;
         log.info("All AI sessions detached");
@@ -116,7 +129,7 @@ public class AIEngineImpl implements AIEngine {
         if (!Double.isFinite(delta) || delta < 0) {
             throw new IllegalArgumentException("delta must be finite and non-negative");
         }
-        if (sessions.isEmpty()) {
+        if (activeSessions.isEmpty()) {
             accumulatedDelta = 0;
             return;
         }
@@ -126,7 +139,7 @@ public class AIEngineImpl implements AIEngine {
         // Execute once, even after a slow tick; flows receive the actual elapsed time.
         double elapsed = accumulatedDelta;
         accumulatedDelta = 0;
-        for (var session : sessions.values()) {
+        for (var session : activeSessions.values()) {
             session.update(elapsed);
         }
     }

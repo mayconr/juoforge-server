@@ -55,6 +55,11 @@ public class AIModuleImpl implements AIModule {
     }
 
     @Override
+    public void activate(UONpc npc) {
+        engine.activate(npc);
+    }
+
+    @Override
     public void detach(UONpc npc) {
         unregisterSpeech(npc.getSerialId());
 

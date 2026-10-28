@@ -8,6 +8,14 @@ import java.util.Collection;
 
 public interface SkillModule extends WorldSkill, WorldModule {
 
+    /**
+     * Updates the player's skill locks and publishes the resulting skill values.
+     *
+     * @param player the player whose skill locks will be updated
+     * @param skills the skill identifiers and lock states to apply
+     * @throws com.github.mayconr.juoserver.game.world.ModuleOperationException
+     *         if the skill lock flow fails
+     */
     void sendSkillsLock(UOPlayer player, Collection<SkillValue> skills);
 
 }
