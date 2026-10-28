@@ -35,6 +35,11 @@ public class AIFlowContext extends AbstractSyncFlowContext<Void> {
         return npc;
     }
 
+    /** Optional context-specific speech filter; otherwise the world's default rules apply. */
+    public Optional<Predicate<MobileSpeech>> speechFilter() {
+        return Optional.empty();
+    }
+
     public World world() {
         return world;
     }

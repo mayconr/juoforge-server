@@ -2,6 +2,7 @@ package com.github.mayconr.shard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.NetworkBootstrap;
+import com.github.mayconr.juoserver.AIRegistration;
 import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.WorldBootstrap;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
@@ -9,6 +10,9 @@ import com.github.mayconr.juoserver.game.item.ItemRequest;
 import java.util.List;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.shard.command.*;
+import com.github.mayconr.shard.ai.speech.SpeechLoggerContext;
+import com.github.mayconr.shard.ai.speech.SpeechLoggerFlowDefinition;
+import com.github.mayconr.shard.region.MobileRegionChangedListener;
 import com.github.mayconr.shard.skills.crafting.mining.*;
 import com.github.mayconr.shard.spells.HealSpellTrigger;
 import com.github.mayconr.shard.spells.heal.HealContext;
@@ -110,6 +114,10 @@ public class ShardImplConfiguration {
             cfg.itemStorage(new PsqlItemStorage(databaseExecutor, sessionFactory));
             cfg.accountStorage(new PsqlAccountStorage(sessionFactory, databaseExecutor));
 
+            cfg.addAi(new AIRegistration<>(SpeechLoggerContext.AI_TYPE, SpeechLoggerContext.class,
+                    runtime -> SpeechLoggerContext::new,
+                    runtime -> SpeechLoggerFlowDefinition.build()));
+
             // Item trigger
             cfg.addItemTrigger(runtime -> new SpellbookUseTrigger(runtime.world().spell()));
             cfg.addItemTrigger(runtime->{
@@ -133,7 +141,11 @@ public class ShardImplConfiguration {
             cfg.addSpellTrigger(runtime -> new HealSpellTrigger(runtime.flows()));
 
             // Listeners
+            cfg.addEventListener(runtime -> new MobileRegionChangedListener());
             cfg.addEventListener(Broadcast::new);
+            cfg.addEventListener(ActiveAi::new);
+            cfg.addEventListener(NpcAi::new);
+            cfg.addEventListener(AiTypes::new);
             cfg.addEventListener(Goto::new);
             cfg.addEventListener(runtime->new CreateNpc(runtime.world()));
             cfg.addEventListener(runtime->new CreateStack(runtime.world()));
@@ -145,7 +157,7 @@ public class ShardImplConfiguration {
             cfg.addEventListener(runtime -> new Info(runtime.world()));
             cfg.addEventListener(runtime->new MoveTo(runtime.world()));
             cfg.addEventListener(runtime->new Debug(runtime.world()));
-            cfg.addEventListener(runtime->new DevTest(runtime.world()));
+            cfg.addEventListener(DevTest::new);
             cfg.addEventListener(Mount::new);
             cfg.addEventListener(Unmount::new);
             cfg.addEventListener(Region::new);
@@ -160,6 +172,7 @@ public class ShardImplConfiguration {
             cfg.addCustomTemplate("oreByName", Ore.class, Ore::name, Path.of(shardRoot).resolve("content/skills/mining"));
 
         }).start();
+
 
         var network = new NetworkBootstrap(serverRuntime).build();
         network.bindAsync(9000);

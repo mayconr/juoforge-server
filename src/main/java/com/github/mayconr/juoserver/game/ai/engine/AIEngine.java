@@ -4,11 +4,18 @@ import com.github.mayconr.juoserver.game.ai.session.AISession;
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 
-import java.util.Optional;
+import com.github.mayconr.juoserver.game.ai.AIStatus;
+import java.util.Set;
 
 public interface AIEngine {
+
+    void registerAi(String type, AIContextFactory<?> factory);
+
+    Set<String> getRegisteredTypes();
+
 
     void initialize(FlowFacade flows);
 
@@ -17,11 +24,16 @@ public interface AIEngine {
     /** Activates an attached AI session; repeated calls have no effect. */
     void activate(UONpc npc);
 
+    void deactivate(UONpc npc);
+
     void detach(UONpc npc);
 
     void detachById(int npcId);
 
-    <T extends AIFlowContext> Optional<AISession<T>> get(UONpc npc);
+    AIStatus getAiStatus(UONpc npc);
+
+    /** Returns an immutable snapshot of NPC serials with activated AI. */
+    Set<Integer> getActiveNpcSerials();
 
     void detachAll();
 

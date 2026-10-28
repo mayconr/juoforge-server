@@ -8,6 +8,9 @@ public interface AISession<T extends AIFlowContext> {
     /** Enables execution and speech handling without resetting the session. */
     void activate();
 
+    /** Pauses execution and speech handling while preserving the session. */
+    void deactivate();
+
     void update(double delta);
 
     void onSpeech(MobileSpeech speech);

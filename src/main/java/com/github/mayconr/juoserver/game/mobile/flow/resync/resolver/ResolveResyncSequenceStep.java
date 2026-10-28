@@ -18,11 +18,10 @@ public class ResolveResyncSequenceStep extends AbstractFlowStep<ResyncContext> {
     @Override
     public StepResult execute(ResyncContext context) {
         var player = context.getPlayer();
-        var clientSequence = context.getResyncAck().getSequence();
-
-        player.movementSequence(clientSequence);
-        eventBus.publish(new MobileMoveResync(player, clientSequence));
-        //System.out.println("Server sequence "+sequence+" client sequence "+context.getResyncAck().getSequence());
+        // A client resync request contains padding, not a pending walk sequence.
+        // DrawGamePlayer (0x20) resets the client's walker to sequence zero.
+        player.movementSequence(0);
+        eventBus.publish(new MobileMoveResync(player, 0));
 
         return StepResult.success();
     }

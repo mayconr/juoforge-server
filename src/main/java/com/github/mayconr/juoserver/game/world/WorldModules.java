@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
 import com.github.mayconr.juoserver.game.loot.WorldLoot;
+import com.github.mayconr.juoserver.game.region.WorldRegion;
 
 import com.github.mayconr.juoserver.game.map.WorldMap;
 import com.github.mayconr.juoserver.game.vitals.WorldVitals;
@@ -23,6 +24,8 @@ import com.github.mayconr.juoserver.game.interaction.WorldInteraction;
 
 /** Public domain APIs, available after world initialization. */
 public interface WorldModules {
+    WorldRegion region();
+
     WorldStorage storage();
 
     WorldRandom random();

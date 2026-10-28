@@ -16,7 +16,8 @@
   {
     "name": "vendor_mining_tool",
     "ai": "DIALOGUE_REACTIVE",
-    "activationRadius": 24,
+    "activationRadius":
+    24,
     "speechRadius": 3,
     "speechTriggers": ["buy"]
   },
@@ -33,7 +34,7 @@
   },
   {
     "name": "animal_passive",
-    "ai": "PASSIVE_ANIMAL",
+    "ai": "SPEECH_LOGGER",
     "activationRadius": 24
   }
 ]

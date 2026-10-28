@@ -33,7 +33,7 @@ class AILifecycleTest {
         bus.publish(speech);
         module.update(0.25);
         verifyNoInteractions(flows);
-        assertSame(session, module.get(npc).orElseThrow());
+        assertEquals(new AIStatus("PASSIVE_ANIMAL", true, false), module.getAiStatus(npc));
 
         module.activate(npc);
         module.activate(npc);
@@ -59,7 +59,7 @@ class AILifecycleTest {
         module.update(0.25);
         verify(flows, times(2)).execute(any(AIFlowContext.class));
         module.detach(npc);
-        assertTrue(module.get(npc).isEmpty());
+        assertEquals(new AIStatus(null, false, false), module.getAiStatus(npc));
         assertThrows(IllegalStateException.class, () -> module.activate(npc));
         bus.publish(speech);
         module.update(0.25);

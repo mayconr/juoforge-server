@@ -115,6 +115,16 @@ import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import com.github.mayconr.juoserver.infrastructure.serialization.DataMapper;
 import com.github.mayconr.juoserver.infrastructure.serialization.JacksonDataMapper;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
+import com.github.mayconr.juoserver.game.region.RegionModule;
+import com.github.mayconr.juoserver.game.region.flow.transition.RegionTransitionContext;
+import com.github.mayconr.juoserver.game.region.flow.transition.RegionTransitionFlowDefinition;
+import com.github.mayconr.juoserver.game.ai.flow.deactivation.DeactivateRegionContext;
+import com.github.mayconr.juoserver.game.ai.flow.activation.ActivateRegionContext;
+import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnContext;
+import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnFlowDefinition;
+import com.github.mayconr.juoserver.game.ai.flow.activation.ActivateRegionFlowDefinition;
+import com.github.mayconr.juoserver.game.ai.flow.deactivation.DeactivateRegionFlowDefinition;
+import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 
@@ -128,6 +138,7 @@ public class FlowRegistryFactory {
 
     @Builder
     public record GameModules(
+            RegionModule region,
             ItemModule item,
             MobileModule mobile,
             AIModule ai,
@@ -141,6 +152,7 @@ public class FlowRegistryFactory {
 
     @Builder
     public record GameInfra(
+            RegionSystem regionSystem,
             VendorHandler vendorHandler,
             Wallet wallet,
             SpellCastRegistry spellCastRegistry,
@@ -185,6 +197,16 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(PlayerSpawnFlowDefinition.class.getSimpleName(),
+                PlayerSpawnFlowDefinition.build(modules, infra), PlayerSpawnContext.class);
+        registry.register(ActivateRegionFlowDefinition.class.getSimpleName(),
+                ActivateRegionFlowDefinition.build(modules.ai()), ActivateRegionContext.class);
+        registry.register(DeactivateRegionFlowDefinition.class.getSimpleName(),
+                DeactivateRegionFlowDefinition.build(modules.region(), modules.ai()),
+                DeactivateRegionContext.class);
+        registry.register(RegionTransitionFlowDefinition.class.getSimpleName(),
+                RegionTransitionFlowDefinition.build(infra.regionSystem(), infra.eventBus(), modules.region(), modules.ai()),
+                RegionTransitionContext.class);
         registry.register(SendSkillsLockFlowDefinition.class.getSimpleName(),
                 SendSkillsLockFlowDefinition.build(infra.eventBus()), SendSkillsLockContext.class);
         registry.register(TooltipFlowDefinition.class.getSimpleName(),
@@ -235,8 +257,8 @@ public class FlowRegistryFactory {
         registry.register(SendTargetFlowDefinition.class.getSimpleName(), SendTargetFlowDefinition.build(modules, infra), SendTargetContext.class);
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
-        registry.register(TeleportFlowDefinition.class.getSimpleName(), TeleportFlowDefinition.build(infra), TeleportContext.class);
-        registry.register(MovementFlowDefinition.class.getSimpleName(), MovementFlowDefinition.build(infra), MovementContext.class);
+        registry.register(TeleportFlowDefinition.class.getSimpleName(), TeleportFlowDefinition.build(modules, infra), TeleportContext.class);
+        registry.register(MovementFlowDefinition.class.getSimpleName(), MovementFlowDefinition.build(modules, infra), MovementContext.class);
         registry.register(ResyncFlowDefinition.class.getSimpleName(), ResyncFlowDefinition.build(infra), ResyncContext.class);
         registry.register(CombatExecutionFlow.class.getSimpleName(), CombatExecutionFlow.build(modules, infra), CombatExecutionContext.class);
         registry.register(CombatPreparationFlow.class.getSimpleName(), CombatPreparationFlow.build(infra), CombatPreparationContext.class);

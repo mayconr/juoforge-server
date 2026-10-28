@@ -5,6 +5,9 @@ import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings.Ai;
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
+import java.util.Map;
+import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
@@ -62,6 +65,18 @@ public interface WorldCfg {
             Function<ServerRuntime, Flow<T>> factory);
 
     List<ShardFlowRegistration<?>> flowList();
+
+    /** Registers an AI factory evaluated with the runtime after shard flows are registered. */
+    void addAi(String type, Function<ServerRuntime, AIContextFactory<?>> factory);
+
+    /**
+     * Configures an AI registration and its context flow together.
+     * Both factories receive the runtime; the flow is registered before the AI.
+     * Context types must be unique across core and shard flows.
+     */
+    <T extends AIFlowContext> void addAi(AIRegistration<T> registration);
+
+    Map<String, Function<ServerRuntime, AIContextFactory<?>>> aiList();
 
     /** Replaces the default weapon-skill and Tactics gain policy for combat swings. */
     void combatSkillGainPolicy(Supplier<CombatSkillGainPolicy> factory);

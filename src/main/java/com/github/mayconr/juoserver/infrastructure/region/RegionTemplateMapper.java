@@ -29,6 +29,8 @@ class RegionTemplateMapper {
                     area
             );
 
+            node.setAiActivationScope(template.aiActivationScope());
+
             if (template.properties() != null) {
                 template.properties().forEach(node::addProperty);
             }
