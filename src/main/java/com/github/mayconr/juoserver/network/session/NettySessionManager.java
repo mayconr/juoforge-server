@@ -92,6 +92,7 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(NpcRemoved.class, worldView::onMobileDeleted),
                 new Event<>(PlayerDeleted.class, worldView::onPlayerDeleted),
                 new Event<>(SkillGained.class, ui::onSkillGained),
+                new Event<>(SkillUpdated.class, ui::onSkillUpdated),
                 new Event<>(SkillGumpRequested.class, ui::onSkillGumpRequested),
                 new Event<>(StatusGumpRequested.class, ui::onStatusGumpRequested),
                 new Event<>(TooltipRequested.class, ui::onTooltipRequested),

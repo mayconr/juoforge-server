@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+@lombok.extern.slf4j.Slf4j
 @RequiredArgsConstructor
 public class ItemModuleImpl implements ItemModule {
 
@@ -50,8 +51,12 @@ public class ItemModuleImpl implements ItemModule {
             }
             return context.result("Cannot create item for request " + request);
         } catch (ModuleOperationException error) {
+            log.error("Item creation failed: request={}, target={}, code={}, reason={}",
+                    request, target, error.getCode(), error.getMessage(), error);
             throw error;
         } catch (RuntimeException error) {
+            log.error("Unexpected item creation failure: request={}, target={}, reason={}",
+                    request, target, error.getMessage(), error);
             throw ModuleOperationException.unexpected("createItem", error, "{item.creation_failed}");
         }
     }

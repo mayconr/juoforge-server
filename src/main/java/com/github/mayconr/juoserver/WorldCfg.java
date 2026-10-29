@@ -110,7 +110,7 @@ public interface WorldCfg {
     void pricingStrategy(Supplier<PricingStrategy> pricingStrategyFactory);
 
     // Item use trigger
-    void addItemTrigger(Function<ServerRuntime, ItemUseTrigger> triggerFactory);
+    void addItemTrigger(String script, Function<ServerRuntime, ItemUseTrigger> triggerFactory);
 
     /** Registers a spell trigger factory. The first supporting trigger handles each request. */
     void addSpellTrigger(Function<ServerRuntime, SpellCastTrigger> triggerFactory);
@@ -133,7 +133,7 @@ public interface WorldCfg {
 
     Supplier<PricingStrategy> pricingStrategy();
 
-    List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList();
+    Map<String, Function<ServerRuntime, ItemUseTrigger>> itemTriggerList();
 
     List<Function<ServerRuntime, SpellCastTrigger>> spellTriggerList();
 

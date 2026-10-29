@@ -144,6 +144,12 @@ public final class PlayerInterfaceHandler {
         sendDebugPackets(event.player(), event.packets());
     }
 
+    public void onSkillUpdated(SkillUpdated event) {
+        if (session.isPlayer(event.player())) {
+            packetWriter.writeAndFlush(new SendSkill(SendSkillType.SINGLE_UPDATE_WITH_CAP, List.of(event.skill())));
+        }
+    }
+
     public void onSkillGained(SkillGained event) {
         if (session.isPlayer(event.mobile())) {
             packetWriter.writeAndFlush(new SendSkill(SendSkillType.SINGLE_UPDATE, List.of(event.skill())));

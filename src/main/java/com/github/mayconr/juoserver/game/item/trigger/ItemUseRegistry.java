@@ -1,28 +1,38 @@
 package com.github.mayconr.juoserver.game.item.trigger;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class ItemUseRegistry {
-    private final List<ItemUseTrigger> triggers = new ArrayList<>();
+    private final Map<String, ItemUseTrigger> triggers = new HashMap<>();
 
-    /**
-     * Registers a new item use trigger.
-     */
-    public void register(ItemUseTrigger trigger) {
-        triggers.add(trigger);
+    public void register(String script, ItemUseTrigger trigger) {
+        if (script == null || script.isBlank()) {
+            throw new IllegalArgumentException("Item script name is required");
+        }
+        Objects.requireNonNull(trigger, "Item trigger is required");
+        if (triggers.putIfAbsent(script, trigger) != null) {
+            throw new IllegalArgumentException("Item script already registered: " + script);
+        }
     }
 
-    /**
-     * Finds and executes the first trigger that supports the given context.
-     */
-    public boolean dispatch(ItemUseContext context) {
-        for (ItemUseTrigger trigger : triggers) {
-            if (trigger.supports(context)) {
-                trigger.execute(context);
-                return true;
+    public void validateTemplates(Iterable<ItemTemplate> templates) {
+        for (var template : templates) {
+            if (template.script() != null && !triggers.containsKey(template.script())) {
+                throw new IllegalArgumentException("Unknown item script '" + template.script()
+                        + "' in template '" + template.name() + "'");
             }
         }
-        return false;
+    }
+
+    public boolean dispatch(ItemUseContext context) {
+        var template = context.item().getTemplate();
+        if (template == null || template.script() == null) return false;
+        var trigger = triggers.get(template.script());
+        if (trigger == null) return false;
+        trigger.execute(context);
+        return true;
     }
 }

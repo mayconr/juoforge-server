@@ -3,11 +3,12 @@ package com.github.mayconr.juoserver.game.item;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.Direction;
 
+/** A null hue inherits the template hue; zero explicitly removes its color. */
 public record ItemRequest(
         ItemTemplate template,
         Integer modelId,
         String name,
-        int hue,
+        Integer hue,
         int amount,
         Direction direction
 ) {
@@ -28,15 +29,15 @@ public record ItemRequest(
     }
 
     public static ItemRequest byTemplate(ItemTemplate template) {
-        return new ItemRequest(template, null, null, 0, 1, null);
+        return new ItemRequest(template, null, null, null, 1, null);
     }
 
     public static ItemRequest byModelId(int modelId) {
-        return new ItemRequest(null, modelId, null, 0, 1, null);
+        return new ItemRequest(null, modelId, null, null, 1, null);
     }
 
     public static ItemRequest byName(String name) {
-        return new ItemRequest(null, null, name, 0, 1, null);
+        return new ItemRequest(null, null, name, null, 1, null);
     }
 
     public ItemRequest withHue(int hue) {

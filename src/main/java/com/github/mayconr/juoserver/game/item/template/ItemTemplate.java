@@ -23,7 +23,8 @@ public record ItemTemplate(String name,
                            // Mount
                            String mountName,
                            // Weapon
-                           Weapon weapon)
+                           Weapon weapon,
+                           String script)
 
             implements BaseTemplate {
     public ItemTemplate {
@@ -46,9 +47,18 @@ public record ItemTemplate(String name,
             @JsonProperty("attr") Map<String, Object> attr,
             @JsonProperty("containerGumpId") int containerGumpId,
             @JsonProperty("mountName") String mountName,
-            @JsonProperty("weapon") Weapon weapon) {
+            @JsonProperty("weapon") Weapon weapon,
+            @JsonProperty("script") String script) {
         this(name, displayName, layer, modelId, movable == null || movable.booleanValue(), hue,
-                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon);
+                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script);
+    }
+
+    public ItemTemplate(String name, String displayName, Layer layer, int modelId,
+                        boolean movable, int hue, String stockType, int basePrice,
+                        List<ItemFlag> flags, Map<String, Object> attr, int containerGumpId,
+                        String mountName, Weapon weapon) {
+        this(name, displayName, layer, modelId, movable, hue, stockType, basePrice,
+                flags, attr, containerGumpId, mountName, weapon, null);
     }
 
     public record Weapon(WeaponStyle style, BaseDamage baseDamage, int radius) { }

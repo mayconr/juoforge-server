@@ -107,6 +107,8 @@ import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillContext;
 import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockContext;
 import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockFlowDefinition;
+import com.github.mayconr.juoserver.game.skill.flow.set.SetSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.set.SetSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
@@ -207,6 +209,8 @@ public class FlowRegistryFactory {
         registry.register(RegionTransitionFlowDefinition.class.getSimpleName(),
                 RegionTransitionFlowDefinition.build(infra.regionSystem(), infra.eventBus(), modules.region(), modules.ai()),
                 RegionTransitionContext.class);
+        registry.register(SetSkillFlowDefinition.class.getSimpleName(),
+                SetSkillFlowDefinition.build(infra.eventBus()), SetSkillContext.class);
         registry.register(SendSkillsLockFlowDefinition.class.getSimpleName(),
                 SendSkillsLockFlowDefinition.build(infra.eventBus()), SendSkillsLockContext.class);
         registry.register(TooltipFlowDefinition.class.getSimpleName(),
