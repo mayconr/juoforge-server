@@ -23,7 +23,7 @@ class VitalsModuleTest {
 
     private VitalsModuleImpl module() {
         var settings = mock(GamePlaySettings.class, RETURNS_DEEP_STUBS);
-        when(settings.vitals().saturationFactor()).thenReturn(100);
+        when(settings.mobile().vitals().saturationFactor()).thenReturn(100);
         var registry = new DefaultFlowRegistry();
         registry.register("regen", RegenFlowDefinition.build(settings, bus, ui),
                 RegenContext.class);

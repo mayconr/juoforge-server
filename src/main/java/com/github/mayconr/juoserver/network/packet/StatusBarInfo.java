@@ -15,15 +15,21 @@ public class StatusBarInfo extends AbstractPacket {
 
     private final UOMobile mobile;
     private final int weight;
+    private final int maxWeight;
 
     public StatusBarInfo(UOMobile mobile) {
         this(mobile, mobile.getWeight());
     }
 
-    public StatusBarInfo(UOMobile mobile, long weight) {
+    public StatusBarInfo(UOMobile mobile, int weight) {
+        this(mobile, weight, mobile.getMaxWeight());
+    }
+
+    public StatusBarInfo(UOMobile mobile, int weight, int maxWeight) {
         super(CODE, calculateLength(mobile));
         this.mobile = mobile;
-        this.weight = (int) Math.clamp(weight, 0L, 0xFFFFL);
+        this.weight = Math.clamp(weight, 0, 0xFFFF);
+        this.maxWeight = Math.clamp(maxWeight, 0, 0xFFFF);
     }
 
     @Override
@@ -60,7 +66,7 @@ public class StatusBarInfo extends AbstractPacket {
         buf.writeShort(weight); // 66
 
         // UOML+ extra fields
-        buf.writeShort(mobile.getMaxWeight()); // 68
+        buf.writeShort(maxWeight); // 68
         buf.writeByte(getRaceByte(mobile)); // Race flag: 1 = human, 2 = elf, 3 = gargoyle 69
 
         // UOR+ fields

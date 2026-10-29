@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.item.flow.creation;
 
 import com.github.mayconr.juoserver.game.container.WorldContainer;
+import com.github.mayconr.juoserver.game.mobile.WorldMobile;
+import com.github.mayconr.juoserver.game.item.flow.creation.validation.PrepareCreatedItemBackpackWeightStep;
+import com.github.mayconr.juoserver.game.mobile.shared.ValidateBackpackWeightStep;
 
 import com.github.mayconr.juoserver.game.item.flow.creation.factory.CreateItemDataStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.factory.CreateItemStep;
@@ -25,16 +28,24 @@ public final class ItemCreationFlowDefinition {
     private ItemCreationFlowDefinition() {
     }
 
-    public static Flow<ItemCreationContext> build(GameInfra infra, GameTemplates templates, WorldContainer containers) {
+    public static Flow<ItemCreationContext> build(GameInfra infra, GameTemplates templates, WorldContainer containers, WorldMobile mobiles) {
         return FlowFactory.<ItemCreationContext>builder()
                 .step(new ValidateItemCreation())
                 .step(new ExecuteOptionsStep())
                 .step(new TemplateLoaderStep(templates.itemByName(), templates.itemByModelId()))
                 .step(new CreateItemDataStep(infra.serialGenerator()))
+                .appendGroup("BackpackWeight", backpackWeightPhase(infra.storage(), containers, mobiles))
                 .step(new CreateItemStep(infra.storage()))
                 .appendGroup("Placement", placementPhase(infra.storage(), containers))
                 .step(new NotifyItemCreatedStep(infra.eventBus()))
                 .build();
+    }
+
+    private static FlowBuilder<ItemCreationContext> backpackWeightPhase(
+            RealmStorage storage, WorldContainer containers, WorldMobile mobiles) {
+        return FlowFactory.<ItemCreationContext>builder()
+                .step(new PrepareCreatedItemBackpackWeightStep(storage))
+                .step(new ValidateBackpackWeightStep<>(mobiles, containers), ctx -> ctx.getBackpackOwner() != null);
     }
 
     private static FlowBuilder<ItemCreationContext> placementPhase(RealmStorage storage, WorldContainer containers) {

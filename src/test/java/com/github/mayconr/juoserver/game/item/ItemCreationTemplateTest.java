@@ -21,6 +21,43 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ItemCreationTemplateTest {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void backpackCapacityIsCheckedBeforeCreatingOrNotifying(boolean overweight) {
+        var containers = mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
+        var mobiles = mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class);
+        var mobile = mock(com.github.mayconr.juoserver.game.model.UOMobile.class);
+        var backpack = mock(com.github.mayconr.juoserver.game.model.UOContainer.class);
+        when(backpack.getSerialId()).thenReturn(100);
+        when(backpack.getCurrentLocation()).thenReturn(com.github.mayconr.juoserver.game.model.ItemLocation.equipped(42));
+        when(mobile.getBackpack()).thenReturn(100);
+        when(storage.getMobile(42)).thenReturn(java.util.Optional.of(mobile));
+        when(containers.getContainerBySerialId(100)).thenReturn(java.util.Optional.of(backpack));
+        when(containers.getWeight(backpack)).thenReturn(overweight ? 61L : 60L);
+        when(mobiles.calculateMaxWeight(mobile)).thenReturn(80);
+        var template = mock(ItemTemplate.class);
+        var data = new com.github.mayconr.juoserver.game.model.UOItemData();
+        data.setUnitWeight(5);
+        when(template.toData(anyInt())).thenReturn(data);
+        var item = mock(com.github.mayconr.juoserver.game.model.UOItem.class);
+        when(storage.createItem(data)).thenReturn(item);
+        when(containers.addItem(eq(backpack), eq(item), anyBoolean(), anyBoolean())).thenReturn(item);
+        var flow = ItemCreationFlowDefinition.build(
+                GameInfra.builder().storage(storage).eventBus(events).serialGenerator(serials).build(),
+                GameTemplates.builder().itemByName(names).itemByModelId(models).build(), containers, mobiles);
+        var result = flow.execute(new ItemCreationContext(ItemRequest.byTemplate(template).withAmount(4), ItemTarget.container(backpack)));
+        if (overweight) {
+            assertEquals("BACKPACK_OVERWEIGHT", result.code());
+            verify(storage, never()).createItem(any());
+            verify(containers, never()).addItem(any(), any(), anyBoolean(), anyBoolean());
+            verifyNoInteractions(events);
+        } else {
+            assertTrue(result.flowSucceeded());
+            verify(storage).createItem(data);
+            verify(containers).addItem(eq(backpack), eq(item), anyBoolean(), anyBoolean());
+        }
+    }
+
     private final InMemoryTemplateRegistry<String, ItemTemplate> names =
             new InMemoryTemplateRegistry<>(List.of(), ItemTemplate::name);
     private final InMemoryTemplateRegistry<Integer, ItemTemplate> models =
@@ -33,7 +70,8 @@ class ItemCreationTemplateTest {
         return ItemCreationFlowDefinition.build(GameInfra.builder().storage(storage).eventBus(events)
                         .serialGenerator(serials).build(),
                 GameTemplates.builder().itemByName(names).itemByModelId(models).build(),
-                new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new ContainerHandler(events, storage)));
+                new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new ContainerHandler(events, storage)),
+                mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class));
     }
 
     @ParameterizedTest

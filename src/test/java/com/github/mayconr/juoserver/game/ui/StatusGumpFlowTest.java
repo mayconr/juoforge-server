@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class StatusGumpFlowTest {
+    private final com.github.mayconr.juoserver.game.mobile.WorldMobile mobiles =
+            mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class);
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void requestsStatusOfTheTargetOrReportsMissingMobile(boolean exists) {
@@ -28,13 +30,13 @@ class StatusGumpFlowTest {
         when(target.getBackpack()).thenReturn(null);
         when(storage.getMobile(42)).thenReturn(exists ? Optional.of(target) : Optional.empty());
         var registry = new DefaultFlowRegistry();
-        registry.register("status", StatusGumpFlowDefinition.build(events, storage, new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new com.github.mayconr.juoserver.game.item.ContainerHandler(events, storage))), StatusGumpContext.class);
+        registry.register("status", StatusGumpFlowDefinition.build(events, storage, new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new com.github.mayconr.juoserver.game.item.ContainerHandler(events, storage)), mobiles), StatusGumpContext.class);
         UIModule ui = new UIModuleImpl(null);
         ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
 
         if (exists) {
             ui.sendStatusGump(player, 42);
-            verify(events).publish(new StatusGumpRequested(player, target, 0));
+            verify(events).publish(new StatusGumpRequested(player, target, 0, 0));
         } else {
             var error = assertThrows(ModuleOperationException.class, () -> ui.sendStatusGump(player, 42));
             assertEquals("MOBILE_NOT_FOUND", error.getCode());
@@ -53,10 +55,11 @@ class StatusGumpFlowTest {
         when(player.getBackpack()).thenReturn(100);
         when(storage.getContainer(100)).thenReturn(Optional.of(backpack));
         when(containers.getWeight(backpack)).thenReturn(27L);
-        var result = StatusGumpFlowDefinition.build(events, storage, containers)
+        when(mobiles.calculateMaxWeight(player)).thenReturn(80);
+        var result = StatusGumpFlowDefinition.build(events, storage, containers, mobiles)
                 .execute(new StatusGumpContext(player, 42));
         assertTrue(result.flowSucceeded());
-        verify(events).publish(new StatusGumpRequested(player, player, 27));
+        verify(events).publish(new StatusGumpRequested(player, player, 27, 80));
     }
 
     @org.junit.jupiter.api.Test
@@ -67,7 +70,7 @@ class StatusGumpFlowTest {
         when(storage.getMobile(42)).thenReturn(Optional.of(player));
         when(player.getBackpack()).thenReturn(100);
         var result = StatusGumpFlowDefinition.build(events, storage,
-                mock(com.github.mayconr.juoserver.game.container.WorldContainer.class))
+                mock(com.github.mayconr.juoserver.game.container.WorldContainer.class), mobiles)
                 .execute(new StatusGumpContext(player, 42));
         assertEquals("BACKPACK_NOT_FOUND", result.code());
         verifyNoInteractions(events);

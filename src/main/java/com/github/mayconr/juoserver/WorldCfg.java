@@ -12,7 +12,6 @@ import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
-import com.github.mayconr.juoserver.game.skill.SkillSystemFactory;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastTrigger;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
@@ -98,11 +97,6 @@ public interface WorldCfg {
     void combatSkillGainPolicy(Supplier<CombatSkillGainPolicy> factory);
 
     Supplier<CombatSkillGainPolicy> combatSkillGainPolicy();
-
-    /** Replaces the skill system used for all skill gain attempts in this world. */
-    void skillSystem(SkillSystemFactory factory);
-
-    SkillSystemFactory skillSystem();
 
     // ===== Economy =====
     void wallet(Function<World, Wallet> walletFactory);

@@ -68,7 +68,7 @@ class PlayerDeathTransferTest {
         when(world.item()).thenReturn(items);
         when(world.container()).thenReturn(new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, containers));
         var wallet = new PhisycalGoldWallet(world);
-        var mobile = new MobileModuleImpl(null, wallet, events, storage);
+        var mobile = new MobileModuleImpl(null, wallet, events, storage, new com.github.mayconr.juoserver.game.GamePlaySettings());
         var goldRegistry = new com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry();
         goldRegistry.register("recalculate-gold",
                 com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldFlowDefinition.build(wallet, events,

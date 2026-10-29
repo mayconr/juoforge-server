@@ -5,6 +5,7 @@ import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.gain.TryGainSkillContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import lombok.RequiredArgsConstructor;
 import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockContext;
@@ -13,11 +14,12 @@ import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import java.util.Collection;
 import com.github.mayconr.juoserver.game.skill.flow.set.SetSkillContext;
 
+import static java.util.Objects.requireNonNull;
+
 @lombok.extern.slf4j.Slf4j
 @RequiredArgsConstructor
 public class SkillModuleImpl implements SkillModule {
 
-    private final SkillSystem skillSystem;
     private final com.github.mayconr.juoserver.game.messaging.WorldMessage messages;
 
     private ModuleContext.FlowFacade flows;
@@ -26,11 +28,25 @@ public class SkillModuleImpl implements SkillModule {
             new java.util.concurrent.ConcurrentHashMap<>();
 
     @Override
-    public boolean startAction(UOPlayer player, int swings, double delaySeconds,
-                               SkillActionCallback swing, SkillActionCallback onComplete) {
-        java.util.Objects.requireNonNull(player, "Player is required");
-        java.util.Objects.requireNonNull(swing, "Swing is required");
-        java.util.Objects.requireNonNull(onComplete, "Completion is required");
+    public boolean performSkill(UOPlayer player, SkillActionOptions options) {
+        var context = new com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillContext(player, options);
+        var result = flows.execute(context);
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("performSkill", result, null);
+        }
+        return context.result();
+    }
+
+    @Override
+    public boolean scheduleSkillAction(UOPlayer player, SkillActionOptions options) {
+        requireNonNull(options, "Options are required");
+        int swings = options.swings();
+        double delaySeconds = options.delaySeconds();
+        var swing = options.swing();
+        var onComplete = options.onComplete();
+        requireNonNull(player, "Player is required");
+        requireNonNull(swing, "Swing is required");
+        requireNonNull(onComplete, "Completion is required");
         if (swings <= 0) throw new IllegalArgumentException("swings must be positive");
         if (!Double.isFinite(delaySeconds) || delaySeconds < 0) {
             throw new IllegalArgumentException("delaySeconds must be finite and non-negative");
@@ -45,7 +61,7 @@ public class SkillModuleImpl implements SkillModule {
 
     @Override
     public boolean hasActiveAction(UOPlayer player) {
-        return actions.containsKey(java.util.Objects.requireNonNull(player).getSerialId());
+        return actions.containsKey(requireNonNull(player).getSerialId());
     }
 
     @Override
@@ -104,7 +120,7 @@ public class SkillModuleImpl implements SkillModule {
 
     @Override
     public void setSkill(UOPlayer player, int skillId, double value) {
-        java.util.Objects.requireNonNull(player, "Player is required");
+        requireNonNull(player, "Player is required");
         if (skillId < 0 || skillId > 0xFFFF) {
             throw new IllegalArgumentException("Skill ID must fit an unsigned short");
         }
@@ -133,6 +149,10 @@ public class SkillModuleImpl implements SkillModule {
 
     @Override
     public void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
-        skillSystem.tryGain(mobile, skillId, difficulty, context);
+        var result = flows.execute(new TryGainSkillContext(
+                mobile, skillId, difficulty, context));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("tryGain", result, null);
+        }
     }
 }

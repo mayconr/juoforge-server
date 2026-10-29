@@ -22,7 +22,7 @@ class SendSkillsLockFlowTest {
         when(player.getSkills()).thenReturn(skills);
         var registry = new DefaultFlowRegistry();
         registry.register("locks", SendSkillsLockFlowDefinition.build(events), SendSkillsLockContext.class);
-        SkillModule module = new SkillModuleImpl(null, org.mockito.Mockito.mock(com.github.mayconr.juoserver.game.messaging.WorldMessage.class));
+        SkillModule module = new SkillModuleImpl(org.mockito.Mockito.mock(com.github.mayconr.juoserver.game.messaging.WorldMessage.class));
         module.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
 
         module.sendSkillsLock(player, List.of(SkillValue.of(1, SkillLock.DOWN), SkillValue.of(2, SkillLock.LOCKED)));

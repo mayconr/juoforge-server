@@ -41,7 +41,7 @@ class RegionTransitionFlowTest {
         city.addChild(second);
         var registry = new DefaultFlowRegistry();
         registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, events, module,
-                        ai),
+                        ai, mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class)),
                 RegionTransitionContext.class);
         module.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         events.register(MobileRegionChanged.class, changes::add);
