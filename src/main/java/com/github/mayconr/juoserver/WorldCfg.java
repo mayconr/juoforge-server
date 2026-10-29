@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 
@@ -44,9 +45,24 @@ public interface WorldCfg {
 
     WorldContent content();
 
-    /** AI timing loaded from the server configuration. */
+    /** Configures server timing and client data files in code. */
+    void serverSettings(ServerSettings settings);
+
+    ServerSettings serverSettings();
+
+    /** Replaces gameplay defaults with rules configured in code. */
+    void gameplaySettings(GamePlaySettings settings);
+
+    GamePlaySettings gameplaySettings();
+
+    /** Combines gameplay rules with the server parameters supplied by the shard. */
+    default GamePlaySettings settings() {
+        return serverSettings().applyTo(gameplaySettings());
+    }
+
+    /** AI timing configured by the shard. */
     default Ai ai() {
-        return content().settings().ai();
+        return new Ai(serverSettings().aiUpdateIntervalSeconds());
     }
 
     /** Replaces the policy that decides whether an AI session may execute. */

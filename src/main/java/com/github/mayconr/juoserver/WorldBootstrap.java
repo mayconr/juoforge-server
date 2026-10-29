@@ -75,7 +75,8 @@ public final class WorldBootstrap {
         final var npcAIProfileResolver = new NpcAIProfileResolver(
                 content.npcAIProfiles().loadAll());
         npcs.forEach(npcAIProfileResolver::resolve);
-        registryMap.put(GAMEPLAY_CONFIG, new InMemoryTemplateRegistry<>(java.util.List.of(content.settings()), GamePlaySettings::name));
+        final GamePlaySettings settings = configuration.settings();
+        registryMap.put(GAMEPLAY_CONFIG, new InMemoryTemplateRegistry<>(java.util.List.of(settings), GamePlaySettings::name));
         registryMap.put(NPC_BY_NAME, new InMemoryTemplateRegistry<>(npcs, NpcTemplate::name));
         registryMap.put(SPELL_TEMPLATE_BY_KEY, new InMemoryTemplateRegistry<>(content.spells().loadAll(), SpellTemplate::key));
         registryMap.put(ITEM_TEMPLATE_BY_NAME, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::name));
@@ -91,7 +92,6 @@ public final class WorldBootstrap {
                 throw new IllegalArgumentException("Template already registered: " + data.templateName());
             }
         }
-        final GamePlaySettings settings = content.settings();
 
         // --- Core infra
         EventBus eventBus = new DefaultEventBus();

@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 
@@ -66,6 +67,31 @@ public class DefaultWorldCfg implements WorldCfg {
         return lootPolicy;
     }
 
+    private ServerSettings serverSettings;
+
+    @Override
+    public void serverSettings(ServerSettings settings) {
+        this.serverSettings = java.util.Objects.requireNonNull(settings, "Server settings are required");
+    }
+
+    @Override
+    public ServerSettings serverSettings() {
+        return java.util.Objects.requireNonNull(serverSettings, "Shard must configure server settings");
+    }
+
+    private GamePlaySettings gameplaySettings =
+            new GamePlaySettings();
+
+    @Override
+    public void gameplaySettings(GamePlaySettings settings) {
+        this.gameplaySettings = java.util.Objects.requireNonNull(settings, "Gameplay settings are required");
+    }
+
+    @Override
+    public GamePlaySettings gameplaySettings() {
+        return gameplaySettings;
+    }
+
     private WorldContent content;
 
     @Override
@@ -79,9 +105,9 @@ public class DefaultWorldCfg implements WorldCfg {
     }
 
     private Supplier<AIActivationPolicy> aiActivationPolicy =
-            () -> new NearbyPlayerActivationPolicy(content().settings().world().visibility().range());
+            () -> new NearbyPlayerActivationPolicy(gameplaySettings().world().visibility().range());
     private Supplier<AISpeechPolicy> aiSpeechPolicy =
-            () -> AISpeechPolicy.nearbyVendor(content().settings().world().visibility().range());
+            () -> AISpeechPolicy.nearbyVendor(gameplaySettings().world().visibility().range());
 
     @Override
     public void aiActivationPolicy(Supplier<AIActivationPolicy> factory) {

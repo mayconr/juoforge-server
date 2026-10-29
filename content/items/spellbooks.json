@@ -1,9 +1,0 @@
-[
-  {
-    "name": "spellbook",
-    "displayName": "Spellbook",
-    "layer": "ONE_HANDED",
-    "modelId": 3834,
-    "flags": ["WEARABLE"]
-  }
-]
