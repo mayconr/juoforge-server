@@ -14,13 +14,12 @@ class AIWorldCfgTest {
         var cfg = new DefaultWorldCfg();
         var activationFactory = cfg.aiActivationPolicy();
         var speechFactory = cfg.aiSpeechPolicy();
-        var content = mock(WorldContent.class, RETURNS_DEEP_STUBS);
-        when(content.settings().world().visibility().range()).thenReturn(18);
-        cfg.content(content);
+        cfg.gameplaySettings(cfg.gameplaySettings().withWorld(
+                new com.github.mayconr.juoserver.game.GamePlaySettings.World(
+                        new com.github.mayconr.juoserver.game.GamePlaySettings.Visibility(18), null)));
 
         assertEquals(new NearbyPlayerActivationPolicy(18), activationFactory.get());
         assertNotNull(speechFactory.get());
-        verify(content.settings().world().visibility(), times(2)).range();
     }
 
     @Test
