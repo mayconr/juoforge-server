@@ -42,7 +42,7 @@ class MountOperationTest {
                 GameInfra.builder().settings(settings).build(), GameTemplates.builder().mountByNpcName(mounts).build());
         var registry = new DefaultFlowRegistry();
         registry.register("mount", flow, MountContext.class);
-        var module = new MobileModuleImpl(null, null, null, null);
+        var module = new MobileModuleImpl(null, null, null, null, new com.github.mayconr.juoserver.game.GamePlaySettings());
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
 
@@ -62,7 +62,7 @@ class MountOperationTest {
     void failuresWithoutDisplayMessageUseDefaultMountKey() {
         var flows = mock(ModuleContext.FlowFacade.class);
         when(flows.execute(any(MountContext.class))).thenReturn(StepResult.failure("Unexpected failure"));
-        var module = new MobileModuleImpl(null, null, null, null);
+        var module = new MobileModuleImpl(null, null, null, null, new com.github.mayconr.juoserver.game.GamePlaySettings());
         module.initialize(DefaultModuleContext.builder().flowFacade(flows).build());
 
         var error = assertThrows(ModuleOperationException.class, () -> module.mount(null, null));

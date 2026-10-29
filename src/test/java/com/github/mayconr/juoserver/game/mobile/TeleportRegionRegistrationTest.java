@@ -56,7 +56,7 @@ class TeleportRegionRegistrationTest {
             published.add(event);
         });
         var registry = new DefaultFlowRegistry();
-        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, events, regionModule, ai),
+        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, events, regionModule, ai, mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class)),
                 RegionTransitionContext.class);
         regionModule.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         registry.register("teleport", TeleportFlowDefinition.build(

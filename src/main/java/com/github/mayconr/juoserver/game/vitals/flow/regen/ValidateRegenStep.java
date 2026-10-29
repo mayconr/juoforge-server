@@ -22,7 +22,7 @@ public final class ValidateRegenStep extends AbstractFlowStep<RegenContext> {
         if (!Double.isFinite(context.getElapsedSeconds()) || context.getElapsedSeconds() < 0) {
             return StepResult.failure("INVALID_INTERVAL", "Elapsed seconds must be finite and non-negative");
         }
-        if (settings.vitals().saturationFactor() <= 0) {
+        if (settings.mobile().vitals().saturationFactor() <= 0) {
             return StepResult.failure("INVALID_REGEN_SETTINGS", "Vitals saturation factor must be positive");
         }
         if (!mobile.isAlive() || mobile instanceof UOPlayer player && !player.isConnected()) {

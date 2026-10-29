@@ -1,4 +1,4 @@
-﻿# Vitals e regeneração
+# Vitals e regeneração
 
 O módulo `game.vitals` controla a regeneração de HP, stamina e mana. Ele é independente de combat e expõe a operação `world.vitals().regen(mobile, elapsedSeconds)`.
 
@@ -108,7 +108,7 @@ O cálculo é realizado independentemente para cada recurso.
 | Símbolo | Significado |
 | --- | --- |
 | `S` | Atributo efetivo: `max(0, stat)`. |
-| `K` | `settings.vitals().saturationFactor()`, obrigatoriamente positivo. |
+| `K` | `settings.mobile().vitals().saturationFactor()`, obrigatoriamente positivo. |
 | `dt` | Tempo transcorrido, em segundos. |
 | `A` | Acumulador fracionário anterior, inicialmente zero. |
 | `C` | Valor atual do recurso. |

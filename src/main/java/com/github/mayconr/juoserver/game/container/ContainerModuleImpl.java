@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.container;
 
+import com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext;
 import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.model.EquippedLocation;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
@@ -48,7 +49,7 @@ public class ContainerModuleImpl implements ContainerModule {
 
     @Override
     public UOItem addItem(UOContainer container, UOItem item, boolean tryStack, boolean notifyClient) {
-        var context = new com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext(
+        var context = new AddContainerItemContext(
                 Objects.requireNonNull(container, "Container is required"),
                 Objects.requireNonNull(item, "Item is required"), tryStack, notifyClient);
         var result = flows.execute(context);

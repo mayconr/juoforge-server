@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.world.context;
 
+import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeContext;
+import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeFlowDefinition;
+
 import com.github.mayconr.juoserver.game.loot.LootModule;
 import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickContext;
 import com.github.mayconr.juoserver.game.ui.flow.skill.SkillGumpContext;
@@ -36,6 +39,9 @@ import com.github.mayconr.juoserver.game.vitals.flow.regen.RegenFlowDefinition;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.skill.SkillModule;
+import com.github.mayconr.juoserver.game.skill.SkillGainCalculator;
+import com.github.mayconr.juoserver.game.skill.flow.gain.TryGainSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.gain.TryGainSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.spell.flow.cast.CastSpellContext;
 import com.github.mayconr.juoserver.game.spell.flow.cast.CastSpellFlowDefinition;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
@@ -110,6 +116,8 @@ import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockFlowDefin
 import com.github.mayconr.juoserver.game.skill.flow.set.SetSkillContext;
 import com.github.mayconr.juoserver.game.skill.flow.set.SetSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillFlowDefinition;
+import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -200,6 +208,13 @@ public class FlowRegistryFactory {
 
     public FlowRegistry buildRegistry() {
         FlowRegistry registry = new DefaultFlowRegistry();
+        registry.register(TryGainSkillFlowDefinition.class.getSimpleName(),
+                TryGainSkillFlowDefinition.build(
+                        new SkillGainCalculator(infra.settings().skills()),
+                        infra.rng(), infra.eventBus()),
+                TryGainSkillContext.class);
+        registry.register(SetAttributeFlowDefinition.class.getSimpleName(),
+                SetAttributeFlowDefinition.build(modules.ui()), SetAttributeContext.class);
         registry.register(PlayerSpawnFlowDefinition.class.getSimpleName(),
                 PlayerSpawnFlowDefinition.build(modules, infra), PlayerSpawnContext.class);
         registry.register(ActivateRegionFlowDefinition.class.getSimpleName(),
@@ -208,7 +223,7 @@ public class FlowRegistryFactory {
                 DeactivateRegionFlowDefinition.build(modules.region(), modules.ai()),
                 DeactivateRegionContext.class);
         registry.register(RegionTransitionFlowDefinition.class.getSimpleName(),
-                RegionTransitionFlowDefinition.build(infra.regionSystem(), infra.eventBus(), modules.region(), modules.ai()),
+                RegionTransitionFlowDefinition.build(infra.regionSystem(), infra.eventBus(), modules.region(), modules.ai(), modules.mobile()),
                 RegionTransitionContext.class);
         registry.register(SetSkillFlowDefinition.class.getSimpleName(),
                 SetSkillFlowDefinition.build(infra.eventBus()), SetSkillContext.class);
@@ -222,7 +237,7 @@ public class FlowRegistryFactory {
                 com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldFlowDefinition.build(infra.wallet(), infra.eventBus(), modules.ui()),
                 com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldContext.class);
         registry.register(StatusGumpFlowDefinition.class.getSimpleName(),
-                StatusGumpFlowDefinition.build(infra.eventBus(), infra.storage(), modules.container()), StatusGumpContext.class);
+                StatusGumpFlowDefinition.build(infra.eventBus(), infra.storage(), modules.container(), modules.mobile()), StatusGumpContext.class);
         registry.register(SkillGumpFlowDefinition.class.getSimpleName(),
                 SkillGumpFlowDefinition.build(infra.eventBus(), infra.storage()), SkillGumpContext.class);
         registry.register(DoubleClickFlowDefinition.class.getSimpleName(),
@@ -257,7 +272,7 @@ public class FlowRegistryFactory {
         registry.register("AddContainerItemFlowDefinition",
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemFlowDefinition.build(infra.storage(), infra.eventBus(), modules.ui()),
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext.class);
-        registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates, modules.container()), ItemCreationContext.class);
+        registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates, modules.container(), modules.mobile()), ItemCreationContext.class);
         registry.register(DropItemFlowDefinition.class.getSimpleName(), DropItemFlowDefinition.build(modules, infra), DropItemContext.class);
         registry.register(PlayerCreationFlowDefinition.class.getSimpleName(), PlayerCreationFlowDefinition.build(modules, infra, templates), PlayerCreationContext.class);
         registry.register(UnmountFlowDefinition.class.getSimpleName(), UnmountFlowDefinition.build(modules, infra, templates), UnmountContext.class);
@@ -268,6 +283,8 @@ public class FlowRegistryFactory {
         registry.register(SendTargetFlowDefinition.class.getSimpleName(), SendTargetFlowDefinition.build(modules, infra), SendTargetContext.class);
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
+        registry.register(PerformSkillFlowDefinition.class.getSimpleName(),
+                PerformSkillFlowDefinition.build(infra.fileReader(), modules.skill()), PerformSkillContext.class);
         registry.register(TeleportFlowDefinition.class.getSimpleName(), TeleportFlowDefinition.build(modules, infra), TeleportContext.class);
         registry.register(MovementFlowDefinition.class.getSimpleName(), MovementFlowDefinition.build(modules, infra), MovementContext.class);
         registry.register(ResyncFlowDefinition.class.getSimpleName(), ResyncFlowDefinition.build(infra), ResyncContext.class);

@@ -18,7 +18,7 @@ class RegenFlowTest {
     private final GamePlaySettings settings = mock(GamePlaySettings.class, RETURNS_DEEP_STUBS);
 
     private com.github.mayconr.juoserver.infrastructure.flow.Flow<RegenContext> flow() {
-        when(settings.vitals().saturationFactor()).thenReturn(100);
+        when(settings.mobile().vitals().saturationFactor()).thenReturn(100);
         return RegenFlowDefinition.build(settings, bus, ui);
     }
 
@@ -60,7 +60,7 @@ class RegenFlowTest {
     @Test
     void invalidSettingsFailWithoutMutation() {
         var flow = flow();
-        when(settings.vitals().saturationFactor()).thenReturn(0);
+        when(settings.mobile().vitals().saturationFactor()).thenReturn(0);
         var mobile = player();
         var result = flow.execute(new RegenContext(mobile, 10));
         assertEquals("INVALID_REGEN_SETTINGS", result.code());
@@ -90,7 +90,7 @@ class RegenFlowTest {
 
     @Test
     void calculationDoesNotMutateAndNotificationSeesAllAppliedResources() {
-        when(settings.vitals().saturationFactor()).thenReturn(100);
+        when(settings.mobile().vitals().saturationFactor()).thenReturn(100);
         var mobile = player();
         var context = new RegenContext(mobile, 10);
         new CalculateRegenStep(settings).execute(context);
@@ -126,7 +126,7 @@ class RegenFlowTest {
         var templates = mock(FlowRegistryFactory.GameTemplates.class, RETURNS_DEEP_STUBS);
         when(infra.settings()).thenReturn(settings);
         when(infra.eventBus()).thenReturn(bus);
-        when(settings.vitals().saturationFactor()).thenReturn(100);
+        when(settings.mobile().vitals().saturationFactor()).thenReturn(100);
         var registry = FlowRegistryFactory.builder().infra(infra).modules(modules).templates(templates)
                 .build().buildRegistry();
         var registered = registry.get(RegenContext.class);

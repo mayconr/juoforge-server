@@ -58,7 +58,7 @@ class RegionAiLifecycleTest {
                 FlowRegistryFactory.GameInfra.builder().regionSystem(regions).eventBus(bus).build()),
                 PlayerSpawnContext.class);
         registry.register("activateRegion", ActivateRegionFlowDefinition.build(ai), ActivateRegionContext.class);
-        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, bus, regionModule, ai),
+        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, bus, regionModule, ai, mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class)),
                 RegionTransitionContext.class);
         registry.register("deactivateRegion", DeactivateRegionFlowDefinition.build(regionModule, ai),
                 DeactivateRegionContext.class);

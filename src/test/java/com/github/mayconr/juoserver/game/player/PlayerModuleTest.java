@@ -35,7 +35,7 @@ class PlayerModuleTest {
         var regionModule = new RegionModuleImpl(regions);
         var ai = mock(AIModule.class);
         var registry = new DefaultFlowRegistry();
-        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, events, regionModule, ai),
+        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, events, regionModule, ai, mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class)),
                 RegionTransitionContext.class);
         registry.register("spawn", PlayerSpawnFlowDefinition.build(
                 FlowRegistryFactory.GameModules.builder().region(regionModule).ai(ai).build(),

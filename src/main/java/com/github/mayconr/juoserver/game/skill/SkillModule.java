@@ -7,6 +7,8 @@ import com.github.mayconr.juoserver.game.world.WorldModule;
 import java.util.Collection;
 
 public interface SkillModule extends WorldSkill, WorldModule {
+    /** Reserves an action after the perform-skill flow has validated it. */
+    boolean scheduleSkillAction(UOPlayer player, SkillActionOptions options);
 
     /**
      * Updates the player's skill locks and publishes the resulting skill values.

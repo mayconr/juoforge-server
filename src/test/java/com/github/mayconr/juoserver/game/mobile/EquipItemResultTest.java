@@ -25,7 +25,7 @@ class EquipItemResultTest {
     private final RealmStorage storage = mock(RealmStorage.class);
     private final DefaultFlowRegistry registry = new DefaultFlowRegistry();
     private final GameInfra infra = GameInfra.builder().storage(storage).eventBus(events).build();
-    private final MobileModuleImpl module = new MobileModuleImpl(null, null, events, storage);
+    private final MobileModuleImpl module = new MobileModuleImpl(null, null, events, storage, new com.github.mayconr.juoserver.game.GamePlaySettings());
 
     private UOPlayer player() {
         var data = new UOMobileData();

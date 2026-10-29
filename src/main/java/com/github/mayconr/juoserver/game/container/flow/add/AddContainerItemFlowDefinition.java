@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.container.flow.add;
 
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.ui.WorldUI;
+import com.github.mayconr.juoserver.game.mobile.shared.NotifyMobileStatusStep;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
@@ -13,7 +14,8 @@ public final class AddContainerItemFlowDefinition {
         return FlowFactory.<AddContainerItemContext>builder()
                 .step(new PlaceContainerItemStep(storage))
                 .step(new NotifyContainerItemStep(storage, events), AddContainerItemContext::isNotifyClient)
-                .step(new UpdateContainerOwnerStatusStep(storage, ui), AddContainerItemContext::isNotifyClient)
+                .step(new FindContainerOwnerStep(storage), AddContainerItemContext::isNotifyClient)
+                .step(new NotifyMobileStatusStep<>(ui), AddContainerItemContext::isNotifyClient)
                 .build();
     }
 }

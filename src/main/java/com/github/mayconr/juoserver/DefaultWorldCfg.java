@@ -12,8 +12,6 @@ import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
 import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
-import com.github.mayconr.juoserver.game.skill.DefaultSkillSystem;
-import com.github.mayconr.juoserver.game.skill.SkillSystemFactory;
 import com.github.mayconr.juoserver.game.economy.ScarcityBasedPricingStrategy;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastTrigger;
@@ -174,7 +172,6 @@ public class DefaultWorldCfg implements WorldCfg {
     }
 
     private Supplier<CombatSkillGainPolicy> combatSkillGainPolicy = DefaultCombatSkillGainPolicy::new;
-    private SkillSystemFactory skillSystem = DefaultSkillSystem::new;
 
     @Override
     public void combatSkillGainPolicy(Supplier<CombatSkillGainPolicy> factory) {
@@ -184,16 +181,6 @@ public class DefaultWorldCfg implements WorldCfg {
     @Override
     public Supplier<CombatSkillGainPolicy> combatSkillGainPolicy() {
         return combatSkillGainPolicy;
-    }
-
-    @Override
-    public void skillSystem(SkillSystemFactory factory) {
-        this.skillSystem = java.util.Objects.requireNonNull(factory);
-    }
-
-    @Override
-    public SkillSystemFactory skillSystem() {
-        return skillSystem;
     }
 
     // ===== Economy =====

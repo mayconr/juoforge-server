@@ -94,7 +94,6 @@ import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameT
 import com.github.mayconr.juoserver.game.world.transition.DespawnNpcOnDeath;
 import com.github.mayconr.juoserver.game.region.RegionModule;
 import com.github.mayconr.juoserver.game.region.RegionModuleImpl;
-import com.github.mayconr.juoserver.game.world.transition.TeleportTransitionServiceImpl;
 import com.github.mayconr.juoserver.game.world.transition.VisibilityTransitionServiceImpl;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReaderImpl;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -390,10 +389,7 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeSkillModule() {
-        final var skillSystem = Objects.requireNonNull(
-                worldCfg.skillSystem().create(settings, rng, eventBus), "Skill system factory returned null");
-
-        this.skillModule = new SkillModuleImpl(skillSystem, messageModule);
+        this.skillModule = new SkillModuleImpl(messageModule);
     }
 
     private void initializeItemModule() {
@@ -416,7 +412,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.npcModule = new NpcModuleImpl();
         final var npcDespawnService = new NpcDespawnService(storage, npcModule);
 
-        this.mobileModule = new MobileModuleImpl(npcDespawnService, wallet, eventBus, storage);
+        this.mobileModule = new MobileModuleImpl(npcDespawnService, wallet, eventBus, storage, settings);
     }
 
     private void initializeInteractionModule() {
@@ -539,11 +535,9 @@ public class DefaultWorld implements WorldInternal, World {
          * ==========
          */
         final var visibilityTransitionService = new VisibilityTransitionServiceImpl(storage, eventBus, settings);
-        final var teleportTransitionService = new TeleportTransitionServiceImpl(mobileModule);
         final var despawnNpcOnDeath = new DespawnNpcOnDeath(mobileModule, aiModule);
 
         eventBus.register(MobileMoved.class, visibilityTransitionService);
-        eventBus.register(teleportTransitionService);
         eventBus.register(despawnNpcOnDeath);
         eventBus.register(PlayerSessionStatusChanged.class, this::handleSessionStateChanged);
         eventBus.register(PlayerSessionClosed.class, this::handleSessionClosed);

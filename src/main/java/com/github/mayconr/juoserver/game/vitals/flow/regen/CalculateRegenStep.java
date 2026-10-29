@@ -30,7 +30,7 @@ public final class CalculateRegenStep extends AbstractFlowStep<RegenContext> {
             return new ResourceRegen(current, current, 0.0);
         }
         double effectiveStat = Math.max(0, stat);
-        double rate = 0.1 + effectiveStat / (effectiveStat + settings.vitals().saturationFactor());
+        double rate = 0.1 + effectiveStat / (effectiveStat + settings.mobile().vitals().saturationFactor());
         double accumulated = context.getMobile().runtimeAttributes().getOrDefault(key, 0.0)
                 + rate * context.getElapsedSeconds();
         int gain = (int) Math.min(Math.floor(accumulated + 1e-9), (double) maximum - current);

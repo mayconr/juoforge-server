@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeContext;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
@@ -33,7 +35,21 @@ public class MobileModuleImpl implements MobileModule {
     private final Wallet wallet;
     private final EventBus eventBus;
     private final RealmStorage storage;
+    private final GamePlaySettings settings;
     private ModuleContext.FlowFacade flows;
+
+    @Override
+    public void setAttribute(UOMobile mobile, MobileAttribute attribute, int value) {
+        var result = flows.execute(new SetAttributeContext(mobile, attribute, value));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("setAttribute", result, null);
+        }
+    }
+    @Override
+    public int calculateMaxWeight(UOMobile mobile) {
+        var carryWeight = settings.mobile().carryWeight();
+        return (int) (carryWeight.baseCapacity() + mobile.getStrength() * carryWeight.capacityPerStrength());
+    }
 
     @Override
     public void initialize(ModuleContext context) {

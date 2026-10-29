@@ -35,7 +35,7 @@ public record ServerSettings(int ticksPerSecond, double aiUpdateIntervalSeconds,
 
     GamePlaySettings applyTo(GamePlaySettings gameplay) {
         Objects.requireNonNull(gameplay, "Gameplay settings are required");
-        return new GamePlaySettings(gameplay.name(), gameplay.vitals(),
+        return new GamePlaySettings(gameplay.name(),
                 new GamePlaySettings.GameLoop(ticksPerSecond), gameplay.skills(),
                 gameplay.mobile(), gameplay.world(), new GamePlaySettings.Files(dataFileRoot),
                 gameplay.client(), gameplay.economy(), new GamePlaySettings.Ai(aiUpdateIntervalSeconds));
