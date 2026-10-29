@@ -14,10 +14,16 @@ public class StatusBarInfo extends AbstractPacket {
     public static final int CODE = (byte) 0x11;
 
     private final UOMobile mobile;
+    private final int weight;
 
     public StatusBarInfo(UOMobile mobile) {
+        this(mobile, mobile.getWeight());
+    }
+
+    public StatusBarInfo(UOMobile mobile, long weight) {
         super(CODE, calculateLength(mobile));
         this.mobile = mobile;
+        this.weight = (int) Math.clamp(weight, 0L, 0xFFFFL);
     }
 
     @Override
@@ -51,7 +57,7 @@ public class StatusBarInfo extends AbstractPacket {
         buf.writeInt(mobile.getGold()); // 62
 
         buf.writeShort(mobile.getPhysicalResist()); // Acts as Armor Rating if AOS enabled 64
-        buf.writeShort(mobile.getWeight()); // 66
+        buf.writeShort(weight); // 66
 
         // UOML+ extra fields
         buf.writeShort(mobile.getMaxWeight()); // 68

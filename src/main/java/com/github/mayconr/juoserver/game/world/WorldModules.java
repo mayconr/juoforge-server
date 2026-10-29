@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.container.WorldContainer;
+
 import com.github.mayconr.juoserver.game.loot.WorldLoot;
 import com.github.mayconr.juoserver.game.region.WorldRegion;
 
@@ -37,6 +39,8 @@ public interface WorldModules {
     WorldDevTools devTools();
 
     WorldItem item();
+
+    WorldContainer container();
 
     WorldPlayer player();
 

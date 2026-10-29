@@ -8,16 +8,12 @@ import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /** Public item operations for creation, removal, lookup and container contents. */
 public interface WorldItem {
 
     /** Dispatches item use to the registered triggers. */
     void use(ItemUseContext context);
-
-    /** Loads container contents, materializes pending corpse loot and publishes the opening event. */
-    void openContainer(UOPlayer player, Container container);
 
     /**
      * Creates and places an item using the default creation options.
@@ -48,14 +44,9 @@ public interface WorldItem {
 
     Optional<UOItem> getItemBySerialId(int serial);
 
-    Optional<UOContainer> getContainerBySerialId(int serial);
-
     /** Uses the storage visibility range; radius is currently retained for compatibility. */
     List<UOItem> getItemsInRange(Location location, int radius);
 
     List<ItemTemplate> getItemsTemplate(String stockType);
 
-    ConsumeResult consumeItem(Integer container, String name, int amount, boolean searchNestedContainers);
-
-    List<UOItem> getItemsInContainer(Integer containerSerial, Predicate<UOItem> predicate);
 }

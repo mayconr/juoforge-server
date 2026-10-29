@@ -48,24 +48,6 @@ public final class ItemEventHandler {
         }
     }
 
-    public void onItemDroppedInContainer(ItemDroppedInContainer event) {
-        final var container = event.container();
-
-        // container has owner, must notify only this one
-        if (container.getCurrentLocation() instanceof EquippedLocation(Integer ownerSerialId)) {
-            if (session.player() != null && ownerSerialId == session.player().getSerialId()) {
-                packetWriter.enqueue(packets -> packets.writeAndFlush(new AddItemToContainer(event.container(), event.item())));
-            }
-            return;
-        }
-
-        // Container in the ground
-        if (canSeeContainer(event.container())) {
-            packetWriter.enqueue(packets -> packets.writeAndFlush(new AddItemToContainer(event.container(), event.item())));
-        }
-
-    }
-
     public void onItemStacked(ItemStacked event) {
         // Removal must reach clients even if the dropped item has already changed location.
         packetWriter.writeAndFlush(new DeleteObject(event.dropped()));

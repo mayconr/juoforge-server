@@ -89,6 +89,11 @@ public class UOItem extends UOObject<UOItemData> {
         return flags.contains(flag);
     }
 
+    /** Returns the total weight of this item's stack. */
+    public int getWeight() {
+        return unitWeight * amount;
+    }
+
     public void increaseAmount(int amount) {
         this.amount += amount;
     }

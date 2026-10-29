@@ -1,5 +1,9 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.container.WorldContainer;
+import com.github.mayconr.juoserver.game.container.ContainerModule;
+import com.github.mayconr.juoserver.game.container.ContainerModuleImpl;
+
 import com.github.mayconr.juoserver.game.loot.WorldLoot;
 import com.github.mayconr.juoserver.game.loot.LootModule;
 import com.github.mayconr.juoserver.game.loot.LootModuleImpl;
@@ -153,6 +157,11 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     @Override
+    public WorldContainer container() {
+        return Objects.requireNonNull(containerModule, "World container module is not initialized");
+    }
+
+    @Override
     public ItemModule item() {
         return Objects.requireNonNull(itemModule, "World item module is not initialized");
     }
@@ -232,6 +241,7 @@ public class DefaultWorld implements WorldInternal, World {
     private SkillModule skillModule;
     private SpellModule spellModule;
     private ItemModule itemModule;
+    private ContainerModule containerModule;
     private PlayerModule playerModule;
     private CombatModule combatModule;
     private VitalsModule vitalsModule;
@@ -300,6 +310,7 @@ public class DefaultWorld implements WorldInternal, World {
         initializeSkillModule();
         this.spellModule = new SpellModuleImpl(spellTemplateByKey);
         initializeItemModule();
+        this.containerModule = new ContainerModuleImpl(storage, new ContainerHandler(eventBus, storage));
         initializeUiModule();
         initializePlayerModule();
         this.vitalsModule = new VitalsModuleImpl(playerModule);
@@ -387,9 +398,8 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeItemModule() {
         final var itemHandler = new ItemHandler(storage, eventBus);
-        final var containerHandler = new ContainerHandler(eventBus, storage);
 
-        this.itemModule = new ItemModuleImpl(itemHandler, containerHandler, storage, itemTemplateRegistry, itemUseService);
+        this.itemModule = new ItemModuleImpl(itemHandler, storage, itemTemplateRegistry, itemUseService);
     }
 
     private void initializePlayerModule() {
@@ -451,6 +461,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .npc(npcModule)
                     .mobile(mobileModule)
                     .item(itemModule)
+                    .container(containerModule)
                     .damage(damageModule)
                     .loot(lootModule)
                     .skill(skillModule)
@@ -505,6 +516,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.damageModule.initialize(context);
         this.npcModule.initialize(context);
         this.itemModule.initialize(context);
+        this.containerModule.initialize(context);
         this.uiModule.initialize(context);
         this.lootModule.initialize(context);
         this.aiModule.initialize(context);

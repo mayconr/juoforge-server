@@ -22,6 +22,7 @@ class VendorPurchaseFlowTest {
         var handler = mock(VendorHandler.class);
         var wallet = mock(com.github.mayconr.juoserver.game.wallet.Wallet.class);
         var items = mock(WorldItem.class);
+        var containers = mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         var backpack = mock(UOContainer.class);
@@ -31,7 +32,7 @@ class VendorPurchaseFlowTest {
         var stock = new StockEntry(template, 10, 1, 5);
         var session = new VendorSession(Map.of(123, new VendorSessionItem(123, 10, stock)));
         when(request.getItems()).thenReturn(List.of(new VendorBuyRequest.BuyItem(123, 2)));
-        when(items.getContainerBySerialId(player.getBackpack())).thenReturn(Optional.of(backpack));
+        when(containers.getContainerBySerialId(player.getBackpack())).thenReturn(Optional.of(backpack));
         when(handler.resolveVendorPurchase(player, request, wallet)).thenReturn(
                 VendorPurchaseResult.success(List.of(new PurchasedItem(template, 2))));
         var first = mock(UOItem.class);
@@ -39,7 +40,7 @@ class VendorPurchaseFlowTest {
         var target = ContainerItemTarget.of(backpack, options -> options.tryStack(false));
         when(items.createItem(ItemRequest.byTemplate(template), target)).thenReturn(first, second);
 
-        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, events)
+        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, containers, events)
                 .execute(new VendorPurchaseContext(player, request, session));
 
         assertTrue(result.flowSucceeded());
@@ -55,15 +56,16 @@ class VendorPurchaseFlowTest {
         var handler = mock(VendorHandler.class);
         var wallet = mock(com.github.mayconr.juoserver.game.wallet.Wallet.class);
         var items = mock(WorldItem.class);
+        var containers = mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         var request = mock(VendorBuyRequest.class);
         var stock = new StockEntry(mock(ItemTemplate.class), 10, 1, 5);
         var session = new VendorSession(Map.of(123, new VendorSessionItem(123, 10, stock)));
-        when(items.getContainerBySerialId(player.getBackpack())).thenReturn(Optional.of(mock(UOContainer.class)));
+        when(containers.getContainerBySerialId(player.getBackpack())).thenReturn(Optional.of(mock(UOContainer.class)));
         when(handler.resolveVendorPurchase(player, request, wallet)).thenReturn(VendorPurchaseResult.failed());
 
-        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, events)
+        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, containers, events)
                 .execute(new VendorPurchaseContext(player, request, session));
 
         assertTrue(result.flowFailed());

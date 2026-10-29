@@ -24,10 +24,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class DoubleClickPolicyTest {
+    private final com.github.mayconr.juoserver.game.container.WorldContainer containers =
+            mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
     private UIModule ui(EventBus events, RealmStorage storage, DoubleClickPolicy policy, WorldItem items) {
         var registry = new DefaultFlowRegistry();
         var ui = new UIModuleImpl(null);
-        registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items), DoubleClickContext.class);
+        registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items, containers), DoubleClickContext.class);
         registry.register("open-paperdoll", OpenPaperdollFlowDefinition.build(events, storage), OpenPaperdollContext.class);
         ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         return ui;
@@ -137,7 +139,7 @@ class DoubleClickPolicyTest {
     }
 
     @Test
-    void delegatesContainerOpeningToTheItemModule() {
+    void delegatesContainerOpeningToTheContainerModule() {
         var storage = mock(RealmStorage.class);
         var items = mock(WorldItem.class);
         var events = mock(EventBus.class);
@@ -148,7 +150,7 @@ class DoubleClickPolicyTest {
         when(click.getSerialId()).thenReturn(0x40000000);
         when(storage.getItem(0x40000000)).thenReturn(Optional.of(container));
         ui(events, storage, DoubleClickPolicy.allowAll(), items).doubleClick(player, click);
-        verify(items).openContainer(player, container);
+        verify(containers).openContainer(player, container);
         verify(storage, never()).loadContainerItems(any());
         verifyNoInteractions(events);
     }

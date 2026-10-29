@@ -16,7 +16,8 @@ public class NotifyItemCreatedStep extends AbstractFlowStep<ItemCreationContext>
 
     @Override
     public StepResult execute(ItemCreationContext context) {
-        if (context.getOptions().renderOnCreate()) {
+        if (context.getOptions().renderOnCreate()
+                && !(context.getTarget() instanceof com.github.mayconr.juoserver.game.model.ContainerItemTarget)) {
             eventBus.publish(context.getEvent());
         }
         return StepResult.success();
