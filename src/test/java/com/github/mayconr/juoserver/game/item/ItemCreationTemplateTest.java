@@ -32,7 +32,8 @@ class ItemCreationTemplateTest {
     private com.github.mayconr.juoserver.infrastructure.flow.Flow<ItemCreationContext> flow() {
         return ItemCreationFlowDefinition.build(GameInfra.builder().storage(storage).eventBus(events)
                         .serialGenerator(serials).build(),
-                GameTemplates.builder().itemByName(names).itemByModelId(models).build());
+                GameTemplates.builder().itemByName(names).itemByModelId(models).build(),
+                new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new ContainerHandler(events, storage)));
     }
 
     @ParameterizedTest
@@ -54,7 +55,7 @@ class ItemCreationTemplateTest {
     void bothModuleOverloadsPreserveTemplateFailure(boolean withOptions) {
         var registry = new DefaultFlowRegistry();
         registry.register("create-item", flow(), ItemCreationContext.class);
-        var module = new ItemModuleImpl(null, null, storage, null, null);
+        var module = new ItemModuleImpl(null, storage, null, null);
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
         var request = ItemRequest.byName("missing_item");

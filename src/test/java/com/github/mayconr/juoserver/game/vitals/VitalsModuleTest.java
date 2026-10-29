@@ -18,13 +18,14 @@ import static org.mockito.Mockito.*;
 
 class VitalsModuleTest {
     private final EventBus bus = mock(EventBus.class);
+    private final com.github.mayconr.juoserver.game.ui.WorldUI ui = mock(com.github.mayconr.juoserver.game.ui.WorldUI.class);
     private final WorldPlayer players = mock(WorldPlayer.class);
 
     private VitalsModuleImpl module() {
         var settings = mock(GamePlaySettings.class, RETURNS_DEEP_STUBS);
         when(settings.vitals().saturationFactor()).thenReturn(100);
         var registry = new DefaultFlowRegistry();
-        registry.register("regen", RegenFlowDefinition.build(settings, bus),
+        registry.register("regen", RegenFlowDefinition.build(settings, bus, ui),
                 RegenContext.class);
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(new DefaultFlowFacade(registry));
@@ -60,6 +61,7 @@ class VitalsModuleTest {
         assertEquals(56, player.getMana());
         assertEquals(56, player.getStamina());
         verify(bus).publish(new VitalsChanged(player));
+        verify(ui).sendStatusGump(player, player.getSerialId());
     }
 
     @Test

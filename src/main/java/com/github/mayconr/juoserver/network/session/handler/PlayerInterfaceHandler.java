@@ -105,7 +105,7 @@ public final class PlayerInterfaceHandler {
 
     public void onStatusGumpRequested(StatusGumpRequested event) {
         if (session.isPlayer(event.player())) {
-            packetWriter.writeAndFlush(new StatusBarInfo(event.requestedFor()));
+            packetWriter.writeAndFlush(new StatusBarInfo(event.requestedFor(), event.weight()));
         }
     }
 
@@ -179,7 +179,7 @@ public final class PlayerInterfaceHandler {
         if (session.isPlayer(event.player())) {
             final var vendor = event.vendor();
             final var sellContainerSerialId = vendor.getEquippedItems().get(Layer.SHOP_BUY_RESTOCK);
-            final var sellContainer = world.item().getContainerBySerialId(sellContainerSerialId)
+            final var sellContainer = world.container().getContainerBySerialId(sellContainerSerialId)
                     .orElseThrow(() -> new RuntimeException("Sell container not found for serial "+sellContainerSerialId));
 
             packetWriter.write(AddMultipleItemsToContainer.ofStockItem(sellContainer, event.session().items().values()));
@@ -187,18 +187,6 @@ public final class PlayerInterfaceHandler {
             packetWriter.write(new DrawContainer(vendor.getSerialId(), 0x0030));
             packetWriter.flush();
             // TODO locate items for uocontainer
-        }
-    }
-
-    public void onVitalsChanged(VitalsChanged event) {
-        if (session.isPlayer(event.mobile())) {
-            packetWriter.writeAndFlush(new StatusBarInfo(session.player()));
-        }
-    }
-
-    public void onMobileGoldChanged(MobileGoldChanged event) {
-        if (session.isPlayer(event.mobile())) {
-            packetWriter.writeAndFlush(new StatusBarInfo(session.player()));
         }
     }
 

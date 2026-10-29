@@ -81,7 +81,7 @@ public class ContainerHandler {
                     return 0;
                 } else {
                     amount -= itemAmount;
-                    iterator.remove();
+                    container.removeItemFromContainer(item);
                     eventBus.publish(new ItemDeleted(item));
                     continue;
                 }

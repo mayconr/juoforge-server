@@ -14,11 +14,12 @@ import static org.mockito.Mockito.*;
 
 class RegenFlowTest {
     private final EventBus bus = mock(EventBus.class);
+    private final com.github.mayconr.juoserver.game.ui.WorldUI ui = mock(com.github.mayconr.juoserver.game.ui.WorldUI.class);
     private final GamePlaySettings settings = mock(GamePlaySettings.class, RETURNS_DEEP_STUBS);
 
     private com.github.mayconr.juoserver.infrastructure.flow.Flow<RegenContext> flow() {
         when(settings.vitals().saturationFactor()).thenReturn(100);
-        return RegenFlowDefinition.build(settings, bus);
+        return RegenFlowDefinition.build(settings, bus, ui);
     }
 
     private UOPlayer player() {
@@ -42,7 +43,7 @@ class RegenFlowTest {
         var result = flow().execute(new RegenContext(null, 10));
         assertTrue(result.flowFailed());
         assertEquals("MISSING_MOBILE", result.code());
-        verifyNoInteractions(bus);
+        verifyNoInteractions(bus, ui);
     }
 
     @ParameterizedTest
@@ -53,7 +54,7 @@ class RegenFlowTest {
         assertEquals("INVALID_INTERVAL", result.code());
         assertEquals(50, mobile.getHitpoints());
         assertTrue(mobile.runtimeAttributes().toMap().isEmpty());
-        verifyNoInteractions(bus);
+        verifyNoInteractions(bus, ui);
     }
 
     @Test
@@ -65,7 +66,7 @@ class RegenFlowTest {
         assertEquals("INVALID_REGEN_SETTINGS", result.code());
         assertEquals(50, mobile.getHitpoints());
         assertTrue(mobile.runtimeAttributes().toMap().isEmpty());
-        verifyNoInteractions(bus);
+        verifyNoInteractions(bus, ui);
     }
 
     @Test
@@ -84,7 +85,7 @@ class RegenFlowTest {
         mobile.setAlive(true);
         mobile.setConnected(false);
         assertEquals("INELIGIBLE_MOBILE", flow.execute(new RegenContext(mobile, 10)).code());
-        verifyNoInteractions(bus);
+        verifyNoInteractions(bus, ui);
     }
 
     @Test
@@ -104,6 +105,7 @@ class RegenFlowTest {
         }).when(bus).publish(new VitalsChanged(mobile));
         assertTrue(flow().execute(new RegenContext(mobile, 10)).flowSucceeded());
         verify(bus, times(1)).publish(new VitalsChanged(mobile));
+        verify(ui).sendStatusGump(mobile, mobile.getSerialId());
     }
 
     @Test

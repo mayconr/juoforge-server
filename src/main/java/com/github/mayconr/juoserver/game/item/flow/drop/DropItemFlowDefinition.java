@@ -8,6 +8,7 @@ import com.github.mayconr.juoserver.game.item.flow.drop.placement.StackItemStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.placement.TransformToOrphanStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.validation.ValidateInteractionRangeStep;
 import com.github.mayconr.juoserver.game.messaging.MessageModule;
+import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
@@ -25,7 +26,7 @@ public class DropItemFlowDefinition {
         return FlowFactory.<DropItemContext>builder()
                 .appendGroup("DropItemPhase", dropItemPhase(infra.storage()))
                 .appendGroup("ValidationPhase", validationPhase(modules.mobile(), modules.message()))
-                .appendGroup("ItemPlacementPhase", itemPlacementPhase(infra.storage(), infra.eventBus()))
+                .appendGroup("ItemPlacementPhase", itemPlacementPhase(infra.storage(), infra.eventBus(), modules.container()))
                 .build();
     }
 
@@ -43,11 +44,11 @@ public class DropItemFlowDefinition {
                 .step(new ValidateInteractionRangeStep(mobileModule, messageModule));
     }
 
-    private static FlowBuilder<DropItemContext> itemPlacementPhase(RealmStorage storage, EventBus eventBus) {
+    private static FlowBuilder<DropItemContext> itemPlacementPhase(RealmStorage storage, EventBus eventBus, WorldContainer containers) {
         return FlowFactory.<DropItemContext>builder()
                 .step(new TransformToOrphanStep(storage))
                 .step(new DropItemGroundStep(storage, eventBus), DropItemContext::isGroundDrop)
-                .step(new DropItemContainerStep(eventBus), DropItemContext::isContainerDrop)
+                .step(new DropItemContainerStep(eventBus, containers), DropItemContext::isContainerDrop)
                 .step(new StackItemStep(storage, eventBus), DropItemContext::isStack);
 
     }

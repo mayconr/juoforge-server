@@ -18,7 +18,7 @@ class ItemModuleTest {
     private final EventBus events = mock(EventBus.class);
     private final ItemUseService itemUse = mock(ItemUseService.class);
     private final ItemModule module = new ItemModuleImpl(new ItemHandler(storage, events),
-            new ContainerHandler(events, storage), storage, mock(ItemTemplateRegistry.class), itemUse);
+            storage, mock(ItemTemplateRegistry.class), itemUse);
 
     @Test
     void dispatchesItemUseToTheService() {

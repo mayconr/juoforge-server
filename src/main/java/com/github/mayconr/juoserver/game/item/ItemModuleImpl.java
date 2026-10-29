@@ -1,7 +1,6 @@
 package com.github.mayconr.juoserver.game.item;
 
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
-import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
@@ -18,14 +17,12 @@ import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 @lombok.extern.slf4j.Slf4j
 @RequiredArgsConstructor
 public class ItemModuleImpl implements ItemModule {
 
     private final ItemHandler itemHandler;
-    private final ContainerHandler containerHandler;
     private final RealmStorage storage;
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final ItemUseService itemUseService;
@@ -67,11 +64,6 @@ public class ItemModuleImpl implements ItemModule {
     }
 
     @Override
-    public void openContainer(UOPlayer player, Container container) {
-        flows.execute(new OpenContainerContext(player, container));
-    }
-
-    @Override
     public void deleteItem(int serial) {
         if (!UOItem.isItem(serial)) {
             throw new IllegalArgumentException("Serial [" + serial + "] is not an item");
@@ -84,11 +76,6 @@ public class ItemModuleImpl implements ItemModule {
     @Override
     public Optional<UOItem> getItemBySerialId(int serial) {
         return storage.getItem(serial);
-    }
-
-    @Override
-    public Optional<UOContainer> getContainerBySerialId(int serial) {
-        return storage.getContainer(serial);
     }
 
     @Override
@@ -111,14 +98,4 @@ public class ItemModuleImpl implements ItemModule {
         flows.execute(DropItemContext.ofDropItem(player, dropItem));
     }
 
-    @Override
-    public List<UOItem> getItemsInContainer(Integer containerSerial, Predicate<UOItem> predicate) {
-        return containerHandler.getItemsInContainer(containerSerial, predicate);
-    }
-
-    @Override
-    public ConsumeResult consumeItem(Integer containerSerial, String name, int amount, boolean searchNestedContainers) {
-        int remaining = containerHandler.consumeItem(containerSerial, name, amount, searchNestedContainers);
-        return new ConsumeResult(remaining > -1, remaining);
-    }
 }

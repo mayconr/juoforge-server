@@ -64,11 +64,18 @@ class PlayerDeathTransferTest {
         var items = mock(ItemModule.class);
         when(items.createItem(any(), any(), any())).thenReturn(corpse);
         var containers = new ContainerHandler(events, storage);
-        when(items.getItemsInContainer(eq(100), any())).thenAnswer(call ->
-                containers.getItemsInContainer(call.getArgument(0), call.getArgument(1)));
         var world = mock(World.class);
         when(world.item()).thenReturn(items);
-        var mobile = new MobileModuleImpl(null, new PhisycalGoldWallet(world), events, storage);
+        when(world.container()).thenReturn(new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, containers));
+        var wallet = new PhisycalGoldWallet(world);
+        var mobile = new MobileModuleImpl(null, wallet, events, storage);
+        var goldRegistry = new com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry();
+        goldRegistry.register("recalculate-gold",
+                com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldFlowDefinition.build(wallet, events,
+                        mock(com.github.mayconr.juoserver.game.ui.WorldUI.class)),
+                com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldContext.class);
+        mobile.initialize(new com.github.mayconr.juoserver.game.world.context.DefaultModuleContext(
+                new com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade(goldRegistry)));
         doAnswer(call -> {
             assertFalse(player.isAlive());
             assertEquals(0, player.getGold());

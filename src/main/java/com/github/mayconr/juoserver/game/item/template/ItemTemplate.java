@@ -24,7 +24,8 @@ public record ItemTemplate(String name,
                            String mountName,
                            // Weapon
                            Weapon weapon,
-                           String script)
+                           String script,
+                           int unitWeight)
 
             implements BaseTemplate {
     public ItemTemplate {
@@ -48,9 +49,18 @@ public record ItemTemplate(String name,
             @JsonProperty("containerGumpId") int containerGumpId,
             @JsonProperty("mountName") String mountName,
             @JsonProperty("weapon") Weapon weapon,
-            @JsonProperty("script") String script) {
+            @JsonProperty("script") String script,
+            @JsonProperty("unitWeight") int unitWeight) {
         this(name, displayName, layer, modelId, movable == null || movable.booleanValue(), hue,
-                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script);
+                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script, unitWeight);
+    }
+
+    public ItemTemplate(String name, String displayName, Layer layer, int modelId,
+                        boolean movable, int hue, String stockType, int basePrice,
+                        List<ItemFlag> flags, Map<String, Object> attr, int containerGumpId,
+                        String mountName, Weapon weapon, String script) {
+        this(name, displayName, layer, modelId, movable, hue, stockType, basePrice,
+                flags, attr, containerGumpId, mountName, weapon, script, 0);
     }
 
     public ItemTemplate(String name, String displayName, Layer layer, int modelId,
@@ -79,6 +89,7 @@ public record ItemTemplate(String name,
         data.setPersistentAttrMap(new DefaultAttributeMap(attr));
         data.setLayer(layer);
         data.setAmount(1);
+        data.setUnitWeight(unitWeight);
         data.setHue(hue);
         data.setMovable(movable);
         data.setHidden(false);

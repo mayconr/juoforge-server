@@ -10,7 +10,6 @@ import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.MobileGoldChanged;
 import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionContext;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
@@ -93,9 +92,10 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void recalculateGold(UOMobile mobile) {
-        int oldBalance = mobile.getGold();
-        mobile.setGold(wallet.getBalance(mobile));
-        eventBus.publish(new MobileGoldChanged(mobile, oldBalance, mobile.getGold()));
+        var result = flows.execute(new com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldContext(mobile));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("recalculateGold", result, null);
+        }
     }
 
     @Override
