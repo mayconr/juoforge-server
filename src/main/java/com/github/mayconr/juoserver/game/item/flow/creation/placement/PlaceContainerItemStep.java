@@ -19,6 +19,10 @@ public class PlaceContainerItemStep extends AbstractFlowStep<ItemCreationContext
 
     @Override
     public StepResult execute(ItemCreationContext context) {
+        if (context.getTarget() instanceof ContainerItemTarget target && target.container() == null) {
+            return StepResult.failure("ITEM_CONTAINER_REQUIRED",
+                    "Cannot place item in container: target container is null");
+        }
         if (context.getTarget() instanceof ContainerItemTarget(UOContainer container, Options options)) {
             if (container.getCurrentLocation() instanceof GroundLocation) {
                 final var item = context.result();
@@ -58,6 +62,8 @@ public class PlaceContainerItemStep extends AbstractFlowStep<ItemCreationContext
             }
         }
 
-        return StepResult.failure("");
+        return StepResult.failure("ITEM_CONTAINER_LOCATION_UNSUPPORTED",
+                "Cannot place item in container: expected a UOContainer on the ground or equipped by a mobile; target="
+                        + context.getTarget());
     }
 }

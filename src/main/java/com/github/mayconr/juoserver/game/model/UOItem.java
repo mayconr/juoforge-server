@@ -59,6 +59,7 @@ public class UOItem extends UOObject<UOItemData> {
         super.populateData(data);
 
         data.setId(id);
+        data.setTemplate(template == null ? null : template.name());
         data.setLayer(layer);
         data.setAmount(amount);
         data.setHue(hue);

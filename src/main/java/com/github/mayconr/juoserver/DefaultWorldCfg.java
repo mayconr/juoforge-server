@@ -34,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -200,7 +201,7 @@ public class DefaultWorldCfg implements WorldCfg {
     private Supplier<PricingStrategy> pricingStrategy = ScarcityBasedPricingStrategy::new;
 
     // ===== Item trigger ====
-    private final List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList = new ArrayList<>();
+    private final Map<String, Function<ServerRuntime, ItemUseTrigger>> itemTriggerList = new LinkedHashMap<>();
     private final List<Function<ServerRuntime, SpellCastTrigger>> spellTriggerList = new ArrayList<>();
 
     // Event listener
@@ -229,8 +230,12 @@ public class DefaultWorldCfg implements WorldCfg {
     // ===== Item Triggers =====
 
     @Override
-    public void addItemTrigger(Function<ServerRuntime, ItemUseTrigger> triggerFactory) {
-        itemTriggerList.add(triggerFactory);
+    public void addItemTrigger(String script, Function<ServerRuntime, ItemUseTrigger> triggerFactory) {
+        if (script == null || script.isBlank()) throw new IllegalArgumentException("Item script name is required");
+        java.util.Objects.requireNonNull(triggerFactory, "Item trigger factory is required");
+        if (itemTriggerList.putIfAbsent(script, triggerFactory) != null) {
+            throw new IllegalArgumentException("Item script already registered: " + script);
+        }
     }
 
     @Override
@@ -287,7 +292,7 @@ public class DefaultWorldCfg implements WorldCfg {
     }
 
     @Override
-    public List<Function<ServerRuntime, ItemUseTrigger>> itemTriggerList() {
+    public Map<String, Function<ServerRuntime, ItemUseTrigger>> itemTriggerList() {
         return itemTriggerList;
     }
 

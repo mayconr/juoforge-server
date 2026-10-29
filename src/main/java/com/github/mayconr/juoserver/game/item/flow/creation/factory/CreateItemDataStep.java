@@ -29,7 +29,9 @@ public class CreateItemDataStep extends AbstractFlowStep<ItemCreationContext> {
         var data = template.toData(serialGenerator.getNextItem());
 
         // Override template defaults
-        data.setHue(request.hue());
+        if (request.hue() != null) {
+            data.setHue(request.hue());
+        }
         data.setAmount(request.amount());
         data.setDirection(request.direction());
 

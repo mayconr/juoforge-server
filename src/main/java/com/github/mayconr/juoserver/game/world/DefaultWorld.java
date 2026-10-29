@@ -321,6 +321,7 @@ public class DefaultWorld implements WorldInternal, World {
         mobileModule.update(delta);
         combatModule.update(delta);
         spellModule.update(delta);
+        skillModule.update(delta);
     }
 
     /*
@@ -381,7 +382,7 @@ public class DefaultWorld implements WorldInternal, World {
         final var skillSystem = Objects.requireNonNull(
                 worldCfg.skillSystem().create(settings, rng, eventBus), "Skill system factory returned null");
 
-        this.skillModule = new SkillModuleImpl(skillSystem);
+        this.skillModule = new SkillModuleImpl(skillSystem, messageModule);
     }
 
     private void initializeItemModule() {

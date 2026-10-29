@@ -178,9 +178,10 @@ public final class WorldBootstrap {
         for (var factory : configuration.spellTriggerList()) {
             spellCastRegistry.register(factory.apply(runtime));
         }
-        for (var factory : configuration.itemTriggerList()) {
-            itemUseRegistry.register(factory.apply(runtime));
+        for (var entry : configuration.itemTriggerList().entrySet()) {
+            itemUseRegistry.register(entry.getKey(), entry.getValue().apply(runtime));
         }
+        itemUseRegistry.validateTemplates(items.values());
         for (var factory : configuration.eventListenerList()) {
             eventBus.register(factory.apply(runtime));
         }
