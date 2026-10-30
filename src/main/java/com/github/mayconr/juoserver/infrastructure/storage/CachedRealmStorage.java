@@ -27,6 +27,8 @@ public class CachedRealmStorage implements RealmStorage {
 
     private final List<Integer> dirtyMobiles = new ArrayList<>();
     private final List<UOItem> dirtyItems = new ArrayList<>();
+    private final List<WorldSaveListener> worldSaveListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private CompletableFuture<Void> activeWorldSave;
 
     private Supplier<Integer> itemSerialSupplier;
     private Supplier<Integer> mobileSerialSupplier;
@@ -315,6 +317,36 @@ public class CachedRealmStorage implements RealmStorage {
                         log.error("Error in inserting mobile player [{}]", player.getName(), throwable);
                     }
                 });
+    }
+
+    @Override
+    public void addWorldSaveListener(WorldSaveListener listener) {
+        worldSaveListeners.add(Objects.requireNonNull(listener, "World save listener is required"));
+    }
+
+    @Override
+    public synchronized CompletableFuture<Void> saveWorld() {
+        if (activeWorldSave != null && !activeWorldSave.isDone()) {
+            return activeWorldSave;
+        }
+        var listeners = List.copyOf(worldSaveListeners);
+        var saves = new ArrayList<CompletableFuture<?>>();
+        saves.add(startSave(this::saveMobiles));
+        saves.add(startSave(this::saveItems));
+        for (var listener : listeners) {
+            saves.add(startSave(listener::save));
+        }
+        activeWorldSave = CompletableFuture.allOf(saves.toArray(CompletableFuture[]::new));
+        return activeWorldSave;
+    }
+
+    private CompletableFuture<?> startSave(Supplier<? extends CompletableFuture<?>> save) {
+        try {
+            return Objects.requireNonNull(save.get(), "Save must return a future");
+        } catch (RuntimeException error) {
+            // One failed participant must not prevent the remaining saves from starting.
+            return CompletableFuture.failedFuture(error);
+        }
     }
 
     @Override

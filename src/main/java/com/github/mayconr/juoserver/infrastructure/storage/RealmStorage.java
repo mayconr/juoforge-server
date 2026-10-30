@@ -141,6 +141,16 @@ public interface RealmStorage {
 
     CompletableFuture<Collection<UOMobile>> saveMobiles();
 
+    /**
+     * Saves mobiles, items and a snapshot of all registered world-save listeners.
+     * Completes only after all saves finish; any failure completes the result exceptionally.
+     * Saves use independent transactions. Overlapping calls share the active save.
+     */
+    CompletableFuture<Void> saveWorld();
+
+    /** Registers additional persistence work for subsequent world saves. */
+    void addWorldSaveListener(WorldSaveListener listener);
+
     CompletableFuture<Collection<UOItem>> saveItems();
 
 }

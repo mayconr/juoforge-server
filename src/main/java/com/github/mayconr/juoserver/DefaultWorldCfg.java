@@ -1,4 +1,5 @@
 package com.github.mayconr.juoserver;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldSaveListener;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
@@ -193,6 +194,17 @@ public class DefaultWorldCfg implements WorldCfg {
 
     // Event listener
     private final List<Function<ServerRuntime, EventRegistry<GameEvent>>> eventListenerList = new ArrayList<>();
+    private final List<Function<ServerRuntime, WorldSaveListener>> worldSaveListeners = new ArrayList<>();
+
+    @Override
+    public void addWorldSaveListener(Function<ServerRuntime, WorldSaveListener> factory) {
+        worldSaveListeners.add(java.util.Objects.requireNonNull(factory, "World save listener factory is required"));
+    }
+
+    @Override
+    public List<Function<ServerRuntime, WorldSaveListener>> worldSaveListenerList() {
+        return List.copyOf(worldSaveListeners);
+    }
 
     // Templates
     private final Map<String, TemplateData<?,?>> templateLoaderList = new HashMap<>();
