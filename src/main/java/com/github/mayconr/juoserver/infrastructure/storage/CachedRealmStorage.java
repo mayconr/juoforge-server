@@ -27,7 +27,7 @@ public class CachedRealmStorage implements RealmStorage {
 
     private final List<Integer> dirtyMobiles = new ArrayList<>();
     private final List<UOItem> dirtyItems = new ArrayList<>();
-    private final List<WorldSaveListener> worldSaveListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final List<Storage> registeredStorages = new java.util.concurrent.CopyOnWriteArrayList<>();
     private CompletableFuture<Void> activeWorldSave;
 
     private Supplier<Integer> itemSerialSupplier;
@@ -320,8 +320,8 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public void addWorldSaveListener(WorldSaveListener listener) {
-        worldSaveListeners.add(Objects.requireNonNull(listener, "World save listener is required"));
+    public void registerStorage(Storage storage) {
+        registeredStorages.add(Objects.requireNonNull(storage, "Storage is required"));
     }
 
     @Override
@@ -329,12 +329,12 @@ public class CachedRealmStorage implements RealmStorage {
         if (activeWorldSave != null && !activeWorldSave.isDone()) {
             return activeWorldSave;
         }
-        var listeners = List.copyOf(worldSaveListeners);
+        var storages = List.copyOf(registeredStorages);
         var saves = new ArrayList<CompletableFuture<?>>();
         saves.add(startSave(this::saveMobiles));
         saves.add(startSave(this::saveItems));
-        for (var listener : listeners) {
-            saves.add(startSave(listener::save));
+        for (var storage : storages) {
+            saves.add(startSave(storage::save));
         }
         activeWorldSave = CompletableFuture.allOf(saves.toArray(CompletableFuture[]::new));
         return activeWorldSave;

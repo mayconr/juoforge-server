@@ -185,7 +185,7 @@ public final class WorldBootstrap {
         for (var factory : configuration.eventListenerList()) {
             eventBus.register(factory.apply(runtime));
         }
-        registerWorldSaveListeners(configuration, runtime);
+        registerStorages(configuration, runtime);
 
         gameLoop.addTask(new GameTask() {
             @Override public void execute(long currentTick, double delta) { world.update(delta); }
@@ -197,10 +197,10 @@ public final class WorldBootstrap {
         return runtime;
     }
 
-    static void registerWorldSaveListeners(WorldCfg configuration, ServerRuntime runtime) {
-        for (var factory : configuration.worldSaveListenerList()) {
-            runtime.storage().addWorldSaveListener(Objects.requireNonNull(factory.apply(runtime),
-                    "World save listener factory returned null"));
+    static void registerStorages(WorldCfg configuration, ServerRuntime runtime) {
+        for (var factory : configuration.storageList()) {
+            runtime.storage().registerStorage(Objects.requireNonNull(factory.apply(runtime),
+                    "Storage factory returned null"));
         }
     }
 

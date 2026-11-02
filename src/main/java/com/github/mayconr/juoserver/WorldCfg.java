@@ -1,5 +1,5 @@
 package com.github.mayconr.juoserver;
-import com.github.mayconr.juoserver.infrastructure.storage.WorldSaveListener;
+import com.github.mayconr.juoserver.infrastructure.storage.Storage;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
@@ -114,9 +114,9 @@ public interface WorldCfg {
     <T extends GameEvent> void addEventListener(Function<ServerRuntime, EventRegistry<T>> registry);
 
     /** Creates and registers additional world-save work after runtime initialization, before the game loop starts. */
-    void addWorldSaveListener(Function<ServerRuntime, WorldSaveListener> factory);
+    void registerStorage(Function<ServerRuntime, Storage> factory);
 
-    List<Function<ServerRuntime, WorldSaveListener>> worldSaveListenerList();
+    List<Function<ServerRuntime, Storage>> storageList();
 
     // Templates
     <T, K> void addCustomTemplate(String templateName, Class<T> templateClass, Function<T, K> keyExtractor, Path file);

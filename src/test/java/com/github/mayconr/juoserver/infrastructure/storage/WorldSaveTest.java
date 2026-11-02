@@ -16,15 +16,39 @@ class WorldSaveTest {
     private final CachedRealmStorage storage = spy(new CachedRealmStorage(null, null, null, null));
 
     @Test
+    void individualSavesDoNotInvokeRegisteredStorages() {
+        var mobiles = mock(MobileStorage.class);
+        var items = mock(ItemStorage.class);
+        when(mobiles.findAllNpcs()).thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(items.findAllGroundItems()).thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(mobiles.saveMobiles(anyInt(), anyCollection(), anyCollection()))
+                .thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(items.saveItems(anyInt(), anyCollection(), anyCollection()))
+                .thenReturn(CompletableFuture.completedFuture(List.of()));
+        var realm = new CachedRealmStorage(mobiles, items, null, new ItemMapper(null));
+        realm.initialize(() -> 1, () -> 1, data -> {});
+        var participant = mock(Storage.class);
+        when(participant.save()).thenReturn(CompletableFuture.completedFuture(null));
+        realm.registerStorage(participant);
+
+        realm.saveMobiles().join();
+        realm.saveItems().join();
+        verifyNoInteractions(participant);
+
+        realm.saveWorld().join();
+        verify(participant).save();
+    }
+
+    @Test
     void waitsForAllSavesAndCoalescesOverlappingCalls() {
         var mobiles = new CompletableFuture<Collection<UOMobile>>();
         var items = new CompletableFuture<Collection<UOItem>>();
         var extra = new CompletableFuture<Void>();
         doReturn(mobiles).when(storage).saveMobiles();
         doReturn(items).when(storage).saveItems();
-        var listener = mock(WorldSaveListener.class);
+        var listener = mock(Storage.class);
         when(listener.save()).thenReturn(extra);
-        storage.addWorldSaveListener(listener);
+        storage.registerStorage(listener);
 
         var result = storage.saveWorld();
         assertSame(result, storage.saveWorld());
@@ -42,13 +66,13 @@ class WorldSaveTest {
     void attemptsEverySaveEvenWhenOneThrowsAndReportsFailureAfterAllFinish() {
         doThrow(new IllegalStateException("Mobile save failed")).when(storage).saveMobiles();
         doReturn(CompletableFuture.completedFuture(List.of())).when(storage).saveItems();
-        var failing = mock(WorldSaveListener.class);
+        var failing = mock(Storage.class);
         when(failing.save()).thenThrow(new IllegalStateException("Listener failed"));
         var extra = new CompletableFuture<Void>();
-        var remaining = mock(WorldSaveListener.class);
+        var remaining = mock(Storage.class);
         when(remaining.save()).thenReturn(extra);
-        storage.addWorldSaveListener(failing);
-        storage.addWorldSaveListener(remaining);
+        storage.registerStorage(failing);
+        storage.registerStorage(remaining);
 
         var result = storage.saveWorld();
         verify(storage).saveItems();
@@ -64,9 +88,9 @@ class WorldSaveTest {
         doReturn(mobiles).when(storage).saveMobiles();
         doReturn(CompletableFuture.completedFuture(List.of())).when(storage).saveItems();
         var result = storage.saveWorld();
-        var listener = mock(WorldSaveListener.class);
+        var listener = mock(Storage.class);
         when(listener.save()).thenReturn(CompletableFuture.completedFuture(null));
-        storage.addWorldSaveListener(listener);
+        storage.registerStorage(listener);
         mobiles.complete(List.of());
         result.join();
         verifyNoInteractions(listener);
@@ -76,13 +100,13 @@ class WorldSaveTest {
 
     @Test
     void rejectsNullListenerAndNullFutureDoesNotSkipOtherParticipants() {
-        assertThrows(NullPointerException.class, () -> storage.addWorldSaveListener(null));
+        assertThrows(NullPointerException.class, () -> storage.registerStorage(null));
         doReturn(CompletableFuture.completedFuture(List.of())).when(storage).saveMobiles();
         doReturn(CompletableFuture.completedFuture(List.of())).when(storage).saveItems();
-        storage.addWorldSaveListener(() -> null);
-        var listener = mock(WorldSaveListener.class);
+        storage.registerStorage(() -> null);
+        var listener = mock(Storage.class);
         when(listener.save()).thenReturn(CompletableFuture.completedFuture(null));
-        storage.addWorldSaveListener(listener);
+        storage.registerStorage(listener);
         assertThrows(CompletionException.class, () -> storage.saveWorld().join());
         verify(listener).save();
     }
