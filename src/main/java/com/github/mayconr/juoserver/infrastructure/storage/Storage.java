@@ -2,9 +2,9 @@ package com.github.mayconr.juoserver.infrastructure.storage;
 
 import java.util.concurrent.CompletableFuture;
 
-/** Persists additional shard state as part of a world save. */
+/** Persists shard state during a full world save. Initialization belongs to the shard. */
 @FunctionalInterface
-public interface WorldSaveListener {
+public interface Storage {
     /** Called on the saveWorld caller's thread; return a future covering all asynchronous writes. */
     CompletableFuture<Void> save();
 }
