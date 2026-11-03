@@ -3,9 +3,11 @@ package com.github.mayconr.juoserver;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.gateway.GatewayNetworkServer;
 import com.github.mayconr.juoserver.infrastructure.server.ClientConnectedHandlerAdapter;
 import com.github.mayconr.juoserver.infrastructure.server.ServerStartup;
 import com.github.mayconr.juoserver.infrastructure.server.UOChannelInitializer;
+import com.github.mayconr.juoserver.network.NetworkServer;
 import com.github.mayconr.juoserver.network.session.NettySessionManager;
 import com.github.mayconr.juoserver.network.session.SessionManager;
 import io.netty.bootstrap.ServerBootstrap;
@@ -27,13 +29,11 @@ public class NetworkBootstrap {
         this.settings = runtime.settings();
     }
 
-    public ServerStartup build() {
+    public NetworkServer build(NetworkSettings network) {
+        java.util.Objects.requireNonNull(network, "Network settings are required");
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
         SessionManager sessionManager = new NettySessionManager(worldInternal, channelGroup, settings, eventBus);
-
-        NioEventLoopGroup parentGroup = new NioEventLoopGroup(1);
-        NioEventLoopGroup childGroup = new NioEventLoopGroup(1);
 
         ClientConnectedHandlerAdapter connectedHandler = new ClientConnectedHandlerAdapter(channelGroup, sessionManager);
 
@@ -46,6 +46,16 @@ public class NetworkBootstrap {
                 packetHandlers
         );
 
+        return switch (network.mode()) {
+            case GATEWAY -> new GatewayNetworkServer(network, channelInitializer);
+            case STANDALONE -> buildStandalone(network, channelInitializer);
+        };
+    }
+
+    private ServerStartup buildStandalone(NetworkSettings network, UOChannelInitializer channelInitializer) {
+        NioEventLoopGroup parentGroup = new NioEventLoopGroup(1);
+        NioEventLoopGroup childGroup = new NioEventLoopGroup(1);
+
         ServerBootstrap serverBootstrap = new ServerBootstrap()
                 .group(parentGroup, childGroup)
                 .channel(NioServerSocketChannel.class)
@@ -53,6 +63,6 @@ public class NetworkBootstrap {
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-        return new ServerStartup(serverBootstrap, parentGroup, childGroup);
+        return new ServerStartup(serverBootstrap, parentGroup, childGroup, network.host(), network.port());
     }
 }

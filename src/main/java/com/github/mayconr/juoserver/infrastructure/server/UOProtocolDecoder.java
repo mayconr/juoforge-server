@@ -17,6 +17,16 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
 
     private final Map<Integer, Class<? extends AbstractPacket>> packetsClass = new HashMap<>();
     private boolean hasSeed;
+    private static final Map<Class<?>, Integer> FIXED_LENGTHS = Map.ofEntries(
+            Map.entry(GameServerLogin.class, 65), Map.entry(PingPong.class, 2),
+            Map.entry(LoginCharacter.class, 73), Map.entry(DeleteCharacter.class, 39),
+            Map.entry(CreateCharacter.class, 104), Map.entry(MoveRequest.class, 7),
+            Map.entry(DoubleClick.class, 5), Map.entry(SingleClickRequest.class, 5),
+            Map.entry(UnequipItem.class, 7), Map.entry(DropItem.class, 15),
+            Map.entry(EquipItemRequest.class, 10), Map.entry(Target.class, 19),
+            Map.entry(GetPlayerStatus.class, 10), Map.entry(RequestHelp.class, 258),
+            Map.entry(RequestWarMode.class, 5), Map.entry(AttackRequest.class, 5),
+            Map.entry(MoveResyncAck.class, 3));
 
     public UOProtocolDecoder() {
         packetsClass.put(GameServerLogin.CODE, GameServerLogin.class);
@@ -51,6 +61,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
     protected void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> out)
             throws Exception {
         if (!hasSeed) {
+            if (buf.readableBytes() < 4) return;
             var seed = new LoginSeedPacket(buf);
             log.info("Seed received from address {}", seed.getAddress());
             this.hasSeed = true;
@@ -64,11 +75,17 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
             var packetClass = packetsClass.get((int) code);
             if (packetClass != null) {
                 final var startIndex = buf.readerIndex();
+                int length = FIXED_LENGTHS.getOrDefault(packetClass, -1);
+                if (length < 0) {
+                    if (buf.readableBytes() < 3) return;
+                    length = buf.getUnsignedShort(startIndex + 1);
+                    if (length < 3) throw new io.netty.handler.codec.CorruptedFrameException("Invalid UO packet length");
+                }
+                if (buf.readableBytes() < length) return;
                 // Consume the buffer
-                out.add(packetClass.getConstructor(ByteBuf.class).newInstance(buf));
+                out.add(packetClass.getConstructor(ByteBuf.class).newInstance(buf.readSlice(length)));
 
                 if (log.isDebugEnabled()) {
-                    final var length = buf.readerIndex() - startIndex;
                     var slice = buf.slice(startIndex, length);
                     var hexDump = ByteBufUtil.hexDump(slice).toUpperCase();
                     log.debug("Packet received [0x{} - {} - {}]", hexCode, hexDump, packetClass.getSimpleName());

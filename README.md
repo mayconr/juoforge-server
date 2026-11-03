@@ -1,5 +1,7 @@
 # juoforge-server
 
+Configuração de rede: [modo independente ou integração com juoforge-gateway](docs/network-transports.md).
+
 Servidor de Ultima Online em Java. As regras de gameplay são configuradas em
 [`GamePlaySettings`](src/main/java/com/github/mayconr/juoserver/game/GamePlaySettings.java).
 
