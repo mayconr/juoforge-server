@@ -8,10 +8,13 @@ import io.netty.channel.nio.NioEventLoopGroup;
 
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.concurrent.*;
 
 /** Owns its EventLoop; start/close are nonblocking and safe from callbacks. */
 public final class GatewayTunnelClient implements AutoCloseable {
+  private static final Logger LOG = LoggerFactory.getLogger(GatewayTunnelClient.class);
   private final String host, shard, token;
   private final int port;
   private final TunnelSettings settings;
@@ -51,6 +54,7 @@ public final class GatewayTunnelClient implements AutoCloseable {
     if (closed) return CompletableFuture.failedFuture(new IllegalStateException("Client closed"));
     if (!started) {
       started = true;
+      LOG.info("Starting gateway connection to {}:{} for shard {}", host, port, shard);
       loops.next().execute(this::connect);
     }
     return ready;
@@ -82,23 +86,32 @@ public final class GatewayTunnelClient implements AutoCloseable {
               if (f.isSuccess()) {
                 channel = f.channel();
                 if (closed) channel.close();
-              } else scheduleReconnect();
+              } else {
+                connectionError("TCP connection failed", f.cause());
+                scheduleReconnect();
+              }
             });
   }
 
   void registered() {
     registered = true;
     delay = settings.reconnectInitial().toMillis();
+    LOG.info("Gateway connection established successfully with {}:{}; shard {} registered", host, port, shard);
     ready.complete(null);
   }
 
   void disconnected() {
+    if (!closed) {
+      LOG.warn("Gateway connection to {}:{} closed for shard {} ({})", host, port, shard,
+          registered ? "registered tunnel lost; sessions will be closed" : "registration was not completed");
+    }
     registered = false;
     scheduleReconnect();
   }
 
   private void scheduleReconnect() {
     if (closed || retry != null && !retry.isDone()) return;
+    LOG.info("Retrying gateway connection to {}:{} for shard {} in {} ms", host, port, shard, delay);
     retry =
         loops
             .next()
@@ -117,6 +130,15 @@ public final class GatewayTunnelClient implements AutoCloseable {
 
   public boolean isRegistered() {
     return registered;
+  }
+
+  void connectionError(String reason, Throwable cause) {
+    if (closed) return;
+    if (cause == null) {
+      LOG.warn("Gateway connection error at {}:{} for shard {}: {}", host, port, shard, reason);
+    } else {
+      LOG.warn("Gateway connection error at {}:{} for shard {}: {}", host, port, shard, reason, cause);
+    }
   }
 
   public CompletionStage<Void> termination() {

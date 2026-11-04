@@ -22,7 +22,12 @@ public final class TunnelPipeline {
               public void userEventTriggered(ChannelHandlerContext ctx, Object event)
                   throws Exception {
                 if (event instanceof IdleStateEvent idle) {
-                  if (idle.state() == IdleState.READER_IDLE) ctx.close();
+                  if (idle.state() == IdleState.READER_IDLE) {
+                    org.slf4j.LoggerFactory.getLogger(TunnelPipeline.class).warn(
+                        "Gateway tunnel at {} closed: no incoming data or heartbeat for {} ms",
+                        ctx.channel().remoteAddress(), s.idleTimeout().toMillis());
+                    ctx.close();
+                  }
                   else ctx.writeAndFlush(TunnelFrame.control(TunnelMessageType.HEARTBEAT, 0));
                 } else super.userEventTriggered(ctx, event);
               }

@@ -33,7 +33,11 @@ public final class TunnelClientHandler extends SimpleChannelInboundHandler<Tunne
     deadline =
         ctx.executor()
             .schedule(
-                () -> ctx.close(), settings.handshakeTimeout().toMillis(), TimeUnit.MILLISECONDS);
+                () -> {
+                  owner.connectionError("Timed out waiting for REGISTER_ACK after "
+                      + settings.handshakeTimeout().toMillis() + " ms", null);
+                  ctx.close();
+                }, settings.handshakeTimeout().toMillis(), TimeUnit.MILLISECONDS);
     ctx.writeAndFlush(
         new TunnelFrame(
             TunnelMessageType.REGISTER,
@@ -45,6 +49,9 @@ public final class TunnelClientHandler extends SimpleChannelInboundHandler<Tunne
   protected void channelRead0(ChannelHandlerContext ctx, TunnelFrame frame) {
     if (!registered) {
       if (frame.type() != TunnelMessageType.REGISTER_ACK) {
+        owner.connectionError(frame.type() == TunnelMessageType.ERROR
+            ? "Gateway rejected shard registration; check shard credentials and duplicate registrations"
+            : "Expected REGISTER_ACK but received " + frame.type(), null);
         ctx.close();
         return;
       }
@@ -58,7 +65,10 @@ public final class TunnelClientHandler extends SimpleChannelInboundHandler<Tunne
       case SESSION_OPEN -> sessions.open(frame.sessionId());
       case DATA -> sessions.data(frame.sessionId(), frame.payload());
       case SESSION_CLOSE -> sessions.close(frame.sessionId(), false);
-      default -> ctx.close();
+      default -> {
+        owner.connectionError("Unexpected tunnel message: " + frame.type(), null);
+        ctx.close();
+      }
     }
   }
 
@@ -77,6 +87,7 @@ public final class TunnelClientHandler extends SimpleChannelInboundHandler<Tunne
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    owner.connectionError("Tunnel communication or protocol failure", cause);
     ctx.close();
   }
 }
