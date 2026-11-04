@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver;
-import com.github.mayconr.juoserver.infrastructure.storage.Storage;
+
+import com.github.mayconr.juoserver.infrastructure.storage.DocumentStorage;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
@@ -211,17 +212,6 @@ public class DefaultWorldCfg implements WorldCfg {
 
     // Event listener
     private final List<Function<ServerRuntime, EventRegistry<GameEvent>>> eventListenerList = new ArrayList<>();
-    private final List<Function<ServerRuntime, Storage>> registeredStorages = new ArrayList<>();
-
-    @Override
-    public void registerStorage(Function<ServerRuntime, Storage> factory) {
-        registeredStorages.add(java.util.Objects.requireNonNull(factory, "Storage factory is required"));
-    }
-
-    @Override
-    public List<Function<ServerRuntime, Storage>> storageList() {
-        return List.copyOf(registeredStorages);
-    }
 
     // Templates
     private final Map<String, TemplateData<?,?>> templateLoaderList = new HashMap<>();
@@ -276,6 +266,18 @@ public class DefaultWorldCfg implements WorldCfg {
             throw new IllegalArgumentException("Template " + templateName + " already exists");
         }
         templateLoaderList.put(templateName, new TemplateData<>(templateName, templateClass, keyExtractor, new JsonTemplateLoaderNew<>(path, templateClass)));
+    }
+
+    private DocumentStorage documentStorage;
+
+    @Override
+    public void documentStorage(DocumentStorage storage) {
+        this.documentStorage = java.util.Objects.requireNonNull(storage, "Document storage is required");
+    }
+
+    @Override
+    public DocumentStorage documentStorage() {
+        return documentStorage;
     }
 
     // ===== Storage =====

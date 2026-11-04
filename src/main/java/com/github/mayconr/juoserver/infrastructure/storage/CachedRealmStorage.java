@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.github.mayconr.juoserver.game.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +26,44 @@ public class CachedRealmStorage implements RealmStorage {
 
     private final AccountStorage accountStorage;
     private final ItemMapper itemMapper;
+    private final DocumentStorage documentStorage;
+
+    public CachedRealmStorage(MobileStorage mobiles, ItemStorage items, AccountStorage accounts, ItemMapper mapper) {
+        this(mobiles, items, accounts, mapper, null);
+    }
+
+    private final Map<String, JsonNode> documentCache = new HashMap<>();
+
+    @Override
+    public void cacheDocument(String name, JsonNode document) {
+        DocumentStorage.validateName(name);
+        synchronized (documentCache) {
+            documentCache.put(name, Objects.requireNonNull(document, "Document is required").deepCopy());
+        }
+    }
+
+    @Override
+    public Optional<JsonNode> getDocument(String name) {
+        DocumentStorage.validateName(name);
+        synchronized (documentCache) {
+            return Optional.ofNullable(documentCache.get(name)).map(JsonNode::deepCopy);
+        }
+    }
+
+    private CompletableFuture<Void> persistDocuments() {
+        var snapshot = new HashMap<String, JsonNode>();
+        synchronized (documentCache) {
+            documentCache.forEach((name, document) -> snapshot.put(name, document.deepCopy()));
+        }
+        if (documentStorage == null) {
+            return snapshot.isEmpty() ? CompletableFuture.completedFuture(null)
+                    : CompletableFuture.failedFuture(new IllegalStateException("Document storage is not configured"));
+        }
+        return documentStorage.saveAll(Map.copyOf(snapshot));
+    }
 
     private final List<Integer> dirtyMobiles = new ArrayList<>();
     private final List<UOItem> dirtyItems = new ArrayList<>();
-    private final List<Storage> registeredStorages = new java.util.concurrent.CopyOnWriteArrayList<>();
     private CompletableFuture<Void> activeWorldSave;
 
     private Supplier<Integer> itemSerialSupplier;
@@ -41,6 +77,12 @@ public class CachedRealmStorage implements RealmStorage {
         this.itemSerialSupplier = itemSerialSupplier;
         this.mobileSerialSupplier = mobileSerialSupplier;
         this.mobileDependencyLoader = new MobileDependencyLoader(mobileStorage, itemStorage, itemCache, itemMapper);
+
+        // Documents must be available before module initialization reads their state.
+        if (documentStorage != null) {
+            var documents = documentStorage.loadAll().join();
+            documents.forEach(this::cacheDocument);
+        }
 
         // Load all World NPCs
         var loadGroundItems = itemStorage.findAllGroundItems()
@@ -320,22 +362,14 @@ public class CachedRealmStorage implements RealmStorage {
     }
 
     @Override
-    public void registerStorage(Storage storage) {
-        registeredStorages.add(Objects.requireNonNull(storage, "Storage is required"));
-    }
-
-    @Override
     public synchronized CompletableFuture<Void> saveWorld() {
         if (activeWorldSave != null && !activeWorldSave.isDone()) {
             return activeWorldSave;
         }
-        var storages = List.copyOf(registeredStorages);
         var saves = new ArrayList<CompletableFuture<?>>();
         saves.add(startSave(this::saveMobiles));
         saves.add(startSave(this::saveItems));
-        for (var storage : storages) {
-            saves.add(startSave(storage::save));
-        }
+        saves.add(startSave(this::persistDocuments));
         activeWorldSave = CompletableFuture.allOf(saves.toArray(CompletableFuture[]::new));
         return activeWorldSave;
     }
