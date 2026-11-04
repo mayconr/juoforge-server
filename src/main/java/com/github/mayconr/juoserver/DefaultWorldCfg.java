@@ -42,6 +42,23 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class DefaultWorldCfg implements WorldCfg {
 
+    private final List<String> messageBundles = new ArrayList<>();
+
+    @Override
+    public void addMessageBundle(String baseName) {
+        if (baseName == null || baseName.isBlank()) {
+            throw new IllegalArgumentException("Message bundle name is required");
+        }
+        if (!messageBundles.contains(baseName)) {
+            messageBundles.add(baseName);
+        }
+    }
+
+    @Override
+    public List<String> messageBundles() {
+        return List.copyOf(messageBundles);
+    }
+
     private Supplier<DoubleClickPolicy> doubleClickPolicy = DoubleClickPolicy::allowAll;
 
     @Override

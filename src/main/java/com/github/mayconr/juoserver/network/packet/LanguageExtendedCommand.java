@@ -15,7 +15,9 @@ public final class LanguageExtendedCommand implements ExtendedCommand {
     public LanguageExtendedCommand(ByteBuf buf) {
         byte[] lang = new byte[4];
         buf.readBytes(lang);
-        this.language = new String(lang, StandardCharsets.US_ASCII);
+        int length = 0;
+        while (length < lang.length && lang[length] != 0) length++;
+        this.language = new String(lang, 0, length, StandardCharsets.US_ASCII);
     }
 
     public String language() {

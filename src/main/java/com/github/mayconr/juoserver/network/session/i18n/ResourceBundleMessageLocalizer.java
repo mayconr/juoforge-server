@@ -2,185 +2,99 @@ package com.github.mayconr.juoserver.network.session.i18n;
 
 import com.github.mayconr.juoserver.game.model.event.message.LocalizedMessageContent;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
-public class ResourceBundleMessageLocalizer
-        implements MessageLocalizer {
-
-    private final String baseName;
-
+/** Resolves each locale across all bundles before considering fallback locales or root bundles. */
+public class ResourceBundleMessageLocalizer implements MessageLocalizer {
+    private final List<String> baseNames;
     private final ClientLocale fallbackLocale;
+    private final ClassLoader loader;
+    private final ResourceBundle.Control control = new Utf8Control();
+    private final Map<BundleKey, Optional<ResourceBundle>> bundles = new ConcurrentHashMap<>();
 
-    private final ResourceBundle.Control control =
-            new Utf8Control();
+    private record BundleKey(String baseName, Locale locale) {}
 
     public ResourceBundleMessageLocalizer(String baseName) {
         this(baseName, ClientLocale.defaultLocale());
     }
 
-    public ResourceBundleMessageLocalizer(
-            String baseName,
-            ClientLocale fallbackLocale
-    ) {
+    public ResourceBundleMessageLocalizer(String baseName, ClientLocale fallbackLocale) {
+        this(Collections.singletonList(baseName), fallbackLocale);
+    }
 
-        if (baseName == null || baseName.isBlank()) {
-            throw new IllegalArgumentException(
-                    "baseName cannot be null or blank"
-            );
+    /** Bundle order determines precedence for the same locale. */
+    public ResourceBundleMessageLocalizer(List<String> baseNames, ClientLocale fallbackLocale) {
+        if (baseNames == null || baseNames.isEmpty()
+                || baseNames.stream().anyMatch(name -> name == null || name.isBlank())) {
+            throw new IllegalArgumentException("Bundle names cannot be null or blank");
         }
-
-        this.baseName = baseName;
-
-        this.fallbackLocale =
-                fallbackLocale == null
-                        ? ClientLocale.defaultLocale()
-                        : fallbackLocale;
+        this.baseNames = baseNames.stream().distinct().toList();
+        this.fallbackLocale = fallbackLocale == null ? ClientLocale.defaultLocale() : fallbackLocale;
+        var contextLoader = Thread.currentThread().getContextClassLoader();
+        this.loader = contextLoader == null ? getClass().getClassLoader() : contextLoader;
     }
 
     @Override
-    public String localize(
-            LocalizedMessageContent content,
-            ClientLocale locale
-    ) {
-
-        if (content == null) {
-            throw new IllegalArgumentException(
-                    "content cannot be null"
-            );
-        }
-
-        final ClientLocale effectiveLocale =
-                locale == null
-                        ? fallbackLocale
-                        : locale;
-
-        final String key =
-                normalizeKey(content.key());
-
-        if (key == null || key.isBlank()) {
-            return "";
-        }
-
-        final String pattern =
-                resolvePattern(
-                        key,
-                        effectiveLocale
-                );
-
-        return format(
-                pattern,
-                content.params(),
-                effectiveLocale.toJavaLocale()
-        );
+    public String localize(LocalizedMessageContent content, ClientLocale locale) {
+        if (content == null) throw new IllegalArgumentException("content cannot be null");
+        var effectiveLocale = locale == null ? fallbackLocale : locale;
+        var key = normalizeKey(content.key());
+        if (key == null || key.isBlank()) return "";
+        return format(resolvePattern(key, effectiveLocale), content.params(), effectiveLocale.toJavaLocale());
     }
 
     private String normalizeKey(String key) {
-
-        if (key == null) {
-            return null;
+        if (key == null) return null;
+        var normalized = key.trim();
+        if (normalized.startsWith("{") && normalized.endsWith("}") && normalized.length() > 2) {
+            return normalized.substring(1, normalized.length() - 1);
         }
-
-        String normalized = key.trim();
-
-        if (normalized.startsWith("{")
-                && normalized.endsWith("}")
-                && normalized.length() > 2) {
-
-            normalized = normalized.substring(
-                    1,
-                    normalized.length() - 1
-            );
-        }
-
         return normalized;
     }
 
-    private String resolvePattern(
-            String key,
-            ClientLocale locale
-    ) {
-
-        try {
-
-            ResourceBundle bundle =
-                    ResourceBundle.getBundle(
-                            baseName,
-                            locale.toJavaLocale(),
-                            control
-                    );
-
-            if (bundle.containsKey(key)) {
-                return bundle.getString(key);
-            }
-
-        } catch (MissingResourceException ignored) {
-        }
-
-        if (!locale.equals(fallbackLocale)) {
-
-            try {
-
-                ResourceBundle fallbackBundle =
-                        ResourceBundle.getBundle(
-                                baseName,
-                                fallbackLocale.toJavaLocale(),
-                                control
-                        );
-
-                if (fallbackBundle.containsKey(key)) {
-                    return fallbackBundle.getString(key);
+    private String resolvePattern(String key, ClientLocale locale) {
+        var locales = new LinkedHashSet<Locale>();
+        addCandidates(locales, locale.toJavaLocale());
+        addCandidates(locales, fallbackLocale.toJavaLocale());
+        locales.add(Locale.ROOT);
+        for (var candidate : locales) {
+            for (var baseName : baseNames) {
+                var bundle = bundles.computeIfAbsent(new BundleKey(baseName, candidate), this::loadBundle);
+                if (bundle.isPresent() && bundle.get().containsKey(key)) {
+                    return bundle.get().getString(key);
                 }
-
-            } catch (MissingResourceException ignored) {
             }
         }
-
         return "!" + key + "!";
     }
 
-    private String format(
-            String pattern,
-            Map<String, Object> params,
-            Locale locale
-    ) {
-
-        if (pattern == null) {
-            return "";
+    private void addCandidates(Set<Locale> locales, Locale locale) {
+        for (var candidate : control.getCandidateLocales(baseNames.getFirst(), locale)) {
+            if (!candidate.equals(Locale.ROOT)) locales.add(candidate);
         }
-
-        if (params == null || params.isEmpty()) {
-            return pattern;
-        }
-
-        String resolved = pattern;
-
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-
-            resolved = resolved.replace(
-                    "{" + entry.getKey() + "}",
-                    stringify(entry.getValue())
-            );
-        }
-
-        return new MessageFormat(
-                resolved,
-                locale
-        ).format(new Object[0]);
     }
 
-    private String stringify(Object value) {
-        return value == null
-                ? "null"
-                : String.valueOf(value);
+    private Optional<ResourceBundle> loadBundle(BundleKey key) {
+        try {
+            // Load exact locales so a bundle's root cannot hide another bundle's translation.
+            return Optional.ofNullable(control.newBundle(key.baseName(), key.locale(), "java.properties", loader, false));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Cannot load message bundle " + key, e);
+        } catch (IllegalAccessException | InstantiationException e) {
+            throw new IllegalStateException("Cannot load message bundle " + key, e);
+        }
+    }
+
+    private String format(String pattern, Map<String, Object> params, Locale locale) {
+        if (params == null || params.isEmpty()) return pattern;
+        var resolved = pattern;
+        for (var entry : params.entrySet()) {
+            resolved = resolved.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+        }
+        return new MessageFormat(resolved, locale).format(new Object[0]);
     }
 }

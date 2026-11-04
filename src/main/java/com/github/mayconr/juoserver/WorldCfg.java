@@ -32,6 +32,12 @@ import java.util.function.Supplier;
 
 public interface WorldCfg {
 
+    /** Registers a classpath bundle; earlier registrations take precedence over later ones and core messages. */
+    void addMessageBundle(String baseName);
+
+    /** Additional bundles in registration order. */
+    List<String> messageBundles();
+
     /** Replaces double-click authorization; the default allows all requests. */
     void doubleClickPolicy(Supplier<DoubleClickPolicy> factory);
 

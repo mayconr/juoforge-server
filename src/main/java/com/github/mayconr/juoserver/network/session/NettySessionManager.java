@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.network.session.i18n.ResourceBundleMessageLocalizer;
+
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.network.session.handler.CombatEventHandler;
 import com.github.mayconr.juoserver.network.session.handler.ItemEventHandler;
@@ -29,6 +32,12 @@ public class NettySessionManager implements SessionManager {
     private final ChannelGroup channelGroup;
     private final GamePlaySettings settings;
     private final EventBus eventBus;
+    private final MessageLocalizer localizer;
+
+    public NettySessionManager(WorldInternal world, ChannelGroup channelGroup, GamePlaySettings settings, EventBus eventBus) {
+        this(world, channelGroup, settings, eventBus,
+                new ResourceBundleMessageLocalizer("messages"));
+    }
 
     record Event<T extends GameEvent>(Class<T> eventClass, EventHandler<T> handler) {
         Event<T> forSession(NettyPlayerSession session, SessionPacketWriter writer) {
@@ -78,7 +87,7 @@ public class NettySessionManager implements SessionManager {
         var view = new SessionView(session::getPlayer, session::getLocale, settings);
         var worldView = new WorldViewHandler(view, packetWriter, world, settings);
         var items = new ItemEventHandler(view, packetWriter, world);
-        var ui = new PlayerInterfaceHandler(view, packetWriter, world);
+        var ui = new PlayerInterfaceHandler(view, packetWriter, world, localizer);
         var combat = new CombatEventHandler(view, packetWriter, world);
         return List.of(
                 new Event<>(MobileMoved.class, worldView::onMobileMoved),

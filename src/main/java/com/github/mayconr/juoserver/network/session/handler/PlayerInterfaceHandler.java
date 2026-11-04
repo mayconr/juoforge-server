@@ -18,9 +18,15 @@ public final class PlayerInterfaceHandler {
     private final SessionView session;
     private final SessionPacketWriter packetWriter;
     private final WorldInternal world;
-    private final MessageLocalizer localizer = new ResourceBundleMessageLocalizer("messages");
+    private final MessageLocalizer localizer;
 
     public PlayerInterfaceHandler(SessionView session, SessionPacketWriter packetWriter, WorldInternal world) {
+        this(session, packetWriter, world, new ResourceBundleMessageLocalizer("messages"));
+    }
+
+    public PlayerInterfaceHandler(SessionView session, SessionPacketWriter packetWriter, WorldInternal world,
+                                  MessageLocalizer localizer) {
+        this.localizer = java.util.Objects.requireNonNull(localizer, "Message localizer is required");
         this.session = session;
         this.packetWriter = packetWriter;
         this.world = world;
@@ -28,7 +34,7 @@ public final class PlayerInterfaceHandler {
 
     public void onMobileSpeech(MobileSpeech event) {
         if (session.shouldReceiveUpdate(event.mobile())) {
-            packetWriter.writeAndFlush(new SendSpeech(event));
+            packetWriter.writeAndFlush(new SendUnicodeSpeech(event, speechLanguage()));
         }
     }
 
@@ -58,7 +64,8 @@ public final class PlayerInterfaceHandler {
             case PlainTextMessageContent plain -> plain.text();
             case LocalizedMessageContent localized -> localizer.localize(localized, session.locale());
         };
-        final var speech = new SendSpeech(style.type(), style.hue(), speakerId, speakerModel, style.font(), speakerName, text);
+        final var speech = new SendUnicodeSpeech(style.type(), style.hue(), speakerId, speakerModel,
+                style.font(), speakerName, text, speechLanguage());
 
         if (style.type().equals(TextType.BROADCAST)) {
             packetWriter.writeAndFlush(speech);
@@ -79,6 +86,11 @@ public final class PlayerInterfaceHandler {
         if (session.isPlayer(event.player())) {
             packetWriter.writeAndFlush(new Target(event.id(), event.target(), event.type()));
         }
+    }
+
+    private String speechLanguage() {
+        var locale = session.locale();
+        return (locale == null ? ClientLocale.defaultLocale() : locale).protocolCode();
     }
 
     public void onPaperdollOpened(PaperdollOpened event) {

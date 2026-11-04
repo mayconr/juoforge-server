@@ -34,7 +34,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     private SocketAddress remoteAddress;
     private String clientVersion;
-    private ClientLocale locale = ClientLocale.PT_BR;
+    private volatile ClientLocale locale = ClientLocale.defaultLocale();
 
     @Getter
     private volatile UOPlayer player;
@@ -63,6 +63,12 @@ public class NettyPlayerSession implements PlayerSession {
 
     ClientLocale getLocale() {
         return locale;
+    }
+
+    @Override
+    public void setLocale(ClientLocale locale) {
+        this.locale = java.util.Objects.requireNonNull(locale, "Client locale is required");
+        log.info("Session locale updated to {}", locale);
     }
 
     @Override

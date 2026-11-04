@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.network.session.i18n.ResourceBundleMessageLocalizer;
+
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
@@ -13,6 +16,11 @@ import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 public interface ServerRuntime {
 
     World world();
+
+    /** Shared message localizer configured by the shard. */
+    default MessageLocalizer messageLocalizer() {
+        return new ResourceBundleMessageLocalizer("messages");
+    }
 
     /** Executes core and shard flows. Factories must only construct flows, not execute them. */
     FlowExecutor flows();
