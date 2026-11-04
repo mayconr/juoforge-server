@@ -42,6 +42,7 @@ import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -129,7 +130,7 @@ public final class WorldBootstrap {
         ItemStorage itemStorage = configuration.itemStorage();
         AccountStorage accountStorage = configuration.accountStorage();
         ItemMapper itemMapper = new ItemMapper(itemTemplateByName);
-        RealmStorage storage = new CachedRealmStorage(mobileStorage, itemStorage, accountStorage, itemMapper);
+        RealmStorage storage = new CachedRealmStorage(mobileStorage, itemStorage, accountStorage, itemMapper, configuration.documentStorage());
 
         // --- Serial
         SerialGenerator serialGenerator = new SerialGenerator(storage);
@@ -170,10 +171,11 @@ public final class WorldBootstrap {
 
         world.initialize();
 
-        final var bundles = new java.util.ArrayList<>(configuration.messageBundles());
+        final var bundles = new ArrayList<>(configuration.messageBundles());
         if (!bundles.contains("messages")) bundles.add("messages");
         final var localizer = new ResourceBundleMessageLocalizer(
                 bundles, ClientLocale.defaultLocale());
+
         final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, regionSystem, uoFileReader, gameLoop, world.flows(), localizer);
         for (var registration : configuration.flowList()) {
             registerShardFlow(world, runtime, registration);
@@ -193,7 +195,6 @@ public final class WorldBootstrap {
         for (var factory : configuration.eventListenerList()) {
             eventBus.register(factory.apply(runtime));
         }
-        registerStorages(configuration, runtime);
 
         gameLoop.addTask(new GameTask() {
             @Override public void execute(long currentTick, double delta) { world.update(delta); }
@@ -203,13 +204,6 @@ public final class WorldBootstrap {
         gameLoop.start();
 
         return runtime;
-    }
-
-    static void registerStorages(WorldCfg configuration, ServerRuntime runtime) {
-        for (var factory : configuration.storageList()) {
-            runtime.storage().registerStorage(Objects.requireNonNull(factory.apply(runtime),
-                    "Storage factory returned null"));
-        }
     }
 
     static <T extends AbstractContext> void registerShardFlow(

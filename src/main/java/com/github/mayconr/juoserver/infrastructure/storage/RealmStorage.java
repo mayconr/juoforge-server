@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.github.mayconr.juoserver.game.model.*;
 
 import java.util.Collection;
@@ -75,6 +77,9 @@ public interface RealmStorage {
 
     Optional<UOContainer> getContainer(int serialId);
 
+    /** Returns a copy of the cached document, or empty if its name is unknown. */
+    Optional<JsonNode> getDocument(String name);
+
     // =========================
     // CACHE MANAGEMENT
     // =========================
@@ -82,6 +87,9 @@ public interface RealmStorage {
     UOMobile cache(UOMobile mobile);
 
     UOItem cache(UOItem item);
+
+    /** Caches a copy for persistence during the next full world save. */
+    void cacheDocument(String name, JsonNode document);
 
     // =========================
     // SPATIAL QUERIES
@@ -142,14 +150,11 @@ public interface RealmStorage {
     CompletableFuture<Collection<UOMobile>> saveMobiles();
 
     /**
-     * Saves mobiles, items and a snapshot of all registered storages.
+     * Saves mobiles, items and a snapshot of the document cache.
      * Completes only after all saves finish; any failure completes the result exceptionally.
      * Saves use independent transactions. Overlapping calls share the active save.
      */
     CompletableFuture<Void> saveWorld();
-
-    /** Registers a storage invoked only by saveWorld, never by individual item or mobile saves. */
-    void registerStorage(Storage storage);
 
     CompletableFuture<Collection<UOItem>> saveItems();
 

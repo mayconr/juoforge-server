@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver;
-import com.github.mayconr.juoserver.infrastructure.storage.Storage;
+
+import com.github.mayconr.juoserver.infrastructure.storage.DocumentStorage;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
@@ -119,13 +120,12 @@ public interface WorldCfg {
     // Events
     <T extends GameEvent> void addEventListener(Function<ServerRuntime, EventRegistry<T>> registry);
 
-    /** Creates and registers additional world-save work after runtime initialization, before the game loop starts. */
-    void registerStorage(Function<ServerRuntime, Storage> factory);
-
-    List<Function<ServerRuntime, Storage>> storageList();
-
     // Templates
     <T, K> void addCustomTemplate(String templateName, Class<T> templateClass, Function<T, K> keyExtractor, Path file);
+
+    void documentStorage(DocumentStorage storage);
+
+    DocumentStorage documentStorage();
 
     // ===== Storage =====
     void mobileStorage(MobileStorage mobileStorage);
