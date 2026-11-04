@@ -1,5 +1,9 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.network.session.i18n.ResourceBundleMessageLocalizer;
+import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+
 import com.github.mayconr.juoserver.DefaultWorldCfg.TemplateData;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.item.template.CachedItemTemplateRegistry;
@@ -166,7 +170,11 @@ public final class WorldBootstrap {
 
         world.initialize();
 
-        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, regionSystem, uoFileReader, gameLoop, world.flows());
+        final var bundles = new java.util.ArrayList<>(configuration.messageBundles());
+        if (!bundles.contains("messages")) bundles.add("messages");
+        final var localizer = new ResourceBundleMessageLocalizer(
+                bundles, ClientLocale.defaultLocale());
+        final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, regionSystem, uoFileReader, gameLoop, world.flows(), localizer);
         for (var registration : configuration.flowList()) {
             registerShardFlow(world, runtime, registration);
         }
@@ -219,7 +227,8 @@ public final class WorldBootstrap {
                                          RegionSystem regionSystem,
                                          UOFileReader fileReader,
                                          GameLoop gameLoop,
-                                         FlowExecutor flows) implements ServerRuntime {
+                                         FlowExecutor flows,
+                                         MessageLocalizer messageLocalizer) implements ServerRuntime {
 
             @Override
             public <K, V> TemplateRegistry<K, V> getTemplateRegistry(String templateName, Class<V> clazz) {

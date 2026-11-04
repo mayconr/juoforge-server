@@ -19,6 +19,14 @@ public enum ClientLocale {
         return code;
     }
 
+    public String protocolCode() {
+        return switch (this) {
+            case EN_US -> "ENU";
+            case PT_BR -> "PTB";
+            case ES_ES -> "ESP";
+        };
+    }
+
     public Locale toJavaLocale() {
         return javaLocale;
     }
@@ -32,7 +40,7 @@ public enum ClientLocale {
             return defaultLocale();
         }
 
-        return switch (code.toLowerCase()) {
+        return switch (code.trim().toLowerCase(Locale.ROOT)) {
             case "en", "enu", "en_us" -> EN_US;
             case "pt", "ptb", "pt_br" -> PT_BR;
             case "es", "esp", "es_es" -> ES_ES;

@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import com.github.mayconr.juoserver.network.packet.DeleteCharacter;
 import com.github.mayconr.juoserver.network.packet.LoginReject;
 import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
+import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
@@ -49,6 +50,9 @@ public interface PlayerSession {
      * @param version the client version string
      */
     void setClientVersion(String version);
+
+    /** Updates the language reported by this client connection. */
+    void setLocale(ClientLocale locale);
 
     void authenticate(String username);
 

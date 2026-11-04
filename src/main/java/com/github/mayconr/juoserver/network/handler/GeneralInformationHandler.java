@@ -8,6 +8,7 @@ import com.github.mayconr.juoserver.network.packet.ScreenSizeExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.SpellSelectionExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.UnknownExtendedCommand;
 import com.github.mayconr.juoserver.network.session.PlayerSession;
+import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 import io.netty.channel.ChannelHandler;
@@ -27,6 +28,11 @@ public class GeneralInformationHandler
     protected void channelRead0(
             PlayerSession session, ChannelHandlerContext ctx, GeneralInformation msg) {
         var command = msg.getCommand();
+        if (command instanceof LanguageExtendedCommand language) {
+            var locale = ClientLocale.fromCode(language.language());
+            session.setLocale(locale);
+            return;
+        }
         var details = switch (command) {
             case ClientVersionExtendedCommand version -> "Version: " + version.version();
             case CloseStatusExtendedCommand status -> "Character serial: %d (0x%08X)".formatted(

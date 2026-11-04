@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
+
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -22,18 +24,20 @@ public class NetworkBootstrap {
     private final EventBus eventBus;
     private final WorldInternal worldInternal;
     private final GamePlaySettings settings;
+    private final MessageLocalizer localizer;
 
     public NetworkBootstrap(ServerRuntime runtime) {
         this.eventBus = runtime.eventBus();
         this.worldInternal = (WorldInternal) runtime.world();
         this.settings = runtime.settings();
+        this.localizer = runtime.messageLocalizer();
     }
 
     public NetworkServer build(NetworkSettings network) {
         java.util.Objects.requireNonNull(network, "Network settings are required");
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-        SessionManager sessionManager = new NettySessionManager(worldInternal, channelGroup, settings, eventBus);
+        SessionManager sessionManager = new NettySessionManager(worldInternal, channelGroup, settings, eventBus, localizer);
 
         ClientConnectedHandlerAdapter connectedHandler = new ClientConnectedHandlerAdapter(channelGroup, sessionManager);
 
