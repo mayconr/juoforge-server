@@ -1,12 +1,9 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.infrastructure.storage.DocumentStorage;
 
-import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 
-import com.github.mayconr.juoserver.game.GamePlaySettings.Ai;
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
 import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
 import java.util.Map;
@@ -22,16 +19,25 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public interface WorldCfg {
+/** Configuration available to modules when registering their contribution to the world. */
+public interface ModuleConfiguration {
+
+    /**
+     * Registers initialization run once per bootstrap, in registration order, after
+     * world/storage initialization and before shard flow and trigger factories.
+     * Initializers may bind the flow executor but must not execute shard flows.
+     * A failure aborts bootstrap before the game loop starts.
+     */
+    void addInitializer(Consumer<ServerRuntime> initializer);
+
+    List<Consumer<ServerRuntime>> initializerList();
 
     /** Registers a classpath bundle; earlier registrations take precedence over later ones and core messages. */
     void addMessageBundle(String baseName);
@@ -47,30 +53,6 @@ public interface WorldCfg {
     void lootPolicy(Supplier<LootPolicy> factory);
 
     Supplier<LootPolicy> lootPolicy();
-
-    void content(WorldContent content);
-
-    WorldContent content();
-
-    /** Configures server timing and client data files in code. */
-    void serverSettings(ServerSettings settings);
-
-    ServerSettings serverSettings();
-
-    /** Replaces gameplay defaults with rules configured in code. */
-    void gameplaySettings(GamePlaySettings settings);
-
-    GamePlaySettings gameplaySettings();
-
-    /** Combines gameplay rules with the server parameters supplied by the shard. */
-    default GamePlaySettings settings() {
-        return serverSettings().applyTo(gameplaySettings());
-    }
-
-    /** AI timing configured by the shard. */
-    default Ai ai() {
-        return new Ai(serverSettings().aiUpdateIntervalSeconds());
-    }
 
     /** Replaces the policy that decides whether an AI session may execute. */
     void aiActivationPolicy(Supplier<AIActivationPolicy> factory);
@@ -123,17 +105,6 @@ public interface WorldCfg {
     // Templates
     <T, K> void addCustomTemplate(String templateName, Class<T> templateClass, Function<T, K> keyExtractor, Path file);
 
-    void documentStorage(DocumentStorage storage);
-
-    DocumentStorage documentStorage();
-
-    // ===== Storage =====
-    void mobileStorage(MobileStorage mobileStorage);
-
-    void itemStorage(ItemStorage itemStorage);
-
-    void accountStorage(AccountStorage accountStorage);
-
     // ===== Read methods (optional, for engine use) =====
     Function<World, Wallet> wallet();
 
@@ -145,12 +116,7 @@ public interface WorldCfg {
 
     List<Function<ServerRuntime, EventRegistry<GameEvent>>> eventListenerList();
 
-    <K, V> List<DefaultWorldCfg.TemplateData<K, V>> templateList();
+    <K, V> List<DefaultWorldConfigurator.TemplateData<K, V>> templateList();
 
-    MobileStorage mobileStorage();
-
-    ItemStorage itemStorage();
-
-    AccountStorage accountStorage();
 
 }

@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
 import com.github.mayconr.juoserver.network.session.i18n.ResourceBundleMessageLocalizer;
 import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
 
-import com.github.mayconr.juoserver.DefaultWorldCfg.TemplateData;
+import com.github.mayconr.juoserver.DefaultWorldConfigurator.TemplateData;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.item.template.CachedItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
@@ -64,7 +64,7 @@ public final class WorldBootstrap {
     private final ShardBootstrap shardBootstrap;
 
     public ServerRuntime start() {
-        final var configuration = new DefaultWorldCfg();
+        final var configuration = new DefaultWorldConfigurator();
 
         shardBootstrap.configure(configuration);
         final var content = configuration.content();
@@ -177,6 +177,9 @@ public final class WorldBootstrap {
                 bundles, ClientLocale.defaultLocale());
 
         final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, regionSystem, uoFileReader, gameLoop, world.flows(), localizer);
+        for (var initializer : configuration.initializerList()) {
+            initializer.accept(runtime);
+        }
         for (var registration : configuration.flowList()) {
             registerShardFlow(world, runtime, registration);
         }

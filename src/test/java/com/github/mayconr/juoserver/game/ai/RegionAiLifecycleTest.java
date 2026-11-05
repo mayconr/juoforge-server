@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ai;
 
-import com.github.mayconr.juoserver.DefaultWorldCfg;
+import com.github.mayconr.juoserver.DefaultWorldConfigurator;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.ai.engine.AIEngineImpl;
@@ -36,7 +36,7 @@ class RegionAiLifecycleTest {
         city.addChild(shop);
         var regions = new RegionSystemImpl(Map.of("city", city, "shop", shop));
         var regionModule = new RegionModuleImpl(regions);
-        var cfg = spy(new DefaultWorldCfg());
+        var cfg = spy(new DefaultWorldConfigurator());
         cfg.aiActivationPolicy(() -> context -> true);
         cfg.aiSpeechPolicy(() -> (context, speech) -> true);
         doReturn(new GamePlaySettings.Ai(0.25)).when(cfg).ai();

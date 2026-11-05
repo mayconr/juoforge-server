@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.spell;
 
-import com.github.mayconr.juoserver.DefaultWorldCfg;
+import com.github.mayconr.juoserver.DefaultWorldConfigurator;
 import com.github.mayconr.juoserver.ServerRuntime;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
@@ -23,7 +23,7 @@ class SpellCastTriggerTest {
 
     @Test
     void configuredFactoriesReceiveRuntimeAndOnlyFirstMatchingTriggerExecutes() {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         var runtime = mock(ServerRuntime.class);
         var skipped = mock(SpellCastTrigger.class);
         var first = mock(SpellCastTrigger.class);
@@ -83,7 +83,7 @@ class SpellCastTriggerTest {
 
     @Test
     void rejectsNullFactoriesAndTriggers() {
-        assertThrows(NullPointerException.class, () -> new DefaultWorldCfg().addSpellTrigger(null));
+        assertThrows(NullPointerException.class, () -> new DefaultWorldConfigurator().addSpellTrigger(null));
         assertThrows(NullPointerException.class, () -> new SpellCastRegistry().register(null));
     }
 }

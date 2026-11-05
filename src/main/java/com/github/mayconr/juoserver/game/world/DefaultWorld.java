@@ -23,7 +23,7 @@ import com.github.mayconr.juoserver.game.messaging.WorldMessage;
 import com.github.mayconr.juoserver.game.npc.WorldNpc;
 import com.github.mayconr.juoserver.game.spell.WorldSpell;
 import com.github.mayconr.juoserver.game.damage.WorldDamage;
-import com.github.mayconr.juoserver.WorldCfg;
+import com.github.mayconr.juoserver.WorldConfigurator;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.spell.SpellModule;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
@@ -288,7 +288,7 @@ public class DefaultWorld implements WorldInternal, World {
      */
 
     private final GamePlaySettings settings;
-    private final WorldCfg worldCfg;
+    private final WorldConfigurator worldCfg;
 
     @Override
     public void initialize() {

@@ -38,10 +38,30 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static java.util.Objects.*;
+
 @RequiredArgsConstructor
-public class DefaultWorldCfg implements WorldCfg {
+public class DefaultWorldConfigurator implements WorldConfigurator {
+
+    private final List<Consumer<ServerRuntime>> initializers = new ArrayList<>();
+
+    @Override
+    public void addInitializer(Consumer<ServerRuntime> initializer) {
+        initializers.add(requireNonNull(initializer, "Module initializer is required"));
+    }
+
+    @Override
+    public List<Consumer<ServerRuntime>> initializerList() {
+        return List.copyOf(initializers);
+    }
+
+    @Override
+    public void addModule(UOModule module) {
+        requireNonNull(module, "Module is required").register(this);
+    }
 
     private final List<String> messageBundles = new ArrayList<>();
 
@@ -64,7 +84,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void doubleClickPolicy(Supplier<DoubleClickPolicy> factory) {
-        this.doubleClickPolicy = java.util.Objects.requireNonNull(factory, "Double click policy factory is required");
+        this.doubleClickPolicy = requireNonNull(factory, "Double click policy factory is required");
     }
 
     @Override
@@ -77,7 +97,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void lootPolicy(Supplier<LootPolicy> factory) {
-        this.lootPolicy = java.util.Objects.requireNonNull(factory);
+        this.lootPolicy = requireNonNull(factory);
     }
 
     @Override
@@ -89,12 +109,12 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void serverSettings(ServerSettings settings) {
-        this.serverSettings = java.util.Objects.requireNonNull(settings, "Server settings are required");
+        this.serverSettings = requireNonNull(settings, "Server settings are required");
     }
 
     @Override
     public ServerSettings serverSettings() {
-        return java.util.Objects.requireNonNull(serverSettings, "Shard must configure server settings");
+        return requireNonNull(serverSettings, "Shard must configure server settings");
     }
 
     private GamePlaySettings gameplaySettings =
@@ -102,7 +122,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void gameplaySettings(GamePlaySettings settings) {
-        this.gameplaySettings = java.util.Objects.requireNonNull(settings, "Gameplay settings are required");
+        this.gameplaySettings = requireNonNull(settings, "Gameplay settings are required");
     }
 
     @Override
@@ -114,12 +134,12 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void content(WorldContent content) {
-        this.content = java.util.Objects.requireNonNull(content, "World content is required");
+        this.content = requireNonNull(content, "World content is required");
     }
 
     @Override
     public WorldContent content() {
-        return java.util.Objects.requireNonNull(content, "Shard must configure world content");
+        return requireNonNull(content, "Shard must configure world content");
     }
 
     private Supplier<AIActivationPolicy> aiActivationPolicy =
@@ -129,7 +149,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void aiActivationPolicy(Supplier<AIActivationPolicy> factory) {
-        this.aiActivationPolicy = java.util.Objects.requireNonNull(factory, "AI activation policy factory is required");
+        this.aiActivationPolicy = requireNonNull(factory, "AI activation policy factory is required");
     }
 
     @Override
@@ -139,7 +159,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void aiSpeechPolicy(Supplier<AISpeechPolicy> factory) {
-        this.aiSpeechPolicy = java.util.Objects.requireNonNull(factory, "AI speech policy factory is required");
+        this.aiSpeechPolicy = requireNonNull(factory, "AI speech policy factory is required");
     }
 
     @Override
@@ -152,8 +172,8 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void addAi(String type, Function<ServerRuntime, AIContextFactory<?>> factory) {
-        java.util.Objects.requireNonNull(type, "AI type is required");
-        java.util.Objects.requireNonNull(factory, "AI context factory is required");
+        requireNonNull(type, "AI type is required");
+        requireNonNull(factory, "AI context factory is required");
         if (type.isBlank()) throw new IllegalArgumentException("AI type must not be blank");
         if (aiList.putIfAbsent(type, factory) != null) {
             throw new IllegalArgumentException("AI type already configured: " + type);
@@ -162,7 +182,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public <T extends AIFlowContext> void addAi(AIRegistration<T> registration) {
-        java.util.Objects.requireNonNull(registration, "AI registration is required");
+        requireNonNull(registration, "AI registration is required");
         var type = registration.type();
         if (aiList.containsKey(type)) throw new IllegalArgumentException("AI type already configured: " + type);
         addFlow(registration.contextType(), registration.flowFactory());
@@ -194,7 +214,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void combatSkillGainPolicy(Supplier<CombatSkillGainPolicy> factory) {
-        this.combatSkillGainPolicy = java.util.Objects.requireNonNull(factory);
+        this.combatSkillGainPolicy = requireNonNull(factory);
     }
 
     @Override
@@ -238,7 +258,7 @@ public class DefaultWorldCfg implements WorldCfg {
     @Override
     public void addItemTrigger(String script, Function<ServerRuntime, ItemUseTrigger> triggerFactory) {
         if (script == null || script.isBlank()) throw new IllegalArgumentException("Item script name is required");
-        java.util.Objects.requireNonNull(triggerFactory, "Item trigger factory is required");
+        requireNonNull(triggerFactory, "Item trigger factory is required");
         if (itemTriggerList.putIfAbsent(script, triggerFactory) != null) {
             throw new IllegalArgumentException("Item script already registered: " + script);
         }
@@ -246,7 +266,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void addSpellTrigger(Function<ServerRuntime, SpellCastTrigger> triggerFactory) {
-        spellTriggerList.add(java.util.Objects.requireNonNull(triggerFactory, "Spell trigger factory is required"));
+        spellTriggerList.add(requireNonNull(triggerFactory, "Spell trigger factory is required"));
     }
 
     @Override
@@ -272,7 +292,7 @@ public class DefaultWorldCfg implements WorldCfg {
 
     @Override
     public void documentStorage(DocumentStorage storage) {
-        this.documentStorage = java.util.Objects.requireNonNull(storage, "Document storage is required");
+        this.documentStorage = requireNonNull(storage, "Document storage is required");
     }
 
     @Override
