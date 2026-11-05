@@ -2,9 +2,10 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.handler.*;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 public class DefaultPacketHandlerFactory {
-    public java.util.List<io.netty.channel.SimpleChannelInboundHandler<?>> create(
+    public java.util.List<SimpleChannelInboundHandler<?>> create(
             WorldInternal world
     ) {
         return java.util.List.of(

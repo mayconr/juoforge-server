@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.session.i18n;
 
-import com.github.mayconr.juoserver.DefaultWorldCfg;
+import com.github.mayconr.juoserver.DefaultWorldConfigurator;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -54,7 +54,7 @@ class ResourceBundleMessageLocalizerTest {
 
     @Test
     void registersBundlesInOrderWithoutDuplicatesAndReturnsSnapshot() {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         cfg.addMessageBundle("i18n.shard");
         var snapshot = cfg.messageBundles();
         cfg.addMessageBundle("i18n.core");

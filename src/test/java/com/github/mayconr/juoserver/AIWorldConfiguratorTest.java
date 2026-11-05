@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class AIWorldCfgTest {
+class AIWorldConfiguratorTest {
     @Test
     void defaultPoliciesUseConfiguredVisibilityWhenCreated() {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         var activationFactory = cfg.aiActivationPolicy();
         var speechFactory = cfg.aiSpeechPolicy();
         cfg.gameplaySettings(cfg.gameplaySettings().withWorld(
@@ -24,7 +24,7 @@ class AIWorldCfgTest {
 
     @Test
     void shardCanOverridePoliciesWithoutContent() {
-        WorldCfg cfg = new DefaultWorldCfg();
+        WorldConfigurator cfg = new DefaultWorldConfigurator();
         AIActivationPolicy activation = context -> true;
         AISpeechPolicy speech = (context, event) -> true;
         cfg.aiActivationPolicy(() -> activation);

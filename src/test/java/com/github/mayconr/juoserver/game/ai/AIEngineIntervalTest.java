@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ai;
 
-import com.github.mayconr.juoserver.DefaultWorldCfg;
+import com.github.mayconr.juoserver.DefaultWorldConfigurator;
 import com.github.mayconr.juoserver.game.ai.engine.AIEngineImpl;
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
@@ -18,7 +18,7 @@ class AIEngineIntervalTest {
 
     private AIEngineImpl engine(double interval) {
         var settings = new GamePlaySettings.Ai(interval);
-        var cfg = spy(new DefaultWorldCfg());
+        var cfg = spy(new DefaultWorldConfigurator());
         cfg.aiActivationPolicy(() -> context -> true);
         cfg.aiSpeechPolicy(() -> (context, speech) -> false);
         doReturn(settings).when(cfg).ai();

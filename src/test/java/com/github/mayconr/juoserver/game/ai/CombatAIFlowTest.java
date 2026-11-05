@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ai;
 
-import com.github.mayconr.juoserver.DefaultWorldCfg;
+import com.github.mayconr.juoserver.DefaultWorldConfigurator;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIDefinition;
@@ -26,7 +26,7 @@ class CombatAIFlowTest {
         var flows = spy(new DefaultFlowFacade(registry));
         var active = new AtomicBoolean(false);
         var world = mock(World.class, RETURNS_DEEP_STUBS);
-        var cfg = spy(new DefaultWorldCfg());
+        var cfg = spy(new DefaultWorldConfigurator());
         cfg.aiActivationPolicy(() -> context -> active.get());
         cfg.aiSpeechPolicy(() -> (context, speech) -> false);
         doReturn(new GamePlaySettings.Ai(0.25)).when(cfg).ai();

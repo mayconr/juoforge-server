@@ -5,6 +5,20 @@ Configuração de rede: [modo independente ou integração com juoforge-gateway]
 Servidor de Ultima Online em Java. As regras de gameplay são configuradas em
 [`GamePlaySettings`](src/main/java/com/github/mayconr/juoserver/game/GamePlaySettings.java).
 
+## Build com Java 25
+
+Use JDK 25 e Maven 3.6.3 ou superior. Configure `JAVA_HOME` para o JDK 25 e
+confirme com `mvn -version` que o Maven está usando essa versão. No IntelliJ,
+selecione JDK 25 para o projeto e para o Maven runner/importer e recarregue o POM.
+
+```sh
+mvn clean install
+```
+
+O build usa `--release 25`, sem recursos preview. O processamento de anotações
+do Lombok está configurado explicitamente no Maven. O Spring Boot 3.5 gerencia
+as versões compatíveis das dependências, incluindo Lombok, Mockito e Netty.
+
 ## Módulo de skills
 
 O módulo é acessível por `world.skill()` e oferece estas operações:

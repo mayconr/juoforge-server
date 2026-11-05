@@ -15,10 +15,10 @@ public record GamePlaySettings(
         Economy economy,
         Ai ai
 ) {
-    /** Default gameplay rules; server timing and data files are supplied by WorldCfg. */
+    /** Default gameplay rules; server timing and data files are supplied by WorldConfigurator. */
     public GamePlaySettings() {
         this("DEFAULT", null,
-                new Skills(0.0, 0.5, 50, 100, 19.77, 30.0, 0.00113654),
+                new Skills(0.0, 0.5, 50, 100, 100, 30.0, 0.00113654),
                 new Mobile("backpack", 2), new World(new Visibility(24), null),
                 null, new Client(List.of(ClientFeatureFlag.AOS)), new Economy("gold_coin"), null);
     }

@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ui;
 
-import com.github.mayconr.juoserver.DefaultWorldCfg;
+import com.github.mayconr.juoserver.DefaultWorldConfigurator;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.WorldItem;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -97,7 +97,7 @@ class DoubleClickPolicyTest {
 
     @Test
     void configurationDefaultsToAllowAndAcceptsAShardPolicy() {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         var request = new DoubleClickRequest(mock(UOPlayer.class), 0x40000000);
         assertTrue(cfg.doubleClickPolicy().get().allows(request));
         DoubleClickPolicy deny = action -> false;
@@ -110,7 +110,7 @@ class DoubleClickPolicyTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void configuredPolicyRunsBeforeStorageAndReceivesThePlayerAndTarget(boolean allowed) {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         var policy = mock(DoubleClickPolicy.class);
         var storage = mock(RealmStorage.class);
         var events = mock(EventBus.class);

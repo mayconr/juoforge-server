@@ -23,7 +23,7 @@ class ShardFlowRegistrationTest {
 
     @Test
     void factoryReceivesRuntimeAndFlowExecutesThroughSharedFacade() {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         var registry = new DefaultFlowRegistry();
         var runtime = mock(ServerRuntime.class);
         when(runtime.flows()).thenReturn(new DefaultFlowFacade(registry));
@@ -53,7 +53,7 @@ class ShardFlowRegistrationTest {
 
     @Test
     void rejectsDuplicateConfigurationAndCoreContextReplacement() {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         var builds = new AtomicInteger();
         cfg.addFlow(ShardContext.class, runtime -> {
             builds.incrementAndGet();
@@ -74,7 +74,7 @@ class ShardFlowRegistrationTest {
 
     @Test
     void rejectsNullRegistrationInputsAndFactoryResults() {
-        var cfg = new DefaultWorldCfg();
+        var cfg = new DefaultWorldConfigurator();
         assertThrows(NullPointerException.class, () -> cfg.addFlow(ShardContext.class, null));
         assertThrows(NullPointerException.class, () -> cfg.addFlow(null,
                 runtime -> FlowFactory.<ShardContext>builder().build()));

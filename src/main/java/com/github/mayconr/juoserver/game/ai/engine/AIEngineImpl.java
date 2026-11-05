@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ai.engine;
 
-import com.github.mayconr.juoserver.WorldCfg;
+import com.github.mayconr.juoserver.WorldConfigurator;
 import com.github.mayconr.juoserver.game.ai.session.AISession;
 import com.github.mayconr.juoserver.game.ai.session.AISessionImpl;
 import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
@@ -39,7 +39,7 @@ public class AIEngineImpl implements AIEngine {
     private ModuleContext.FlowFacade flows;
 
     public AIEngineImpl(World world, Consumer<NpcAction> actionDispatcher,
-                        WorldCfg worldCfg) {
+                        WorldConfigurator worldCfg) {
         Objects.requireNonNull(worldCfg, "World configuration is required");
         this.world = world;
         this.actionDispatcher = actionDispatcher;
