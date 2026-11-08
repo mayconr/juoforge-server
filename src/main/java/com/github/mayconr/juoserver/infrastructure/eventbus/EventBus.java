@@ -11,5 +11,6 @@ public interface EventBus {
 
     <T extends GameEvent> void unregister(Class<T> type, EventHandler<T> listener);
 
+    /** Logs listener runtime failures and continues dispatching to the remaining listeners. */
     <T extends GameEvent> void publish(T event);
 }

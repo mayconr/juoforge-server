@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-public class FormField implements UIElement {
+import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
+import java.util.function.Function;
+
+public class FormField implements UIElement, Sized {
 
     private final UIElement label;
     private final UIElement field;
@@ -23,25 +26,31 @@ public class FormField implements UIElement {
     }
 
     @Override
+    public void resolveTexts(Function<MessageContent, String> resolver) {
+        label.resolveTexts(resolver);
+        field.resolveTexts(resolver);
+    }
+
+    @Override
     public void layout(LayoutContext ctx) {
 
         if (!inline) {
             // Label em cima
-            LayoutContext labelCtx = new LayoutContext(ctx.x, ctx.y, ctx.width, 20);
+            LayoutContext labelCtx = new LayoutContext(ctx.x, ctx.y, ctx.width, labelHeight());
             label.layout(labelCtx);
 
-            LayoutContext fieldCtx = new LayoutContext(ctx.x, ctx.y + 22, ctx.width, 24);
+            LayoutContext fieldCtx = new LayoutContext(ctx.x, ctx.y + labelHeight() + gap, ctx.width, fieldHeight());
             field.layout(fieldCtx);
         } else {
             // Label + campo lado a lado
             int labelWidth = 80;
 
-            LayoutContext labelCtx = new LayoutContext(ctx.x, ctx.y, labelWidth, 24);
+            LayoutContext labelCtx = new LayoutContext(ctx.x, ctx.y, labelWidth, labelHeight());
             label.layout(labelCtx);
 
             LayoutContext fieldCtx =
                     new LayoutContext(
-                            ctx.x + labelWidth + gap, ctx.y, ctx.width - labelWidth - gap, 24);
+                            ctx.x + labelWidth + gap, ctx.y, Math.max(0, ctx.width - labelWidth - gap), fieldHeight());
             field.layout(fieldCtx);
         }
     }
@@ -50,5 +59,19 @@ public class FormField implements UIElement {
     public void render(GumpBuilder g) {
         label.render(g);
         field.render(g);
+    }
+    private int labelHeight() { return label instanceof Sized s ? s.getHeight() : 20; }
+    private int fieldHeight() { return field instanceof Sized s ? s.getHeight() : 24; }
+
+    @Override
+    public int getWidth() {
+        int labelWidth = label instanceof Sized s ? s.getWidth() : 80;
+        int fieldWidth = field instanceof Sized s ? s.getWidth() : 0;
+        return inline ? 80 + gap + fieldWidth : Math.max(labelWidth, fieldWidth);
+    }
+
+    @Override
+    public int getHeight() {
+        return inline ? Math.max(labelHeight(), fieldHeight()) : labelHeight() + gap + fieldHeight();
     }
 }

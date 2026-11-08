@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+
 import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
 
 import com.github.mayconr.juoserver.game.model.SpellbookType;
@@ -10,7 +12,7 @@ import com.github.mayconr.juoserver.network.packet.GeneralInformation;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import com.github.mayconr.juoserver.support.TestFields;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -23,17 +25,17 @@ class SpellBookSessionTest {
             var session = new NettyPlayerSession(channel, null, null, null, null);
             var sessionHandler = new PlayerInterfaceHandler(
                     new SessionView(session::getPlayer, session::getLocale, null),
-                    new SessionPacketWriter(channel, null), null);
+                    new SessionPacketWriter(channel, null), null, mock(MessageLocalizer.class));
             var player = mock(UOPlayer.class);
             var event = new SpellBookOpened(player, 0x40000001, 0x0EFA, SpellbookType.MAGERY, 8L);
             sessionHandler.onSpellBookOpened(event);
             channel.runPendingTasks();
             assertNull(channel.readOutbound());
-            ReflectionTestUtils.setField(session, "player", mock(UOPlayer.class));
+            TestFields.setField(session, "player", mock(UOPlayer.class));
             sessionHandler.onSpellBookOpened(event);
             channel.runPendingTasks();
             assertNull(channel.readOutbound());
-            ReflectionTestUtils.setField(session, "player", player);
+            TestFields.setField(session, "player", player);
             sessionHandler.onSpellBookOpened(event);
             channel.runPendingTasks();
             var contents = assertInstanceOf(GeneralInformation.class, channel.readOutbound());

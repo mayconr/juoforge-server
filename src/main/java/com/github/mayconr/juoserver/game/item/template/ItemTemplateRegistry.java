@@ -12,4 +12,6 @@ public interface ItemTemplateRegistry {
 
     List<ItemTemplate> getItemTemplates(String stockType);
 
+    List<ItemTemplate> getByFamily(String family);
+
 }

@@ -13,9 +13,13 @@ public class CachedItemTemplateRegistry implements ItemTemplateRegistry {
     private final Map<Integer, List<ItemTemplate>> byModelId;
     private final Map<String, ItemTemplate> mountByNpcName;
     private final Map<String, List<ItemTemplate>> byStockType;
+    private final Map<String, List<ItemTemplate>> byFamily;
 
     public CachedItemTemplateRegistry(Map<String, ItemTemplate> templates) {
         this.byName = Map.copyOf(templates);
+        this.byFamily = templates.values().stream()
+                .collect(Collectors.groupingBy(ItemTemplate::family,
+                        Collectors.collectingAndThen(Collectors.toList(), List::copyOf)));
         this.byModelId = templates.values().stream()
                 .collect(Collectors.groupingBy(
                     ItemTemplate::modelId,
@@ -71,5 +75,10 @@ public class CachedItemTemplateRegistry implements ItemTemplateRegistry {
     @Override
     public List<ItemTemplate> getItemTemplates(String stockType) {
         return byStockType.get(stockType);
+    }
+
+    @Override
+    public List<ItemTemplate> getByFamily(String family) {
+        return byFamily.getOrDefault(family, List.of());
     }
 }

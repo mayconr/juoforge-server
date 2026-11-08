@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-final class LayoutContext {
+final public class LayoutContext {
     int x, y, width, height;
 
     LayoutContext(int x, int y, int width, int height) {

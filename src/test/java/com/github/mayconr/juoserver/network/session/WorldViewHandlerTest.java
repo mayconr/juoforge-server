@@ -8,7 +8,7 @@ import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedIn;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;

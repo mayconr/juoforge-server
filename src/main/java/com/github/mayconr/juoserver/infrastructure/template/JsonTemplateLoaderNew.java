@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.infrastructure.template;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
 public class JsonTemplateLoaderNew<T> implements TemplateLoader<T> {
 
     private final ObjectMapper objectMapper;
+    private final ObjectMapper yamlMapper = new YAMLMapper().findAndRegisterModules();
     private final Path jsonPath;
     private final Class<T> templateType;
 
@@ -37,7 +39,7 @@ public class JsonTemplateLoaderNew<T> implements TemplateLoader<T> {
 
         try (Stream<Path> files = Files.walk(jsonPath)) {
             files.filter(Files::isRegularFile)
-                    .filter(p -> p.toString().endsWith(".json"))
+                    .filter(p -> p.toString().endsWith(".json") || isYaml(p))
                     .forEach(path -> loadFile(path, templates));
             log.info("A total of [{}] {} template were loaded!", templates.size(), templateType.getSimpleName());
         } catch (IOException e) {
@@ -52,11 +54,23 @@ public class JsonTemplateLoaderNew<T> implements TemplateLoader<T> {
             var javaType = objectMapper.getTypeFactory()
                     .constructCollectionType(List.class, templateType);
 
-            List<T> values = objectMapper.readValue(Files.readAllBytes(path), javaType);
+            ObjectMapper mapper = isYaml(path) ? yamlMapper : objectMapper;
+            byte[] contents = Files.readAllBytes(path);
+            List<T> values;
+            if (isYaml(path) && !mapper.readTree(contents).isArray()) {
+                values = List.of(mapper.readValue(contents, templateType));
+            } else {
+                values = mapper.readValue(contents, javaType);
+            }
 
             templates.addAll(values);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to parse template file: " + path, e);
         }
+    }
+
+    private static boolean isYaml(Path path) {
+        String name = path.toString();
+        return name.endsWith(".yaml") || name.endsWith(".yml");
     }
 }

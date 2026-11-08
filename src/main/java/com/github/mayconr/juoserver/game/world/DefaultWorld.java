@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+
 import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.game.container.ContainerModule;
 import com.github.mayconr.juoserver.game.container.ContainerModuleImpl;
@@ -289,6 +291,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     private final GamePlaySettings settings;
     private final WorldConfigurator worldCfg;
+    private final MessageLocalizer messageLocalizer;
 
     @Override
     public void initialize() {
@@ -332,6 +335,7 @@ public class DefaultWorld implements WorldInternal, World {
         combatModule.update(delta);
         spellModule.update(delta);
         skillModule.update(delta);
+        uiModule.update(delta);
     }
 
     /*
@@ -381,7 +385,7 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeUiModule() {
-        final var gumpSystem = new DefaultGumpSystem(eventBus);
+        final var gumpSystem = new DefaultGumpSystem(eventBus, settings.ui(), messageLocalizer);
 
         this.uiModule = new UIModuleImpl(
                 gumpSystem

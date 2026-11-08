@@ -6,7 +6,7 @@ import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.model.event.message.*;
 import com.github.mayconr.juoserver.network.packet.SendUnicodeSpeech;
 import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
-import com.github.mayconr.juoserver.network.session.i18n.*;
+import com.github.mayconr.juoserver.infrastructure.i18n.*;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,7 +43,7 @@ class UnicodeSpeechHandlerTest {
         var mobile = mock(UOMobile.class);
         when(mobile.getDisplayName()).thenReturn("Miner");
         when(view.shouldReceiveUpdate(mobile)).thenReturn(true);
-        var handler = new PlayerInterfaceHandler(view, writer, null);
+        var handler = new PlayerInterfaceHandler(view, writer, null, mock(MessageLocalizer.class));
         handler.onMobileSpeech(new MobileSpeech(mobile, "Olá!",
                 new SpeechContext(TextType.BROADCAST, SpeechRange.NORMAL, 0x03B2, 3, 0, mobile)));
         var packet = ArgumentCaptor.forClass(SendUnicodeSpeech.class);

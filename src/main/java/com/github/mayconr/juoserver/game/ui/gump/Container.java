@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
+import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
+import java.util.function.Function;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +20,11 @@ abstract class Container implements UIElement {
     public Container add(UIElement e) {
         children.add(e);
         return this;
+    }
+
+    @Override
+    public void resolveTexts(Function<MessageContent, String> resolver) {
+        for (UIElement child : children) child.resolveTexts(resolver);
     }
 
     @Override

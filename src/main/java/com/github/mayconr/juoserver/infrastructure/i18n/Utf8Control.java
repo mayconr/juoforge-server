@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.network.session.i18n;
+package com.github.mayconr.juoserver.infrastructure.i18n;
 
 import java.io.IOException;
 import java.io.InputStream;

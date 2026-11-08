@@ -5,14 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.github.mayconr.juoserver.network.packet.PingPong;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mayconr.juoserver.game.FakeUOClient;
 import com.github.mayconr.juoserver.infrastructure.server.UOChannelInitializer;
 
 class PingPongTest {
 
-    @Autowired private UOChannelInitializer channelInitializer;
+    private UOChannelInitializer channelInitializer;
     private FakeUOClient client;
 
     @BeforeEach

@@ -1,7 +1,6 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,6 +57,14 @@ public class GumpBuilder {
         return this;
     }
 
+    public GumpBuilder gumpPicTiled(int x, int y, int width, int height, int gumpId) {
+        requirePage();
+        if (gumpId < 0 || gumpId > 0xFFFF || width <= 0 || height <= 0)
+            throw new IllegalArgumentException("Invalid tiled gump image");
+        line("gumppictiled " + x + " " + y + " " + width + " " + height + " " + gumpId);
+        return this;
+    }
+
     public GumpBuilder checkerTrans(int x, int y, int width, int height) {
         requirePage();
         line("checkertrans " + x + " " + y + " " + width + " " + height);
@@ -70,12 +77,27 @@ public class GumpBuilder {
         return this;
     }
 
+    public GumpBuilder tilePicHue(int x, int y, int tileId, int hue) {
+        requirePage();
+        if (hue < 0 || hue > 0xFFFF) throw new IllegalArgumentException("Hue must fit an unsigned short");
+        line("tilepichue " + x + " " + y + " " + tileId + " " + hue);
+        return this;
+    }
+
     /* ===== Text ===== */
 
     public GumpBuilder text(int x, int y, int hue, String value) {
+        return text(x, y, hue, value, 0xFF);
+    }
+
+    /** Optional trailing font is a layout extension; the reference ClassicUO text parser ignores it. */
+    public GumpBuilder text(int x, int y, int hue, String value, int font) {
         requirePage();
+        if (font < 0 || font > 0xFF) {
+            throw new IllegalArgumentException("Label font must fit an unsigned byte");
+        }
         int idx = addText(value);
-        line("text " + x + " " + y + " " + hue + " " + idx);
+        line("text " + x + " " + y + " " + hue + " " + idx + (font == 0xFF ? "" : " " + font));
         return this;
     }
 
@@ -111,7 +133,19 @@ public class GumpBuilder {
 
     public GumpBuilder button(
             int x, int y, int normalId, int pressedId, boolean quit, int page, int buttonId) {
+        return button(x, y, normalId, pressedId, quit, page, buttonId, 0);
+    }
+
+    /**
+     * Emits an optional trailing hover graphic as a layout extension.
+     * Unmodified ClassicUO ignores this extra field; it is not part of its standard button command.
+     */
+    public GumpBuilder button(
+            int x, int y, int normalId, int pressedId, boolean quit, int page, int buttonId, int hoverId) {
         requirePage();
+        if (hoverId < 0 || hoverId > 0xFFFF) {
+            throw new IllegalArgumentException("Button hover graphic must fit an unsigned short");
+        }
         line(
                 "button "
                         + x
@@ -126,7 +160,8 @@ public class GumpBuilder {
                         + " "
                         + page
                         + " "
-                        + buttonId);
+                        + buttonId
+                        + (hoverId == 0 ? "" : " " + hoverId));
         return this;
     }
 
@@ -192,6 +227,28 @@ public class GumpBuilder {
         return this;
     }
 
+    /** Adds a cliloc tooltip to the last visual control emitted in the layout. */
+    public GumpBuilder tooltip(int clilocId, String... arguments) {
+        line(tooltipCommand(clilocId, arguments));
+        return this;
+    }
+
+    static String tooltipCommand(int clilocId, String... arguments) {
+        if (clilocId <= 0) throw new IllegalArgumentException("Tooltip cliloc ID must be positive");
+        Objects.requireNonNull(arguments, "Tooltip arguments are required");
+        for (String argument : arguments) {
+            Objects.requireNonNull(argument, "Tooltip argument is required");
+            for (int i = 0; i < argument.length(); i++) {
+                char c = argument.charAt(i);
+                if (c < 32 || c > 126 || c == '@' || c == '{' || c == '}') {
+                    throw new IllegalArgumentException("Tooltip arguments must be printable ASCII without @ or braces");
+                }
+            }
+        }
+        // ClassicUO quotes parameters with @ and passes tab-separated arguments to the cliloc translator.
+        return "tooltip " + clilocId + (arguments.length == 0 ? "" : " @" + String.join("\t", arguments) + "@");
+    }
+
     /* ===== Flags ===== */
 
     public GumpBuilder noClose() {
@@ -218,7 +275,7 @@ public class GumpBuilder {
     }
 
     public List<String> buildTexts() {
-        return Collections.unmodifiableList(texts);
+        return List.copyOf(texts);
     }
 
     /* =========================

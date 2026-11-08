@@ -9,6 +9,27 @@ class DefaultEventBusTest {
     record Signal() implements GameEvent { }
 
     @Test
+    void listenerFailuresDoNotEscapeOrPreventOtherListenersFromRunning() {
+        var bus = new DefaultEventBus();
+        var received = new AtomicInteger();
+        bus.register(Signal.class, event -> { throw new IllegalStateException("Handler failed"); });
+        bus.register(Signal.class, event -> received.incrementAndGet());
+        assertDoesNotThrow(() -> bus.publish(new Signal()));
+        assertEquals(1, received.get());
+    }
+
+    @Test
+    void predicateFailuresDoNotPreventOtherListenersFromRunning() {
+        var bus = new DefaultEventBus();
+        var received = new AtomicInteger();
+        bus.register(Signal.class, event -> fail("Rejected predicate must not invoke handler"),
+                event -> { throw new IllegalStateException("Predicate failed"); });
+        bus.register(Signal.class, event -> received.incrementAndGet());
+        assertDoesNotThrow(() -> bus.publish(new Signal()));
+        assertEquals(1, received.get());
+    }
+
+    @Test
     void supportsConcurrentPublicationAndSubscriptionChanges() {
         var bus = new DefaultEventBus();
         var received = new AtomicInteger();

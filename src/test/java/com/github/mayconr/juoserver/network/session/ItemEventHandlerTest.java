@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
 import java.util.Map;

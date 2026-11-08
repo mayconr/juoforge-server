@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.network.session;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import java.util.function.Supplier;
 
 /** Read-only access to the current session; handlers do not own lifecycle state. */

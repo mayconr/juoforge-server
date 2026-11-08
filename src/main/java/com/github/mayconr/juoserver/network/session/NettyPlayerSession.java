@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.network.packet.*;
 import com.github.mayconr.juoserver.network.packet.EnableLockedClientFeatures.ClientFeatureFlag;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import lombok.Getter;
@@ -34,6 +34,8 @@ public class NettyPlayerSession implements PlayerSession {
 
     private SocketAddress remoteAddress;
     private String clientVersion;
+    @Getter
+    private volatile long clientExpansionFlags;
     private volatile ClientLocale locale = ClientLocale.defaultLocale();
 
     @Getter
@@ -66,9 +68,10 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     @Override
-    public void setLocale(ClientLocale locale) {
+    public synchronized void setLocale(ClientLocale locale) {
         this.locale = java.util.Objects.requireNonNull(locale, "Client locale is required");
-        log.info("Session locale updated to {}", locale);
+        if (player != null) player.setLocale(locale);
+        log.info("Session [{}] locale updated to {}", remoteAddress, locale);
     }
 
     @Override
@@ -80,6 +83,16 @@ public class NettyPlayerSession implements PlayerSession {
     @Override
     public void setClientVersion(String version) {
         this.clientVersion = version;
+    }
+
+    @Override
+    public void setClientExpansionFlags(long flags) {
+        if (flags < 0 || flags > 0xFFFF_FFFFL) {
+            throw new IllegalArgumentException("Client expansion flags must fit an unsigned 32-bit value");
+        }
+        clientExpansionFlags = flags;
+        log.info("Session [{}] client expansion flags updated to 0x{}", remoteAddress,
+                Long.toHexString(flags));
     }
 
     @Override
@@ -241,6 +254,7 @@ public class NettyPlayerSession implements PlayerSession {
                         if (!(mobile instanceof UOPlayer pl)) {
                             throw new IllegalStateException("Loaded mobile is not a player: " + mobileSerialId);
                         }
+                        pl.setLocale(locale);
                         this.player = pl;
                         return pl;
                     }

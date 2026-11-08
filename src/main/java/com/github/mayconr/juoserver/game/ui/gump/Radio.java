@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-public class Radio implements UIElement, Sized {
+public class Radio extends TooltipElement implements Sized {
 
     private final int uncheckedId;
     private final int checkedId;
@@ -33,6 +33,7 @@ public class Radio implements UIElement, Sized {
     @Override
     public void render(GumpBuilder g) {
         g.radio(x, y, uncheckedId, checkedId, checked, switchId);
+        renderTooltip(g);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-class Image implements UIElement, Sized {
+public class Image extends TooltipElement implements Sized {
 
     private final int gumpPicId;
     private int x, y, width, height;
@@ -20,6 +20,7 @@ class Image implements UIElement, Sized {
     @Override
     public void render(GumpBuilder g) {
         g.gumpPic(x, y, gumpPicId);
+        renderTooltip(g);
     }
 
     @Override

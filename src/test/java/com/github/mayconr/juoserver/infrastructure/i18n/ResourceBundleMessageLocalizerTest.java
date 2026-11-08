@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.network.session.i18n;
+package com.github.mayconr.juoserver.infrastructure.i18n;
 
 import com.github.mayconr.juoserver.DefaultWorldConfigurator;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;

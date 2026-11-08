@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.event.MobileDeathEvent;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
 import com.github.mayconr.juoserver.network.session.handler.CombatEventHandler;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;

@@ -39,6 +39,9 @@ public interface WorldUI {
      */
     void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler);
 
+    /** Sends a gump with a finite positive expiration in seconds instead of the default timeout. */
+    void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler, double expirationSeconds);
+
     /**
      * Requests that a mobile's skill information be sent to the player using the specified format.
      * The type controls the packet format, whether skill caps are included, and whether

@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.network.session;
 
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import org.junit.jupiter.api.Test;
 import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.*;

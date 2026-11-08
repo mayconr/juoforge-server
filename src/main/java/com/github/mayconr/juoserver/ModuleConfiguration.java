@@ -105,6 +105,9 @@ public interface ModuleConfiguration {
     // Templates
     <T, K> void addCustomTemplate(String templateName, Class<T> templateClass, Function<T, K> keyExtractor, Path file);
 
+    /** Registers an immutable snapshot of templates already loaded by the shard, without file I/O. */
+    <T, K> void addCustomTemplate(String templateName, Class<T> templateClass, Function<T, K> keyExtractor, List<T> templates);
+
     // ===== Read methods (optional, for engine use) =====
     Function<World, Wallet> wallet();
 

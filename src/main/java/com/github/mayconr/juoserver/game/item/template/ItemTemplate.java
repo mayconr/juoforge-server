@@ -1,11 +1,20 @@
 package com.github.mayconr.juoserver.game.item.template;
 
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.DefaultAttributeMap;
+import com.github.mayconr.juoserver.game.model.Direction;
+import com.github.mayconr.juoserver.game.model.ItemFlag;
+import com.github.mayconr.juoserver.game.model.ItemLocationType;
+import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.UOItemData;
+import com.github.mayconr.juoserver.game.model.WeaponStyle;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public record ItemTemplate(String name,
                            String displayName,
@@ -25,10 +34,12 @@ public record ItemTemplate(String name,
                            // Weapon
                            Weapon weapon,
                            String script,
-                           int unitWeight)
+                           int unitWeight,
+                           String family)
 
             implements BaseTemplate {
     public ItemTemplate {
+        family = family == null ? "OTHER" : family;
         attr = attr == null ? Map.of() : Map.copyOf(attr);
         flags = flags == null ? Collections.emptyList() : flags;
     }
@@ -50,9 +61,18 @@ public record ItemTemplate(String name,
             @JsonProperty("mountName") String mountName,
             @JsonProperty("weapon") Weapon weapon,
             @JsonProperty("script") String script,
-            @JsonProperty("unitWeight") int unitWeight) {
+            @JsonProperty("unitWeight") int unitWeight,
+            @JsonProperty("family") String family) {
         this(name, displayName, layer, modelId, movable == null || movable.booleanValue(), hue,
-                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script, unitWeight);
+                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family);
+    }
+
+    public ItemTemplate(String name, String displayName, Layer layer, int modelId,
+                        boolean movable, int hue, String stockType, int basePrice,
+                        List<ItemFlag> flags, Map<String, Object> attr, int containerGumpId,
+                        String mountName, Weapon weapon, String script, int unitWeight) {
+        this(name, displayName, layer, modelId, movable, hue, stockType, basePrice,
+                flags, attr, containerGumpId, mountName, weapon, script, unitWeight, "OTHER");
     }
 
     public ItemTemplate(String name, String displayName, Layer layer, int modelId,

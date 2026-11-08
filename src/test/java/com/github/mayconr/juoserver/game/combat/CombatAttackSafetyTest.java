@@ -52,7 +52,7 @@ class CombatAttackSafetyTest {
         }).when(flows).execute(any(CombatPreparationContext.class));
         for (int i = 0; i < 5; i++) module.requestAttack(npc, 42);
         module.update(1);
-        var registry = (CombatSessionRegistry) org.springframework.test.util.ReflectionTestUtils.getField(module, "registry");
+        var registry = (CombatSessionRegistry) com.github.mayconr.juoserver.support.TestFields.getField(module, "registry");
         var first = registry.getByPlayer(npc);
         module.requestAttack(npc, 42);
         module.update(1);

@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry;
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
-import org.springframework.test.util.ReflectionTestUtils;
+import com.github.mayconr.juoserver.support.TestFields;
 import com.github.mayconr.juoserver.infrastructure.flow.*;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class ShardFlowRegistrationTest {
 
     private DefaultWorld world(DefaultFlowRegistry registry) {
         var world = mock(DefaultWorld.class, CALLS_REAL_METHODS);
-        ReflectionTestUtils.setField(world, "flowRegistry", registry);
+        TestFields.setField(world, "flowRegistry", registry);
         return world;
     }
 

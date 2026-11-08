@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.world.WorldInternal;

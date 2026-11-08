@@ -4,17 +4,22 @@ import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.handler.*;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.util.List;
+
+import static java.util.List.*;
+
 public class DefaultPacketHandlerFactory {
-    public java.util.List<SimpleChannelInboundHandler<?>> create(
+    public List<SimpleChannelInboundHandler<?>> create(
             WorldInternal world
     ) {
-        return java.util.List.of(
+        return of(
                 new GameServerLoginHandler(),
                 new PingPongHandler(),
                 new LoginCharacterHandler(),
                 new DeleteCharacterHandler(),
                 new CreatePlayerHandler(),
                 new ClientVersionHandler(),
+                new OpenChatRequestHandler(),
                 new MoveRequestHandler(world),
                 new DoubleClickHandler(world),
                 new UnicodeSpeachRequestHandler(world),

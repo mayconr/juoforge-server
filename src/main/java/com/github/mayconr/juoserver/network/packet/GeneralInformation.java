@@ -214,6 +214,7 @@ public class GeneralInformation extends AbstractPacket {
         this.subCommand = buffer.readUnsignedShort();
 
         this.command = switch (subCommand) {
+            case ClientTypeExtendedCommand.SUB_COMMAND -> new ClientTypeExtendedCommand(buffer);
             case ClientVersionExtendedCommand.SUB_COMMAND -> new ClientVersionExtendedCommand(buffer, getLength());
             case LanguageExtendedCommand.SUB_COMMAND -> new LanguageExtendedCommand(buffer);
             case ScreenSizeExtendedCommand.SUB_COMMAND -> new ScreenSizeExtendedCommand(buffer);

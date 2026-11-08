@@ -38,6 +38,6 @@ public record ServerSettings(int ticksPerSecond, double aiUpdateIntervalSeconds,
         return new GamePlaySettings(gameplay.name(),
                 new GamePlaySettings.GameLoop(ticksPerSecond), gameplay.skills(),
                 gameplay.mobile(), gameplay.world(), new GamePlaySettings.Files(dataFileRoot),
-                gameplay.client(), gameplay.economy(), new GamePlaySettings.Ai(aiUpdateIntervalSeconds));
+                gameplay.client(), gameplay.economy(), new GamePlaySettings.Ai(aiUpdateIntervalSeconds), gameplay.ui());
     }
 }
