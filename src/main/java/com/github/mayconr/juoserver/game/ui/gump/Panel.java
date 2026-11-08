@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-public class Panel implements UIElement {
+import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
+import java.util.function.Function;
+
+public class Panel extends TooltipElement implements Sized {
 
     private final int width;
     private final int height;
@@ -27,6 +30,21 @@ public class Panel implements UIElement {
         this.content = content;
     }
 
+    /** A panel tooltip targets its background; a background must be configured. */
+    @Override
+    public void resolveTexts(Function<MessageContent, String> resolver) {
+        content.resolveTexts(resolver);
+    }
+
+    @Override
+    public Panel tooltip(int clilocId, String... arguments) {
+        if (gumPicId == null) {
+            throw new IllegalStateException("A panel needs a background to display its own tooltip");
+        }
+        super.tooltip(clilocId, arguments);
+        return this;
+    }
+
     @Override
     public void layout(LayoutContext ctx) {
         this.x = ctx.x;
@@ -46,11 +64,18 @@ public class Panel implements UIElement {
         if (gumPicId != null) {
             if (resizable) {
                 g.resizePic(x, y, gumPicId, width, height);
+                renderTooltip(g);
             } else {
                 g.gumpPic(x, y, gumPicId);
+                renderTooltip(g);
             }
         }
 
         content.render(g);
     }
+    @Override
+    public int getWidth() { return width; }
+
+    @Override
+    public int getHeight() { return height; }
 }

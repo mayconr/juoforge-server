@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.model;
 
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +12,12 @@ import java.util.UUID;
 public class UOPlayer extends UOMobile {
 
     public static final String MOVEMENT_SEQUENCE = "MOVEMENT.EXPECTED_SEQUENCE";
+
+    private volatile ClientLocale locale = ClientLocale.defaultLocale();
+
+    public void setLocale(ClientLocale locale) {
+        this.locale = Objects.requireNonNull(locale, "Player locale is required");
+    }
 
     private UUID accountId;
     private String password;

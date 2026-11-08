@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-public final class PageButton implements UIElement {
+public final class PageButton extends TooltipElement {
 
     private final int normalId;
     private final int pressedId;
@@ -24,5 +24,6 @@ public final class PageButton implements UIElement {
     @Override
     public void render(GumpBuilder g) {
         g.pageButton(x, y, normalId, pressedId, targetPage);
+        renderTooltip(g);
     }
 }

@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.network.packet.GeneralInformation;
+import com.github.mayconr.juoserver.network.packet.ClientTypeExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.ClientVersionExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.CloseStatusExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.LanguageExtendedCommand;
@@ -8,7 +9,7 @@ import com.github.mayconr.juoserver.network.packet.ScreenSizeExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.SpellSelectionExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.UnknownExtendedCommand;
 import com.github.mayconr.juoserver.network.session.PlayerSession;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.RequiredArgsConstructor;
 import io.netty.channel.ChannelHandler;
@@ -34,6 +35,8 @@ public class GeneralInformationHandler
             return;
         }
         var details = switch (command) {
+            case ClientTypeExtendedCommand type -> "Marker: 0x%02X | Expansion flags: 0x%08X".formatted(
+                    type.marker(), type.flags());
             case ClientVersionExtendedCommand version -> "Version: " + version.version();
             case CloseStatusExtendedCommand status -> "Character serial: %d (0x%08X)".formatted(
                     status.serialId(), status.serialId());
@@ -47,6 +50,10 @@ public class GeneralInformationHandler
         log.info("General Information | Subcommand: 0x{} | Type: {} | Length: {} bytes | {}",
                 HexFormat.of().toHexDigits((short) msg.getSubCommand()),
                 command.getClass().getSimpleName(), msg.getLength(), details);
+        if (command instanceof ClientTypeExtendedCommand type) {
+            session.setClientExpansionFlags(type.flags());
+            return;
+        }
         if (command instanceof SpellSelectionExtendedCommand spell) {
             var caster = session.getPlayer();
             if (caster == null) {

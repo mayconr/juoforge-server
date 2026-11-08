@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
@@ -7,7 +9,7 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
 import com.github.mayconr.juoserver.network.packet.*;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import com.github.mayconr.juoserver.support.TestFields;
 
 import java.util.List;
 import java.util.Map;
@@ -21,15 +23,15 @@ class NettySessionManagerTest {
     void routesAllHandlerGroupsAndUnregistersThemWhenSessionCloses() {
         var bus = new DefaultEventBus();
         var world = mock(WorldInternal.class, RETURNS_DEEP_STUBS);
-        var manager = new NettySessionManager(world, null, mock(com.github.mayconr.juoserver.game.GamePlaySettings.class, RETURNS_DEEP_STUBS), bus);
+        var manager = new NettySessionManager(world, null, mock(com.github.mayconr.juoserver.game.GamePlaySettings.class, RETURNS_DEEP_STUBS), bus, mock(MessageLocalizer.class));
         var channel = new EmbeddedChannel();
         try {
             var session = manager.createSession(channel);
             var player = mock(UOPlayer.class);
             when(player.getId()).thenReturn(UUID.randomUUID());
             when(player.isConnected()).thenReturn(true);
-            ReflectionTestUtils.setField(session, "player", player);
-            ReflectionTestUtils.setField(session, "state", SessionState.ACTIVE);
+            TestFields.setField(session, "player", player);
+            TestFields.setField(session, "state", SessionState.ACTIVE);
             var npc = mock(UONpc.class);
             when(world.mobile().getEquippedItems(npc)).thenReturn(Map.of());
             var raw = mock(Packet.class);
@@ -44,7 +46,7 @@ class NettySessionManagerTest {
             assertInstanceOf(Damage.class, channel.readOutbound());
             assertInstanceOf(StatusBarInfo.class, channel.readOutbound());
             assertNull(channel.readOutbound());
-            var listeners = (Map<?, ?>) ReflectionTestUtils.getField(bus, "listeners");
+            var listeners = (Map<?, ?>) TestFields.getField(bus, "listeners");
             assertNotNull(listeners);
             assertFalse(listeners.isEmpty());
             channel.close();
@@ -63,7 +65,7 @@ class NettySessionManagerTest {
     void sendsRemovalOncePerActiveClientAndIgnoresUnassignedSessions() {
         var bus = new DefaultEventBus();
         var group = mock(io.netty.channel.group.ChannelGroup.class);
-        var manager = new NettySessionManager(null, group, null, bus);
+        var manager = new NettySessionManager(null, group, null, bus, mock(MessageLocalizer.class));
         var first = new EmbeddedChannel();
         var second = new EmbeddedChannel();
         var selecting = new EmbeddedChannel();
@@ -72,8 +74,8 @@ class NettySessionManagerTest {
             var secondSession = manager.createSession(second);
             manager.createSession(selecting);
             for (var session : List.of(firstSession, secondSession)) {
-                ReflectionTestUtils.setField(session, "player", mock(UOPlayer.class));
-                ReflectionTestUtils.setField(session, "state", SessionState.ACTIVE);
+                TestFields.setField(session, "player", mock(UOPlayer.class));
+                TestFields.setField(session, "state", SessionState.ACTIVE);
             }
             bus.publish(new NpcRemoved(mock(UONpc.class)));
             first.runPendingTasks();

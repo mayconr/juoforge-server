@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-class Checkbox implements UIElement, Sized {
+public class Checkbox extends TooltipElement implements Sized {
 
     private final int uncheckedId;
     private final int checkedId;
@@ -24,6 +24,7 @@ class Checkbox implements UIElement, Sized {
     @Override
     public void render(GumpBuilder g) {
         g.checkbox(x, y, uncheckedId, checkedId, checked, switchId);
+        renderTooltip(g);
     }
 
     @Override

@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.*;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import com.github.mayconr.juoserver.support.TestFields;
 
 import java.util.Map;
 
@@ -45,8 +45,8 @@ class ResurrectionPacketsSessionTest {
             var otherSessionHandler = new CombatEventHandler(
                     new SessionView(otherSession::getPlayer, otherSession::getLocale, settings),
                     new SessionPacketWriter(observerChannel, null), world);
-            ReflectionTestUtils.setField(ownSession, "player", target);
-            ReflectionTestUtils.setField(otherSession, "player", observer);
+            TestFields.setField(ownSession, "player", target);
+            TestFields.setField(otherSession, "player", observer);
             var event = new MobileResurrectEvent(target);
             ownSessionHandler.onMobileResurrect(event);
             otherSessionHandler.onMobileResurrect(event);

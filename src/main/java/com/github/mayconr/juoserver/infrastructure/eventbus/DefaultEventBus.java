@@ -5,8 +5,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultEventBus implements EventBus {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventBus.class);
 
     private final Map<Class<?>, List<ConditionalHandler<?>>> listeners = new ConcurrentHashMap<>();
 
@@ -44,8 +47,13 @@ public class DefaultEventBus implements EventBus {
         if (handlers != null) {
             for (ConditionalHandler<?> h : handlers) {
                 ConditionalHandler<T> handler = (ConditionalHandler<T>) h;
-                if (handler.predicate.test(event)) {
-                    handler.eventHandler.handle(event);
+                try {
+                    if (handler.predicate.test(event)) {
+                        handler.eventHandler.handle(event);
+                    }
+                } catch (RuntimeException failure) {
+                    LOGGER.error("Event listener failed: event={} listener={}",
+                            event.getClass().getName(), handler.eventHandler.getClass().getName(), failure);
                 }
             }
         }

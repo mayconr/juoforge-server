@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.ui.UIModule;
 import com.github.mayconr.juoserver.game.ui.UIModuleImpl;
@@ -59,9 +61,9 @@ class SingleClickFlowTest {
         var encoded = Unpooled.buffer();
         try {
             var requester = new PlayerInterfaceHandler(new SessionView(() -> player, () -> null, null),
-                    new SessionPacketWriter(requesterChannel, null), null);
+                    new SessionPacketWriter(requesterChannel, null), null, mock(MessageLocalizer.class));
             var other = new PlayerInterfaceHandler(new SessionView(() -> observer, () -> null, null),
-                    new SessionPacketWriter(observerChannel, null), null);
+                    new SessionPacketWriter(observerChannel, null), null, mock(MessageLocalizer.class));
             events.register(ObjectLabelRequested.class, requester::onObjectLabelRequested);
             events.register(ObjectLabelRequested.class, other::onObjectLabelRequested);
             var registry = new DefaultFlowRegistry();

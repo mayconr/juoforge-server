@@ -30,6 +30,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
 import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoaderNew;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import java.util.function.Supplier;
 import static java.util.Objects.*;
 
 @RequiredArgsConstructor
+@Slf4j
 public class DefaultWorldConfigurator implements WorldConfigurator {
 
     private final List<Consumer<ServerRuntime>> initializers = new ArrayList<>();
@@ -61,6 +63,7 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
     @Override
     public void addModule(UOModule module) {
         requireNonNull(module, "Module is required").register(this);
+        log.info("Module registered: {}", module.getClass().getName());
     }
 
     private final List<String> messageBundles = new ArrayList<>();
@@ -289,6 +292,22 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
     }
 
     private DocumentStorage documentStorage;
+
+    @Override
+    public <T, K> void addCustomTemplate(String templateName, Class<T> templateClass,
+                                         Function<T, K> keyExtractor, List<T> templates) {
+        if (templateLoaderList.containsKey(templateName)) {
+            throw new IllegalArgumentException("Template " + templateName + " already exists");
+        }
+        var values = List.copyOf(templates);
+        TemplateLoader<T> loader = new TemplateLoader<>() {
+            @Override
+            public List<T> loadAll() {
+                return values;
+            }
+        };
+        templateLoaderList.put(templateName, new TemplateData<>(templateName, templateClass, keyExtractor, loader));
+    }
 
     @Override
     public void documentStorage(DocumentStorage storage) {

@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-class TextArea implements UIElement, Sized {
+public class TextArea extends TooltipElement implements Sized {
 
     private final int entryId;
     private final int width;
@@ -22,7 +22,9 @@ class TextArea implements UIElement, Sized {
     @Override
     public void render(GumpBuilder g) {
         g.resizePic(x, y, 3000, width, height);
+        renderTooltip(g);
         g.textEntry(x + 4, y + 4, width - 8, height - 8, 0, entryId, -1);
+        renderTooltip(g);
     }
 
     @Override

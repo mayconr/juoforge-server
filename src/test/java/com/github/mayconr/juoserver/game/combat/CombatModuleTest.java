@@ -19,7 +19,7 @@ class CombatModuleTest {
         when(context.flows()).thenReturn(flows);
         module.initialize(context);
         var npc = mock(com.github.mayconr.juoserver.game.model.UONpc.class);
-        var registry = (CombatSessionRegistry) org.springframework.test.util.ReflectionTestUtils
+        var registry = (CombatSessionRegistry) com.github.mayconr.juoserver.support.TestFields
                 .getField(module, "registry");
         var session = new CombatSession(java.util.UUID.randomUUID(), npc, mock(UOPlayer.class),
                 new CombatSession.PhysicalTrigger());

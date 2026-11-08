@@ -1,11 +1,16 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
+import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
+import java.util.function.Function;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DeclarativeGumpUI {
 
     private final List<Page> pages = new ArrayList<>();
+    private boolean movable = true;
+    private boolean closeWithRightClick = true;
+    private boolean closeWithEsc = true;
 
     public DeclarativeGumpUI(Page... pages) {
         this.pages.addAll(List.of(pages));
@@ -16,7 +21,39 @@ public class DeclarativeGumpUI {
         return this;
     }
 
+    /** Prevents dragging the entire gump window on the client. */
+    public DeclarativeGumpUI noMove() {
+        movable = false;
+        return this;
+    }
+
+    /** Prevents closing the gump with the right mouse button. */
+    public DeclarativeGumpUI noClose() {
+        closeWithRightClick = false;
+        return this;
+    }
+
+    /** Prevents closing the gump with the Esc key. */
+    public DeclarativeGumpUI noDispose() {
+        closeWithEsc = false;
+        return this;
+    }
+
     public void render(GumpBuilder g) {
+        render(g, GumpText::fallback);
+    }
+
+    public synchronized void render(GumpBuilder g, Function<MessageContent, String> resolver) {
+        for (Page page : pages) page.resolveTexts(resolver);
+        if (!closeWithRightClick) {
+            g.noClose();
+        }
+        if (!closeWithEsc) {
+            g.noDispose();
+        }
+        if (!movable) {
+            g.noMove();
+        }
         for (Page page : pages) {
             page.layout(new LayoutContext(0, 0, 0, 0));
             page.render(g);
@@ -31,6 +68,10 @@ public class DeclarativeGumpUI {
         Page p = new Page(index);
         for (UIElement e : children) p.add(e);
         return p;
+    }
+
+    public static PaginatedList PaginatedList(List<PaginatedList.Item> items, PaginatedList.Style style) {
+        return new PaginatedList(items, style);
     }
 
     public static Column Column(int spacing, UIElement... children) {
@@ -57,6 +98,10 @@ public class DeclarativeGumpUI {
 
     public static Image Image(int gumpPicId, int width, int height) {
         return new Image(gumpPicId, width, height);
+    }
+
+    public static Separator Separator(int gumpPicId, int width, int height) {
+        return new Separator(gumpPicId, width, height);
     }
 
     public static Panel Panel(int width, int height, UIElement content) {
@@ -104,6 +149,10 @@ public class DeclarativeGumpUI {
         return new ItemIcon(tileId);
     }
 
+    public static ItemIcon ItemIcon(int tileId, int width, int height) {
+        return new ItemIcon(tileId, width, height);
+    }
+
     public static Checkbox Checkbox(int uncheckedId, int checkedId, int switchId) {
         return new Checkbox(uncheckedId, checkedId, switchId, false);
     }
@@ -120,6 +169,15 @@ public class DeclarativeGumpUI {
         return new ItemSlot(size, content);
     }
 
+    public static ItemSlot ItemSlot(int width, int height, UIElement content) {
+        return new ItemSlot(width, height, content);
+    }
+
+    /** Creates an item slot with a custom resizepic background; other overloads default to 3000. */
+    public static ItemSlot ItemSlot(int backgroundId, int width, int height, UIElement content) {
+        return new ItemSlot(backgroundId, width, height, content);
+    }
+
     public static HtmlGump HtmlGump(String value, int width, int height) {
         return new HtmlGump(value, width, height);
     }
@@ -127,5 +185,29 @@ public class DeclarativeGumpUI {
     public static HtmlGump HtmlGump(
             String value, int width, int height, boolean background, boolean scrollbar) {
         return new HtmlGump(value, width, height, background, scrollbar);
+    }
+
+    public static Label Label(MessageContent text) {
+        return new Label(text);
+    }
+
+    public static Button Button(int normalId, int pressedId, int buttonId, MessageContent caption) {
+        return new Button(normalId, pressedId, buttonId, caption);
+    }
+
+    public static HtmlGump HtmlGump(MessageContent value, int width, int height) {
+        return new HtmlGump(value, width, height);
+    }
+
+    public static HtmlGump HtmlGump(MessageContent value, int width, int height, boolean background, boolean scrollbar) {
+        return new HtmlGump(value, width, height, background, scrollbar);
+    }
+
+    public static TextField TextField(int entryId, int width, MessageContent initialText) {
+        return new TextField(entryId, width, 24, 0, initialText, true);
+    }
+
+    public static TextField TextField(int entryId, int width, int height, MessageContent initialText) {
+        return new TextField(entryId, width, height, 0, initialText, true);
     }
 }

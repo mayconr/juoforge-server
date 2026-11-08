@@ -26,7 +26,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
             Map.entry(EquipItemRequest.class, 10), Map.entry(Target.class, 19),
             Map.entry(GetPlayerStatus.class, 10), Map.entry(RequestHelp.class, 258),
             Map.entry(RequestWarMode.class, 5), Map.entry(AttackRequest.class, 5),
-            Map.entry(MoveResyncAck.class, 3));
+            Map.entry(MoveResyncAck.class, 3), Map.entry(OpenChatRequest.class, OpenChatRequest.LENGTH));
 
     public UOProtocolDecoder() {
         packetsClass.put(GameServerLogin.CODE, GameServerLogin.class);
@@ -35,6 +35,7 @@ public class UOProtocolDecoder extends ByteToMessageDecoder {
         packetsClass.put(DeleteCharacter.CODE, DeleteCharacter.class);
         packetsClass.put(CreateCharacter.CODE, CreateCharacter.class);
         packetsClass.put(ClientVersion.CODE, ClientVersion.class);
+        packetsClass.put(OpenChatRequest.CODE, OpenChatRequest.class);
         packetsClass.put(MoveRequest.CODE, MoveRequest.class);
         packetsClass.put(DoubleClick.CODE, DoubleClick.class);
         packetsClass.put(UnicodeSpeachRequest.CODE, UnicodeSpeachRequest.class);

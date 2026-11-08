@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver.network.session.handler;
 
 import com.github.mayconr.juoserver.network.session.SessionView;
 import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
+import com.github.mayconr.juoserver.game.model.event.GumpExpired;
+import com.github.mayconr.juoserver.network.packet.CloseGumpExtendedCommand;
 
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
@@ -9,7 +11,8 @@ import com.github.mayconr.juoserver.network.packet.*;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.extern.slf4j.Slf4j;
 import com.github.mayconr.juoserver.game.model.event.message.*;
-import com.github.mayconr.juoserver.network.session.i18n.*;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,10 +22,6 @@ public final class PlayerInterfaceHandler {
     private final SessionPacketWriter packetWriter;
     private final WorldInternal world;
     private final MessageLocalizer localizer;
-
-    public PlayerInterfaceHandler(SessionView session, SessionPacketWriter packetWriter, WorldInternal world) {
-        this(session, packetWriter, world, new ResourceBundleMessageLocalizer("messages"));
-    }
 
     public PlayerInterfaceHandler(SessionView session, SessionPacketWriter packetWriter, WorldInternal world,
                                   MessageLocalizer localizer) {
@@ -132,6 +131,12 @@ public final class PlayerInterfaceHandler {
     public void onGumpSent(GumpSent event) {
         if (session.isPlayer(event.player())) {
             packetWriter.writeAndFlush(new SendGumpDialog(event.player(), event.gumpId(), 100, 100, event.builtGump().layout, event.builtGump().texts));
+        }
+    }
+
+    public void onGumpExpired(GumpExpired event) {
+        if (session.isPlayer(event.player())) {
+            packetWriter.writeAndFlush(new GeneralInformation(new CloseGumpExtendedCommand(event.gumpId())));
         }
     }
 

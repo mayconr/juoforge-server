@@ -27,6 +27,11 @@ public final class UIModuleImpl implements UIModule {
     private ModuleContext.FlowFacade flows;
 
     @Override
+    public void update(double delta) {
+        gumpSystem.update(delta);
+    }
+
+    @Override
     public void initialize(ModuleContext context) {
         this.flows = context.flows();
     }
@@ -66,6 +71,11 @@ public final class UIModuleImpl implements UIModule {
     @Override
     public void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler) {
         gumpSystem.send(player, gumpUI, handler);
+    }
+
+    @Override
+    public void sendGump(UOPlayer player, DeclarativeGumpUI gumpUI, GumpHandler handler, double expirationSeconds) {
+        gumpSystem.send(player, gumpUI, handler, expirationSeconds);
     }
 
     @Override

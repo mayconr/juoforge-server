@@ -1,8 +1,8 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.network.session.i18n.MessageLocalizer;
-import com.github.mayconr.juoserver.network.session.i18n.ResourceBundleMessageLocalizer;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.infrastructure.i18n.ResourceBundleMessageLocalizer;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 
 import com.github.mayconr.juoserver.DefaultWorldConfigurator.TemplateData;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
@@ -56,6 +56,7 @@ public final class WorldBootstrap {
     public static final String NPC_BY_NAME = "NPC_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_NAME = "ITEM_BY_NAME";
     public static final String ITEM_TEMPLATE_BY_MODEL_ID = "ITEM_TEMPLATE_BY_MODEL_ID";
+    public static final String ITEM_TEMPLATE_BY_FAMILY = "ITEM_TEMPLATE_BY_FAMILY";
     private static final String BODY_TEMPLATE_BY_BODY_KEY = "BODY_BY_BODY_KEY";
     public static final String START_KIT_TEMPLATE_BY_SKILL_ID = "STARTKIT_BY_SKILL_ID";
     private static final String MOUNT_TEMPLATE_BY_NPC_NAME = "MOUNT_TEMPLATE_BY_NPC_NAME";
@@ -86,6 +87,7 @@ public final class WorldBootstrap {
         registryMap.put(SPELL_TEMPLATE_BY_KEY, new InMemoryTemplateRegistry<>(content.spells().loadAll(), SpellTemplate::key));
         registryMap.put(ITEM_TEMPLATE_BY_NAME, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::name));
         registryMap.put(ITEM_TEMPLATE_BY_MODEL_ID, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::modelId));
+        registryMap.put(ITEM_TEMPLATE_BY_FAMILY, new InMemoryTemplateRegistry<>(items.values(), ItemTemplate::family));
         registryMap.put(BODY_TEMPLATE_BY_BODY_KEY, new InMemoryTemplateRegistry<>(content.bodies().loadAll(), body -> new BodyKey(body.gender(), body.race())));
         registryMap.put(START_KIT_TEMPLATE_BY_SKILL_ID, new InMemoryTemplateRegistry<>(content.startingKits().loadAll(), StartKitTemplate::skillId));
         registryMap.put(MOUNT_TEMPLATE_BY_NPC_NAME, new InMemoryTemplateRegistry<>(mounts, MountTemplate::npcName));
@@ -142,6 +144,11 @@ public final class WorldBootstrap {
         // --- World
         var uoFileReader = new UOFileReaderImpl(settings);
 
+        final var bundles = new ArrayList<>(configuration.messageBundles());
+        if (!bundles.contains("messages")) bundles.add("messages");
+        final var localizer = new ResourceBundleMessageLocalizer(
+                bundles, ClientLocale.defaultLocale());
+
         DefaultWorld world = new DefaultWorld(
                 eventBus,
                 serialGenerator,
@@ -166,15 +173,11 @@ public final class WorldBootstrap {
                 spellTemplateByKey,
 
                 settings,
-                configuration
+                configuration,
+                localizer
         );
 
         world.initialize();
-
-        final var bundles = new ArrayList<>(configuration.messageBundles());
-        if (!bundles.contains("messages")) bundles.add("messages");
-        final var localizer = new ResourceBundleMessageLocalizer(
-                bundles, ClientLocale.defaultLocale());
 
         final var runtime = new InternalServerRuntime(world, registryMap, settings, eventBus, storage, regionSystem, uoFileReader, gameLoop, world.flows(), localizer);
         for (var initializer : configuration.initializerList()) {

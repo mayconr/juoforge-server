@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+
 import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
 
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -8,7 +10,7 @@ import com.github.mayconr.juoserver.game.model.event.RawPacketsSent;
 import com.github.mayconr.juoserver.network.packet.Packet;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import com.github.mayconr.juoserver.support.TestFields;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +27,10 @@ class RawPacketsSessionTest {
             var session = new NettyPlayerSession(channel, null, null, null, null);
             var sessionHandler = new PlayerInterfaceHandler(
                     new SessionView(session::getPlayer, session::getLocale, null),
-                    new SessionPacketWriter(channel, null), null);
+                    new SessionPacketWriter(channel, null), null, mock(MessageLocalizer.class));
             var player = mock(UOPlayer.class);
             when(player.getId()).thenReturn(UUID.randomUUID());
-            ReflectionTestUtils.setField(session, "player", player);
+            TestFields.setField(session, "player", player);
             var first = mock(Packet.class);
             var second = mock(Packet.class);
             var packets = new ArrayList<>(List.of(first, second));
@@ -56,7 +58,7 @@ class RawPacketsSessionTest {
             var session = new NettyPlayerSession(channel, null, null, null, null);
             var sessionHandler = new PlayerInterfaceHandler(
                     new SessionView(session::getPlayer, session::getLocale, null),
-                    new SessionPacketWriter(channel, null), null);
+                    new SessionPacketWriter(channel, null), null, mock(MessageLocalizer.class));
             var player = mock(UOPlayer.class);
             when(player.getId()).thenReturn(UUID.randomUUID());
             var other = mock(UOPlayer.class);
@@ -64,9 +66,9 @@ class RawPacketsSessionTest {
             var packet = mock(Packet.class);
             var event = new RawPacketSent(player, packet);
             sessionHandler.onRawPacketSent(event);
-            ReflectionTestUtils.setField(session, "player", other);
+            TestFields.setField(session, "player", other);
             sessionHandler.onRawPacketSent(event);
-            ReflectionTestUtils.setField(session, "player", player);
+            TestFields.setField(session, "player", player);
             sessionHandler.onRawPacketsSent(new RawPacketsSent(player, List.of()));
             channel.runPendingTasks();
             assertNull(channel.readOutbound());

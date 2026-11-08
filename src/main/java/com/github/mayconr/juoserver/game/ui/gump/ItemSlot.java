@@ -1,14 +1,37 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-class ItemSlot implements UIElement, Sized {
+import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
+import java.util.function.Function;
+
+public class ItemSlot extends TooltipElement implements Sized {
 
     private final UIElement content;
-    private final int size;
+    private final int width;
+    private final int height;
+    private final int backgroundId;
     private int x, y;
 
     ItemSlot(int size, UIElement content) {
-        this.size = size;
+        this(size, size, content);
+    }
+
+    ItemSlot(int width, int height, UIElement content) {
+        this(3000, width, height, content);
+    }
+
+    ItemSlot(int backgroundId, int width, int height, UIElement content) {
+        if (backgroundId < 0 || backgroundId > 0xFFFF)
+            throw new IllegalArgumentException("Background ID must fit an unsigned short");
+        if (width < 8 || height < 8) throw new IllegalArgumentException("Item slot must accommodate its padding");
+        this.backgroundId = backgroundId;
+        this.width = width;
+        this.height = height;
         this.content = content;
+    }
+
+    @Override
+    public void resolveTexts(Function<MessageContent, String> resolver) {
+        content.resolveTexts(resolver);
     }
 
     @Override
@@ -16,24 +39,31 @@ class ItemSlot implements UIElement, Sized {
         x = ctx.x;
         y = ctx.y;
 
-        LayoutContext inner = new LayoutContext(x + 4, y + 4, size - 8, size - 8);
+        // Center the actual content bounds, including art larger than the frame.
+        // Clamping the offset to zero would leave all overflow on the right/bottom.
+        LayoutContext inner = content instanceof Sized sized
+                ? new LayoutContext(x + Math.floorDiv(width - sized.getWidth(), 2),
+                        y + Math.floorDiv(height - sized.getHeight(), 2),
+                        sized.getWidth(), sized.getHeight())
+                : new LayoutContext(x + 4, y + 4, width - 8, height - 8);
 
         content.layout(inner);
     }
 
     @Override
     public void render(GumpBuilder g) {
-        g.resizePic(x, y, 3000, size, size);
+        g.resizePic(x, y, backgroundId, width, height);
+        renderTooltip(g);
         content.render(g);
     }
 
     @Override
     public int getWidth() {
-        return size;
+        return width;
     }
 
     @Override
     public int getHeight() {
-        return size;
+        return height;
     }
 }

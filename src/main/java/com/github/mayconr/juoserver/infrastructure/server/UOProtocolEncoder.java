@@ -23,21 +23,27 @@ public class UOProtocolEncoder extends MessageToByteEncoder<Packet> {
     protected void encode(ChannelHandlerContext ctx, Packet msg, ByteBuf out) throws Exception {
 
         final var buf = Unpooled.buffer(msg.getLength());
-        msg.writesTo(buf);
-
-        byte[] plainBytes = new byte[buf.readableBytes()];
-        buf.getBytes(buf.readerIndex(), plainBytes);
-        final var compressed = Unpooled.wrappedBuffer(HUFFMAN.encode(plainBytes));
+        final byte[] plainBytes;
+        try {
+            msg.writesTo(buf);
+            plainBytes = new byte[buf.readableBytes()];
+            buf.getBytes(buf.readerIndex(), plainBytes);
+        } finally {
+            buf.release();
+        }
+        final byte[] compressed = HUFFMAN.encode(plainBytes);
+        final int sentBytes = compressed.length;
 
         out.writeBytes(compressed);
 
         if (LOGGER.isDebugEnabled()) {
             final var hex = HexFormat.ofDelimiter(" ");
             LOGGER.debug(
-                    "Packet sent [Code: 0x{} - Content: {}] - Length {} ",
+                    "Packet sent [Code: 0x{} - Content: {}] - Uncompressed: {} bytes - Sent data block: {} bytes",
                     hex.formatHex(new byte[] {(byte) msg.getCode()}).toUpperCase(),
                     hex.formatHex(plainBytes).toUpperCase(),
-                    plainBytes.length);
+                    plainBytes.length,
+                    sentBytes);
         }
     }
 }

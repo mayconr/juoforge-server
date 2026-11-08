@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.network.handler;
 import com.github.mayconr.juoserver.network.packet.GeneralInformation;
 import com.github.mayconr.juoserver.network.packet.LanguageExtendedCommand;
 import com.github.mayconr.juoserver.network.session.PlayerSession;
-import com.github.mayconr.juoserver.network.session.i18n.ClientLocale;
+import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

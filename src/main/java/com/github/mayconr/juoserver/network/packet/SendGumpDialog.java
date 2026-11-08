@@ -31,7 +31,7 @@ public class SendGumpDialog extends AbstractPacket {
         this.x = x;
         this.y = y;
         this.layout = Objects.requireNonNull(layout);
-        this.texts = Objects.requireNonNull(texts);
+        this.texts = List.copyOf(texts);
     }
 
     /** Calcula o tamanho total do pacote (incluindo opcode e length). */
@@ -68,8 +68,12 @@ public class SendGumpDialog extends AbstractPacket {
 
             // length(2) + dados UTF-16BE
             len += 2 + utf16.length;
+            if (len > 0xFFFF) {
+                throw new IllegalArgumentException("Gump packet exceeds 65535 bytes");
+            }
         }
 
+        if (len > 0xFFFF) throw new IllegalArgumentException("Gump packet exceeds 65535 bytes");
         return len;
     }
 
