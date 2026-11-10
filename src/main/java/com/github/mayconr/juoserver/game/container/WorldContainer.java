@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.game.container;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.ConsumeResult;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.github.mayconr.juoserver.game.model.UOContainer;
@@ -42,7 +43,7 @@ public interface WorldContainer {
      * @param serial container serial identifier
      * @return the loaded container, or an empty optional if no container is cached for that serial
      */
-    java.util.Optional<UOContainer> getContainerBySerialId(int serial);
+    Optional<UOContainer> getContainerBySerialId(int serial);
 
     /**
      * Returns the loaded direct children matching the predicate, without searching nested containers.
@@ -53,8 +54,24 @@ public interface WorldContainer {
      * @return matching items in a new list
      * @throws IllegalArgumentException if the container or a referenced item is not loaded
      */
+    default List<UOItem> getItemsInContainer(Integer containerSerial, Predicate<UOItem> predicate) {
+        return getItemsInContainer(containerSerial, predicate, false);
+    }
+
+    /**
+     * Returns matching loaded items, optionally including all nested container contents.
+     * The predicate filters results without pruning traversal of nested containers.
+     * Each serial is visited once; the root container is excluded from results.
+     * This method does not load contents from persistence.
+     *
+     * @param containerSerial serial of the loaded root container
+     * @param predicate filter applied to each item
+     * @param searchNestedContainers whether to search nested containers
+     * @return matching items in a new list
+     * @throws IllegalArgumentException if a visited container or referenced item is not loaded
+     */
     List<UOItem> getItemsInContainer(
-            Integer containerSerial, Predicate<UOItem> predicate);
+            Integer containerSerial, Predicate<UOItem> predicate, boolean searchNestedContainers);
 
     /**
      * Consumes items identified by their internal name from loaded container contents.

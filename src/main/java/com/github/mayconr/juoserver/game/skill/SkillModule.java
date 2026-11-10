@@ -5,10 +5,17 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 
 import java.util.Collection;
+import java.util.Map;
 
 public interface SkillModule extends WorldSkill, WorldModule {
-    /** Reserves an action after the perform-skill flow has validated it. */
-    boolean scheduleSkillAction(UOPlayer player, SkillActionOptions options);
+    /** Atomically reserves a validated action; returns false if the player is already busy. */
+    boolean reserveSkillAction(UOPlayer player, SkillAction action);
+
+    /** Returns a snapshot of the current per-player action reservations. */
+    Map<Integer, SkillAction> getSkillActions();
+
+    /** Releases the reservation only if it still refers to the given action. */
+    void releaseSkillAction(int playerSerial, SkillAction action);
 
     /**
      * Updates the player's skill locks and publishes the resulting skill values.

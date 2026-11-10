@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.container;
 
 import com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext;
+import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsContext;
 import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.model.EquippedLocation;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
@@ -10,6 +11,7 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.ConsumeResult;
 import com.github.mayconr.juoserver.game.item.ContainerHandler;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.github.mayconr.juoserver.game.model.UOContainer;
@@ -31,8 +33,13 @@ public class ContainerModuleImpl implements ContainerModule {
 
     @Override
     public List<UOItem> getItemsInContainer(
-            Integer containerSerial, Predicate<UOItem> predicate) {
-        return containerHandler.getItemsInContainer(containerSerial, predicate);
+            Integer containerSerial, Predicate<UOItem> predicate, boolean searchNestedContainers) {
+        var context = new GetContainerItemsContext(containerSerial, predicate, searchNestedContainers);
+        var result = flows.execute(context);
+        if (result.flowFailed()) {
+            throw new IllegalArgumentException(result.reason(), result.cause());
+        }
+        return context.result();
     }
 
     @Override
@@ -43,7 +50,7 @@ public class ContainerModuleImpl implements ContainerModule {
     }
 
     @Override
-    public java.util.Optional<UOContainer> getContainerBySerialId(int serial) {
+    public Optional<UOContainer> getContainerBySerialId(int serial) {
         return storage.getContainer(serial);
     }
 

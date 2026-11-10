@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.GumpSent;
 import com.github.mayconr.juoserver.game.model.event.GumpExpired;
+import com.github.mayconr.juoserver.game.model.event.VirtueSelected;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
@@ -106,20 +107,24 @@ public class DefaultGumpSystem implements GumpSystem {
         });
 
         var built = builder.build();
-        final var gumpId = generateGumpId(player, handler, timeoutMillis);
+        final var gumpId = generateGumpId(player, handler, timeoutMillis, built.virtueGraphics);
+        log.debug("Sending gump {} to player {} (serial={}): layout={}, texts={}",
+                gumpId, player.getName(), player.getSerialId(), built.layout, built.texts);
+        if (log.isDebugEnabled()) {
+            log.debug("Gump {} preview:\n{}", gumpId, GumpPreview.render(built));
+        }
         eventBus.publish(new GumpSent(player, built, gumpId));
-        log.debug("Sent gump {} to player {}", gumpId, player.getName());
     }
 
-    private int generateGumpId(UOPlayer player, GumpHandler handler, long timeoutMillis) {
+    private int generateGumpId(UOPlayer player, GumpHandler handler, long timeoutMillis, Set<Integer> virtueGraphics) {
         synchronized (player) {
             var attributes = player.runtimeAttributes();
             final var gumpIds = attributes.getOrDefault(PLAYER_GUMP_ID, new HashMap<>());
             int gumpId = random.nextInt();
-            while (gumpIds.containsKey(gumpId)) {
+            while (gumpId == GumpSelection.VIRTUE_GUMP_ID || gumpIds.containsKey(gumpId)) {
                 gumpId = random.nextInt();
             }
-            gumpIds.put(gumpId, new GumpContext(gumpId, player, clock.getAsLong(), timeoutMillis, handler));
+            gumpIds.put(gumpId, new GumpContext(gumpId, player, clock.getAsLong(), timeoutMillis, handler, virtueGraphics));
 
             attributes.set(PLAYER_GUMP_ID, gumpIds);
             pendingPlayers.add(player);
@@ -135,6 +140,10 @@ public class DefaultGumpSystem implements GumpSystem {
             return;
         }
         Objects.requireNonNull(gumpSelection, "Gump selection is required");
+        if (gumpSelection.isVirtueSelection()) {
+            onVirtueSelection(player, gumpSelection);
+            return;
+        }
         final GumpContext context;
         synchronized (player) {
             var map = pendingGumps(player);
@@ -170,5 +179,21 @@ public class DefaultGumpSystem implements GumpSystem {
         }
         // Consume once under the shared player lock; execute user callbacks outside it.
         context.handler().handle(context, gumpSelection);
+    }
+
+    private void onVirtueSelection(UOPlayer player, GumpSelection selection) {
+        synchronized (player) {
+            if (player.getSerialId() != selection.getSerialId()) return;
+            var pending = pendingGumps(player);
+            if (pending == null) return;
+            long now = clock.getAsLong();
+            boolean offered = pending.values().stream().anyMatch(context ->
+                    !context.isExpired(now) && context.virtueGraphics().contains(selection.getButtonId()));
+            if (!offered) return;
+            var last = player.runtimeAttributes().getOrDefault(PLAYER_LAST_GUMP_RESPONSE, 0L);
+            if (last != null && now - last < 100) return;
+            player.runtimeAttributes().set(PLAYER_LAST_GUMP_RESPONSE, now);
+        }
+        eventBus.publish(new VirtueSelected(player, selection.getButtonId()));
     }
 }

@@ -1,5 +1,12 @@
 package com.github.mayconr.juoserver.game.world.context;
 
+import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsContext;
+import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsFlowDefinition;
+import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsContext;
+import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsFlowDefinition;
+import com.github.mayconr.juoserver.game.skill.flow.swings.SetSkillSwingCountContext;
+import com.github.mayconr.juoserver.game.skill.flow.swings.SetSkillSwingCountFlowDefinition;
+
 import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeContext;
 import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeFlowDefinition;
 
@@ -246,6 +253,8 @@ public class FlowRegistryFactory {
                 OpenPaperdollFlowDefinition.build(infra.eventBus(), infra.storage()), OpenPaperdollContext.class);
         registry.register(OpenContainerFlowDefinition.class.getSimpleName(),
                 OpenContainerFlowDefinition.build(infra.storage(), infra.eventBus(), modules.loot()), OpenContainerContext.class);
+        registry.register(GetContainerItemsFlowDefinition.class.getSimpleName(),
+                GetContainerItemsFlowDefinition.build(infra.storage()), GetContainerItemsContext.class);
         registry.register(MaterializeLootFlowDefinition.class.getSimpleName(),
                 MaterializeLootFlowDefinition.build(modules.item(), infra.dataMapper()), MaterializeLootContext.class);
         registry.register(GenerateLootFlowDefinition.class.getSimpleName(),
@@ -284,7 +293,12 @@ public class FlowRegistryFactory {
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
         registry.register(PerformSkillFlowDefinition.class.getSimpleName(),
-                PerformSkillFlowDefinition.build(infra.fileReader(), modules.skill()), PerformSkillContext.class);
+                PerformSkillFlowDefinition.build(infra.fileReader(), modules.skill(), modules.message(), modules.mobile()),
+                PerformSkillContext.class);
+        registry.register(UpdateSkillActionsFlowDefinition.class.getSimpleName(),
+                UpdateSkillActionsFlowDefinition.build(modules.skill()), UpdateSkillActionsContext.class);
+        registry.register(SetSkillSwingCountFlowDefinition.class.getSimpleName(),
+                SetSkillSwingCountFlowDefinition.build(modules.mobile()), SetSkillSwingCountContext.class);
         registry.register(TeleportFlowDefinition.class.getSimpleName(), TeleportFlowDefinition.build(modules, infra), TeleportContext.class);
         registry.register(MovementFlowDefinition.class.getSimpleName(), MovementFlowDefinition.build(modules, infra), MovementContext.class);
         registry.register(ResyncFlowDefinition.class.getSimpleName(), ResyncFlowDefinition.build(infra), ResyncContext.class);

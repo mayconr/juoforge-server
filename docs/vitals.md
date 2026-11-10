@@ -1,155 +1,155 @@
-# Vitals e regeneração
+# Vitals and regeneration
 
-O módulo `game.vitals` controla a regeneração de HP, stamina e mana. Ele é independente de combat e expõe a operação `world.vitals().regen(mobile, elapsedSeconds)`.
+The `game.vitals` module controls HP, stamina, and mana regeneration. It is independent of combat and exposes `world.vitals().regen(mobile, elapsedSeconds)`.
 
-Este documento descreve a implementação atual. A aplicação de dano ainda altera HP pelo flow de damage; morte e ressurreição continuam no módulo mobile. A extração da regeneração não centralizou todas as alterações de recursos em vitals.
+This document describes the current implementation. Damage still changes HP through the damage flow; death and resurrection remain in the mobile module. Extracting regeneration did not centralize all resource changes in vitals.
 
-## Atributos e recursos
+## Attributes and resources
 
-| Atributo usado no cálculo | Recurso regenerado | Valor atual / máximo |
+| Attribute used in calculation | Regenerated resource | Current / maximum value |
 | --- | --- | --- |
 | STR (`strength`) | HP | `hitpoints` / `maxHitpoints` |
 | DEX (`dexterity`) | Stamina | `stamina` / `maxStamina` |
 | INT (`intelligence`) | Mana | `mana` / `maxMana` |
 
-STR, DEX e INT são entradas da fórmula; a regeneração não aumenta esses atributos nem recalcula os máximos dos recursos.
+STR, DEX, and INT are formula inputs; regeneration does not increase these attributes or recalculate resource maximums.
 
-## Organização
+## Organization
 
 ```text
 game/vitals/
-├── WorldVitals.java                # API pública de regeneração
-├── VitalsModule.java               # API + ciclo de vida de WorldModule
-├── VitalsModuleImpl.java           # Atualização e execução pelo FlowFacade
-└── flow/regen/
-    ├── RegenContext.java           # Mobile, intervalo e resultados por recurso
-    ├── RegenFlowDefinition.java    # Composição das quatro etapas
-    ├── ValidateRegenStep.java
-    ├── CalculateRegenStep.java
-    ├── ApplyRegenStep.java
-    └── NotifyRegenStep.java
+|-- WorldVitals.java                # Public regeneration API
+|-- VitalsModule.java               # API + WorldModule lifecycle
+|-- VitalsModuleImpl.java           # Updates and execution through FlowFacade
+`-- flow/regen/
+    |-- RegenContext.java           # Mobile, interval, and per-resource results
+    |-- RegenFlowDefinition.java    # Composition of the four steps
+    |-- ValidateRegenStep.java
+    |-- CalculateRegenStep.java
+    |-- ApplyRegenStep.java
+    `-- NotifyRegenStep.java
 ```
 
-`FlowRegistryFactory` registra `RegenFlowDefinition` para `RegenContext`. Durante a inicialização, `VitalsModuleImpl` recebe o `FlowFacade` pelo `ModuleContext`.
+`FlowRegistryFactory` registers `RegenFlowDefinition` for `RegenContext`. During initialization, `VitalsModuleImpl` receives `FlowFacade` through `ModuleContext`.
 
-## Entrada e execução
+## Entry points and execution
 
-`DefaultWorld.update(delta)` chama `VitalsModule.update(delta)`. O módulo consulta `WorldPlayer.getOnlinePlayers()` e executa uma regeneração por player, usando todo o `delta`, em segundos. Os acumuladores preservam a parte fracionária entre atualizações.
+`DefaultWorld.update(delta)` calls `VitalsModule.update(delta)`. The module queries `WorldPlayer.getOnlinePlayers()` and runs regeneration once per player, using the full `delta` in seconds. Accumulators preserve fractional progress between updates.
 
-NPCs vivos também são aceitos pela API, mas não participam dessa iteração automática: precisam de uma chamada explícita. Players desconectados e mobiles mortos não regeneram.
+Living NPCs are also accepted by the API but do not participate in this automatic iteration: they require an explicit call. Disconnected players and dead mobiles do not regenerate.
 
 ```mermaid
 flowchart TD
-    Tick[DefaultWorld.update: delta em segundos] --> Update[VitalsModule.update]
+    Tick[DefaultWorld.update: delta in seconds] --> Update[VitalsModule.update]
     Update --> Players[WorldPlayer.getOnlinePlayers]
-    Players --> Regen[regen: uma chamada por player]
-    Explicit[world.vitals.regen: chamada explícita para mobile] --> Regen
-    Regen --> Interval{Intervalo finito e não negativo?}
-    Interval -->|não| Argument[IllegalArgumentException]
-    Interval -->|sim| Context[Cria RegenContext]
+    Players --> Regen[regen: one call per player]
+    Explicit[world.vitals.regen: explicit mobile call] --> Regen
+    Regen --> Interval{Finite nonnegative interval?}
+    Interval -->|no| Argument[IllegalArgumentException]
+    Interval -->|yes| Context[Create RegenContext]
     Context --> Facade[FlowFacade.execute]
-    Facade --> Registry[Flow registrado para RegenContext]
+    Facade --> Registry[Flow registered for RegenContext]
     Registry --> Flow[RegenFlowDefinition]
-    Flow --> Result{Resultado do flow}
-    Result -->|FAILURE| Failure[ModuleOperationException com código e causa]
-    Result -->|SUCCESS ou STOP| Return[Retorna sem erro]
+    Flow --> Result{Flow result}
+    Result -->|FAILURE| Failure[ModuleOperationException with code and cause]
+    Result -->|SUCCESS or STOP| Return[Return without error]
 ```
 
-O flow é síncrono: cálculo, aplicação e publicação do evento acontecem na chamada ao facade. Ele não agenda uma thread nem utiliza o event loop de rede para alterar os recursos. A camada de sessão encaminha a notificação de saída para seu próprio event loop.
+The flow is synchronous: calculation, application, and event publication occur during the facade call. It does not schedule a thread or use the network event loop to change resources. The session layer forwards outgoing notifications to its own event loop.
 
-## Etapas do flow
+## Flow steps
 
 ```mermaid
 flowchart TD
-    Start[RegenContext: mobile e elapsedSeconds] --> Validate[ValidateRegenStep]
-    Validate --> Invalid{Entrada e configuração válidas?}
-    Invalid -->|não| Fail[FAILURE: interrompe o flow]
-    Invalid -->|sim| Eligible{Mobile vivo e player conectado?}
-    Eligible -->|não| Clear[Remove acumuladores de runtime]
+    Start[RegenContext: mobile and elapsedSeconds] --> Validate[ValidateRegenStep]
+    Validate --> Invalid{Valid input and configuration?}
+    Invalid -->|no| Fail[FAILURE: interrupt flow]
+    Invalid -->|yes| Eligible{Living mobile and connected player?}
+    Eligible -->|no| Clear[Remove runtime accumulators]
     Clear --> Ineligible[STOP: INELIGIBLE_MOBILE]
-    Eligible -->|sim| Zero{Intervalo igual a zero?}
-    Zero -->|sim| Stop[STOP: ZERO_INTERVAL]
-    Zero -->|não| Calculate[CalculateRegenStep]
-    Calculate --> Plans[ResourceRegen para HP, stamina e mana]
+    Eligible -->|yes| Zero{Zero interval?}
+    Zero -->|yes| Stop[STOP: ZERO_INTERVAL]
+    Zero -->|no| Calculate[CalculateRegenStep]
+    Calculate --> Plans[ResourceRegen for HP, stamina, and mana]
     Plans --> Apply[ApplyRegenStep]
-    Apply --> State[Atualiza recursos e acumuladores]
+    Apply --> State[Update resources and accumulators]
     State --> Notify[NotifyRegenStep]
-    Notify --> Changed{Algum valor inteiro mudou?}
-    Changed -->|sim| Event[Publica um VitalsChanged]
-    Changed -->|não| Success[SUCCESS sem evento]
+    Notify --> Changed{Any integer value changed?}
+    Changed -->|yes| Event[Publish one VitalsChanged]
+    Changed -->|no| Success[SUCCESS without event]
     Event --> Success
 ```
 
-| Etapa | Comportamento |
+| Step | Behavior |
 | --- | --- |
-| `ValidateRegenStep` | Verifica mobile, intervalo e fator de saturação; interrompe para mortos, players offline ou intervalo zero. Ao rejeitar um mobile morto/offline, remove seu progresso fracionário. |
-| `CalculateRegenStep` | Lê recursos, atributos e acumuladores. Calcula os três resultados sem alterar o mobile nem seus acumuladores. |
-| `ApplyRegenStep` | Grava os novos acumuladores e aplica somente os recursos cujo valor inteiro mudou. |
-| `NotifyRegenStep` | Publica um único `VitalsChanged` se pelo menos um dos três recursos mudou. |
+| `ValidateRegenStep` | Checks mobile, interval, and saturation factor; stops for dead mobiles, offline players, or a zero interval. Rejecting a dead/offline mobile removes its fractional progress. |
+| `CalculateRegenStep` | Reads resources, attributes, and accumulators. Calculates all three results without changing the mobile or its accumulators. |
+| `ApplyRegenStep` | Writes new accumulators and applies only resources whose integer value changed. |
+| `NotifyRegenStep` | Publishes one `VitalsChanged` if at least one of the three resources changed. |
 
-Cada resultado `ResourceRegen` contém `previous`, `next` e `remainder`. O contexto mantém resultados separados para HP, stamina e mana.
+Each `ResourceRegen` result contains `previous`, `next`, and `remainder`. The context keeps separate results for HP, stamina, and mana.
 
-### Validação e interrupção
+### Validation and stopping
 
-| Condição | Código do flow | Efeito |
+| Condition | Flow code | Effect |
 | --- | --- | --- |
-| Mobile ausente | `MISSING_MOBILE` | FAILURE; sem cálculo ou aplicação. |
-| Intervalo negativo, NaN ou infinito | `INVALID_INTERVAL` | FAILURE no uso direto do flow. Na API do módulo, a validação antecipada lança `IllegalArgumentException`. |
-| `saturationFactor <= 0` | `INVALID_REGEN_SETTINGS` | FAILURE; nenhuma alteração de recursos. |
-| Mobile morto ou player desconectado | `INELIGIBLE_MOBILE` | STOP; remove os três acumuladores de runtime. |
-| Intervalo zero para mobile elegível | `ZERO_INTERVAL` | STOP; preserva recursos e acumuladores. |
+| Missing mobile | `MISSING_MOBILE` | FAILURE; no calculation or application. |
+| Negative, NaN, or infinite interval | `INVALID_INTERVAL` | FAILURE when using the flow directly. The module API's early validation throws `IllegalArgumentException`. |
+| `saturationFactor <= 0` | `INVALID_REGEN_SETTINGS` | FAILURE; no resource changes. |
+| Dead mobile or disconnected player | `INELIGIBLE_MOBILE` | STOP; removes all three runtime accumulators. |
+| Zero interval for an eligible mobile | `ZERO_INTERVAL` | STOP; preserves resources and accumulators. |
 
-A ordem importa: elegibilidade é verificada antes do intervalo zero. Um mobile morto/offline tem seus acumuladores removidos mesmo com intervalo zero, desde que entrada e configuração sejam válidas.
+Order matters: eligibility is checked before the zero interval. A dead/offline mobile has its accumulators removed even with a zero interval, provided input and configuration are valid.
 
-## Fórmula de regeneração
+## Regeneration formula
 
-O cálculo é realizado independentemente para cada recurso.
+Calculation is performed independently for each resource.
 
-| Símbolo | Significado |
+| Symbol | Meaning |
 | --- | --- |
-| `S` | Atributo efetivo: `max(0, stat)`. |
-| `K` | `settings.mobile().vitals().saturationFactor()`, obrigatoriamente positivo. |
-| `dt` | Tempo transcorrido, em segundos. |
-| `A` | Acumulador fracionário anterior, inicialmente zero. |
-| `C` | Valor atual do recurso. |
-| `M` | Valor máximo do recurso. |
+| `S` | Effective attribute: `max(0, stat)`. |
+| `K` | `settings.mobile().vitals().saturationFactor()`, which must be positive. |
+| `dt` | Elapsed time in seconds. |
+| `A` | Previous fractional accumulator, initially zero. |
+| `C` | Current resource value. |
+| `M` | Maximum resource value. |
 
-Para `C < M`:
+For `C < M`:
 
 ```text
 S = max(0, stat)
-rate = 0.1 + S / (S + K)                   # pontos por segundo
+rate = 0.1 + S / (S + K)                   # points per second
 accumulated = A + rate * dt
 capacity = M - C
 gain = min(floor(accumulated + 1e-9), capacity)
 next = C + gain
 
-se next == M:
+if next == M:
     remainder = 0
-senão:
+else:
     remainder = max(0, accumulated - gain)
 ```
 
-O `1e-9` é uma tolerância contra erros de ponto flutuante próximos de um inteiro. Ela evita que um total representado como `0.9999999999999999` deixe de conceder um ponto.
+`1e-9` is a tolerance for floating-point errors near an integer. It prevents a total represented as `0.9999999999999999` from failing to grant a point.
 
-Se `C >= M`, a etapa mantém o valor atual e retorna acumulador zero. Portanto, a regeneração impede que um novo ganho ultrapasse o máximo, mas não corrige um valor que já esteja acima do máximo por outra alteração.
+If `C >= M`, the step keeps the current value and returns a zero accumulator. Regeneration therefore prevents new gains from exceeding the maximum but does not correct a value already above the maximum due to another change.
 
-### Efeito do fator de saturação
+### Effect of the saturation factor
 
-Os exemplos abaixo usam **K = 100 apenas para ilustrar a fórmula**, sem afirmar que esse é o valor configurado na shard.
+The examples below use **K = 100 only to illustrate the formula**, without asserting that this is the shard's configured value.
 
-| Atributo efetivo | Cálculo | Taxa aproximada |
+| Effective attribute | Calculation | Approximate rate |
 | --- | --- | --- |
-| 0 | `0.1 + 0 / 100` | 0,1 ponto/s |
-| 50 | `0.1 + 50 / 150` | 0,433333 ponto/s |
-| 100 | `0.1 + 100 / 200` | 0,6 ponto/s |
-| 200 | `0.1 + 200 / 300` | 0,766667 ponto/s |
+| 0 | `0.1 + 0 / 100` | 0.1 points/s |
+| 50 | `0.1 + 50 / 150` | 0.433333 points/s |
+| 100 | `0.1 + 100 / 200` | 0.6 points/s |
+| 200 | `0.1 + 200 / 300` | 0.766667 points/s |
 
-Um atributo negativo é tratado como zero. Para um mesmo atributo positivo, aumentar K reduz a taxa. Conforme o atributo cresce, a parcela `S / (S + K)` aproxima-se de 1; a taxa aproxima-se de 1,1 ponto/s.
+A negative attribute is treated as zero. For the same positive attribute, increasing K reduces the rate. As the attribute grows, `S / (S + K)` approaches 1; the rate approaches 1.1 points/s.
 
-### Exemplo 1: recuperação em uma chamada
+### Example 1: recovery in one call
 
-Considere HP = 50/100, STR = 100, K = 100, acumulador zero e intervalo de 10 segundos:
+Consider HP = 50/100, STR = 100, K = 100, a zero accumulator, and a 10-second interval:
 
 ```text
 rate = 0.1 + 100 / (100 + 100) = 0.6
@@ -160,114 +160,114 @@ next = 50 + 6 = 56
 remainder = 6 - 6 = 0
 ```
 
-Resultado: **HP = 56/100**. DEX e INT passam pela mesma fórmula para stamina e mana, com seus próprios valores e acumuladores.
+Result: **HP = 56/100**. DEX and INT use the same formula for stamina and mana, with their own values and accumulators.
 
-### Exemplo 2: preservação das frações entre ticks
+### Example 2: preserving fractions between ticks
 
-Com os mesmos STR e K, HP inicial 50/100 e atualizações de 1 segundo:
+With the same STR and K, initial HP 50/100, and 1-second updates:
 
-| Tick | HP antes | Acumulador anterior | Total após somar 0,6 | Ganho | HP depois | Resto |
+| Tick | HP before | Previous accumulator | Total after adding 0.6 | Gain | HP after | Remainder |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 50 | 0,0 | 0,6 | 0 | 50 | 0,6 |
-| 2 | 50 | 0,6 | 1,2 | 1 | 51 | 0,2 |
-| 3 | 51 | 0,2 | 0,8 | 0 | 51 | 0,8 |
-| 4 | 51 | 0,8 | 1,4 | 1 | 52 | 0,4 |
-| 5 | 52 | 0,4 | 1,0 | 1 | 53 | 0,0 |
+| 1 | 50 | 0.0 | 0.6 | 0 | 50 | 0.6 |
+| 2 | 50 | 0.6 | 1.2 | 1 | 51 | 0.2 |
+| 3 | 51 | 0.2 | 0.8 | 0 | 51 | 0.8 |
+| 4 | 51 | 0.8 | 1.4 | 1 | 52 | 0.4 |
+| 5 | 52 | 0.4 | 1.0 | 1 | 53 | 0.0 |
 
-Os números estão apresentados em decimal idealizado; a tolerância trata pequenas diferenças da representação em `double`. Após 10 ticks de 1 segundo, o ganho é 6, igual ao de uma chamada de 10 segundos, mantendo atributos, elegibilidade e espaço disponível constantes.
+Numbers use idealized decimal notation; the tolerance handles small differences in `double` representation. After ten 1-second ticks, the gain is 6, equal to one 10-second call, with constant attributes, eligibility, and available capacity.
 
-Nos ticks 1 e 3, somente o acumulador de HP muda. Se nenhum outro recurso mudar seu valor inteiro, não há `VitalsChanged`.
+On ticks 1 and 3, only the HP accumulator changes. If no other resource changes its integer value, there is no `VitalsChanged`.
 
-### Exemplo 3: limite máximo e descarte do excedente
+### Example 3: maximum and discarded excess
 
-Considere HP = 98/100, STR = 100, K = 100 e intervalo de 10 segundos:
+Consider HP = 98/100, STR = 100, K = 100, and a 10-second interval:
 
 ```text
 accumulated = 6
 capacity = 100 - 98 = 2
 gain = min(6, 2) = 2
 next = 100
-remainder = 0                          # recurso chegou ao máximo
+remainder = 0                          # resource reached its maximum
 ```
 
-Resultado: **HP = 100/100**. Os 4 pontos excedentes não são guardados. Atualizações com o recurso cheio também mantêm acumulador zero.
+Result: **HP = 100/100**. The 4 excess points are not saved. Updates with a full resource also keep a zero accumulator.
 
-Se posteriormente HP cair para 90, uma nova atualização de 1 segundo acumula 0,6 e não concede HP imediatamente. A segunda acumula 1,2 e concede 1 ponto. Isso evita guardar regeneração enquanto o recurso está cheio para recuperar dano futuro instantaneamente.
+If HP later drops to 90, a new 1-second update accumulates 0.6 and does not immediately grant HP. The second accumulates 1.2 and grants 1 point. This prevents storing regeneration while a resource is full to recover future damage instantly.
 
-### Exemplo 4: taxas independentes
+### Example 4: independent rates
 
-Com K = 100, todos os recursos em 50/100, acumuladores zero e intervalo de 10 segundos:
+With K = 100, all resources at 50/100, zero accumulators, and a 10-second interval:
 
-| Recurso | Atributo | Taxa | Ganho inteiro | Novo valor | Resto aproximado |
+| Resource | Attribute | Rate | Integer gain | New value | Approximate remainder |
 | --- | --- | --- | --- | --- | --- |
-| HP | STR = 100 | 0,6/s | 6 | 56 | 0 |
-| Stamina | DEX = 50 | 0,433333/s | 4 | 54 | 0,333333 |
-| Mana | INT = 0 | 0,1/s | 1 | 51 | 0 |
+| HP | STR = 100 | 0.6/s | 6 | 56 | 0 |
+| Stamina | DEX = 50 | 0.433333/s | 4 | 54 | 0.333333 |
+| Mana | INT = 0 | 0.1/s | 1 | 51 | 0 |
 
-Os três valores são aplicados antes da publicação de **um único evento** para o mobile.
+All three values are applied before publishing **a single event** for the mobile.
 
-## Acumuladores e persistência
+## Accumulators and persistence
 
-Os acumuladores vivem em `mobile.runtimeAttributes()`:
+Accumulators live in `mobile.runtimeAttributes()`:
 
 - `vitals.hpAccumulator`
 - `vitals.staminaAccumulator`
 - `vitals.manaAccumulator`
 
-Eles não são gravados nos atributos persistentes. Um novo objeto carregado começa sem esse progresso fracionário. A validação também remove os acumuladores quando o flow é chamado para um mobile morto ou um player offline.
+They are not written to persistent attributes. A newly loaded object starts without this fractional progress. Validation also removes accumulators when the flow is called for a dead mobile or an offline player.
 
-Como a atualização automática percorre apenas a lista de players online, ela não executa uma varredura de personagens offline para limpar acumuladores. A remoção por inelegibilidade ocorre quando o flow é efetivamente chamado.
+Because automatic updates iterate only over online players, they do not scan offline characters to clear accumulators. Removal due to ineligibility occurs when the flow is actually called.
 
-## Notificação ao client
+## Client notification
 
 ```mermaid
 sequenceDiagram
-    participant World as Atualização do mundo
+    participant World as World update
     participant Module as VitalsModule
     participant Flow as RegenFlowDefinition
     participant Mobile as UOMobile
     participant Bus as EventBus
-    participant Session as Inscrição da sessão
+    participant Session as Session subscription
     participant UI as PlayerInterfaceHandler
     participant Writer as SessionPacketWriter
     participant Client
     World->>Module: update(delta)
     Module->>Flow: FlowFacade.execute(RegenContext)
-    Flow->>Mobile: lê estado e calcula os recursos
-    Flow->>Mobile: aplica valores e acumuladores
-    alt pelo menos um recurso mudou
+    Flow->>Mobile: read state and calculate resources
+    Flow->>Mobile: apply values and accumulators
+    alt at least one resource changed
         Flow->>Bus: publish(VitalsChanged)
-        Bus->>Session: entrega o evento
-        Session->>Writer: enqueue do processamento se ACTIVE
-        Writer->>UI: onVitalsChanged no event loop
-        alt mobile é o player desta sessão
+        Bus->>Session: deliver event
+        Session->>Writer: enqueue processing if ACTIVE
+        Writer->>UI: onVitalsChanged on event loop
+        alt mobile is this session's player
             UI->>Writer: writeAndFlush(StatusBarInfo)
-            Writer-->>Client: packet pelo pipeline Netty
+            Writer-->>Client: packet through Netty pipeline
         end
-    else apenas fração mudou ou recursos cheios
-        Note over Flow,Bus: não publica VitalsChanged
+    else only fractions changed or resources full
+        Note over Flow,Bus: do not publish VitalsChanged
     end
 ```
 
-Atualmente `onVitalsChanged` atualiza o status do próprio player da sessão. Esse evento, por si só, não envia a barra de vida de um NPC para todos os observadores. A distribuição e os controles de rede estão detalhados em [Sessões do servidor](server-sessions.md).
+Currently, `onVitalsChanged` updates the status of the session's own player. This event alone does not send an NPC's health bar to all observers. Distribution and network controls are detailed in [Server sessions](server-sessions.md).
 
-## Uso e testes
+## Usage and tests
 
-A operação pública usa segundos, não milissegundos:
+The public operation uses seconds, not milliseconds:
 
 ```java
-world.vitals().regen(npc, 1.0); // Regenera considerando 1 segundo transcorrido.
+world.vitals().regen(npc, 1.0); // Regenerate for 1 elapsed second.
 ```
 
-O chamador explícito deve fornecer o tempo realmente transcorrido. Não deve repetir a mesma janela de tempo para um player já processado pela atualização automática, pois isso aplicaria regeneração adicional.
+Explicit callers must supply the actual elapsed time. Do not repeat the same time window for a player already processed by automatic updates, since that would apply additional regeneration.
 
-Os testes de vitals cobrem o registro do flow, integração com o módulo, entradas inválidas, STOP para inelegibilidade/intervalo zero, cálculo sem mutação, aplicação antes da notificação, taxas independentes, ganhos fracionários, limite máximo, descarte do excedente, estado de runtime e propagação de falhas.
+Vitals tests cover flow registration, module integration, invalid inputs, STOP for ineligibility/zero interval, calculation without mutation, application before notification, independent rates, fractional gains, maximums, discarded excess, runtime state, and failure propagation.
 
 ```shell
 mvn -o -Dtest=VitalsModuleTest,RegenFlowTest test
 ```
 
-## Referências no código
+## Code references
 
 - [VitalsModuleImpl](../src/main/java/com/github/mayconr/juoserver/game/vitals/VitalsModuleImpl.java)
 - [WorldVitals](../src/main/java/com/github/mayconr/juoserver/game/vitals/WorldVitals.java)

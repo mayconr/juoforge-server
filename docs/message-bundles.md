@@ -1,17 +1,17 @@
-# Mensagens do shard
+# Shard messages
 
-Registre os bundles durante a configuração do shard:
+Register bundles during shard configuration:
 
 ```java
 @Override
 public void configure(WorldCfg cfg) {
     cfg.addMessageBundle("legacy.messages");
     cfg.addMessageBundle("legacy.mining");
-    // Demais configurações do shard...
+    // Other shard settings...
 }
 ```
 
-Os nomes são relativos ao classpath, sem extensão. Por exemplo:
+Names are relative to the classpath, without an extension. For example:
 
 ```text
 src/main/resources/legacy/messages.properties
@@ -20,28 +20,28 @@ src/main/resources/legacy/mining.properties
 src/main/resources/legacy/mining_pt_BR.properties
 ```
 
-Os arquivos usam UTF-8. Exemplo de tradução:
+Files use UTF-8. Example Brazilian Portuguese translation:
 
 ```properties
 mining.prospect.found=Você encontrou sinais de minério perto de {location}.
 ```
 
-Envie a mensagem pela API habitual:
+Send the message through the usual API:
 
 ```java
 messages.send(player, MessageContent.localized(
-        "mining.prospect.found", Map.of("location", "uma montanha")));
+        "mining.prospect.found", Map.of("location", "a mountain")));
 ```
 
-Para cada idioma, os bundles são consultados na ordem de registro; o bundle
-`messages` da biblioteca é acrescentado ao final automaticamente. Assim, o shard
-pode adicionar chaves e substituir mensagens da biblioteca.
+For each language, bundles are searched in registration order; the library's
+`messages` bundle is automatically appended at the end. The shard can therefore
+add keys and override library messages.
 
-A busca percorre o idioma solicitado (por exemplo, `pt_BR`, depois `pt`) em todos
-os bundles antes de consultar o fallback `en_US`/`en`. Por último, consulta os
-arquivos base, sem sufixo. Uma mensagem base do shard não esconde uma tradução
-da biblioteca para o idioma solicitado. O idioma padrão da JVM não interfere.
-Uma chave ausente em todos os bundles retorna `!chave!`.
+Lookup searches the requested language (for example, `pt_BR`, then `pt`) across
+all bundles before checking the `en_US`/`en` fallback. Finally, it checks base
+files without a suffix. A shard's base message does not hide a library
+translation for the requested language. The JVM's default locale has no effect.
+A key missing from all bundles returns `!key!`.
 
-Os recursos e suas ausências são armazenados em cache por localizador, compartilhado
-pelas sessões. Alterações nos arquivos exigem reiniciar o servidor.
+Resources and missing resources are cached per localizer, shared by sessions.
+File changes require a server restart.

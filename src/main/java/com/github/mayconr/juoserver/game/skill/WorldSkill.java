@@ -5,6 +5,12 @@ import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 
 public interface WorldSkill {
+    /** Persistent player preference for the number of swings per action; defaults to 1. */
+    String SWINGS_PROPERTY = "skill.swings";
+
+    /** Sets the persistent swing count for future actions, clamped to at least 1. */
+    void setSwingCount(UOPlayer player, int swingCount);
+
     /** Sets the base skill, clamped to [0, cap], regardless of its lock, and notifies the player.
      * The value uses skill points (50.0 means 50.0), not protocol tenths.
      */
@@ -12,10 +18,12 @@ public interface WorldSkill {
 
     /**
      * Reserves one action per player. Returns false when the player already has an action.
-     * The first swing runs on the next world update; subsequent swings use simulation seconds.
-     * At most one swing runs per update. Callbacks run on the game loop, including completion.
+     * The optional swingCount overrides the persistent skill.swings preference; the default and minimum are 1.
+     * The first swing runs on the next update, followed by a fixed second between swings.
+     * At most one swing runs per update.
+     * Callbacks run on the game loop.
      */
-    boolean performSkill(UOPlayer player, SkillActionOptions options);
+    boolean performSkill(UOPlayer player, SkillPerformOptions options);
 
     boolean hasActiveAction(UOPlayer player);
 

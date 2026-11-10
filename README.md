@@ -1,184 +1,197 @@
 # juoforge-server
 
-Configuração de rede: [modo independente ou integração com juoforge-gateway](docs/network-transports.md).
+Network configuration: [standalone mode or juoforge-gateway integration](docs/network-transports.md).
 
-Servidor de Ultima Online em Java. As regras de gameplay são configuradas em
+Gump system: [components, usage examples, and limitations](docs/gumps.md).
+
+An Ultima Online server written in Java. Gameplay rules are configured in
 [`GamePlaySettings`](src/main/java/com/github/mayconr/juoserver/game/GamePlaySettings.java).
 
-## Build com Java 25
+## Building with Java 25
 
-Use JDK 25 e Maven 3.6.3 ou superior. Configure `JAVA_HOME` para o JDK 25 e
-confirme com `mvn -version` que o Maven está usando essa versão. No IntelliJ,
-selecione JDK 25 para o projeto e para o Maven runner/importer e recarregue o POM.
+Use JDK 25 and Maven 3.6.3 or later. Set `JAVA_HOME` to JDK 25 and confirm with
+`mvn -version` that Maven is using that version. In IntelliJ, select JDK 25 for
+the project and Maven runner/importer, then reload the POM.
 
 ```sh
 mvn clean install
 ```
 
-O build usa `--release 25`, sem recursos preview. O processamento de anotações
-do Lombok está configurado explicitamente no Maven. O Spring Boot 3.5 gerencia
-as versões compatíveis das dependências, incluindo Lombok, Mockito e Netty.
+The build uses `--release 25`, without preview features. Lombok annotation
+processing is explicitly configured in Maven. Spring Boot 3.5 manages compatible
+dependency versions, including Lombok, Mockito, and Netty.
 
-## Módulo de skills
+## Skills module
 
-O módulo é acessível por `world.skill()` e oferece estas operações:
+The module is accessible through `world.skill()` and provides these operations:
 
-| Operação | Responsabilidade |
+| Operation | Responsibility |
 |---|---|
-| `useSkill(player, skillId)` | Processa o uso de uma skill e despacha seu comportamento. |
-| `performSkill(player, options)` | Agenda swings e callbacks, reservando uma ação por player. Retorna `false` se já houver uma ação ativa. |
-| `hasActiveAction(player)` | Informa se o player possui uma ação agendada. |
-| `tryGain(mobile, skillId, difficulty, context)` | Executa uma tentativa de ganho pelo flow de progressão. |
-| `setSkill(player, skillId, value)` | Define o valor base entre zero e o cap e notifica o player, independentemente do lock. |
+| `useSkill(player, skillId)` | Processes skill use and dispatches its behavior. |
+| `performSkill(player, options)` | Schedules the player's preferred swing count and completion callback, reserving one action per player. Returns `false` if an action is already active. |
+| `hasActiveAction(player)` | Reports whether the player has a scheduled action. |
+| `tryGain(mobile, skillId, difficulty, context)` | Attempts a gain through the progression flow. |
+| `setSkill(player, skillId, value)` | Sets the base value between zero and the cap and notifies the player, regardless of the lock. |
 
-`performSkill` recebe `SkillActionOptions`: `skillId`, `swings`, `delaySeconds`,
-`swing` e `onComplete`. O padrão é um swing, intervalo zero e conclusão sem ação.
-O callback `swing` é obrigatório. O flow valida as opções e a existência da skill
-no `UOFileReader`, sem exigir o flag `hasAction`.
+`performSkill` takes `SkillPerformOptions`: `skillId`, optional `swingCount`,
+`swing`, and `onComplete`. Completion defaults to a no-op callback.
+The `swing` callback is required. The flow validates options and checks that the
+skill exists in `UOFileReader`, without requiring the `hasAction` flag.
 
-O primeiro swing ocorre na próxima atualização do mundo. Os demais respeitam
-`delaySeconds`, em segundos de simulação, com no máximo um swing por atualização.
-O callback recebe a quantidade de swings executados, começando em um.
+An explicit `swingCount` overrides the persistent preference for that action.
+When omitted, the persistent player property `skill.swings` selects the count, defaulting
+to 1 when missing or invalid. The flow reads it through `WorldMobile` at scheduling
+time. The first swing runs on the next world update, with a fixed second of simulation
+time between later swings and at most one swing per update. Swing
+callbacks receive counts starting at 1; completion receives the total count once.
 
-### Exemplo: um swing por segundo
+### Example: one swing on the next update
 
 ```java
 int skillId = 45; // Mining
 double difficulty = 100.0;
 
-boolean started = world.skill().performSkill(player, SkillActionOptions.builder()
+boolean started = world.skill().performSkill(player, SkillPerformOptions.builder()
         .skillId(skillId)
-        .swings(60)
-        .delaySeconds(1.0)
         .swing(count -> world.skill().tryGain(
                 player, skillId, difficulty, SkillGainContext.of(player)))
-        .onComplete(count -> world.message().send(player, "Treino concluído."))
+        .onComplete(count -> world.message().send(player, "Training complete."))
         .build());
 ```
 
-`SkillActionOptions` pertence a `game.skill` e `SkillGainContext` a `game.model`.
-O exemplo agenda 60 tentativas: a primeira na próxima atualização e as outras
-com intervalo de um segundo. `performSkill` não concede ganho automaticamente;
-é o callback que chama `tryGain`. Não é necessário agendar outra ação se `started`
-for `false`. Para os tempos abaixo, pressupõe-se treino contínuo, sem pausas entre
-ações e com uma chamada de `tryGain` por segundo.
+`SkillPerformOptions` belongs to `game.skill` and `SkillGainContext` to `game.model`.
+With the default preference, the example schedules one attempt on the next world update.
+To request more swings, set the player's persistent preference before scheduling:
 
-### Cálculo de ganho
+```java
+world.skill().setSwingCount(player, 60);
+```
 
-O [`TryGainSkillFlowDefinition`](src/main/java/com/github/mayconr/juoserver/game/skill/flow/gain/TryGainSkillFlowDefinition.java)
-executa, nesta ordem: resolução da skill, sorteio, cálculo do ganho, aplicação e
-notificação. As fórmulas estão isoladas em
+`setSwingCount` persists the preference and clamps the count to at least 1. Use
+`.swingCount(3)` on the options builder to override the saved preference for one
+action, without changing it. The minimum effective count is always 1.
+`performSkill` does not grant gains automatically; the callback calls `tryGain`.
+A false `started` means the player already has an action. The progression times
+below assume continuous attempts, with one `tryGain` call per second and no pauses
+between scheduled actions.
+
+### Gain calculation
+
+[`TryGainSkillFlowDefinition`](src/main/java/com/github/mayconr/juoserver/game/skill/flow/gain/TryGainSkillFlowDefinition.java)
+executes skill resolution, random roll, gain calculation, application, and
+notification, in that order. Formulas are isolated in
 [`SkillGainCalculator`](src/main/java/com/github/mayconr/juoserver/game/skill/SkillGainCalculator.java).
-Quando o sorteio falha, o flow termina sem alterar a skill.
+If the roll fails, the flow ends without changing the skill.
 
-Os parâmetros padrão de `GamePlaySettings.Skills` são:
+Default `GamePlaySettings.Skills` parameters:
 
-| Parâmetro | Padrão | Função |
+| Parameter | Default | Purpose |
 |---|---:|---|
-| `minGainChance` | `0.0` | Chance mínima de ganhar por tentativa. |
-| `maxGainChance` | `0.5` | Chance máxima de ganhar por tentativa. |
-| `balanceOffset` | `50` | Deslocamento na comparação entre dificuldade e valor base. |
-| `cap` | `100` | Cap atribuído às skills iniciais na criação do personagem. |
-| `beginnerGainMultiplier` | `19.77` | Multiplicador inicial do ganho. |
-| `beginnerGainThreshold` | `30.0` | Valor a partir do qual o bônus inicial termina. |
-| `baseGain` | `0.00113654` | Ganho base por sorteio bem-sucedido, antes dos fatores. |
+| `minGainChance` | `0.0` | Minimum gain chance per attempt. |
+| `maxGainChance` | `0.5` | Maximum gain chance per attempt. |
+| `balanceOffset` | `50` | Offset when comparing difficulty with the base value. |
+| `cap` | `100` | Cap assigned to initial skills during character creation. |
+| `beginnerGainMultiplier` | `19.77` | Initial gain multiplier. |
+| `beginnerGainThreshold` | `30.0` | Value at which the initial bonus ends. |
+| `baseGain` | `0.00113654` | Base gain per successful roll, before factors. |
 
 ```java
 new GamePlaySettings.Skills(0.0, 0.5, 50, 100, 19.77, 30.0, 0.00113654)
 ```
 
-Nas fórmulas, `s` é o valor base atual, `c` é o cap da própria skill, `d` é a
-dificuldade, e `clamp(x, mínimo, máximo)` limita o valor ao intervalo informado.
-Alterar o cap da configuração não modifica automaticamente skills já existentes.
+In the formulas, `s` is the current base value, `c` is the individual skill cap,
+`d` is difficulty, and `clamp(x, minimum, maximum)` bounds the value to the given
+range. Changing the configured cap does not automatically modify existing skills.
 
-**1. Chance de ganho**
+**1. Gain chance**
 
 ```text
 chance = clamp((d - s + balanceOffset) / 100, minGainChance, maxGainChance)
 ```
 
-O sorteio acontece em cada tentativa. Com `d = 100`, a chance permanece em 50%
-durante toda a progressão de zero a 100. Isso corresponde, em média, a um ganho
-bem-sucedido a cada duas tentativas.
+A roll occurs on every attempt. With `d = 100`, the chance stays at 50% throughout
+progression from zero to 100. On average, this means one successful gain every
+two attempts.
 
-**2. Quantidade de ganho quando o sorteio passa**
+**2. Gain amount when the roll succeeds**
 
 ```text
-fatorCap         = clamp(1 - s / c, 0.1, 1.0)
-fatorDificuldade = clamp(d / c, 0.5, 1.5)
-fatorIniciante   = 1 + (beginnerGainMultiplier - 1)
-                      × clamp(1 - s / beginnerGainThreshold, 0, 1)
+capFactor        = clamp(1 - s / c, 0.1, 1.0)
+difficultyFactor = clamp(d / c, 0.5, 1.5)
+beginnerFactor   = 1 + (beginnerGainMultiplier - 1)
+                      * clamp(1 - s / beginnerGainThreshold, 0, 1)
 
-ganho = baseGain × fatorCap × fatorDificuldade × fatorIniciante
+gain = baseGain * capFactor * difficultyFactor * beginnerFactor
 ```
 
-O fator iniciante só usa essa expressão quando o multiplicador é maior que um e
-o threshold é positivo; caso contrário, vale um. Com os padrões, começa em 19,77×,
-cai para 10,385× em 15 e chega a 1× em 30. A partir daí não há bônus inicial.
-O fator de cap continua reduzindo o ganho até 90; entre 90 e 100, permanece em 0,1.
-Se o cap individual for menor ou igual a zero, o ganho calculado é zero.
+The beginner factor uses this expression only when the multiplier is greater
+than one and the threshold is positive; otherwise, it is one. With defaults,
+it starts at 19.77x, falls to 10.385x at 15, and reaches 1x at 30. There is no
+initial bonus beyond that point. The cap factor continues reducing gains until
+90; between 90 and 100, it stays at 0.1. If the individual cap is zero or negative,
+the calculated gain is zero.
 
-Exemplos para dificuldade e cap iguais a 100:
+Examples with difficulty and cap both equal to 100:
 
-| Skill atual | Fator de cap | Fator iniciante | Ganho por sucesso | Ganho médio por tentativa naquele valor |
+| Current skill | Cap factor | Beginner factor | Gain per success | Average gain per attempt at that value |
 |---|---:|---:|---:|---:|
-| 0 | 1,00 | 19,770 | 0,0224694 | 0,0112347 |
-| 15 | 0,85 | 10,385 | 0,0100325 | 0,0050163 |
-| 30 | 0,70 | 1,000 | 0,0007956 | 0,0003978 |
-| 50 | 0,50 | 1,000 | 0,0005683 | 0,0002841 |
-| 90 | 0,10 | 1,000 | 0,0001137 | 0,0000568 |
+| 0 | 1.00 | 19.770 | 0.0224694 | 0.0112347 |
+| 15 | 0.85 | 10.385 | 0.0100325 | 0.0050163 |
+| 30 | 0.70 | 1.000 | 0.0007956 | 0.0003978 |
+| 50 | 0.50 | 1.000 | 0.0005683 | 0.0002841 |
+| 90 | 0.10 | 1.000 | 0.0001137 | 0.0000568 |
 
-O ganho médio por tentativa é `chance × ganho`. A taxa muda conforme a skill
-evolui; dividir 100 pela taxa inicial não estima corretamente o tempo total.
+Average gain per attempt is `chance * gain`. The rate changes as the skill
+progresses; dividing 100 by the initial rate does not correctly estimate total time.
 
-**3. Aplicação e notificação**
+**3. Application and notification**
 
-`SkillValue.increase` aplica o ganho somente com lock `UP` e limita o valor ao
-cap individual. Os valores fracionários são acumulados. `SkillGained` é publicado
-apenas quando `(int) (novoBase × 10)` supera `(int) (baseAnterior × 10)`, evitando
-notificações quando o décimo apresentado ao cliente ainda não mudou.
+`SkillValue.increase` applies gains only with lock `UP` and caps the value at the
+individual cap. Fractional values accumulate. `SkillGained` is published only
+when `(int) (newBase * 10)` exceeds `(int) (previousBase * 10)`, avoiding notifications
+when the tenth displayed to the client has not changed.
 
-### Gráfico: ganho de skill × tempo
+### Chart: skill gain over time
 
-![Progressão de skill com uma tentativa por segundo: aproximadamente três horas até 30 e 147 horas até 100.](docs/plots/skill-gain.png)
+![Skill progression at one attempt per second: approximately three hours to 30 and 147 hours to 100.](docs/plots/skill-gain.png)
 
-[Versão vetorial do gráfico](docs/plots/skill-gain.svg).
+[Vector version of the chart](docs/plots/skill-gain.svg).
 
-O gráfico mostra o **tempo médio para atingir cada valor**, com dificuldade 100,
-cap individual 100, lock `UP` e tentativas contínuas a cada segundo. Não representa
-uma trajetória garantida: cada sessão varia com os sorteios.
+The chart shows the **average time to reach each value**, with difficulty 100,
+individual cap 100, lock `UP`, and continuous attempts every second. It is not a
+guaranteed trajectory: each session varies with random rolls.
 
-| Skill atingida | Tempo médio acumulado desde zero |
+| Skill reached | Average cumulative time from zero |
 |---|---:|
-| 10 | 0,31 h — cerca de 19 min |
-| 20 | 0,89 h — cerca de 53 min |
-| 30 | 3,00 h |
-| 40 | 10,54 h |
-| 50 | 19,45 h |
-| 60 | 30,36 h |
-| 70 | 44,42 h |
-| 80 | 64,24 h |
-| 90 | 98,12 h |
-| 100 | 147,00 h — 6 dias e 3 horas |
+| 10 | 0.31 h - about 19 min |
+| 20 | 0.89 h - about 53 min |
+| 30 | 3.00 h |
+| 40 | 10.54 h |
+| 50 | 19.45 h |
+| 60 | 30.36 h |
+| 70 | 44.42 h |
+| 80 | 64.24 h |
+| 90 | 98.12 h |
+| 100 | 147.00 h - 6 days and 3 hours |
 
-Portanto, **zero a 30 leva aproximadamente três horas; 30 a 100 leva mais seis
-dias de treino contínuo**. Com oito horas de treino por dia, o total corresponde
-a aproximadamente 18,4 dias de sessões, mantendo as demais condições.
+Therefore, **zero to 30 takes approximately three hours; 30 to 100 takes another
+six days of continuous training**. At eight hours of training per day, the total
+is approximately 18.4 days of sessions, with all other conditions unchanged.
 
-Para calcular os tempos, percorremos os ganhos bem-sucedidos. Em cada valor `s`,
-somamos `1 / chance(s)` tentativas esperadas e avançamos pelo ganho calculado:
+To calculate times, iterate through successful gains. At each value `s`, add
+`1 / chance(s)` expected attempts and advance by the calculated gain:
 
 ```text
-tempoEsperado += intervaloEntreTentativas / chance(s)
-s = min(c, s + ganho(s))
+expectedTime += attemptInterval / chance(s)
+s = min(c, s + gain(s))
 ```
 
-Isso considera a variação do ganho durante toda a progressão. O gráfico pode ser
-regenerado com `python docs/plots/skill_gain.py`, com `matplotlib` instalado.
-O script replica os padrões acima; deve ser atualizado se as regras mudarem.
-O teste `TryGainSkillFlowTest.defaultProgressionTargetsThreeHoursThenSixDays`
-confere a calibração usando o cálculo Java.
+This accounts for changing gains throughout progression. Regenerate the chart
+with `python docs/plots/skill_gain.py`, with `matplotlib` installed. The script
+replicates the defaults above and must be updated if the rules change.
+`TryGainSkillFlowTest.defaultProgressionTargetsThreeHoursThenSixDays` checks the
+calibration against the Java calculation.
 
-Os tempos mudam com dificuldade, cap individual, configuração e frequência de
-tentativas. Se apenas o intervalo passar de um para dois segundos, os tempos
-esperados dobram. Com chance zero ou lock diferente de `UP`, não há progressão.
+Times vary with difficulty, individual cap, configuration, and attempt frequency.
+If only the interval changes from one to two seconds, expected times double.
+With zero chance or a lock other than `UP`, there is no progression.

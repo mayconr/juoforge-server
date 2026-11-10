@@ -28,7 +28,7 @@ class GumpItemSlotAlignmentTest {
 
     @Test
     void centersSmallerArtWithoutApplyingAlignmentTwice() {
-        var slot = new ItemSlot(3500, 100, 100, new ItemIcon(0x0F61, 82, 46).centered());
+        var slot = new ItemSlot(3500, 100, 100, new ItemIcon(0x0F61, 82, 46).center());
         slot.layout(new LayoutContext(100, 100, 100, 100));
         var builder = new GumpBuilder().page(1);
         slot.render(builder);

@@ -10,9 +10,22 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 
 import java.util.Map;
+import java.util.function.BiFunction;
 
-/** Public mobile operations for movement, mounts, resurrection and equipment queries. */
+/** Public mobile operations, including synchronized persistent and runtime property access. */
 public interface WorldMobile {
+    /** Sets a property under the mobile monitor. Null removes it; runtimeOnly selects runtime storage. */
+    void setProperty(UOMobile mobile, String key, Object value, boolean runtimeOnly);
+
+    /** Reads a property under the mobile monitor, returning null when absent. */
+    Object getProperty(UOMobile mobile, String key, boolean runtimeOnly);
+
+    /** Reads a property under the mobile monitor, using the default when absent. */
+    <T> T getProperty(UOMobile mobile, String key, T defaultValue, boolean runtimeOnly);
+
+    /** Atomically computes a property under the mobile monitor; null removes it. */
+    <T> T computeProperty(UOMobile mobile, String key, BiFunction<String, T, T> update, boolean runtimeOnly);
+
     /** Sets a primary attribute and refreshes the player status through UI. */
     void setAttribute(UOMobile mobile, MobileAttribute attribute, int value);
 

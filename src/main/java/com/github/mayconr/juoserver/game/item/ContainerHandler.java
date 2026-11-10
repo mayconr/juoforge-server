@@ -9,28 +9,13 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 public class ContainerHandler {
 
     private final EventBus eventBus;
     private final RealmStorage storage;
-
-    public List<UOItem> getItemsInContainer(Integer containerSerial, Predicate<UOItem> predicate) {
-        var container = storage.getContainer(containerSerial).orElseThrow(()->new IllegalArgumentException("Container not found"));
-        final List<UOItem> items = new ArrayList<>();
-        for (Integer serial : container.getContainerItems()) {
-            var item = storage.getItem(serial).orElseThrow(()->new IllegalArgumentException("Item not found"));
-            if (predicate.test(item)) {
-                items.add(item);
-            }
-        }
-        return items;
-    }
 
     public int consumeItem(Integer containerSerial, String itemName, int amount, boolean searchNestedContainers) {
         var container = storage.getContainer(containerSerial).orElseThrow(()->new IllegalArgumentException("Container not found"));

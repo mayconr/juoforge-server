@@ -60,7 +60,7 @@ public class Button extends TooltipElement implements Sized {
 
     @Override
     public void render(GumpBuilder g) {
-        g.button(x, y, normalId, pressedId, true, 0, buttonId, hoverId);
+        renderButton(g, x, y, normalId, pressedId, buttonId);
         renderTooltip(g);
         if (caption != null && !caption.value().isBlank()) {
             int captionX = captionCentered ? Math.max(0, getWidth() - caption.value().length() * 7) / 2 : 35;
@@ -68,6 +68,11 @@ public class Button extends TooltipElement implements Sized {
             g.text(x + captionX, y + captionY, 1152, caption.value());
             renderTooltip(g);
         }
+    }
+
+    /** Emits the clickable control before its tooltip and optional caption. */
+    protected void renderButton(GumpBuilder g, int x, int y, int normalId, int pressedId, int buttonId) {
+        g.button(x, y, normalId, pressedId, true, 0, buttonId, hoverId);
     }
 
     @Override

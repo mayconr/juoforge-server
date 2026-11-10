@@ -4,6 +4,8 @@ import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import java.util.function.Function;
 
 public class ItemSlot extends TooltipElement implements Sized {
+    private boolean fill;
+    private int layoutWidth, layoutHeight;
 
     private final UIElement content;
     private final int width;
@@ -36,34 +38,43 @@ public class ItemSlot extends TooltipElement implements Sized {
 
     @Override
     public void layout(LayoutContext ctx) {
+        fill = ctx.fill;
+        layoutWidth = Math.max(0, ctx.width);
+        layoutHeight = Math.max(0, ctx.height);
         x = ctx.x;
         y = ctx.y;
 
         // Center the actual content bounds, including art larger than the frame.
         // Clamping the offset to zero would leave all overflow on the right/bottom.
         LayoutContext inner = content instanceof Sized sized
-                ? new LayoutContext(x + Math.floorDiv(width - sized.getWidth(), 2),
-                        y + Math.floorDiv(height - sized.getHeight(), 2),
+                ? new LayoutContext(x + Math.floorDiv(getWidth() - sized.getWidth(), 2),
+                        y + Math.floorDiv(getHeight() - sized.getHeight(), 2),
                         sized.getWidth(), sized.getHeight())
-                : new LayoutContext(x + 4, y + 4, width - 8, height - 8);
+                : new LayoutContext(x + 4, y + 4, getWidth() - 8, getHeight() - 8);
 
         content.layout(inner);
     }
 
     @Override
     public void render(GumpBuilder g) {
-        g.resizePic(x, y, backgroundId, width, height);
+        g.resizePic(x, y, backgroundId, getWidth(), getHeight());
         renderTooltip(g);
         content.render(g);
     }
 
     @Override
     public int getWidth() {
-        return width;
+        return fill ? layoutWidth : width;
     }
 
     @Override
     public int getHeight() {
-        return height;
+        return fill ? layoutHeight : height;
     }
+
+    @Override
+    public int getPreferredWidth() { return width; }
+
+    @Override
+    public int getPreferredHeight() { return height; }
 }

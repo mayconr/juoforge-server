@@ -17,9 +17,9 @@ class GumpTooltipTest {
 
     @Test
     void emitsTooltipsForAllSupportedVisualComponents() {
-        var controls = List.of(
-                new Label("label"), new Image(5054, 100, 50),
-                new Button(4005, 4007, 1), new PageButton(4005, 4007, 2),
+        List<Tooltipped> controls = List.of(
+                new Label("label"), new Image(5054, 100, 50), new VirtueImage(0x6F),
+                new Button(4005, 4007, 1), new ItemButton(4005, 4007, 3, 4027), new PageButton(4005, 4007, 2),
                 new Checkbox(210, 211, 1, false), new Radio(210, 211, 2),
                 new TextField(10, 100), new TextArea(20, 100, 60),
                 new HtmlGump("html", 100, 60), new ItemIcon(3717),
@@ -27,7 +27,17 @@ class GumpTooltipTest {
         for (var control : controls) {
             var layout = render(control.tooltip(1042971, "Hello world"));
             assertTrue(layout.contains("{tooltip 1042971 @Hello world@}"), control.getClass().getSimpleName());
+            assertTrue(render(control.tooltip("Hello World")).contains("{tooltip 1042971 @Hello World@}"));
+            assertTrue(render(control.itemProperty(123)).contains("{itemproperty 123}"));
         }
+    }
+
+    @Test
+    void literalTooltipUsesInternalClilocAndPreservesPanelValidation() {
+        assertTrue(new GumpBuilder().page(0).tooltip("Hello World").buildLayout()
+                .contains("{tooltip 1042971 @Hello World@}"));
+        assertThrows(IllegalStateException.class, () -> new Panel(100, 50, new Label("child")).tooltip("text"));
+        assertThrows(NullPointerException.class, () -> new Image(111, 50, 50).tooltip((String) null));
     }
 
     @Test
@@ -75,5 +85,6 @@ class GumpTooltipTest {
     @ValueSource(strings = {"@", "{page 2}", "line\nbreak", "tab\tvalue", "\u00e1"})
     void rejectsArgumentsThatCannotBeRepresentedInTheAsciiLayout(String argument) {
         assertThrows(IllegalArgumentException.class, () -> new Label("label").tooltip(1042971, argument));
+        assertThrows(IllegalArgumentException.class, () -> new Label("label").tooltip(argument));
     }
 }
