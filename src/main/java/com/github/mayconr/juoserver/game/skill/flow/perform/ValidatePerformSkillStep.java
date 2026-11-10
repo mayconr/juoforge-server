@@ -16,8 +16,7 @@ public final class ValidatePerformSkillStep extends AbstractFlowStep<PerformSkil
     public StepResult execute(PerformSkillContext context) {
         var options = context.getOptions();
         if (context.getPlayer() == null || options == null || options.swing() == null
-                || options.onComplete() == null || options.swings() <= 0
-                || !Double.isFinite(options.delaySeconds()) || options.delaySeconds() < 0) {
+                || options.onComplete() == null) {
             return StepResult.failure("INVALID_SKILL_ACTION", "Invalid player or skill action options");
         }
         if (options.skillId() == null || options.skillId() < 0 || options.skillId() > 0xFFFF) {

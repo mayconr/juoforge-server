@@ -64,52 +64,87 @@ public final class PaginatedList implements UIElement, Sized {
         }
     }
 
-    /** A null header omits the heading; null background IDs render transparent panels. */
-    public record Style(int width, int itemsPerPage, int spacing, Header header,
-                        ItemStyle item, Navigation navigation) {
-        public Style {
-            Objects.requireNonNull(item, "item");
-            Objects.requireNonNull(navigation, "navigation");
-            if (width <= 0 || itemsPerPage <= 0 || spacing < 0)
-                throw new IllegalArgumentException("Invalid list dimensions");
-            if ((long) navigation.buttonWidth() * 2 + navigation.gap() * 2L
-                    + navigation.rightInset() > width)
-                throw new IllegalArgumentException("Navigation does not fit the list width");
-        }
-    }
-
     private final List<Item> items;
-    private final Style style;
-    private final Column content;
+    private int width;
+    private int itemsPerPage = 4;
+    private int spacing = 6;
+    private Header header;
+    private ItemStyle itemStyle = new ItemStyle(null, 44, 4005, 4007);
+    private Navigation navigation = new Navigation(2466, 2467, 2469, 2470, 32, 24, 4, 0, 20);
+    private int currentPage = 1;
+    private IntUnaryOperator pageMapping = page -> page;
+    private Column content;
 
-    public PaginatedList(List<Item> items, Style style) {
-        this(items, style, 1, 1);
-    }
-
-    private PaginatedList(List<Item> items, Style style, int page, int firstPage) {
-        this(items, style, page, index -> Math.addExact(firstPage, index - 1));
-        if (firstPage < 1 || (long) firstPage + pageCount() - 1 > Integer.MAX_VALUE)
-            throw new IllegalArgumentException("Invalid page range");
-    }
-
-    private PaginatedList(List<Item> items, Style style, int page, IntUnaryOperator pageMapping) {
+    public PaginatedList(List<Item> items, int width) {
         this.items = List.copyOf(items);
-        this.style = Objects.requireNonNull(style, "style");
+        width(width);
         var ids = new HashSet<Integer>();
         for (Item item : this.items) {
             if (!ids.add(item.buttonId())) throw new IllegalArgumentException("Duplicate item buttonId");
         }
-        if (page < 1 || page > pageCount())
-            throw new IllegalArgumentException("Invalid page range");
-        for (int index = 1; index <= pageCount(); index++) {
-            if (pageMapping.applyAsInt(index) < 1) throw new IllegalArgumentException("Invalid native page");
-        }
-        content = createContent(page, pageMapping);
     }
 
-    /** Empty lists still have one page, containing the heading and page indicator. */
+    public PaginatedList width(int width) {
+        if (width <= 0) throw new IllegalArgumentException("width must be positive");
+        this.width = width;
+        content = null;
+        return this;
+    }
+
+    public PaginatedList itemsPerPage(int itemsPerPage) {
+        if (itemsPerPage <= 0) throw new IllegalArgumentException("itemsPerPage must be positive");
+        this.itemsPerPage = itemsPerPage;
+        content = null;
+        return this;
+    }
+
+    public PaginatedList spacing(int spacing) {
+        if (spacing < 0) throw new IllegalArgumentException("spacing must not be negative");
+        this.spacing = spacing;
+        content = null;
+        return this;
+    }
+
+    /** A null header omits the heading. */
+    public PaginatedList header(Header header) {
+        this.header = header;
+        content = null;
+        return this;
+    }
+
+    public PaginatedList itemStyle(ItemStyle itemStyle) {
+        this.itemStyle = Objects.requireNonNull(itemStyle, "itemStyle");
+        content = null;
+        return this;
+    }
+
+    public PaginatedList navigation(Navigation navigation) {
+        this.navigation = Objects.requireNonNull(navigation, "navigation");
+        content = null;
+        return this;
+    }
+
+    private void validatePage(int page, IntUnaryOperator mapping) {
+        if (page < 1 || page > pageCount()) throw new IllegalArgumentException("Invalid page range");
+        for (int index = 1; index <= pageCount(); index++) {
+            if (mapping.applyAsInt(index) < 1) throw new IllegalArgumentException("Invalid native page");
+        }
+    }
+
+    private Column content() {
+        if (content == null) {
+            validatePage(currentPage, pageMapping);
+            if (pageCount() > 1 && (long) navigation.buttonWidth() * 2 + navigation.gap() * 2L
+                    + navigation.rightInset() > width)
+                throw new IllegalArgumentException("Navigation does not fit the list width");
+            content = createContent(currentPage, pageMapping);
+        }
+        return content;
+    }
+
+    /** Empty lists still have one page. Single-page lists omit the pagination controls. */
     public int pageCount() {
-        return Math.max(1, (int) ((items.size() + (long) style.itemsPerPage() - 1) / style.itemsPerPage()));
+        return Math.max(1, (int) ((items.size() + (long) itemsPerPage - 1) / itemsPerPage));
     }
 
     public PaginatedList page(int page) {
@@ -118,57 +153,66 @@ public final class PaginatedList implements UIElement, Sized {
 
     /** Maps a one-based list page to native pages starting at firstPage. */
     public PaginatedList page(int page, int firstPage) {
-        return new PaginatedList(items, style, page, firstPage);
+        if (firstPage < 1 || (long) firstPage + pageCount() - 1 > Integer.MAX_VALUE)
+            throw new IllegalArgumentException("Invalid page range");
+        return page(page, index -> firstPage + index - 1);
     }
 
     /** Maps list pages to native pages, allowing several paginated lists in one gump. */
     public PaginatedList page(int page, IntUnaryOperator pageMapping) {
-        return new PaginatedList(items, style, page, Objects.requireNonNull(pageMapping, "pageMapping"));
+        Objects.requireNonNull(pageMapping, "pageMapping");
+        validatePage(page, pageMapping);
+        var result = new PaginatedList(items, width).itemsPerPage(itemsPerPage).spacing(spacing)
+                .header(header).itemStyle(itemStyle).navigation(navigation);
+        result.currentPage = page;
+        result.pageMapping = pageMapping;
+        return result;
     }
 
     private Column createContent(int page, IntUnaryOperator pageMapping) {
         var rows = new ArrayList<UIElement>();
-        Header header = style.header();
         if (header != null) {
             UIElement heading = header.contentFactory() != null
-                    ? Objects.requireNonNull(header.contentFactory().apply(style.width()), "header content")
-                    : new Panel(header.backgroundId(), style.width(), header.height(), true,
+                    ? Objects.requireNonNull(header.contentFactory().apply(width), "header content")
+                    : new Panel(header.backgroundId(), width, header.height(), true,
                     Label(header.text()).hue(header.hue()).font(header.font())
                             .horizontalCentered().verticallyCentered());
-            rows.add(Panel(style.width(), header.height(), heading));
+            rows.add(Panel(width, header.height(), heading));
         }
-        int start = (page - 1) * style.itemsPerPage();
-        int end = (int) Math.min((long) start + style.itemsPerPage(), items.size());
+        int start = (page - 1) * itemsPerPage;
+        int end = (int) Math.min((long) start + itemsPerPage, items.size());
         for (Item item : items.subList(start, end)) {
-            rows.add(new Panel(style.item().backgroundId(), style.width(), style.item().height(), true,
-                    Button(item.normalId() != null ? item.normalId() : style.item().normalId(),
-                            item.pressedId() != null ? item.pressedId() : style.item().pressedId(),
+            rows.add(new Panel(itemStyle.backgroundId(), width, itemStyle.height(), true,
+                    Button(item.normalId() != null ? item.normalId() : itemStyle.normalId(),
+                            item.pressedId() != null ? item.pressedId() : itemStyle.pressedId(),
                             item.buttonId(), item.caption())));
         }
-        Navigation nav = style.navigation();
-        rows.add(Panel(style.width(), nav.captionHeight(), Label(page + " / " + pageCount()).horizontalCentered()));
-        int spacer = style.width() - nav.buttonWidth() * 2 - nav.gap() * 2 - nav.rightInset();
-        rows.add(Row(nav.gap(),
-                Panel(nav.buttonWidth(), nav.buttonHeight(), page > 1
-                        ? PageButton(nav.previousId(), nav.previousPressedId(), pageMapping.applyAsInt(page - 1)) : Label("")),
-                Panel(spacer, nav.buttonHeight(), Label("")),
-                Panel(nav.buttonWidth(), nav.buttonHeight(), page < pageCount()
-                        ? PageButton(nav.nextId(), nav.nextPressedId(), pageMapping.applyAsInt(page + 1)) : Label(""))));
-        return Column(style.spacing(), rows.toArray(UIElement[]::new));
+        if (pageCount() > 1) {
+            Navigation nav = navigation;
+            rows.add(Panel(width, nav.captionHeight(), Label(page + " / " + pageCount()).horizontalCentered()));
+            int spacer = width - nav.buttonWidth() * 2 - nav.gap() * 2 - nav.rightInset();
+            rows.add(Row(nav.gap(),
+                    Panel(nav.buttonWidth(), nav.buttonHeight(), page > 1
+                            ? PageButton(nav.previousId(), nav.previousPressedId(), pageMapping.applyAsInt(page - 1)) : Label("")),
+                    Panel(spacer, nav.buttonHeight(), Label("")),
+                    Panel(nav.buttonWidth(), nav.buttonHeight(), page < pageCount()
+                            ? PageButton(nav.nextId(), nav.nextPressedId(), pageMapping.applyAsInt(page + 1)) : Label(""))));
+        }
+        return Column(spacing, rows.toArray(UIElement[]::new));
     }
 
     @Override
-    public void resolveTexts(Function<MessageContent, String> resolver) { content.resolveTexts(resolver); }
+    public void resolveTexts(Function<MessageContent, String> resolver) { content().resolveTexts(resolver); }
 
     @Override
-    public void layout(LayoutContext ctx) { content.layout(ctx); }
+    public void layout(LayoutContext ctx) { content().layout(ctx); }
 
     @Override
-    public void render(GumpBuilder builder) { content.render(builder); }
+    public void render(GumpBuilder builder) { content().render(builder); }
 
     @Override
-    public int getWidth() { return style.width(); }
+    public int getWidth() { return width; }
 
     @Override
-    public int getHeight() { return content.getHeight(); }
+    public int getHeight() { return content().getHeight(); }
 }

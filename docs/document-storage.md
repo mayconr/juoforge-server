@@ -1,33 +1,33 @@
-# Persistência de documentos dos módulos
+# Module document persistence
 
-`DocumentStorage` é o contrato genérico para documentos JSON. O shard configura
-o adaptador com `WorldCfg.documentStorage(...)`. O `RealmStorage.initialize()`
-carrega todos os documentos antes de disponibilizar o cache aos módulos.
-`cacheDocument(name, document)` atualiza o cache e `getDocument(name)` consulta
-um documento, retornando `Optional<JsonNode>`. Ambas as operações usam cópias
-para impedir alterações externas no cache e não acessam o banco.
+`DocumentStorage` is the generic contract for JSON documents. The shard configures
+the adapter through `WorldCfg.documentStorage(...)`. `RealmStorage.initialize()`
+loads all documents before exposing the cache to modules.
+`cacheDocument(name, document)` updates the cache and `getDocument(name)` retrieves
+a document, returning `Optional<JsonNode>`. Both operations use copies to prevent
+external changes to the cache and do not access the database.
 
-- Os nomes devem conter de 1 a 100 caracteres e não podem ser vazios.
-- `saveAll` faz upsert atômico do lote. Nomes omitidos permanecem no banco.
-- `loadAll()` carrega todos os documentos, indexados por `name`.
-- O módulo atualiza o cache quando seu estado muda. No `saveWorld()`, o realm
-  captura um snapshot e chama `DocumentStorage.saveAll(snapshot)`. O future de
-  `saveWorld()` só termina depois da persistência e propaga eventuais falhas.
-  Alterações no cache durante uma escrita ficam para o próximo save.
-- O domínio decide como serializar seu estado; o adaptador não conhece veins
-  nem outros tipos específicos de módulos.
+- Names must contain 1 to 100 characters and must not be blank.
+- `saveAll` atomically upserts the batch. Omitted names remain in the database.
+- `loadAll()` loads all documents, indexed by `name`.
+- A module updates the cache when its state changes. During `saveWorld()`, the realm
+  captures a snapshot and calls `DocumentStorage.saveAll(snapshot)`. The
+  `saveWorld()` future completes only after persistence and propagates failures.
+  Cache changes made during a write are saved on the next save.
+- The domain decides how to serialize its state; the adapter does not know about
+  veins or other module-specific types.
 
-No `legacy-shard`, `PsqlDocumentStorage` executa as operações no
-`databaseExecutor` e grava em `realm_document(name VARCHAR(100) PRIMARY KEY,
-data JSONB NOT NULL)`. Foi escolhido o tipo nativo
-[`jsonb` do PostgreSQL](https://www.postgresql.org/docs/current/datatype-json.html),
-que valida o JSON e permite consultas e índices sobre seu conteúdo.
+In `legacy-shard`, `PsqlDocumentStorage` runs operations on the
+`databaseExecutor` and writes to `realm_document(name VARCHAR(100) PRIMARY KEY,
+data JSONB NOT NULL)`. PostgreSQL's native
+[`jsonb` type](https://www.postgresql.org/docs/current/datatype-json.html)
+was chosen because it validates JSON and supports queries and indexes on its contents.
 
-O mining usa o nome `mining.veins`, com uma lista de objetos contendo `veinId`
-e `consumed`. `DefaultMiningModule` carrega o documento antes de disponibilizar
-os flows e atualiza o cache a cada consumo bem-sucedido. `VeinsOperation` mantém
-somente o estado em memória. As descobertas dos jogadores continuam nos
-atributos persistentes do personagem.
+Mining uses the name `mining.veins`, with a list of objects containing `veinId`
+and `consumed`. `DefaultMiningModule` loads the document before exposing its
+flows and updates the cache after each successful consumption. `VeinsOperation`
+keeps only in-memory state. Player discoveries remain in the character's
+persistent attributes.
 
-A tabela `realm_document` está definida em `legacy-shard/sql/schema_creation.sql`,
-com `name VARCHAR(100) PRIMARY KEY` e `data JSONB NOT NULL`.
+The `realm_document` table is defined in `legacy-shard/sql/schema_creation.sql`,
+with `name VARCHAR(100) PRIMARY KEY` and `data JSONB NOT NULL`.

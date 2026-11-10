@@ -16,6 +16,7 @@ import lombok.ToString;
 public class GumpSelection extends AbstractPacket {
     public static final int CODE = (byte) 0xB1;
     public static final int MAX_TEXT_LENGTH = 239;
+    public static final int VIRTUE_GUMP_ID = 0x1CD;
 
     private final int serialId;
     private final int gumpId;
@@ -26,12 +27,19 @@ public class GumpSelection extends AbstractPacket {
 
     public GumpSelection(ByteBuf buf) {
         super(CODE, calculateLength(buf));
-        if (getLength() < 23 || buf.readableBytes() != getLength() - 3) {
+        if (getLength() < 15 || buf.readableBytes() != getLength() - 3) {
             throw new CorruptedFrameException("Invalid gump response length");
         }
         serialId = buf.readInt();
         gumpId = buf.readInt();
         buttonId = buf.readInt();
+        if (getLength() == 15 && gumpId == VIRTUE_GUMP_ID) {
+            switches = List.of();
+            textEntries = List.of();
+            textEntriesById = Map.of();
+            return;
+        }
+        if (getLength() < 23) throw new CorruptedFrameException("Invalid gump response length");
         long switchesCount = buf.readUnsignedInt();
         if (switchesCount > (buf.readableBytes() - 4) / 4) {
             throw new CorruptedFrameException("Invalid gump switch count");
@@ -65,6 +73,10 @@ public class GumpSelection extends AbstractPacket {
         if (buf.readableBytes() < 3) throw new CorruptedFrameException("Truncated gump response header");
         buf.readByte();
         return buf.readUnsignedShort();
+    }
+
+    public boolean isVirtueSelection() {
+        return getLength() == 15 && gumpId == VIRTUE_GUMP_ID;
     }
 
     public boolean isSwitchChecked(int switchId) {

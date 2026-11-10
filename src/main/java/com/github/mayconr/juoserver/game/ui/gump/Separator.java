@@ -2,6 +2,8 @@ package com.github.mayconr.juoserver.game.ui.gump;
 
 /** A decorative divider drawn by repeating a gump image within the reserved layout area. */
 public final class Separator implements UIElement, Sized {
+    private boolean fill;
+    private int layoutWidth, layoutHeight;
     private final int gumpId;
     private final int width;
     private final int height;
@@ -18,18 +20,26 @@ public final class Separator implements UIElement, Sized {
 
     @Override
     public void layout(LayoutContext ctx) {
+        fill = ctx.fill;
+        layoutWidth = Math.max(0, ctx.width);
+        layoutHeight = Math.max(0, ctx.height);
         x = ctx.x;
         y = ctx.y;
     }
 
     @Override
     public void render(GumpBuilder builder) {
-        builder.gumpPicTiled(x, y, width, height, gumpId);
+        builder.gumpPicTiled(x, y, getWidth(), getHeight(), gumpId);
     }
 
     @Override
-    public int getWidth() { return width; }
+    public int getWidth() { return fill ? layoutWidth : width; }
 
     @Override
-    public int getHeight() { return height; }
+    public int getHeight() { return fill ? layoutHeight : height; }
+    @Override
+    public int getPreferredWidth() { return width; }
+
+    @Override
+    public int getPreferredHeight() { return height; }
 }

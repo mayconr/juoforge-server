@@ -11,7 +11,15 @@ import com.github.mayconr.juoserver.game.mobile.flow.teleport.TeleportContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.Direction;
+import com.github.mayconr.juoserver.game.model.AttributeMap;
+import com.github.mayconr.juoserver.game.model.DeathRequest;
+import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionContext;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
@@ -26,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiFunction;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,6 +47,42 @@ public class MobileModuleImpl implements MobileModule {
     private final RealmStorage storage;
     private final GamePlaySettings settings;
     private ModuleContext.FlowFacade flows;
+
+    @Override
+    public void setProperty(UOMobile mobile, String key, Object value, boolean runtimeOnly) {
+        synchronized (Objects.requireNonNull(mobile, "Mobile is required")) {
+            properties(mobile, runtimeOnly).set(Objects.requireNonNull(key, "Property key is required"), value);
+        }
+    }
+
+    @Override
+    public Object getProperty(UOMobile mobile, String key, boolean runtimeOnly) {
+        return getProperty(mobile, key, null, runtimeOnly);
+    }
+
+    @Override
+    public <T> T getProperty(UOMobile mobile, String key, T defaultValue, boolean runtimeOnly) {
+        synchronized (Objects.requireNonNull(mobile, "Mobile is required")) {
+            return properties(mobile, runtimeOnly).getOrDefault(
+                    Objects.requireNonNull(key, "Property key is required"), defaultValue
+            );
+        }
+    }
+
+    @Override
+    public <T> T computeProperty(
+            UOMobile mobile, String key, BiFunction<String, T, T> update, boolean runtimeOnly) {
+        synchronized (Objects.requireNonNull(mobile, "Mobile is required")) {
+            return properties(mobile, runtimeOnly).compute(
+                    Objects.requireNonNull(key, "Property key is required"),
+                    Objects.requireNonNull(update, "Property update is required")
+            );
+        }
+    }
+
+    private AttributeMap properties(UOMobile mobile, boolean runtimeOnly) {
+        return runtimeOnly ? mobile.runtimeAttributes() : mobile.persistentAttributes();
+    }
 
     @Override
     public void setAttribute(UOMobile mobile, MobileAttribute attribute, int value) {

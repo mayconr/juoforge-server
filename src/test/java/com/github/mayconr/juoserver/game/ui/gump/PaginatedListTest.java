@@ -14,7 +14,7 @@ class PaginatedListTest {
     void mapsNavigationToPagesSharedWithAnotherList() {
         var items = IntStream.rangeClosed(101, 112)
                 .mapToObj(id -> new PaginatedList.Item(id, MessageContent.localized("item." + id))).toList();
-        var list = new PaginatedList(items, style);
+        var list = list(items);
         var builder = new GumpBuilder();
         new DeclarativeGumpUI(Page(5, list.page(2, page -> 2 + (page - 1) * 3))).render(builder);
         assertTrue(builder.buildLayout().contains("2466 2467 0 2 0}"));
@@ -26,8 +26,8 @@ class PaginatedListTest {
         var list = new PaginatedList(List.of(
                 new PaginatedList.Item(101, MessageContent.localized("first")),
                 new PaginatedList.Item(102, MessageContent.localized("selected"), 2151, 2152)),
-                new PaginatedList.Style(152, 1, 6, null,
-                        new PaginatedList.ItemStyle(null, 44, 0x25F8, 0x25FA), style.navigation()));
+                152).itemsPerPage(1).header(null)
+                .itemStyle(new PaginatedList.ItemStyle(null, 44, 0x25F8, 0x25FA));
         var first = new GumpBuilder();
         var second = new GumpBuilder();
         new DeclarativeGumpUI(Page(1, list.page(1))).render(first);
@@ -36,10 +36,12 @@ class PaginatedListTest {
         assertTrue(second.buildLayout().contains("2151 2152 1 0 102}"));
     }
 
-    private final PaginatedList.Style style = new PaginatedList.Style(152, 4, 6,
-            new PaginatedList.Header(MessageContent.localized("heading"), 3500, 56, 1255, 255),
-            new PaginatedList.ItemStyle(3000, 44, 4005, 4007),
-            new PaginatedList.Navigation(2466, 2467, 2469, 2470, 32, 24, 4, 25, 20));
+    private PaginatedList list(List<PaginatedList.Item> items) {
+        return new PaginatedList(items, 152).itemsPerPage(4).spacing(6)
+                .header(new PaginatedList.Header(MessageContent.localized("heading"), 3500, 56, 1255, 255))
+                .itemStyle(new PaginatedList.ItemStyle(3000, 44, 4005, 4007))
+                .navigation(new PaginatedList.Navigation(2466, 2467, 2469, 2470, 32, 24, 4, 25, 20));
+    }
 
     @Test
     void customHeaderReceivesWidthAndCreatesIndependentLocalizedContentForEachPage() {
@@ -51,10 +53,9 @@ class PaginatedListTest {
             assertTrue(headings.add(heading));
             return heading;
         });
-        var customStyle = new PaginatedList.Style(152, 1, 6, header, style.item(), style.navigation());
-        var list = new PaginatedList(List.of(
+        var list = list(List.of(
                 new PaginatedList.Item(101, MessageContent.localized("first")),
-                new PaginatedList.Item(102, MessageContent.localized("second"))), customStyle);
+                new PaginatedList.Item(102, MessageContent.localized("second")))).itemsPerPage(1).header(header);
         var first = new GumpBuilder();
         var second = new GumpBuilder();
         var firstPage = new DeclarativeGumpUI(Page(1, list));
@@ -75,7 +76,7 @@ class PaginatedListTest {
     void rendersEveryItemOnceWithNativeNavigationAndLocalizedText() {
         var items = IntStream.rangeClosed(101, 118)
                 .mapToObj(id -> new PaginatedList.Item(id, MessageContent.localized("item." + id))).toList();
-        var list = new PaginatedList(items, style);
+        var list = list(items);
         assertEquals(5, list.pageCount());
         for (int page = 1; page <= list.pageCount(); page++) {
             var builder = new GumpBuilder();
@@ -95,25 +96,61 @@ class PaginatedListTest {
 
     @Test
     void emptyListHasOnePageWithoutNavigationButtons() {
-        var list = new PaginatedList(List.of(), style);
+        var list = list(List.of());
         var builder = new GumpBuilder();
         new DeclarativeGumpUI(Page(1, list)).render(builder);
         assertEquals(1, list.pageCount());
         assertFalse(builder.buildLayout().contains("{button"));
-        assertTrue(builder.buildTexts().contains("1 / 1"));
+        assertFalse(builder.buildTexts().contains("1 / 1"));
+        assertEquals(56, list.getHeight());
+    }
+
+    @Test
+    void singlePageWithItemsOmitsPaginationAndItsSpace() {
+        var list = list(List.of(
+                new PaginatedList.Item(101, MessageContent.localized("item"))));
+        var builder = new GumpBuilder();
+        new DeclarativeGumpUI(Page(1, list)).render(builder);
+        assertEquals(1, list.pageCount());
+        assertFalse(builder.buildTexts().contains("1 / 1"));
+        assertFalse(builder.buildLayout().contains("2466 2467"));
+        assertFalse(builder.buildLayout().contains("2469 2470"));
+        assertTrue(builder.buildLayout().contains("4005 4007 1 0 101}"));
+        assertEquals(56 + 6 + 44, list.getHeight());
+    }
+
+    @Test
+    void configurationChangesRebuildContentWithoutChangingExistingPages() {
+        var list = list(List.of(new PaginatedList.Item(101, MessageContent.plain("first")),
+                new PaginatedList.Item(102, MessageContent.plain("second"))));
+        assertEquals(156, list.getHeight());
+        var snapshot = list.page(1);
+        list.width(200).spacing(10).header(null).itemsPerPage(1);
+        assertEquals(2, list.pageCount());
+        assertEquals(108, list.getHeight());
+        assertEquals(200, list.getWidth());
+        assertEquals(1, snapshot.pageCount());
+        assertEquals(152, snapshot.getWidth());
+        assertEquals(156, snapshot.getHeight());
+        var builder = new GumpBuilder();
+        new DeclarativeGumpUI(Page(2, list.page(2))).render(builder);
+        assertTrue(builder.buildTexts().contains("second"));
+        assertTrue(builder.buildTexts().contains("2 / 2"));
     }
 
     @Test
     void rejectsInvalidPagesAndDuplicateResponseIds() {
         var item = new PaginatedList.Item(101, MessageContent.localized("item"));
-        assertThrows(IllegalArgumentException.class, () -> new PaginatedList(List.of(item, item), style));
-        var list = new PaginatedList(List.of(item), style);
+        assertThrows(IllegalArgumentException.class, () -> list(List.of(item, item)));
+        var list = list(List.of(item));
         assertThrows(IllegalArgumentException.class, () -> list.page(0));
         assertThrows(IllegalArgumentException.class, () -> list.page(2));
         assertThrows(IllegalArgumentException.class, () -> list.page(1, 0));
-        assertThrows(IllegalArgumentException.class, () -> new PaginatedList.Style(10, 4, 6,
-                null, style.item(), style.navigation()));
-        assertThrows(IllegalArgumentException.class, () -> new PaginatedList.Style(152, 0, 6,
-                null, style.item(), style.navigation()));
+        assertThrows(IllegalArgumentException.class, () -> new PaginatedList(List.of(item), 0));
+        assertThrows(IllegalArgumentException.class, () -> list.itemsPerPage(0));
+        assertThrows(IllegalArgumentException.class, () -> list.spacing(-1));
+        var overflowing = list(List.of(item, new PaginatedList.Item(102, MessageContent.plain("other"))))
+                .itemsPerPage(1).width(10);
+        assertThrows(IllegalArgumentException.class, overflowing::getHeight);
     }
 }

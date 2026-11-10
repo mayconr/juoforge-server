@@ -1,5 +1,11 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.container.ContainerModuleImpl;
+import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsContext;
+import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsFlowDefinition;
+import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
+
 import com.github.mayconr.juoserver.game.item.*;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.mobile.flow.death.*;
@@ -66,10 +72,13 @@ class PlayerDeathTransferTest {
         var containers = new ContainerHandler(events, storage);
         var world = mock(World.class);
         when(world.item()).thenReturn(items);
-        when(world.container()).thenReturn(new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, containers));
+        var containerModule = new ContainerModuleImpl(storage, containers);
+        when(world.container()).thenReturn(containerModule);
         var wallet = new PhisycalGoldWallet(world);
         var mobile = new MobileModuleImpl(null, wallet, events, storage, new com.github.mayconr.juoserver.game.GamePlaySettings());
         var goldRegistry = new com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry();
+        goldRegistry.register("get-container-items", GetContainerItemsFlowDefinition.build(storage), GetContainerItemsContext.class);
+        containerModule.initialize(new DefaultModuleContext(new DefaultFlowFacade(goldRegistry)));
         goldRegistry.register("recalculate-gold",
                 com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldFlowDefinition.build(wallet, events,
                         mock(com.github.mayconr.juoserver.game.ui.WorldUI.class)),

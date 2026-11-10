@@ -1,24 +1,24 @@
-# Transportes de rede
+# Network transports
 
-`NetworkServer` define o ciclo de vida (`start()` e `close()`). O shard escolhe
-o transporte em `NetworkBootstrap.build(NetworkSettings)`. `NetworkSettings`
-é separado de gameplay e arquivos de conteúdo.
+`NetworkServer` defines the lifecycle (`start()` and `close()`). The shard selects
+the transport through `NetworkBootstrap.build(NetworkSettings)`. `NetworkSettings`
+is separate from gameplay and content files.
 
-| Modo | Implementação | Comunicação |
+| Mode | Implementation | Communication |
 | --- | --- | --- |
-| `standalone` | `ServerStartup` | Escuta TCP diretamente no host/porta configurados. |
-| `gateway` | `GatewayNetworkServer` | Conecta ao túnel e registra o shard. Sem listener TCP de jogo. |
+| `standalone` | `ServerStartup` | Listens directly on TCP at the configured host/port. |
+| `gateway` | `GatewayNetworkServer` | Connects to the tunnel and registers the shard. No game TCP listener. |
 
-Ambos usam `UOChannelInitializer`, `NettySessionManager` e os mesmos handlers e
-regras. O adaptador gateway cria um par de `LocalChannel` em memória por sessão,
-conectando o fluxo de bytes ao pipeline UO. Não há conexão TCP local intermediária.
-Os tipos do gateway ficam em `infrastructure.gateway`, sem entrar no domínio
-ou nas interfaces de sessão de jogo.
+Both use `UOChannelInitializer`, `NettySessionManager`, and the same handlers and
+rules. The gateway adapter creates an in-memory `LocalChannel` pair per session,
+connecting the byte stream to the UO pipeline. There is no intermediate local TCP
+connection. Gateway types stay in `infrastructure.gateway`, outside the domain
+and game session interfaces.
 
-## Configuração
+## Configuration
 
-O servidor é uma biblioteca. O ponto de entrada do shard carrega as propriedades
-e inicia a rede explicitamente:
+The server is a library. The shard entry point loads properties and starts the
+network explicitly:
 
 ```java
 NetworkSettings network = NetworkSettings.from(System.getProperties());
@@ -44,23 +44,21 @@ network.port=2594
 network.gateway.shard=default
 ```
 
-Forneça também `network.gateway.token`, igual ao segredo configurado no gateway.
-O shard pode preencher essa propriedade a partir de
-`System.getenv("GATEWAY_SHARD_TOKEN")` antes de chamar `NetworkSettings.from`.
-O token é obrigatório nesse modo e omitido de `NetworkSettings.toString()`.
-Também é possível carregar um arquivo com `Properties.load`; a biblioteca não
-carrega arquivos nem variáveis implicitamente.
+Also supply `network.gateway.token`, matching the secret configured in the gateway.
+The shard can populate this property from `System.getenv("GATEWAY_SHARD_TOKEN")`
+before calling `NetworkSettings.from`. The token is required in this mode and
+omitted from `NetworkSettings.toString()`. A file can also be loaded with
+`Properties.load`; the library does not load files or environment variables implicitly.
 
-`network.host`/`network.port` indicam bind em standalone e destino do túnel em
-gateway. Os padrões são `0.0.0.0:2593` e `127.0.0.1:2594`. No gateway,
-`routes.2593: default` direciona a porta pública 2593 ao shard `default`.
-O gateway consultado encaminha bytes e não implementa o login UO; as condições
-de login e suporte a versões do servidor continuam aplicáveis.
+`network.host`/`network.port` specify the bind address in standalone mode and the
+tunnel destination in gateway mode. Defaults are `0.0.0.0:2593` and `127.0.0.1:2594`.
+In the gateway, `routes.2593: default` routes public port 2593 to shard `default`.
+The consulted gateway forwards bytes and does not implement UO login; the server's
+login conditions and version support still apply.
 
-O modo é obrigatório: `network.mode` ausente ou vazio resulta em erro.
-O bootstrap não oferece `build()` sem argumentos. Migre o uso legado
-`new NetworkBootstrap(runtime).build().bindAsync(port)` para o modo servidor
-explícito:
+The mode is required: missing or blank `network.mode` produces an error.
+The bootstrap does not provide a no-argument `build()`. Migrate the legacy call
+`new NetworkBootstrap(runtime).build().bindAsync(port)` to an explicit server mode:
 
 ```java
 NetworkServer server = new NetworkBootstrap(runtime)
@@ -68,47 +66,46 @@ NetworkServer server = new NetworkBootstrap(runtime)
 server.start();
 ```
 
-## Ciclo de vida e protocolo
+## Lifecycle and protocol
 
-`start()` é não bloqueante e idempotente. Sua conclusão indica bind concluído em
-standalone e recebimento de `REGISTER_ACK` em gateway. Enquanto o gateway estiver
-indisponível, o cliente tenta novamente com backoff de 250 ms até 30 s. A perda
-do túnel encerra suas sessões; a reconexão registra o shard novamente, sem
-restaurar sessões antigas. `close()` é idempotente e inicia o encerramento
-assíncrono dos canais e event loops próprios.
+`start()` is nonblocking and idempotent. Completion indicates a successful bind
+in standalone mode or receipt of `REGISTER_ACK` in gateway mode. While the gateway
+is unavailable, the client retries with backoff from 250 ms to 30 s. Losing the
+tunnel closes its sessions; reconnection registers the shard again without
+restoring previous sessions. `close()` is idempotent and starts asynchronous
+shutdown of owned channels and event loops.
 
-O adaptador segue o protocolo v1 de `juoforge-gateway`:
-`protocol/TunnelFrameDecoder`, `TunnelFrameEncoder`, `TunnelPipeline` e
-`client/GatewayTunnelClient`, `TunnelSessionManager`. O frame contém tamanho de
-4 bytes, versão/tipo de 1 byte cada, ID de sessão de 8 bytes e payload;
-inteiros são big endian. O registro contém `shard + NUL + token` em UTF-8.
-Há heartbeat, timeout de registro/inatividade e limites por sessão. Respostas
-grandes são divididas em frames. Os limites seguem `TunnelSettings.defaults()`:
-frames de 64 KiB, buffer de 256 KiB, 4096 sessões, heartbeat de 10 s e
-inatividade de 35 s.
+The adapter follows the `juoforge-gateway` v1 protocol:
+`protocol/TunnelFrameDecoder`, `TunnelFrameEncoder`, `TunnelPipeline`, and
+`client/GatewayTunnelClient`, `TunnelSessionManager`. Frames contain a 4-byte
+length, 1-byte version and type, an 8-byte session ID, and payload; integers are
+big endian. Registration contains `shard + NUL + token` in UTF-8.
+There are heartbeats, registration/idle timeouts, and per-session limits. Large
+responses are split into frames. Limits follow `TunnelSettings.defaults()`:
+64 KiB frames, a 256 KiB buffer, 4096 sessions, a 10 s heartbeat, and 35 s idle timeout.
 
-O transporte foi adaptado para Netty 4.1/Java 21 dentro da infraestrutura do
-servidor. Não há dependência Maven do aplicativo gateway (Java 25/Spring Boot 4).
-Mudanças futuras do protocolo precisam ser compatibilizadas neste adaptador.
+The transport was adapted for Netty 4.1/Java 21 within the server infrastructure.
+There is no Maven dependency on the gateway application (Java 25/Spring Boot 4).
+Future protocol changes must be reconciled with this adapter.
 
-## Compatibilidade ClassicUO
+## ClassicUO compatibility
 
-Comprovado em `docs/references/ClassicUO/src/ClassicUO.Client/`:
+Verified in `docs/references/ClassicUO/src/ClassicUO.Client/`:
 
-- `Game/Scenes/LoginScene.cs`, `HandleRelayServerPacket`: após o relay, habilita
-  compressão e envia o seed de 4 bytes antes do segundo login.
-- `Network/OutgoingPackets.cs`, `Send_SecondLogin`: envia `0x91`, seed e os
-  campos de 30 bytes para usuário e senha.
-- `Network/PacketsTable.cs`, tabela e construtor: distingue comprimentos fixos
-  e variáveis e ajusta alguns conforme a versão, incluindo drop de item.
+- `Game/Scenes/LoginScene.cs`, `HandleRelayServerPacket`: after relay, enables
+  compression and sends the 4-byte seed before the second login.
+- `Network/OutgoingPackets.cs`, `Send_SecondLogin`: sends `0x91`, the seed, and
+  30-byte username and password fields.
+- `Network/PacketsTable.cs`, table and constructor: distinguishes fixed and
+  variable lengths and adjusts some based on version, including item drop.
 
-O túnel preserva o fluxo de bytes e a compressão Huffman existente. O decoder
-compartilhado acumula seed e pacotes incompletos antes de interpretá-los;
-limites de frames do túnel não são limites de pacotes UO. A tabela segue os
-formatos já implementados pelo servidor, incluindo drop de 15 bytes; não amplia
-suporte a clientes antigos. O protocolo não transmite o IP original do jogador:
-a sessão gateway recebe um endereço local lógico.
+The tunnel preserves the byte stream and existing Huffman compression. The shared
+decoder accumulates the seed and incomplete packets before interpreting them;
+tunnel frame boundaries are not UO packet boundaries. The table follows formats
+already implemented by the server, including 15-byte item drop; it does not extend
+support for older clients. The protocol does not transmit the player's original
+IP address: gateway sessions receive a logical local address.
 
-`GatewayNetworkTest` usa um peer TCP com implementação independente do frame para
-verificar registro, sessões intercaladas, fragmentação, respostas comprimidas,
-fechamento isolado e reconexão, sem iniciar o aplicativo Spring do gateway.
+`GatewayNetworkTest` uses a TCP peer with an independent frame implementation to
+verify registration, interleaved sessions, fragmentation, compressed responses,
+isolated closing, and reconnection without starting the gateway's Spring application.

@@ -1,37 +1,37 @@
-﻿# Sessões e envio de packets
+# Sessions and packet output
 
-Este documento descreve a organização atual de `network.session`, a distribuição de pedidos de envio e os controles aplicados antes de escrever na conexão.
+This document describes the current organization of `network.session`, how send requests are distributed, and the controls applied before writing to a connection.
 
-## Organização dos componentes
+## Component organization
 
 ```text
 network/session/
-├── NettySessionManager.java       # Criação, inscrições e encerramento
-├── NettyPlayerSession.java        # Autenticação e ciclo de vida
-├── PlayerSession.java            # Contrato usado pelos handlers de entrada
-├── SessionManager.java
-├── SessionState.java
-├── SessionAttributes.java
-├── SessionView.java              # Leitura do player/locale e critérios de alcance
-├── SessionPacketWriter.java      # Agendamento e escrita no event loop
-├── PacketOutput.java             # Delegate de escrita e flush
-├── handler/
-│   ├── WorldViewHandler.java
-│   ├── ItemEventHandler.java
-│   ├── PlayerInterfaceHandler.java
-│   └── CombatEventHandler.java
-└── i18n/                         # Locale e localização de mensagens
+|-- NettySessionManager.java       # Creation, subscriptions, and shutdown
+|-- NettyPlayerSession.java        # Authentication and lifecycle
+|-- PlayerSession.java             # Contract used by incoming handlers
+|-- SessionManager.java
+|-- SessionState.java
+|-- SessionAttributes.java
+|-- SessionView.java               # Player/locale access and range criteria
+|-- SessionPacketWriter.java       # Scheduling and writes on the event loop
+|-- PacketOutput.java              # Write and flush delegate
+|-- handler/
+|   |-- WorldViewHandler.java
+|   |-- ItemEventHandler.java
+|   |-- PlayerInterfaceHandler.java
+|   `-- CombatEventHandler.java
+`-- i18n/                         # Locale and message localization
 ```
 
-O manager cria uma sessão, um writer e quatro handlers por conexão. Os handlers compartilham o writer daquela conexão e uma visão de leitura da sessão. O EventBus e o ChannelGroup são compartilhados entre conexões.
+The manager creates a session, a writer, and four handlers per connection. Handlers share that connection's writer and a read view of the session. The EventBus and ChannelGroup are shared across connections.
 
 ```mermaid
 flowchart TD
-    Channel[Channel da conexão] --> Manager[NettySessionManager]
+    Channel[Connection Channel] --> Manager[NettySessionManager]
     Manager --> Session[NettyPlayerSession]
-    Manager --> Writer[SessionPacketWriter por conexão]
+    Manager --> Writer[SessionPacketWriter per connection]
     Manager --> View[SessionView]
-    View -->|consulta player e locale atuais| Session
+    View -->|query current player and locale| Session
     Manager --> World[WorldViewHandler]
     Manager --> Items[ItemEventHandler]
     Manager --> UI[PlayerInterfaceHandler]
@@ -44,146 +44,146 @@ flowchart TD
     Items --> Writer
     UI --> Writer
     Combat --> Writer
-    Writer --> Loop[Event loop do Channel]
+    Writer --> Loop[Channel event loop]
     Loop --> Encoder[UOProtocolEncoder]
     Encoder --> Client[Client]
 ```
 
-| Componente | Responsabilidade |
+| Component | Responsibility |
 | --- | --- |
-| `NettyPlayerSession` | Estado, conta, seleção/criação, carregamento, ativação e desconexão. |
-| `NettySessionManager` | Instanciar componentes, registrar eventos e remover as mesmas inscrições no fechamento. |
-| `WorldViewHandler` | Login visual, visão próxima, movimento, aparecimento e remoção de mobiles. |
-| `ItemEventHandler` | Equipamentos, itens no chão, containers, stacks e atualizações. |
-| `PlayerInterfaceHandler` | Mensagens, fala, gumps, skills, vendor, spellbook e packets de debug. |
-| `CombatEventHandler` | Animações, modo de combate, dano, morte e ressurreição. |
-| `SessionView` | Consultar player/locale atuais, identidade, alcance e presença. |
-| `SessionPacketWriter` | Encaminhar saída para o event loop e bloquear operações após fechamento. |
+| `NettyPlayerSession` | State, account, selection/creation, loading, activation, and disconnection. |
+| `NettySessionManager` | Instantiate components, register events, and remove the same subscriptions on closing. |
+| `WorldViewHandler` | Visual login, nearby view, movement, mobile appearance and removal. |
+| `ItemEventHandler` | Equipment, ground items, containers, stacks, and updates. |
+| `PlayerInterfaceHandler` | Messages, speech, gumps, skills, vendor, spellbook, and debug packets. |
+| `CombatEventHandler` | Animations, combat mode, damage, death, and resurrection. |
+| `SessionView` | Query current player/locale, identity, range, and presence. |
+| `SessionPacketWriter` | Forward output to the event loop and block operations after closing. |
 
-## Como entra um pedido de envio
+## How a send request enters
 
-Existem dois caminhos principais:
+There are two main paths:
 
-1. **Resposta ao protocolo:** o decoder converte os bytes recebidos em um packet. Um `PlayerSessionChannelInboundHandler` recupera a sessão no atributo `PLAYER_SESSION_KEY` do Channel e chama a operação correspondente. Autenticação e rejeição enviam respostas pelo writer da sessão.
-2. **Evento do jogo:** um módulo publica um evento, como `NpcCreated`, `ItemUpdated` ou `RawPacketSent`. Cada inscrição daquele tipo avalia a sessão e seu handler decide se deve enviar packets ao próprio client.
+1. **Protocol response:** the decoder converts incoming bytes into a packet. A `PlayerSessionChannelInboundHandler` retrieves the session from the Channel's `PLAYER_SESSION_KEY` attribute and calls the corresponding operation. Authentication and rejection send responses through the session writer.
+2. **Game event:** a module publishes an event such as `NpcCreated`, `ItemUpdated`, or `RawPacketSent`. Each subscription of that type evaluates its session, and its handler decides whether to send packets to its own client.
 
 ```mermaid
 flowchart LR
-    Input[Packet recebido] --> Decoder[UOProtocolDecoder]
-    Decoder --> Inbound[Handler de entrada do protocolo]
-    Inbound --> Session[PlayerSession da conexão]
-    Session -->|resposta de autenticação ou rejeição| Writer[SessionPacketWriter]
-    Inbound -->|comando de jogo| Module[Módulo do jogo]
+    Input[Incoming packet] --> Decoder[UOProtocolDecoder]
+    Decoder --> Inbound[Protocol inbound handler]
+    Inbound --> Session[Connection PlayerSession]
+    Session -->|authentication or rejection response| Writer[SessionPacketWriter]
+    Inbound -->|game command| Module[Game module]
     Module --> Bus[EventBus.publish]
-    Bus --> Guard[Inscrição protegida por sessão]
-    Guard --> Handler[Handler de evento]
-    Handler -->|cria Packet de saída| Writer
-    Writer --> Out[Pipeline de saída Netty]
+    Bus --> Guard[Session-guarded subscription]
+    Guard --> Handler[Event handler]
+    Handler -->|create outgoing Packet| Writer
+    Writer --> Out[Netty outbound pipeline]
 ```
 
-O bus publica de forma síncrona na thread do publicador. A inscrição criada por `NettySessionManager.Event.forSession` transfere o processamento para o event loop da conexão.
+The bus publishes synchronously on the publisher's thread. The subscription created by `NettySessionManager.Event.forSession` transfers processing to the connection's event loop.
 
-## Envio para um client
+## Sending to one client
 
-Exemplo: `RawPacketSent` informa o player destinatário e o packet. O bus distribui o evento às inscrições, mas somente o handler cujo player tem o mesmo ID envia o conteúdo.
+For example, `RawPacketSent` provides the recipient player and packet. The bus distributes the event to subscriptions, but only the handler whose player has the matching ID sends the content.
 
 ```mermaid
 sequenceDiagram
-    participant Game as Módulo do jogo
+    participant Game as Game module
     participant Bus as EventBus
-    participant Guard as Inscrição da sessão
+    participant Guard as Session subscription
     participant Writer as SessionPacketWriter
-    participant Loop as Event loop do Channel
+    participant Loop as Channel event loop
     participant Handler as PlayerInterfaceHandler
     participant Encoder as UOProtocolEncoder
     participant Client
     Game->>Bus: publish(RawPacketSent)
-    Bus->>Guard: entrega do evento
-    alt sessão ACTIVE e conexão aberta
-        Guard->>Writer: enqueue(operação de dispatch)
-        Writer-->>Loop: enfileira tarefa
-        Loop->>Guard: executa tarefa
-        Note over Guard: synchronized(session) e nova checagem de ACTIVE
+    Bus->>Guard: deliver event
+    alt session ACTIVE and connection open
+        Guard->>Writer: enqueue(dispatch operation)
+        Writer-->>Loop: queue task
+        Loop->>Guard: execute task
+        Note over Guard: synchronized(session) and recheck ACTIVE
         Guard->>Handler: onRawPacketSent(event)
-        Handler->>Handler: compara ID do destinatário
-        alt destinatário corresponde à sessão
-            Handler->>Writer: enqueue(operação de escrita)
-            Writer-->>Loop: enfileira nova tarefa
-            Loop->>Handler: executa operação com PacketOutput
-            Handler->>Writer: packets.write(packet) e flush()
-            Writer->>Encoder: Channel.write e flush
-            Encoder->>Encoder: Packet.writesTo(ByteBuf) e Huffman
-            Encoder-->>Client: bytes pela conexão
+        Handler->>Handler: compare recipient ID
+        alt recipient matches session
+            Handler->>Writer: enqueue(write operation)
+            Writer-->>Loop: queue another task
+            Loop->>Handler: execute operation with PacketOutput
+            Handler->>Writer: packets.write(packet) and flush()
+            Writer->>Encoder: Channel.write and flush
+            Encoder->>Encoder: Packet.writesTo(ByteBuf) and Huffman
+            Encoder-->>Client: bytes over connection
         end
-    else sessão indisponível
-        Note over Guard: evento ignorado
+    else session unavailable
+        Note over Guard: event ignored
     end
 ```
 
-Alguns handlers fazem uma segunda chamada a `enqueue`, como nesse exemplo. Ela cria outra tarefa mesmo quando já está no event loop. Outros escrevem diretamente pelo writer, que executa inline quando já está no loop.
+Some handlers make a second `enqueue` call, as in this example. It creates another task even when already on the event loop. Others write directly through the writer, which executes inline when already on the loop.
 
-Respostas de autenticação e rejeição não passam pelo filtro `ACTIVE` dos eventos de jogo: precisam funcionar antes da entrada no mundo. Elas continuam sujeitas ao controle de conexão aberta do writer.
+Authentication and rejection responses do not pass through the game event `ACTIVE` filter: they must work before entering the world. They remain subject to the writer's open-connection checks.
 
-## Envio para vários clients
+## Sending to multiple clients
 
-Os handlers usam a distribuição do evento entre as sessões. Cada handler escreve somente no seu Channel. Ao criar um NPC, por exemplo, as sessões ativas cujos players estão no alcance recebem `DrawMobile`.
+Handlers use event distribution across sessions. Each handler writes only to its own Channel. When an NPC is created, for example, active sessions whose players are in range receive `DrawMobile`.
 
 ```mermaid
 flowchart TD
-    Event[Evento NpcCreated] --> Bus[EventBus]
-    Bus --> A[Sessão A: ACTIVE e NPC no alcance]
-    Bus --> B[Sessão B: ACTIVE e NPC no alcance]
-    Bus --> C[Sessão C: ACTIVE e NPC distante]
-    Bus --> D[Sessão D: seleção de personagem]
+    Event[NpcCreated event] --> Bus[EventBus]
+    Bus --> A[Session A: ACTIVE and NPC in range]
+    Bus --> B[Session B: ACTIVE and NPC in range]
+    Bus --> C[Session C: ACTIVE and NPC far away]
+    Bus --> D[Session D: character selection]
     A --> WA[Writer A / event loop A]
     B --> WB[Writer B / event loop B]
-    WA --> CA[Client A recebe DrawMobile]
-    WB --> CB[Client B recebe DrawMobile]
-    C --> IgnoreC[Handler ignora por alcance]
-    D --> IgnoreD[Inscrição ignora por estado]
+    WA --> CA[Client A receives DrawMobile]
+    WB --> CB[Client B receives DrawMobile]
+    C --> IgnoreC[Handler ignores due to range]
+    D --> IgnoreD[Subscription ignores due to state]
 ```
 
-| Situação | Distribuição atual |
+| Situation | Current distribution |
 | --- | --- |
-| Packet de debug direcionado | Apenas a sessão com o ID destinatário envia. |
-| Criação e atualização de entidades próximas | Cada sessão aplica critérios do handler, como alcance e presença. |
-| Mensagem com `TextType.BROADCAST` | Cada sessão ativa envia a mensagem ao próprio client. |
-| Remoção de NPC/player/item | Sessões ativas recebem `DeleteObject` sem exigir presença online ou alcance atual da entidade removida. |
-| Conteúdo de container equipado | Restrito ao dono; containers aninhados têm a cadeia de localização consultada. |
+| Targeted debug packet | Only the session with the recipient ID sends it. |
+| Nearby entity creation and updates | Each session applies handler criteria such as range and presence. |
+| Message with `TextType.BROADCAST` | Each active session sends the message to its own client. |
+| NPC/player/item removal | Active sessions receive `DeleteObject` without requiring online presence or the removed entity's current range. |
+| Equipped container contents | Restricted to the owner; nested containers have their location chain checked. |
 
-O writer também mantém `broadcast` e `broadcastAndFlush`, acessíveis dentro do pacote `session`. Eles usam o ChannelGroup, que contém conexões adicionadas em `channelActive` e removidas em `channelInactive`. Esses métodos encaminham ao grupo inteiro e **não aplicam filtros de ACTIVE, alcance ou propriedade por destinatário**. A chamada ao grupo passa pelo event loop do writer de origem; o Netty encaminha as operações aos Channels de destino.
+The writer also provides `broadcast` and `broadcastAndFlush`, accessible within the `session` package. They use the ChannelGroup, which contains connections added in `channelActive` and removed in `channelInactive`. These methods forward to the entire group and **do not apply per-recipient ACTIVE, range, or ownership filters**. The group call passes through the originating writer's event loop; Netty forwards operations to destination Channels.
 
-Os quatro handlers de `session.handler` não usam broadcasts de grupo. Isso evita que cada inscrição repita um envio para todos os clients.
+The four `session.handler` handlers do not use group broadcasts. This prevents each subscription from repeating a send to all clients.
 
-## Escrita, enfileiramento e flush
+## Writing, queueing, and flushing
 
 ```mermaid
 flowchart TD
-    Request[Pedido ao SessionPacketWriter] --> Kind{Método chamado}
-    Kind -->|enqueue| Queue[Enfileira uma tarefa no event loop]
-    Kind -->|schedule| Delay[Agenda tarefa no event loop após o atraso]
-    Kind -->|write / writeAndFlush / flush / broadcast| Current{Já está no event loop?}
-    Current -->|sim| Inline[Executa inline se o writer estiver ativo]
-    Current -->|não| Queue
-    Queue --> Open{Writer aberto e Channel ativo?}
+    Request[Request to SessionPacketWriter] --> Kind{Method called}
+    Kind -->|enqueue| Queue[Queue a task on the event loop]
+    Kind -->|schedule| Delay[Schedule an event loop task after delay]
+    Kind -->|write / writeAndFlush / flush / broadcast| Current{Already on event loop?}
+    Current -->|yes| Inline[Execute inline if writer active]
+    Current -->|no| Queue
+    Queue --> Open{Writer open and Channel active?}
     Delay --> Open
-    Open -->|não| Drop[Descarta a operação]
-    Open -->|sim| Run[Executa a operação]
-    Run --> Delegate[PacketOutput nas operações agendadas]
+    Open -->|no| Drop[Discard operation]
+    Open -->|yes| Run[Execute operation]
+    Run --> Delegate[PacketOutput in scheduled operations]
     Delegate --> Output[write / writeAndFlush / flush]
-    Inline --> Channel[Channel ou ChannelGroup]
+    Inline --> Channel[Channel or ChannelGroup]
     Output --> Channel
 ```
 
-- `enqueue` sempre enfileira a operação inteira. Não faz flush automático.
-- `schedule` executa após o atraso no event loop, se o writer ainda estiver ativo.
-- `write` entrega o packet ao pipeline sem solicitar flush.
-- `flush` solicita a saída das escritas pendentes; `writeAndFlush` combina as duas operações.
-- `PacketOutput` oferece somente escrita e flush. Seu uso fora do event loop lança `IllegalStateException`.
-- Uma tarefa pode escrever vários packets e realizar um único flush. Login e movimento mantêm suas próprias sequências e limites de flush.
-- Cada conexão tem sua fila. Não existe uma ordem global de entrega entre clients nem confirmação de recebimento do client nessa API.
+- `enqueue` always queues the entire operation. It does not flush automatically.
+- `schedule` executes after the delay on the event loop if the writer is still active.
+- `write` passes the packet to the pipeline without requesting a flush.
+- `flush` requests output of pending writes; `writeAndFlush` combines both operations.
+- `PacketOutput` provides only writing and flushing. Using it outside the event loop throws `IllegalStateException`.
+- A task can write several packets and perform a single flush. Login and movement retain their own sequences and flush boundaries.
+- Each connection has its own queue. This API provides neither a global delivery order across clients nor client receipt acknowledgments.
 
-Exemplo de envio agrupado:
+Example of grouped output:
 
 ```java
 packetWriter.enqueue(packets -> {
@@ -193,40 +193,40 @@ packetWriter.enqueue(packets -> {
 });
 ```
 
-## Controles e concorrência
+## Controls and concurrency
 
-| Camada | Controle |
+| Layer | Control |
 | --- | --- |
-| Inscrição do evento | Verifica `session.isActive()` antes de enfileirar e ao executar, sob `synchronized(session)`. |
-| Estado da sessão | `ACTIVE` é necessário para eventos de jogo. Ativação, desconexão e etapas sensíveis de carregamento usam o monitor da sessão. |
-| Writer | Exige `!closed && channel.isActive()`. Tarefas enfileiradas/agendadas reavaliam a condição ao executar. |
-| Destinatário e alcance | `SessionView` centraliza identidade, alcance e presença. Cada handler escolhe quais critérios aplicar ao evento. |
-| Players offline | `shouldReceiveUpdate` exclui players desconectados. A visão próxima também exige `MobileVisibility.isVisible`, que considera vida e presença. |
-| Remoções | Podem enviar `DeleteObject` após a entidade sair do índice ou ficar offline, permitindo limpar o client. |
-| Containers | O handler verifica dono ou localização no chão e percorre containers pais com proteção contra ciclos. |
-| EventBus | `ConcurrentHashMap` e `CopyOnWriteArrayList` permitem publicação junto de registro/remoção de inscrições. |
-| Sessões registradas | O manager mantém um conjunto concorrente. |
+| Event subscription | Checks `session.isActive()` before queueing and when executing, under `synchronized(session)`. |
+| Session state | `ACTIVE` is required for game events. Activation, disconnection, and sensitive loading stages use the session monitor. |
+| Writer | Requires `!closed && channel.isActive()`. Queued/scheduled tasks recheck the condition when executing. |
+| Recipient and range | `SessionView` centralizes identity, range, and presence. Each handler chooses which criteria to apply to an event. |
+| Offline players | `shouldReceiveUpdate` excludes disconnected players. The nearby view also requires `MobileVisibility.isVisible`, which considers life and presence. |
+| Removals | Can send `DeleteObject` after an entity leaves the index or goes offline, allowing client cleanup. |
+| Containers | The handler checks ownership or ground location and traverses parent containers with cycle protection. |
+| EventBus | `ConcurrentHashMap` and `CopyOnWriteArrayList` allow publication alongside subscription registration/removal. |
+| Registered sessions | The manager keeps a concurrent set. |
 
-O event loop serializa operações de uma conexão. Isso não transforma todos os objetos do mundo em snapshots imutáveis: packets e eventos podem guardar referências a entidades consultadas posteriormente. Uma inscrição já capturada pelo bus também pode ser chamada após a remoção do listener; as verificações de estado e de writer fechado impedem saída da sessão encerrada.
+The event loop serializes operations for a connection. This does not turn all world objects into immutable snapshots: packets and events may hold entity references queried later. A subscription already captured by the bus may also be called after listener removal; state and closed-writer checks prevent output from a closed session.
 
-## Ciclo de vida e encerramento
+## Lifecycle and shutdown
 
 ```mermaid
 stateDiagram-v2
     [*] --> CONNECTED: channelActive / createSession
-    CONNECTED --> AUTHENTICATED: autenticação concluída
-    AUTHENTICATED --> CHARACTER_SELECTED: selecionar ou criar personagem
-    CHARACTER_SELECTED --> ENTERING_WORLD: enteringWorld / carregar mobile
+    CONNECTED --> AUTHENTICATED: authentication complete
+    AUTHENTICATED --> CHARACTER_SELECTED: select or create character
+    CHARACTER_SELECTED --> ENTERING_WORLD: enteringWorld / load mobile
     ENTERING_WORLD --> ACTIVE: activate / connected = true
-    CONNECTED --> DISCONNECTED: desconectar
-    AUTHENTICATED --> DISCONNECTED: desconectar
-    CHARACTER_SELECTED --> DISCONNECTED: desconectar
-    ENTERING_WORLD --> DISCONNECTED: desconectar
-    ACTIVE --> DISCONNECTED: desconectar
+    CONNECTED --> DISCONNECTED: disconnect
+    AUTHENTICATED --> DISCONNECTED: disconnect
+    CHARACTER_SELECTED --> DISCONNECTED: disconnect
+    ENTERING_WORLD --> DISCONNECTED: disconnect
+    ACTIVE --> DISCONNECTED: disconnect
     DISCONNECTED --> [*]
 ```
 
-O diagrama mostra o fluxo principal implementado. `DISCONNECTING` existe no enum e é tratado como indisponível, mas `disconnect()` faz a transição diretamente para `DISCONNECTED`.
+The diagram shows the implemented main flow. `DISCONNECTING` exists in the enum and is treated as unavailable, but `disconnect()` transitions directly to `DISCONNECTED`.
 
 ```mermaid
 sequenceDiagram
@@ -236,27 +236,27 @@ sequenceDiagram
     participant Writer as SessionPacketWriter
     participant Bus as EventBus
     participant World as DefaultWorld / PlayerModule
-    Channel->>Manager: closeFuture concluído
+    Channel->>Manager: closeFuture completed
     Manager->>Session: disconnect()
     Session->>Writer: close()
-    Session->>Session: connected = false e estado DISCONNECTED
+    Session->>Session: connected = false and state DISCONNECTED
     Session->>Bus: PlayerSessionStatusChanged
-    Manager->>Bus: unregister de cada inscrição guardada
-    Manager->>Manager: remove do conjunto de sessões
+    Manager->>Bus: unregister each saved subscription
+    Manager->>Manager: remove from session set
     Manager->>Bus: publish(PlayerSessionClosed)
-    Bus->>World: despawn do player, se atribuído
-    Note over Writer: tarefas pendentes não executam sua operação após fechamento
+    Bus->>World: despawn player if assigned
+    Note over Writer: pending tasks do not execute their operation after closing
 ```
 
-`ClientConnectedHandlerAdapter.channelInactive` também remove o Channel do grupo e chama `disconnect()`, que é idempotente. Se o carregamento terminar depois da desconexão, `enteringWorld()` limpa o player carregado e conclui excepcionalmente, impedindo ativação tardia.
+`ClientConnectedHandlerAdapter.channelInactive` also removes the Channel from the group and calls the idempotent `disconnect()`. If loading completes after disconnection, `enteringWorld()` clears the loaded player and completes exceptionally, preventing late activation.
 
-## Referências no código
+## Code references
 
 - [NettySessionManager](../src/main/java/com/github/mayconr/juoserver/network/session/NettySessionManager.java)
 - [NettyPlayerSession](../src/main/java/com/github/mayconr/juoserver/network/session/NettyPlayerSession.java)
 - [SessionPacketWriter](../src/main/java/com/github/mayconr/juoserver/network/session/SessionPacketWriter.java)
 - [SessionView](../src/main/java/com/github/mayconr/juoserver/network/session/SessionView.java)
-- [Handlers de eventos](../src/main/java/com/github/mayconr/juoserver/network/session/handler/)
+- [Event handlers](../src/main/java/com/github/mayconr/juoserver/network/session/handler/)
 - [DefaultEventBus](../src/main/java/com/github/mayconr/juoserver/infrastructure/eventbus/DefaultEventBus.java)
 - [ClientConnectedHandlerAdapter](../src/main/java/com/github/mayconr/juoserver/infrastructure/server/ClientConnectedHandlerAdapter.java)
 - [UOProtocolEncoder](../src/main/java/com/github/mayconr/juoserver/infrastructure/server/UOProtocolEncoder.java)

@@ -1,72 +1,62 @@
-# Consulta de implementações de cliente e servidor
+# Consulting client and server implementations
 
-- O ClassicUO é uma implementação de cliente, disponível em `docs/references/ClassicUO/`.
-- O POLServer é uma implementação de servidor, disponível em `docs/references/polserver/`.
+Example client and server projects are located in `docs/references/`.
 
-Use esses códigos exclusivamente para consultar e verificar comportamentos,
-formatos de pacotes, regras e condições relevantes à tarefa. Não os use como
-inspiração para gerar processos, fluxos, etapas, abstrações ou arquitetura no
-juoforge. A organização e os processos do juoforge devem seguir seus próprios
-padrões e os requisitos da tarefa.
+Use this code exclusively to consult and verify behaviors, packet formats,
+rules, and conditions relevant to the task. Do not use it as inspiration for
+processes, flows, steps, abstractions, or architecture in juoforge. Juoforge's
+organization and processes must follow its own conventions and task requirements.
 
-## Referência de cliente: ClassicUO
+## Client and server references
 
-O código-fonte do cliente ClassicUO está em `docs/references/ClassicUO/`.
+When working on features that depend on client behavior or have equivalents in
+the example servers, consult the relevant code before completing the analysis
+or implementing changes.
 
-Os logs do cliente ClassicUO podem ser acessados em
-`C:\Users\mgregorio\UO\classicuo\ClassicUO\Logs`.
+This includes, when applicable:
 
-Ao trabalhar em funcionalidades que dependam do comportamento do
-cliente, consulte o código relevante do ClassicUO antes de concluir
-a análise ou implementar alterações.
+- Reading, interpreting, and processing packets;
+- Death, ghosts, and corpses;
+- Containers, inventory, and items;
+- Tooltips and clilocs;
+- Animations, equipment, and movement;
+- Gameplay rules, combat, and skills;
+- Persistence.
 
-Isso inclui, quando aplicável:
+## Using the references
 
-- Leitura e interpretação de pacotes;
-- Morte, fantasmas e cadáveres;
-- Containers e inventário;
-- Tooltips e clilocs;
-- Animações, equipamentos e movimentação.
+1. Locate the relevant handlers, methods, and functions in the example projects.
+2. Verify relevant behaviors, rules, conditions, and effects, including packet
+   formats, field conditions, and differences between client versions when applicable.
+3. Compare these behaviors with the juoforge implementation.
+4. Cite the files, methods, and functions consulted when explaining conclusions.
+5. Distinguish behavior proven by code from hypotheses and decisions specific
+   to each example project.
+6. Do not modify example project code unless explicitly requested.
 
-## Como usar a referência
+Consider both client and server references when the task involves interaction
+between them. Juoforge's implementation must follow its own architectural and
+language conventions. Consulting these implementations does not authorize
+copying or deriving processes or flows from them for juoforge.
 
-1. Localize no ClassicUO os handlers e métodos relevantes à tarefa.
-2. Verifique o formato dos pacotes, as condições dos campos e as
-   diferenças entre versões do cliente.
-3. Compare esse comportamento com a implementação do juoforge.
-4. Cite os arquivos e métodos relevantes ao explicar as conclusões.
-5. Diferencie comportamento comprovado no código de hipóteses.
-6. Não modifique o código do ClassicUO, salvo solicitação explícita.
+## Java imports
 
-A implementação do juoforge deve seguir seus próprios padrões de
-arquitetura e linguagem. O ClassicUO é uma referência para
-compatibilidade do cliente.
+- Always add an explicit `import` for each class used and use its simple name in code.
+- Do not use fully qualified class names in code or wildcard (`*`) imports.
+- This rule does not apply to `import static`.
 
-## Referência de servidor: POLServer
+## Formatting and method responsibilities
 
-O código-fonte do servidor POLServer está em `docs/references/polserver/`.
+- Always deliver generated or modified code correctly indented and formatted,
+  following project conventions, including multiline arguments and lambda bodies.
+- Prefer short methods with few lines and one clear responsibility. Separate
+  distinct responsibilities into methods named after their purpose.
+- When a method or lambda grows, extract operations with their own responsibility,
+  preserving readability and avoiding artificial fragmentation solely to reduce line counts.
 
-Ao analisar ou implementar comportamentos de servidor que tenham equivalente
-no POLServer, consulte o código relevante como referência. Isso inclui, quando
-aplicável, regras de gameplay, combate, skills, itens, containers, movimentação,
-persistência e processamento de pacotes.
+## Documentation language
 
-1. Localize as funções e os fluxos relevantes no POLServer.
-2. Compare as regras, condições e efeitos com a implementação do juoforge.
-3. Cite os arquivos e as funções consultados ao explicar as conclusões.
-4. Diferencie comportamento comprovado no código de hipóteses e decisões
-   específicas do POLServer.
-5. Não modifique o código do POLServer, salvo solicitação explícita.
-
-O POLServer é uma referência de implementação de servidor; o ClassicUO continua
-sendo a referência de comportamento do cliente. Considere ambos quando a tarefa
-envolver a interação entre cliente e servidor. A implementação do juoforge deve
-seguir seus próprios padrões de arquitetura e linguagem. Consultar essas
-implementações não autoriza reproduzir nem derivar delas processos ou fluxos
-para o juoforge.
-
-## Imports Java
-
-- Sempre adicione um `import` explícito para cada classe utilizada e use seu nome simples no código.
-- Não utilize nomes de classes totalmente qualificados no corpo do código nem imports com wildcard (`*`).
-- Esta regra não se aplica a `import static`.
+- Write and maintain this project's documentation in English, including `AGENTS.md`,
+  `README.md`, and Markdown files under `docs/`.
+- Preserve external reference projects under `docs/references/` unless explicitly
+  instructed to modify them.

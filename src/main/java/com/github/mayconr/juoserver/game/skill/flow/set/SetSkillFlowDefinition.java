@@ -8,6 +8,9 @@ public final class SetSkillFlowDefinition {
     private SetSkillFlowDefinition() { }
 
     public static Flow<SetSkillContext> build(EventBus events) {
-        return FlowFactory.<SetSkillContext>builder().step(new SetSkillStep(events)).build();
+        return FlowFactory.<SetSkillContext>builder()
+                .step(new ValidateSetSkillStep())
+                .step(new SetSkillStep(events))
+                .build();
     }
 }

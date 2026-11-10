@@ -1,11 +1,12 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-public class ItemIcon extends TooltipElement implements Sized {
+public class ItemIcon extends TooltipElement implements Sized, Alignable {
     private int x, y;
     private final int tileId;
     private final int width;
     private final int height;
-    private boolean centered;
+    private VerticalAlignment verticalAlignment = VerticalAlignment.TOP;
+    private HorizontalAlignment horizontalAlignment = HorizontalAlignment.LEFT;
     private int offsetX;
     private int offsetY;
     private int hue;
@@ -40,8 +41,34 @@ public class ItemIcon extends TooltipElement implements Sized {
         return this;
     }
 
-    public ItemIcon centered() {
-        centered = true;
+    @Override
+    public ItemIcon top() {
+        verticalAlignment = VerticalAlignment.TOP;
+        return this;
+    }
+
+    @Override
+    public ItemIcon down() {
+        verticalAlignment = VerticalAlignment.DOWN;
+        return this;
+    }
+
+    @Override
+    public ItemIcon left() {
+        horizontalAlignment = HorizontalAlignment.LEFT;
+        return this;
+    }
+
+    @Override
+    public ItemIcon right() {
+        horizontalAlignment = HorizontalAlignment.RIGHT;
+        return this;
+    }
+
+    @Override
+    public ItemIcon center() {
+        verticalAlignment = VerticalAlignment.CENTER;
+        horizontalAlignment = HorizontalAlignment.CENTER;
         return this;
     }
 
@@ -61,8 +88,8 @@ public class ItemIcon extends TooltipElement implements Sized {
 
     @Override
     public void layout(LayoutContext ctx) {
-        x = ctx.x + (centered ? Math.max(0, ctx.width - getWidth()) / 2 : 0) - visibleX + offsetX;
-        y = ctx.y + (centered ? Math.max(0, ctx.height - getHeight()) / 2 : 0) - visibleY + offsetY;
+        x = ctx.x + horizontalAlignment.offset(ctx.width, getWidth()) - visibleX + offsetX;
+        y = ctx.y + verticalAlignment.offset(ctx.height, getHeight()) - visibleY + offsetY;
     }
 
     @Override

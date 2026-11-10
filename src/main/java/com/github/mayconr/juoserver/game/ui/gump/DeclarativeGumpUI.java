@@ -70,8 +70,8 @@ public class DeclarativeGumpUI {
         return p;
     }
 
-    public static PaginatedList PaginatedList(List<PaginatedList.Item> items, PaginatedList.Style style) {
-        return new PaginatedList(items, style);
+    public static PaginatedList PaginatedList(List<PaginatedList.Item> items, int width) {
+        return new PaginatedList(items, width);
     }
 
     public static Column Column(int spacing, UIElement... children) {
@@ -92,8 +92,28 @@ public class DeclarativeGumpUI {
         return new Button(normalId, pressedId, buttonId, caption);
     }
 
+    public static ItemButton ItemButton(int normalId, int pressedId, int buttonId, int itemId) {
+        return new ItemButton(normalId, pressedId, buttonId, itemId);
+    }
+
+    public static ItemButton ItemButton(int normalId, int pressedId, int buttonId, int itemId, String caption) {
+        return new ItemButton(normalId, pressedId, buttonId, itemId, caption);
+    }
+
+    public static ItemButton ItemButton(int normalId, int pressedId, int buttonId, int itemId, MessageContent caption) {
+        return new ItemButton(normalId, pressedId, buttonId, itemId, caption);
+    }
+
     public static PageButton PageButton(int normalId, int pressedId, int targetPage) {
         return new PageButton(normalId, pressedId, targetPage);
+    }
+
+    public static VirtueImage VirtueImage(int graphicId) {
+        return new VirtueImage(graphicId);
+    }
+
+    public static VirtueImage VirtueImage(int graphicId, int width, int height) {
+        return new VirtueImage(graphicId, width, height);
     }
 
     public static Image Image(int gumpPicId, int width, int height) {
@@ -137,6 +157,14 @@ public class DeclarativeGumpUI {
         return new TextField(entryId, width, height);
     }
 
+    public static TextField TextField(int entryId, int width, int height, int maxCharacters) {
+        return new TextField(entryId, width, height, maxCharacters);
+    }
+
+    public static RadioGroup RadioGroup(int groupId, UIElement content) {
+        return new RadioGroup(groupId, content);
+    }
+
     public static Radio Radio(int uncheckedId, int checkedId, int switchId) {
         return new Radio(uncheckedId, checkedId, switchId);
     }
@@ -178,6 +206,14 @@ public class DeclarativeGumpUI {
         return new ItemSlot(backgroundId, width, height, content);
     }
 
+    public static HtmlGump HtmlGump(int clilocId, int width, int height) {
+        return new HtmlGump(clilocId, width, height);
+    }
+
+    public static HtmlGump HtmlGump(int clilocId, int width, int height, boolean background, boolean scrollbar) {
+        return new HtmlGump(clilocId, width, height, background, scrollbar);
+    }
+
     public static HtmlGump HtmlGump(String value, int width, int height) {
         return new HtmlGump(value, width, height);
     }
@@ -209,5 +245,10 @@ public class DeclarativeGumpUI {
 
     public static TextField TextField(int entryId, int width, int height, MessageContent initialText) {
         return new TextField(entryId, width, height, 0, initialText, true);
+    }
+
+    public static TextField TextField(int entryId, int width, int height,
+                                      MessageContent initialText, int maxCharacters) {
+        return new TextField(entryId, width, height, 0, initialText, true, maxCharacters);
     }
 }
