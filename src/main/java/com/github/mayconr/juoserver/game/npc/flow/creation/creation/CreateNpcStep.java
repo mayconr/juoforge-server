@@ -5,16 +5,16 @@ import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class CreateNpcStep extends AbstractFlowStep<NpcCreationContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public CreateNpcStep(RealmStorage storage) {
+    public CreateNpcStep(WorldStorage storage) {
         super("CreateNpc");
         this.storage = storage;
     }

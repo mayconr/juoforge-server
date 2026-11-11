@@ -87,7 +87,7 @@ public final class WorldViewHandler {
     private NearbyView loadNearbyView(UOPlayer player) {
         int range = settings.world().visibility().range();
         return new NearbyView(
-                world.storage().getMobilesInRange(player, range, MobileVisibility::isVisible),
+                world.mobile().getMobilesInRange(player, range, MobileVisibility::isVisible),
                 world.item().getItemsInRange(player, range));
     }
 

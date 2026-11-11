@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.NpcRequester;
 import com.github.mayconr.juoserver.game.world.WorldModule;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NpcDespawnService implements WorldModule {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final NpcModule npcModule;
     private final Map<Integer, DespawnEntry> scheduled = new HashMap<>();
 

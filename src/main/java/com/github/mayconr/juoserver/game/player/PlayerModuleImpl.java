@@ -12,7 +12,7 @@ import com.github.mayconr.juoserver.game.model.event.PlayerLoggedOut;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.CreateCharacter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PlayerModuleImpl implements PlayerModule {
 
     private final Map<Integer, UOPlayer> onlinePlayers = new ConcurrentHashMap<>();
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus eventBus;
 
     private ModuleContext.FlowFacade flows;

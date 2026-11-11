@@ -5,12 +5,12 @@ import com.github.mayconr.juoserver.game.ui.WorldUI;
 import com.github.mayconr.juoserver.game.mobile.shared.NotifyMobileStatusStep;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class AddContainerItemFlowDefinition {
     private AddContainerItemFlowDefinition() { }
 
-    public static Flow<AddContainerItemContext> build(RealmStorage storage, EventBus events, WorldUI ui) {
+    public static Flow<AddContainerItemContext> build(WorldStorage storage, EventBus events, WorldUI ui) {
         return FlowFactory.<AddContainerItemContext>builder()
                 .step(new PlaceContainerItemStep(storage))
                 .step(new NotifyContainerItemStep(storage, events), AddContainerItemContext::isNotifyClient)

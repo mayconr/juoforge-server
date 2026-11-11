@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.event.MobileEnteredLineOfSight;
 import com.github.mayconr.juoserver.game.model.event.MobileLeftLineOfSight;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VisibilityTransitionServiceImpl implements VisibilityTransitionService {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus eventBus;
     private final GamePlaySettings settings;
 

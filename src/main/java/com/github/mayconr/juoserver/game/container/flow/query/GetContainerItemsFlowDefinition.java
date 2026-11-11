@@ -2,12 +2,12 @@ package com.github.mayconr.juoserver.game.container.flow.query;
 
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class GetContainerItemsFlowDefinition {
     private GetContainerItemsFlowDefinition() {}
 
-    public static Flow<GetContainerItemsContext> build(RealmStorage storage) {
+    public static Flow<GetContainerItemsContext> build(WorldStorage storage) {
         return FlowFactory.<GetContainerItemsContext>builder()
                 .step(new ResolveQueryContainerStep(storage))
                 .step(new CollectContainerItemsStep(storage))

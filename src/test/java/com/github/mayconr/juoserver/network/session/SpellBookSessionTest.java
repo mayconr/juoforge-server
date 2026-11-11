@@ -22,7 +22,7 @@ class SpellBookSessionTest {
     void sendsContentsBeforeOpeningOnlyToRecipient() {
         var channel = new EmbeddedChannel();
         try {
-            var session = new NettyPlayerSession(channel, null, null, null, null);
+            var session = new NettyPlayerSession(channel, null, null, null, null, null);
             var sessionHandler = new PlayerInterfaceHandler(
                     new SessionView(session::getPlayer, session::getLocale, null),
                     new SessionPacketWriter(channel, null), null, mock(MessageLocalizer.class));

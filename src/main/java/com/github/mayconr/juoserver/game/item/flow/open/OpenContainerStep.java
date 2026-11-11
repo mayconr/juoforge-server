@@ -6,16 +6,16 @@ import com.github.mayconr.juoserver.game.model.event.ContainerOpenedEvent;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class OpenContainerStep extends AbstractFlowStep<OpenContainerContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus eventBus;
     private final WorldLoot loot;
 
-    public OpenContainerStep(RealmStorage storage, EventBus eventBus, WorldLoot loot) {
+    public OpenContainerStep(WorldStorage storage, EventBus eventBus, WorldLoot loot) {
         super("open-container");
         this.storage = storage;
         this.eventBus = eventBus;

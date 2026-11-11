@@ -6,7 +6,7 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Iterator;
@@ -15,7 +15,7 @@ import java.util.Iterator;
 public class ContainerHandler {
 
     private final EventBus eventBus;
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
     public int consumeItem(Integer containerSerial, String itemName, int amount, boolean searchNestedContainers) {
         var container = storage.getContainer(containerSerial).orElseThrow(()->new IllegalArgumentException("Container not found"));

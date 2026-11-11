@@ -23,7 +23,7 @@ class NettySessionManagerTest {
     void routesAllHandlerGroupsAndUnregistersThemWhenSessionCloses() {
         var bus = new DefaultEventBus();
         var world = mock(WorldInternal.class, RETURNS_DEEP_STUBS);
-        var manager = new NettySessionManager(world, null, mock(com.github.mayconr.juoserver.game.GamePlaySettings.class, RETURNS_DEEP_STUBS), bus, mock(MessageLocalizer.class));
+        var manager = new NettySessionManager(world, null, mock(com.github.mayconr.juoserver.game.GamePlaySettings.class, RETURNS_DEEP_STUBS), bus, mock(MessageLocalizer.class), null);
         var channel = new EmbeddedChannel();
         try {
             var session = manager.createSession(channel);
@@ -65,7 +65,7 @@ class NettySessionManagerTest {
     void sendsRemovalOncePerActiveClientAndIgnoresUnassignedSessions() {
         var bus = new DefaultEventBus();
         var group = mock(io.netty.channel.group.ChannelGroup.class);
-        var manager = new NettySessionManager(null, group, null, bus, mock(MessageLocalizer.class));
+        var manager = new NettySessionManager(null, group, null, bus, mock(MessageLocalizer.class), null);
         var first = new EmbeddedChannel();
         var second = new EmbeddedChannel();
         var selecting = new EmbeddedChannel();

@@ -4,16 +4,16 @@ import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationCont
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SavePlayerStep extends AbstractFlowStep<PlayerCreationContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final SerialGenerator serialGenerator;
 
-    public SavePlayerStep(RealmStorage storage, SerialGenerator serialGenerator) {
+    public SavePlayerStep(WorldStorage storage, SerialGenerator serialGenerator) {
         super("PersistPlayerStep");
         this.storage = storage;
         this.serialGenerator = serialGenerator;

@@ -4,13 +4,13 @@ import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 /** Resolves the backpack owner and additional weight for capacity validation. */
 public final class PrepareCreatedItemBackpackWeightStep extends AbstractFlowStep<ItemCreationContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public PrepareCreatedItemBackpackWeightStep(RealmStorage storage) {
+    public PrepareCreatedItemBackpackWeightStep(WorldStorage storage) {
         super("prepare-created-item-backpack-weight");
         this.storage = storage;
     }

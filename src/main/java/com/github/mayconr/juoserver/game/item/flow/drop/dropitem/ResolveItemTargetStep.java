@@ -5,15 +5,15 @@ import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ResolveItemTargetStep extends AbstractFlowStep<DropItemContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ResolveItemTargetStep(RealmStorage storage) {
+    public ResolveItemTargetStep(WorldStorage storage) {
         super("resolve_item_target");
         this.storage = storage;
     }

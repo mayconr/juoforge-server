@@ -4,13 +4,13 @@ import com.github.mayconr.juoserver.game.player.flow.creation.PlayerCreationCont
 import com.github.mayconr.juoserver.game.player.exception.PlayerNameAlreadyExistsException;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 
 public class ValidatePlayerNameStep extends AbstractFlowStep<PlayerCreationContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ValidatePlayerNameStep(RealmStorage storage) {
+    public ValidatePlayerNameStep(WorldStorage storage) {
         super("ValidatePlayerNameStep");
         this.storage = storage;
     }

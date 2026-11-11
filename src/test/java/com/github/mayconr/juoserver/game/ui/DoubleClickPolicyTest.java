@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickRequest;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.DoubleClick;
 import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickContext;
 import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickFlowDefinition;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class DoubleClickPolicyTest {
     private final com.github.mayconr.juoserver.game.container.WorldContainer containers =
             mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
-    private UIModule ui(EventBus events, RealmStorage storage, DoubleClickPolicy policy, WorldItem items) {
+    private UIModule ui(EventBus events, WorldStorage storage, DoubleClickPolicy policy, WorldItem items) {
         var registry = new DefaultFlowRegistry();
         var ui = new UIModuleImpl(null);
         registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items, containers), DoubleClickContext.class);
@@ -38,7 +38,7 @@ class DoubleClickPolicyTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3})
     void opensPaperdollDirectlyThroughTheUiModule(int serial) {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
         var items = mock(WorldItem.class);
         var player = mock(UOPlayer.class);
@@ -62,7 +62,7 @@ class DoubleClickPolicyTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void doubleClickOnMobileDoesNotOpenPaperdoll(boolean self) {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
         var items = mock(WorldItem.class);
         var player = mock(UOPlayer.class);
@@ -78,7 +78,7 @@ class DoubleClickPolicyTest {
 
     @Test
     void delegatesItemUseToTheItemModule() {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var items = mock(WorldItem.class);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
@@ -112,7 +112,7 @@ class DoubleClickPolicyTest {
     void configuredPolicyRunsBeforeStorageAndReceivesThePlayerAndTarget(boolean allowed) {
         var cfg = new DefaultWorldConfigurator();
         var policy = mock(DoubleClickPolicy.class);
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
 
         var items = mock(WorldItem.class);
@@ -140,7 +140,7 @@ class DoubleClickPolicyTest {
 
     @Test
     void delegatesContainerOpeningToTheContainerModule() {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var items = mock(WorldItem.class);
         var events = mock(EventBus.class);
 

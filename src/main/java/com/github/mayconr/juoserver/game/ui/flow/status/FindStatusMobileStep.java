@@ -2,12 +2,12 @@ package com.github.mayconr.juoserver.game.ui.flow.status;
 
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class FindStatusMobileStep extends AbstractFlowStep<StatusGumpContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public FindStatusMobileStep(RealmStorage storage) {
+    public FindStatusMobileStep(WorldStorage storage) {
         super("find-status-mobile");
         this.storage = storage;
     }

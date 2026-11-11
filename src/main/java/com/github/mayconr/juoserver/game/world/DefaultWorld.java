@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.world;
 
+import com.github.mayconr.juoserver.game.temporal.TemporalModule;
+import com.github.mayconr.juoserver.game.temporal.TemporalModuleImpl;
+import com.github.mayconr.juoserver.game.temporal.WorldTemporal;
 import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 
 import com.github.mayconr.juoserver.game.container.WorldContainer;
@@ -11,9 +14,6 @@ import com.github.mayconr.juoserver.game.loot.LootModule;
 import com.github.mayconr.juoserver.game.loot.LootModuleImpl;
 
 import com.github.mayconr.juoserver.game.map.WorldMap;
-import com.github.mayconr.juoserver.game.storage.WorldStorage;
-import com.github.mayconr.juoserver.game.storage.StorageModule;
-import com.github.mayconr.juoserver.game.storage.StorageModuleImpl;
 import com.github.mayconr.juoserver.game.random.WorldRandom;
 import com.github.mayconr.juoserver.game.random.RandomModule;
 import com.github.mayconr.juoserver.game.random.RandomModuleImpl;
@@ -104,7 +104,7 @@ import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import com.github.mayconr.juoserver.network.packet.*;
@@ -116,11 +116,6 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class DefaultWorld implements WorldInternal, World {
-
-    @Override
-    public WorldStorage storage() {
-        return Objects.requireNonNull(storageModule, "World storage module is not initialized");
-    }
 
     @Override
     public WorldRandom random() {
@@ -214,6 +209,11 @@ public class DefaultWorld implements WorldInternal, World {
         return Objects.requireNonNull(messageModule, "World message module is not initialized");
     }
 
+    @Override
+    public WorldTemporal temporal() {
+        return Objects.requireNonNull(temporalModule, "World temporal module is not initialized");
+    }
+
     /*
      * =========
      * Modules
@@ -231,7 +231,6 @@ public class DefaultWorld implements WorldInternal, World {
         return Objects.requireNonNull(regionModule, "World region module is not initialized");
     }
 
-    private StorageModule storageModule;
     private RandomModule randomModule;
     private DevToolsModule devToolsModule;
     private EconomyModule economyModule;
@@ -252,6 +251,7 @@ public class DefaultWorld implements WorldInternal, World {
     private MessageModule messageModule;
     private DamageModule damageModule;
     private NpcModule npcModule;
+    private TemporalModule temporalModule;
 
     /*
      * =========
@@ -260,7 +260,7 @@ public class DefaultWorld implements WorldInternal, World {
      */
     private final EventBus eventBus;
     private final SerialGenerator serialGenerator;
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final RegionSystem regionSystem;
     private final UOFileReaderImpl fileReader;
     private final ItemUseService itemUseService;
@@ -295,17 +295,17 @@ public class DefaultWorld implements WorldInternal, World {
 
     @Override
     public void initialize() {
-        this.regionModule = new RegionModuleImpl(regionSystem);
-        this.storageModule = new StorageModuleImpl(storage);
-        this.randomModule = new RandomModuleImpl(rng);
         serialGenerator.initialize();
         fileReader.loadFiles();
+
+        this.regionModule = new RegionModuleImpl(regionSystem);
+        this.randomModule = new RandomModuleImpl(rng);
         this.mapModule = new MapModule(fileReader, regionSystem);
 
         final var wallet = worldCfg.wallet().apply(this);
 
         this.devToolsModule = new DevToolsModuleImpl(eventBus);
-        initializeMessagingModule();
+        this.messageModule = createMessageModule();
         initializeEconomyModule(wallet);
         initializeAiModule();
         this.lootModule = new LootModuleImpl();
@@ -314,13 +314,14 @@ public class DefaultWorld implements WorldInternal, World {
         initializeItemModule();
         this.containerModule = new ContainerModuleImpl(storage, new ContainerHandler(eventBus, storage));
         initializeUiModule();
-        initializePlayerModule();
+        this.playerModule = new PlayerModuleImpl(storage, eventBus);
         this.vitalsModule = new VitalsModuleImpl(playerModule);
         initializeCombatModule();
         initializeMobileModule(wallet);
         initializeInteractionModule();
-        initializeDamageModule();
-        initializeNpcModule();
+        this.damageModule = new DamageModuleImpl(eventBus);
+        this.npcModule = new NpcModuleImpl();
+        this.temporalModule = new TemporalModuleImpl(storage.properties(), eventBus, settings.temporal());
 
         initializeModules();
         registerTransitions();
@@ -336,6 +337,10 @@ public class DefaultWorld implements WorldInternal, World {
         spellModule.update(delta);
         skillModule.update(delta);
         uiModule.update(delta);
+        itemModule.update(delta);
+        containerModule.update(delta);
+        temporalModule.update(delta);
+        npcModule.update(delta);
     }
 
     /*
@@ -344,10 +349,10 @@ public class DefaultWorld implements WorldInternal, World {
      * =====================
      */
 
-    private void initializeMessagingModule() {
+    private MessageModule createMessageModule() {
         final var styles = worldCfg.content().messageStyles().loadAll();
         var messageStyleRegistry = new InMemoryTemplateRegistry<>(styles, MessageStyleTemplate::name);
-        this.messageModule = new MessageModuleImpl(eventBus, messageStyleRegistry);
+        return new MessageModuleImpl(eventBus, messageStyleRegistry);
     }
 
     private void initializeEconomyModule(Wallet wallet) {
@@ -402,10 +407,6 @@ public class DefaultWorld implements WorldInternal, World {
         this.itemModule = new ItemModuleImpl(itemHandler, storage, itemTemplateRegistry, itemUseService);
     }
 
-    private void initializePlayerModule() {
-        this.playerModule = new PlayerModuleImpl(storage, eventBus);
-    }
-
     private void initializeCombatModule() {
         final var combatService = new CombatHandler(eventBus);
 
@@ -430,10 +431,6 @@ public class DefaultWorld implements WorldInternal, World {
     private void initializeDamageModule() {
         damageModule = new DamageModuleImpl(eventBus);
     }
-
-    private void initializeNpcModule() {
-    }
-
     /*
      * ===================
      * Module initialization
@@ -506,7 +503,6 @@ public class DefaultWorld implements WorldInternal, World {
                 .build();
 
         this.regionModule.initialize(context);
-        this.storageModule.initialize(context);
         this.randomModule.initialize(context);
         this.devToolsModule.initialize(context);
         this.economyModule.initialize(context);
@@ -524,6 +520,7 @@ public class DefaultWorld implements WorldInternal, World {
         this.skillModule.initialize(context);
         this.spellModule.initialize(context);
         this.combatModule.initialize(context);
+        this.temporalModule.initialize(context);
     }
 
     /*

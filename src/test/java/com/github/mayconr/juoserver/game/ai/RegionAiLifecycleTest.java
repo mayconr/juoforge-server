@@ -14,7 +14,7 @@ import com.github.mayconr.juoserver.game.region.RegionModuleImpl;
 import com.github.mayconr.juoserver.game.player.PlayerModuleImpl;
 import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnContext;
 import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnFlowDefinition;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.game.region.flow.transition.*;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.context.*;
@@ -52,7 +52,7 @@ class RegionAiLifecycleTest {
         when(npc.getBehavior().ai()).thenReturn("PASSIVE_ANIMAL");
         var session = ai.attach(npc);
         var registry = new DefaultFlowRegistry();
-        var players = new PlayerModuleImpl(mock(RealmStorage.class), bus);
+        var players = new PlayerModuleImpl(mock(WorldStorage.class), bus);
         registry.register("spawn", PlayerSpawnFlowDefinition.build(
                 FlowRegistryFactory.GameModules.builder().region(regionModule).ai(ai).build(),
                 FlowRegistryFactory.GameInfra.builder().regionSystem(regions).eventBus(bus).build()),

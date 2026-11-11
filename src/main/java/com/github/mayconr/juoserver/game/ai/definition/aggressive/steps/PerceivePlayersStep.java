@@ -36,7 +36,7 @@ public final class PerceivePlayersStep extends AbstractFlowStep<AggressiveAICont
     }
 
     private List<UOPlayer> findNearbyPlayers(AggressiveAIContext context, int perceptionRadius) {
-        return context.world().storage()
+        return context.world().mobile()
                 .getMobilesInRange(context.npc(), perceptionRadius, this::isPerceivablePlayer)
                 .stream()
                 .map(UOPlayer.class::cast)

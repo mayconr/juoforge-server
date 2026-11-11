@@ -17,7 +17,7 @@ import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -61,7 +61,7 @@ class PlayerDeathTransferTest {
         nestedGold.setCurrentLocation(new ContainerLocation(nested.getSerialId()));
         nested.addItemToContainer(nestedGold);
         var corpse = new UOCorpse(data(200, null, ItemLocationType.GROUND, List.of(ItemFlag.CORPSE)), null);
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var cache = Map.of(100, backpack, 101, weapon, 102, gold, 103, nested, 104, nestedGold);
         when(storage.getItem(anyInt())).thenAnswer(call -> Optional.ofNullable(cache.get(call.getArgument(0))));
         when(storage.getContainer(100)).thenReturn(Optional.of(backpack));
@@ -121,7 +121,7 @@ class PlayerDeathTransferTest {
         var first = new UOItem(data(101, Layer.ONE_HANDED, ItemLocationType.EQUIPPED, List.of()), null);
         player.getEquippedItems().put(Layer.ONE_HANDED, 101);
         player.getEquippedItems().put(Layer.TWO_HANDED, 999);
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         when(storage.getItem(101)).thenReturn(Optional.of(first));
         when(storage.getItem(999)).thenReturn(Optional.empty());
         var context = new DeathContext(player, null, DeathCause.COMBAT);

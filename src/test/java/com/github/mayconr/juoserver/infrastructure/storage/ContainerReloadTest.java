@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemMapper;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
+
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
@@ -24,7 +27,7 @@ class ContainerReloadTest {
     void openingBackpackDoesNotRestoreItemsMovedToCorpseBeforeSave() {
         var items = mock(ItemStorage.class);
         var mapper = new ItemMapper(new InMemoryTemplateRegistry<String, ItemTemplate>(List.of(), ItemTemplate::name));
-        var storage = new CachedRealmStorage(null, items, null, mapper);
+        var storage = new CachedWorldStorage(null, items, null, mapper);
         var backpack = mock(UOContainer.class);
         when(backpack.getSerialId()).thenReturn(100);
         var current = new UOItem(data(101, 200, 10), null);
@@ -39,7 +42,7 @@ class ContainerReloadTest {
     void loadingExistingContainerKeepsTheCurrentCachedInstancesAndAmounts() {
         var items = mock(ItemStorage.class);
         var mapper = new ItemMapper(new InMemoryTemplateRegistry<String, ItemTemplate>(List.of(), ItemTemplate::name));
-        var storage = new CachedRealmStorage(null, items, null, mapper);
+        var storage = new CachedWorldStorage(null, items, null, mapper);
         var backpack = mock(UOContainer.class);
         when(backpack.getSerialId()).thenReturn(100);
         var current = new UOItem(data(101, 100, 10), null);

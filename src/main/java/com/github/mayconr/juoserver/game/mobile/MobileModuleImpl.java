@@ -25,7 +25,7 @@ import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
 import com.github.mayconr.juoserver.network.packet.UnequipItem;
@@ -33,9 +33,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class MobileModuleImpl implements MobileModule {
     private final NpcDespawnService npcDespawnService;
     private final Wallet wallet;
     private final EventBus eventBus;
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final GamePlaySettings settings;
     private ModuleContext.FlowFacade flows;
 
@@ -95,6 +97,11 @@ public class MobileModuleImpl implements MobileModule {
     public int calculateMaxWeight(UOMobile mobile) {
         var carryWeight = settings.mobile().carryWeight();
         return (int) (carryWeight.baseCapacity() + mobile.getStrength() * carryWeight.capacityPerStrength());
+    }
+
+    @Override
+    public List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter) {
+        return storage.getMobilesInRange(location, radius, filter);
     }
 
     @Override

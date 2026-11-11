@@ -13,7 +13,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class GetContainerItemsFlowTest {
-    private final RealmStorage storage = mock(RealmStorage.class);
+    private final WorldStorage storage = mock(WorldStorage.class);
     private final ContainerModuleImpl module = new ContainerModuleImpl(storage, new ContainerHandler(mock(EventBus.class), storage));
 
     @BeforeEach

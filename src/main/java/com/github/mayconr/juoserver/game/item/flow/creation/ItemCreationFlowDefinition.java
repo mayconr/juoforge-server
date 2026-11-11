@@ -21,7 +21,7 @@ import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameT
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowBuilder;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class ItemCreationFlowDefinition {
 
@@ -42,13 +42,13 @@ public final class ItemCreationFlowDefinition {
     }
 
     private static FlowBuilder<ItemCreationContext> backpackWeightPhase(
-            RealmStorage storage, WorldContainer containers, WorldMobile mobiles) {
+            WorldStorage storage, WorldContainer containers, WorldMobile mobiles) {
         return FlowFactory.<ItemCreationContext>builder()
                 .step(new PrepareCreatedItemBackpackWeightStep(storage))
                 .step(new ValidateBackpackWeightStep<>(mobiles, containers), ctx -> ctx.getBackpackOwner() != null);
     }
 
-    private static FlowBuilder<ItemCreationContext> placementPhase(RealmStorage storage, WorldContainer containers) {
+    private static FlowBuilder<ItemCreationContext> placementPhase(WorldStorage storage, WorldContainer containers) {
         return FlowFactory.<ItemCreationContext>builder()
                 .step(new PlaceGroundItemStep(storage), ctx-> ctx.getTarget() instanceof GroundItemTarget)
                 .step(new PlaceContainerItemStep(containers), ctx-> ctx.getTarget() instanceof ContainerItemTarget)

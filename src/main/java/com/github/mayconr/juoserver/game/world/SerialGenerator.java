@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.world;
 
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,11 +27,11 @@ public final class SerialGenerator {
     private final AtomicInteger itemCounter = new AtomicInteger();
     private final AtomicInteger mobileCounter = new AtomicInteger();
     private final AtomicInteger virtualCounter = new AtomicInteger(VIRTUAL_MIN_SERIAL);
-    private final RealmStorage realmStorage;
+    private final WorldStorage worldStorage;
 
     public void initialize() {
-        realmStorage.getNextItemSerial()
-            .thenCombine(realmStorage.getNextMobileSerial(), Serials::new)
+        worldStorage.getNextItemSerial()
+            .thenCombine(worldStorage.getNextMobileSerial(), Serials::new)
             .thenAccept(serials -> {
                 itemCounter.set(serials.itemSerial());
                 mobileCounter.set(serials.mobileSerial());

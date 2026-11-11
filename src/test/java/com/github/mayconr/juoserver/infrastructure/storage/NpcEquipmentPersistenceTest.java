@@ -1,5 +1,9 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemMapper;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.item.ItemModuleImpl;
@@ -80,7 +84,7 @@ class NpcEquipmentPersistenceTest {
                 .filter(item -> Objects.equals(item.getOwnerSerialId(), call.getArgument(0))
                         && item.getContainerSerialId() == null).toList()));
 
-        var storage = new CachedRealmStorage(mobiles, items, null, mapper);
+        var storage = new CachedWorldStorage(mobiles, items, null, mapper);
         var serials = new SerialGenerator(storage);
         serials.initialize();
         initialize(storage, serials);
@@ -120,7 +124,7 @@ class NpcEquipmentPersistenceTest {
         if (!startup) {
             when(mobiles.findAllNpcs()).thenReturn(CompletableFuture.completedFuture(List.of()));
         }
-        var reloadedStorage = new CachedRealmStorage(mobiles, items, null, mapper);
+        var reloadedStorage = new CachedWorldStorage(mobiles, items, null, mapper);
         var initial = initialize(reloadedStorage, serials);
         assertTrue(initial.items().isEmpty(), "Equipment must not reload as ground items");
         UOMobile reloaded;
@@ -144,7 +148,7 @@ class NpcEquipmentPersistenceTest {
         }
     }
 
-    private InitialData initialize(CachedRealmStorage storage, SerialGenerator serials) throws Exception {
+    private InitialData initialize(CachedWorldStorage storage, SerialGenerator serials) throws Exception {
         var initialized = new CompletableFuture<InitialData>();
         storage.initialize(serials::getCurrentItem, serials::getCurrentMobile, initialized::complete);
         return initialized.get(5, TimeUnit.SECONDS);

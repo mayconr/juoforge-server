@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.network.session;
 
 import com.github.mayconr.juoserver.game.model.event.GumpExpired;
 
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
@@ -36,6 +37,7 @@ public class NettySessionManager implements SessionManager {
     private final EventBus eventBus;
     @NonNull
     private final MessageLocalizer localizer;
+    private final WorldStorage storage;
 
     record Event<T extends GameEvent>(Class<T> eventClass, EventHandler<T> handler) {
         Event<T> forSession(NettyPlayerSession session, SessionPacketWriter writer) {
@@ -57,7 +59,7 @@ public class NettySessionManager implements SessionManager {
     @Override
     public PlayerSession createSession(Channel channel) {
         final var packetWriter = new SessionPacketWriter(channel, channelGroup);
-        final var session = new NettyPlayerSession(packetWriter, settings, eventBus, world);
+        final var session = new NettyPlayerSession(packetWriter, settings, eventBus, world, storage);
 
         sessionMap.add(session);
 

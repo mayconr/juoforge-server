@@ -37,11 +37,11 @@ class ResurrectionPacketsSessionTest {
         var targetChannel = new EmbeddedChannel();
         var observerChannel = new EmbeddedChannel();
         try {
-            var ownSession = new NettyPlayerSession(targetChannel, null, settings, null, world);
+            var ownSession = new NettyPlayerSession(targetChannel, null, settings, null, world, null);
             var ownSessionHandler = new CombatEventHandler(
                     new SessionView(ownSession::getPlayer, ownSession::getLocale, settings),
                     new SessionPacketWriter(targetChannel, null), world);
-            var otherSession = new NettyPlayerSession(observerChannel, null, settings, null, world);
+            var otherSession = new NettyPlayerSession(observerChannel, null, settings, null, world, null);
             var otherSessionHandler = new CombatEventHandler(
                     new SessionView(otherSession::getPlayer, otherSession::getLocale, settings),
                     new SessionPacketWriter(observerChannel, null), world);

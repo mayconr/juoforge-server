@@ -37,7 +37,7 @@ public interface WorldContainer {
     UOItem addItem(UOContainer container, UOItem item, boolean tryStack, boolean notifyClient);
 
     /**
-     * Looks up a loaded container by its serial in the realm storage cache.
+     * Looks up a loaded container by its serial in the world storage cache.
      * This method does not load the container or its contents from persistence.
      *
      * @param serial container serial identifier

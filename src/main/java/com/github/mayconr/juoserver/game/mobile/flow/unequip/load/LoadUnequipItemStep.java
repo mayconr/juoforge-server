@@ -3,15 +3,15 @@ package com.github.mayconr.juoserver.game.mobile.flow.unequip.load;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LoadUnequipItemStep extends AbstractFlowStep<UnequipItemContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public LoadUnequipItemStep(RealmStorage storage) {
+    public LoadUnequipItemStep(WorldStorage storage) {
         super("load_unequip_item_step");
         this.storage = storage;
     }

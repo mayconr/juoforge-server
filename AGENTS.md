@@ -54,6 +54,28 @@ copying or deriving processes or flows from them for juoforge.
 - When a method or lambda grows, extract operations with their own responsibility,
   preserving readability and avoiding artificial fragmentation solely to reduce line counts.
 
+## WorldStorage responsibilities
+
+`WorldStorage` is the single entry point for loading and saving the world. It keeps the
+lifecycle (`initialize`, `saveWorld`) and exposes each responsibility through a view:
+`accounts()`, `serials()`, `mobiles()`, `items()` and `properties()`.
+
+- New code must use the views, such as `storage.mobiles().get(serial)`. Do not call the
+  deprecated flat methods, such as `storage.getMobile(serial)`.
+- Whenever you modify code that calls a deprecated `WorldStorage` method, migrate those
+  calls in the touched code to the corresponding view method, including its tests.
+- `WorldStorageViews` currently delegates to the flat methods. When a responsibility no
+  longer has callers of its flat methods, move the implementation into its view, remove
+  the deprecated methods and update this section.
+- Add new responsibilities as new views instead of new flat methods on `WorldStorage`.
+- Keep `infrastructure.storage` organized by responsibility. The root package holds only the
+  world storage itself (`WorldStorage`, `CachedWorldStorage`, `WorldStorageViews`, `WorldPersistence`,
+  `InitialData`). Each responsibility has its own subpackage with its view, database
+  adapter contract, cache, index and mappers: `account`, `serial`, `mobile`, `item` and
+  `property`. Place new storage classes in the subpackage of their responsibility.
+- `PropertyStore` and `WorldPersistence` are public only because they cross subpackages;
+  they are internal to the world storage and must not be used by modules or shards.
+
 ## Documentation language
 
 - Write and maintain this project's documentation in English, including `AGENTS.md`,

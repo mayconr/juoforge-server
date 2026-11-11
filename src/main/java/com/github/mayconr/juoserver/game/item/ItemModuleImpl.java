@@ -12,7 +12,7 @@ import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.RequiredArgsConstructor;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 public class ItemModuleImpl implements ItemModule {
 
     private final ItemHandler itemHandler;
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final ItemUseService itemUseService;
     private FlowFacade flows;

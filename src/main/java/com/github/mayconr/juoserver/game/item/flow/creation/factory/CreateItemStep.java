@@ -3,15 +3,15 @@ package com.github.mayconr.juoserver.game.item.flow.creation.factory;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CreateItemStep extends AbstractFlowStep<ItemCreationContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public CreateItemStep(RealmStorage storage) {
+    public CreateItemStep(WorldStorage storage) {
         super("create_item");
         this.storage = storage;
     }

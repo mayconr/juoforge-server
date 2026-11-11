@@ -15,10 +15,18 @@ public record GamePlaySettings(
         Client client,
         Economy economy,
         Ai ai,
-        Ui ui
+        Ui ui,
+        Temporal temporal
 ) {
     public GamePlaySettings {
         ui = ui == null ? new Ui() : ui;
+        temporal = temporal == null ? new Temporal() : temporal;
+    }
+
+    /** Retains the constructor used before temporal settings were introduced. */
+    public GamePlaySettings(String name, GameLoop gameLoop, Skills skills, Mobile mobile, World world,
+                            Files files, Client client, Economy economy, Ai ai, Ui ui) {
+        this(name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, new Temporal());
     }
 
     /** Retains the constructor used before UI settings were introduced. */
@@ -38,9 +46,37 @@ public record GamePlaySettings(
         }
     }
 
+    /**
+     * Conversion between real time and game time.
+     *
+     * @param realSecondsPerGameMinute real seconds needed to advance one game minute
+     */
+    public record Temporal(double realSecondsPerGameMinute) {
+        public static final double DEFAULT_REAL_SECONDS_PER_GAME_MINUTE = 5.0;
+
+        public Temporal() {
+            this(DEFAULT_REAL_SECONDS_PER_GAME_MINUTE);
+        }
+
+        public Temporal {
+            if (!Double.isFinite(realSecondsPerGameMinute) || realSecondsPerGameMinute <= 0) {
+                throw new IllegalArgumentException("temporal.realSecondsPerGameMinute must be finite and positive");
+            }
+        }
+    }
+
     public GamePlaySettings withUi(Ui ui) {
-        return new GamePlaySettings(name, gameLoop, skills, mobile, world, files, client, economy, ai,
-                Objects.requireNonNull(ui, "ui is required"));
+        Objects.requireNonNull(ui, "ui is required");
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
+    }
+
+    public GamePlaySettings withTemporal(Temporal temporal) {
+        Objects.requireNonNull(temporal, "temporal is required");
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
     }
 
     /** Default gameplay rules; server timing and data files are supplied by WorldConfigurator. */
@@ -53,32 +89,44 @@ public record GamePlaySettings(
 
     public GamePlaySettings withName(String name) {
         Objects.requireNonNull(name, "name is required");
-        return new GamePlaySettings(name, this.gameLoop, this.skills, this.mobile, this.world, this.files, this.client, this.economy, this.ai, this.ui);
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
     }
 
     public GamePlaySettings withSkills(Skills skills) {
         Objects.requireNonNull(skills, "skills is required");
-        return new GamePlaySettings(this.name, this.gameLoop, skills, this.mobile, this.world, this.files, this.client, this.economy, this.ai, this.ui);
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
     }
 
     public GamePlaySettings withMobile(Mobile mobile) {
         Objects.requireNonNull(mobile, "mobile is required");
-        return new GamePlaySettings(this.name, this.gameLoop, this.skills, mobile, this.world, this.files, this.client, this.economy, this.ai, this.ui);
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
     }
 
     public GamePlaySettings withWorld(World world) {
         Objects.requireNonNull(world, "world is required");
-        return new GamePlaySettings(this.name, this.gameLoop, this.skills, this.mobile, world, this.files, this.client, this.economy, this.ai, this.ui);
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
     }
 
     public GamePlaySettings withClient(Client client) {
         Objects.requireNonNull(client, "client is required");
-        return new GamePlaySettings(this.name, this.gameLoop, this.skills, this.mobile, this.world, this.files, client, this.economy, this.ai, this.ui);
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
     }
 
     public GamePlaySettings withEconomy(Economy economy) {
         Objects.requireNonNull(economy, "economy is required");
-        return new GamePlaySettings(this.name, this.gameLoop, this.skills, this.mobile, this.world, this.files, this.client, economy, this.ai, this.ui);
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+        );
     }
 
     public record Mobile(String backpackItem, Integer mountRange, CarryWeight carryWeight, Vitals vitals) {

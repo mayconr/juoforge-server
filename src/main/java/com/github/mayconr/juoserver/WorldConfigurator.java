@@ -2,10 +2,10 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.GamePlaySettings.Ai;
-import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.DocumentStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.property.PropertyStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
 
 /** Configures shard content, settings and storage and registers modules. */
 public interface WorldConfigurator extends ModuleConfiguration {
@@ -36,9 +36,9 @@ public interface WorldConfigurator extends ModuleConfiguration {
         return new Ai(serverSettings().aiUpdateIntervalSeconds());
     }
 
-    void documentStorage(DocumentStorage storage);
+    void propertyStorage(PropertyStorage storage);
 
-    DocumentStorage documentStorage();
+    PropertyStorage propertyStorage();
 
     // ===== Storage =====
     void mobileStorage(MobileStorage mobileStorage);

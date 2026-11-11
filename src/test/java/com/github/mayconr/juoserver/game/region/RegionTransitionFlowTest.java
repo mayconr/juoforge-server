@@ -15,7 +15,7 @@ import com.github.mayconr.juoserver.game.mobile.flow.movement.MovementContext;
 import com.github.mayconr.juoserver.game.mobile.flow.movement.apply.ApplyMoveStep;
 import com.github.mayconr.juoserver.game.mobile.flow.teleport.TeleportContext;
 import com.github.mayconr.juoserver.game.mobile.flow.teleport.relocation.ApplyTeleport;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -150,7 +150,7 @@ class RegionTransitionFlowTest {
         }).when(player).setLocation(any(Location.class));
         when(regions.getRegion(any(Location.class))).thenAnswer(call ->
                 Optional.of(call.<Location>getArgument(0).getX() == 10 ? first : second));
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var destination = new PointInTheWorld(11, 20, 0);
         if (teleport) {
             var context = TeleportContext.of(player, destination);

@@ -5,13 +5,13 @@ import com.github.mayconr.juoserver.game.model.event.ItemCreatedInContainer;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class NotifyContainerItemStep extends AbstractFlowStep<AddContainerItemContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus events;
 
-    public NotifyContainerItemStep(RealmStorage storage, EventBus events) {
+    public NotifyContainerItemStep(WorldStorage storage, EventBus events) {
         super("notify-container-item-added");
         this.storage = storage;
         this.events = events;

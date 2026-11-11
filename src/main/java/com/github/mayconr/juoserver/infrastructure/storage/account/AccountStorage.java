@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.infrastructure.storage;
+package com.github.mayconr.juoserver.infrastructure.storage.account;
 
 import com.github.mayconr.juoserver.game.model.AccountMobile;
 import com.github.mayconr.juoserver.game.model.UOAccount;

@@ -2,12 +2,12 @@ package com.github.mayconr.juoserver.game.container.flow.query;
 
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class ResolveQueryContainerStep extends AbstractFlowStep<GetContainerItemsContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ResolveQueryContainerStep(RealmStorage storage) {
+    public ResolveQueryContainerStep(WorldStorage storage) {
         super("resolve-query-container");
         this.storage = storage;
     }

@@ -3,12 +3,12 @@ package com.github.mayconr.juoserver.game.player.flow.deletion;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class ValidatePlayerDeletionStep extends AbstractFlowStep<DeletePlayerContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ValidatePlayerDeletionStep(RealmStorage storage) {
+    public ValidatePlayerDeletionStep(WorldStorage storage) {
         super("validate-player-deletion");
         this.storage = storage;
     }

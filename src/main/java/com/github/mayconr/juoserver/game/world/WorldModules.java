@@ -6,8 +6,8 @@ import com.github.mayconr.juoserver.game.loot.WorldLoot;
 import com.github.mayconr.juoserver.game.region.WorldRegion;
 
 import com.github.mayconr.juoserver.game.map.WorldMap;
+import com.github.mayconr.juoserver.game.temporal.WorldTemporal;
 import com.github.mayconr.juoserver.game.vitals.WorldVitals;
-import com.github.mayconr.juoserver.game.storage.WorldStorage;
 import com.github.mayconr.juoserver.game.random.WorldRandom;
 import com.github.mayconr.juoserver.game.ai.WorldAI;
 import com.github.mayconr.juoserver.game.economy.WorldEconomy;
@@ -27,8 +27,6 @@ import com.github.mayconr.juoserver.game.interaction.WorldInteraction;
 /** Public domain APIs, available after world initialization. */
 public interface WorldModules {
     WorldRegion region();
-
-    WorldStorage storage();
 
     WorldRandom random();
 
@@ -67,4 +65,6 @@ public interface WorldModules {
     WorldNpc npc();
 
     WorldMessage message();
+
+    WorldTemporal temporal();
 }

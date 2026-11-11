@@ -3,13 +3,13 @@ package com.github.mayconr.juoserver.game.container.flow.add;
 import com.github.mayconr.juoserver.game.model.EquippedLocation;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 /** Resolves the equipped container owner for the shared status notification step. */
 public final class FindContainerOwnerStep extends AbstractFlowStep<AddContainerItemContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public FindContainerOwnerStep(RealmStorage storage) {
+    public FindContainerOwnerStep(WorldStorage storage) {
         super("find-container-owner");
         this.storage = storage;
     }

@@ -3,15 +3,15 @@ package com.github.mayconr.juoserver.game.item.flow.drop.dropitem;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ResolveItemStep extends AbstractFlowStep<DropItemContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ResolveItemStep(RealmStorage storage) {
+    public ResolveItemStep(WorldStorage storage) {
         super("resolve_item");
         this.storage = storage;
     }

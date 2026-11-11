@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.player;
 
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedIn;
 import com.github.mayconr.juoserver.game.region.RegionModuleImpl;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class PlayerModuleTest {
     @Test
     void onlinePlayersReflectSessionsAndReturnIndependentSnapshot() {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = new DefaultEventBus();
         PlayerModule module = new PlayerModuleImpl(storage, events);
         var city = new RegionNode("city", "City", null, new RectangularArea(0, 0, 100, 100));

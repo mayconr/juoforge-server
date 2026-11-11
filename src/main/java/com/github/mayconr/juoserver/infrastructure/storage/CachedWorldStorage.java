@@ -1,9 +1,24 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.account.Accounts;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemCache;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemMapper;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.item.Items;
+import com.github.mayconr.juoserver.infrastructure.storage.item.WorldItemIndex;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileCache;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileDependencyLoader;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileMapper;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.Mobiles;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.WorldMobileIndex;
+import com.github.mayconr.juoserver.infrastructure.storage.property.PropertyStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.property.PropertyStore;
+import com.github.mayconr.juoserver.infrastructure.storage.property.Properties;
+import com.github.mayconr.juoserver.infrastructure.storage.serial.Serials;
 
 import com.github.mayconr.juoserver.game.model.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -12,9 +27,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-@RequiredArgsConstructor
 @Slf4j
-public class CachedRealmStorage implements RealmStorage {
+public class CachedWorldStorage implements WorldStorage {
 
     private final MobileStorage mobileStorage;
     private final MobileCache mobileCache = new MobileCache();
@@ -26,40 +40,56 @@ public class CachedRealmStorage implements RealmStorage {
 
     private final AccountStorage accountStorage;
     private final ItemMapper itemMapper;
-    private final DocumentStorage documentStorage;
+    private final PropertyStore properties;
+    /** State persisted alongside mobiles and items by initialization and world saves. */
+    private final List<WorldPersistence> persistences;
 
-    public CachedRealmStorage(MobileStorage mobiles, ItemStorage items, AccountStorage accounts, ItemMapper mapper) {
+    public CachedWorldStorage(MobileStorage mobiles, ItemStorage items, AccountStorage accounts, ItemMapper mapper) {
         this(mobiles, items, accounts, mapper, null);
     }
 
-    private final Map<String, JsonNode> documentCache = new HashMap<>();
-
-    @Override
-    public void cacheDocument(String name, JsonNode document) {
-        DocumentStorage.validateName(name);
-        synchronized (documentCache) {
-            documentCache.put(name, Objects.requireNonNull(document, "Document is required").deepCopy());
-        }
+    /** @param propertyStorage property adapter, or {@code null} when properties are not persisted */
+    public CachedWorldStorage(
+            MobileStorage mobiles,
+            ItemStorage items,
+            AccountStorage accounts,
+            ItemMapper mapper,
+            PropertyStorage propertyStorage
+    ) {
+        this.mobileStorage = mobiles;
+        this.itemStorage = items;
+        this.accountStorage = accounts;
+        this.itemMapper = mapper;
+        this.properties = new PropertyStore(propertyStorage);
+        this.persistences = List.of(properties);
     }
 
     @Override
-    public Optional<JsonNode> getDocument(String name) {
-        DocumentStorage.validateName(name);
-        synchronized (documentCache) {
-            return Optional.ofNullable(documentCache.get(name)).map(JsonNode::deepCopy);
-        }
+    public Properties properties() {
+        return properties;
     }
 
-    private CompletableFuture<Void> persistDocuments() {
-        var snapshot = new HashMap<String, JsonNode>();
-        synchronized (documentCache) {
-            documentCache.forEach((name, document) -> snapshot.put(name, document.deepCopy()));
-        }
-        if (documentStorage == null) {
-            return snapshot.isEmpty() ? CompletableFuture.completedFuture(null)
-                    : CompletableFuture.failedFuture(new IllegalStateException("Document storage is not configured"));
-        }
-        return documentStorage.saveAll(Map.copyOf(snapshot));
+    // Views are created per call on purpose: they bind to the receiver, so spies and
+    // subclasses see their own overrides of the flat methods while those still exist.
+
+    @Override
+    public Accounts accounts() {
+        return new WorldStorageViews.AccountsView(this);
+    }
+
+    @Override
+    public Serials serials() {
+        return new WorldStorageViews.SerialsView(this);
+    }
+
+    @Override
+    public Mobiles mobiles() {
+        return new WorldStorageViews.MobilesView(this);
+    }
+
+    @Override
+    public Items items() {
+        return new WorldStorageViews.ItemsView(this);
     }
 
     private final List<Integer> dirtyMobiles = new ArrayList<>();
@@ -78,11 +108,8 @@ public class CachedRealmStorage implements RealmStorage {
         this.mobileSerialSupplier = mobileSerialSupplier;
         this.mobileDependencyLoader = new MobileDependencyLoader(mobileStorage, itemStorage, itemCache, itemMapper);
 
-        // Documents must be available before module initialization reads their state.
-        if (documentStorage != null) {
-            var documents = documentStorage.loadAll().join();
-            documents.forEach(this::cacheDocument);
-        }
+        // Persisted state must be available before the world exposes it to modules and shard code.
+        persistences.forEach(WorldPersistence::load);
 
         // Load all World NPCs
         var loadGroundItems = itemStorage.findAllGroundItems()
@@ -369,7 +396,7 @@ public class CachedRealmStorage implements RealmStorage {
         var saves = new ArrayList<CompletableFuture<?>>();
         saves.add(startSave(this::saveMobiles));
         saves.add(startSave(this::saveItems));
-        saves.add(startSave(this::persistDocuments));
+        persistences.forEach(persistence -> saves.add(startSave(persistence::save)));
         activeWorldSave = CompletableFuture.allOf(saves.toArray(CompletableFuture[]::new));
         return activeWorldSave;
     }

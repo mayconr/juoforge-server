@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,7 +62,7 @@ class ItemCreationTemplateTest {
             new InMemoryTemplateRegistry<>(List.of(), ItemTemplate::name);
     private final InMemoryTemplateRegistry<Integer, ItemTemplate> models =
             new InMemoryTemplateRegistry<>(List.of(), ItemTemplate::modelId);
-    private final RealmStorage storage = mock(RealmStorage.class);
+    private final WorldStorage storage = mock(WorldStorage.class);
     private final EventBus events = mock(EventBus.class);
     private final SerialGenerator serials = mock(SerialGenerator.class);
 

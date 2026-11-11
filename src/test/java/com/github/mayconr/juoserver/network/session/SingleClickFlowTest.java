@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.game.model.event.ObjectLabelRequested;
 import com.github.mayconr.juoserver.game.ui.flow.singleclick.*;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.SendSpeech;
 import com.github.mayconr.juoserver.network.packet.SingleClickRequest;
 import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
@@ -31,7 +31,7 @@ class SingleClickFlowTest {
     @ParameterizedTest
     @CsvSource({"true,true", "true,false", "false,true", "false,false"})
     void deliversObjectLabelOnlyToTheRequestingSession(boolean mobile, boolean exists) {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = new DefaultEventBus();
         var player = mock(UOPlayer.class);
         var observer = mock(UOPlayer.class);
@@ -99,7 +99,7 @@ class SingleClickFlowTest {
     @ParameterizedTest
     @ValueSource(ints = {0, -1, 0x60000000})
     void ignoresInvalidAndVirtualSerials(int serial) {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(com.github.mayconr.juoserver.infrastructure.eventbus.EventBus.class);
         var buffer = Unpooled.buffer().writeByte(0x09).writeInt(serial);
         try {

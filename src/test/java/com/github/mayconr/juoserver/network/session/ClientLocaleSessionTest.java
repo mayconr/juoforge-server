@@ -9,7 +9,7 @@ import static org.mockito.Mockito.*;
 class ClientLocaleSessionTest {
     @Test
     void existingViewSeesLocaleChangesAndNullDoesNotReplaceCurrentLocale() {
-        var session = new NettyPlayerSession(mock(SessionPacketWriter.class), null, null, null);
+        var session = new NettyPlayerSession(mock(SessionPacketWriter.class), null, null, null, null);
         var view = new SessionView(session::getPlayer, session::getLocale, null);
         assertEquals(ClientLocale.defaultLocale(), view.locale());
         session.setLocale(ClientLocale.PT_BR);

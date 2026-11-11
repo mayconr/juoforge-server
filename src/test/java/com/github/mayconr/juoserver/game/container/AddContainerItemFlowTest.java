@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.container.flow.add.*;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.ui.WorldUI;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -17,7 +17,7 @@ class AddContainerItemFlowTest {
     @ParameterizedTest
     @CsvSource({"true, true", "true, false", "false, true"})
     void refreshesPlayerStatusAfterPlacementWhenNotificationsEnabled(boolean playerOwner, boolean notifyClient) {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
         var ui = mock(WorldUI.class);
         var container = mock(UOContainer.class);

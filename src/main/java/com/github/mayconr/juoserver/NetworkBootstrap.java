@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver;
 
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
@@ -25,19 +26,28 @@ public class NetworkBootstrap {
     private final WorldInternal worldInternal;
     private final GamePlaySettings settings;
     private final MessageLocalizer localizer;
+    private final WorldStorage storage;
 
     public NetworkBootstrap(ServerRuntime runtime) {
         this.eventBus = runtime.eventBus();
         this.worldInternal = (WorldInternal) runtime.world();
         this.settings = runtime.settings();
         this.localizer = runtime.messageLocalizer();
+        this.storage = runtime.storage();
     }
 
     public NetworkServer build(NetworkSettings network) {
         java.util.Objects.requireNonNull(network, "Network settings are required");
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-        SessionManager sessionManager = new NettySessionManager(worldInternal, channelGroup, settings, eventBus, localizer);
+        SessionManager sessionManager = new NettySessionManager(
+                worldInternal,
+                channelGroup,
+                settings,
+                eventBus,
+                localizer,
+                storage
+        );
 
         ClientConnectedHandlerAdapter connectedHandler = new ClientConnectedHandlerAdapter(channelGroup, sessionManager);
 

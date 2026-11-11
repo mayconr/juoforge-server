@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.infrastructure.storage.DocumentStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.property.PropertyStorage;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
@@ -24,9 +24,9 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-import com.github.mayconr.juoserver.infrastructure.storage.AccountStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.ItemStorage;
-import com.github.mayconr.juoserver.infrastructure.storage.MobileStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
 import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoaderNew;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
 import lombok.RequiredArgsConstructor;
@@ -291,7 +291,7 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
         templateLoaderList.put(templateName, new TemplateData<>(templateName, templateClass, keyExtractor, new JsonTemplateLoaderNew<>(path, templateClass)));
     }
 
-    private DocumentStorage documentStorage;
+    private PropertyStorage propertyStorage;
 
     @Override
     public <T, K> void addCustomTemplate(String templateName, Class<T> templateClass,
@@ -310,13 +310,13 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
     }
 
     @Override
-    public void documentStorage(DocumentStorage storage) {
-        this.documentStorage = requireNonNull(storage, "Document storage is required");
+    public void propertyStorage(PropertyStorage storage) {
+        this.propertyStorage = requireNonNull(storage, "Property storage is required");
     }
 
     @Override
-    public DocumentStorage documentStorage() {
-        return documentStorage;
+    public PropertyStorage propertyStorage() {
+        return propertyStorage;
     }
 
     // ===== Storage =====
