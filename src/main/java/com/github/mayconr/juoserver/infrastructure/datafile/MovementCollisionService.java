@@ -50,7 +50,6 @@ public class MovementCollisionService {
                  * Ignore if standing on valid surface above/below
                  */
                 if (walkableSurface != null && walkableSurface.z() >= staticBottom) {
-                    System.out.println("Walkable surface is impassable");
                     continue;
                 }
 
