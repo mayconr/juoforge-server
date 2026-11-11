@@ -8,11 +8,11 @@ import lombok.experimental.Accessors;
 @Builder
 @Getter
 @Accessors(fluent = true)
-public final class SkillPerformOptions {
+public final class SkillActionOptions {
     private final Integer skillId;
     /** Optional action-specific override of the persistent skill.swings preference. */
     private final Integer swingCount;
-    private final SkillCallback swing;
+    private final SkillCallback onSwing;
     @Builder.Default
     private final SkillCallback onComplete = executions -> {};
 }

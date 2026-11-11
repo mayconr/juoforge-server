@@ -16,27 +16,56 @@ public interface WorldItem {
     void use(ItemUseContext context);
 
     /**
-     * Creates and places an item using the default creation options.
+     * Creates and places an item using the default creation options, treating any rejection as an error.
+     * Use {@link #tryCreateItem(ItemRequest, ItemTarget)} when a game-rule rejection is an expected outcome.
      *
      * @param request identifies the item by template, name or model ID and supplies quantity, hue and direction
      * @param target destination: ground position, container, mobile equipment or orphan state
      * @return the item produced by the creation flow
-     * @throws ModuleOperationException if creation fails, including a missing template;
+     * @throws ModuleOperationException if creation fails or is rejected, including a missing template;
      *         contains the error code, technical message, display message and original cause when available
+     * @deprecated use {@link #tryCreateItem(ItemRequest, ItemTarget)} and handle the rejection explicitly
      */
+    @Deprecated
     UOItem createItem(ItemRequest request, ItemTarget target);
 
     /**
-     * Creates and places an item with customized creation options.
+     * Creates and places an item with customized creation options, treating any rejection as an error.
+     * Use {@link #tryCreateItem(ItemRequest, ItemTarget, Consumer)} when a game-rule rejection is an expected outcome.
      *
      * @param request identifies the item by template, name or model ID and supplies quantity, hue and direction
      * @param target destination: ground position, container, mobile equipment or orphan state
      * @param options customizes creation options, such as rendering on creation; {@code null} keeps the defaults
      * @return the item produced by the creation flow
-     * @throws ModuleOperationException if creation fails, including a missing template;
+     * @throws ModuleOperationException if creation fails or is rejected, including a missing template;
      *         contains the error code, technical message, display message and original cause when available
+     * @deprecated use {@link #tryCreateItem(ItemRequest, ItemTarget, Consumer)} and handle the rejection explicitly
      */
+    @Deprecated
     UOItem createItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> options);
+
+    /**
+     * Creates and places an item using the default creation options, reporting game-rule rejections.
+     *
+     * @param request identifies the item by template, name or model ID and supplies quantity, hue and direction
+     * @param target destination: ground position, container, mobile equipment or orphan state
+     * @return {@link ItemCreationResult.Created} with the item, or {@link ItemCreationResult.Rejected}
+     *         with the {@link ItemCreationFailure} that prevented the creation
+     * @throws ModuleOperationException if creation fails for a reason that is not a game-rule rejection
+     */
+    ItemCreationResult tryCreateItem(ItemRequest request, ItemTarget target);
+
+    /**
+     * Creates and places an item with customized creation options, reporting game-rule rejections.
+     *
+     * @param request identifies the item by template, name or model ID and supplies quantity, hue and direction
+     * @param target destination: ground position, container, mobile equipment or orphan state
+     * @param options customizes creation options, such as rendering on creation; {@code null} keeps the defaults
+     * @return {@link ItemCreationResult.Created} with the item, or {@link ItemCreationResult.Rejected}
+     *         with the {@link ItemCreationFailure} that prevented the creation
+     * @throws ModuleOperationException if creation fails for a reason that is not a game-rule rejection
+     */
+    ItemCreationResult tryCreateItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> options);
 
     void deleteItem(UOItem item);
 

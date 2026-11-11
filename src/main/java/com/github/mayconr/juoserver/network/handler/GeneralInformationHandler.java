@@ -1,6 +1,9 @@
 package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.network.packet.GeneralInformation;
+import com.github.mayconr.juoserver.network.packet.ContextMenuExtendedCommand;
+import com.github.mayconr.juoserver.network.packet.ContextMenuExtendedCommand.Entry;
+import com.github.mayconr.juoserver.network.packet.ContextMenuRequestExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.ClientTypeExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.ClientVersionExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.CloseStatusExtendedCommand;
@@ -17,6 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HexFormat;
+import java.util.List;
 
 @Slf4j
 @ChannelHandler.Sharable
@@ -35,6 +39,7 @@ public class GeneralInformationHandler
             return;
         }
         var details = switch (command) {
+            case ContextMenuRequestExtendedCommand menu -> "Context menu target: 0x%08X".formatted(menu.serialId());
             case ClientTypeExtendedCommand type -> "Marker: 0x%02X | Expansion flags: 0x%08X".formatted(
                     type.marker(), type.flags());
             case ClientVersionExtendedCommand version -> "Version: " + version.version();
@@ -50,6 +55,10 @@ public class GeneralInformationHandler
         log.info("General Information | Subcommand: 0x{} | Type: {} | Length: {} bytes | {}",
                 HexFormat.of().toHexDigits((short) msg.getSubCommand()),
                 command.getClass().getSimpleName(), msg.getLength(), details);
+        if (command instanceof ContextMenuRequestExtendedCommand menu) {
+            sendMockContextMenu(session, ctx, menu);
+            return;
+        }
         if (command instanceof ClientTypeExtendedCommand type) {
             session.setClientExpansionFlags(type.flags());
             return;
@@ -65,4 +74,15 @@ public class GeneralInformationHandler
                     () -> log.warn("Unknown client spell ID: {} | Caster serial: {}", spell.spellId(), caster.getSerialId()));
         }
     }
+
+    /** Temporary menu data for verifying client rendering; selections have no gameplay effect yet. */
+    private void sendMockContextMenu(
+            PlayerSession session, ChannelHandlerContext ctx, ContextMenuRequestExtendedCommand request) {
+        if (session.getPlayer() == null) {
+            return;
+        }
+        var entries = List.of(new Entry(0, 3006123)); // Open Paperdoll.
+        ctx.writeAndFlush(new GeneralInformation(new ContextMenuExtendedCommand(request.serialId(), entries)));
+    }
+
 }

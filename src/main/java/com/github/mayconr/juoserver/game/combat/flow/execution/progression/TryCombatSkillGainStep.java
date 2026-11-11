@@ -29,7 +29,7 @@ public class TryCombatSkillGainStep extends AbstractFlowStep<CombatExecutionCont
         var attempts = List.copyOf(policy.resolve(gainContext));
 
         for (var attempt : attempts) {
-            skills.tryGain(attempt.beneficiary(), attempt.skillId(), attempt.difficulty(), attempt.gainContext());
+            skills.tryGain(attempt.beneficiary(), attempt.skillId(), attempt.trainingIntensity(), attempt.gainContext());
         }
         return StepResult.success();
     }

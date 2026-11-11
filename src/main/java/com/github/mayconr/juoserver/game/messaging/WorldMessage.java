@@ -7,6 +7,9 @@ import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 public interface WorldMessage {
     void send(UOPlayer player, MessageContent message);
 
+    /** Sends a message using a named style registered by the shard. */
+    void send(UOPlayer player, MessageContent message, String styleName);
+
     void send(UOPlayer player, String message);
 
     void printTextAbove(UOObject source, MessageContent message);

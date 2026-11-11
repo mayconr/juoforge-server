@@ -25,7 +25,15 @@ public interface WorldSkill {
      * the remaining swings are cancelled and onComplete runs with the swings already executed.
      * Callbacks run on the game loop.
      */
-    boolean performSkill(UOPlayer player, SkillPerformOptions options);
+    boolean startSkillAction(UOPlayer player, SkillActionOptions options);
+
+    /**
+     * Requests the end of the player's active skill action. Returns false when there is no active action.
+     * The request takes effect on the next update: the remaining swings are skipped, the action is released
+     * and onComplete runs once with the swings already executed. A swing already running is not interrupted,
+     * so the request may be made from inside the onSwing callback.
+     */
+    boolean stopSkillAction(UOPlayer player);
 
     boolean hasActiveAction(UOPlayer player);
 
@@ -34,10 +42,10 @@ public interface WorldSkill {
     /**
      * Attempts to increase a skill through the skill gain flow.
      *
-     * <p><strong>A higher difficulty makes skill progression easier:</strong>
+     * <p><strong>A higher training intensity makes skill progression easier:</strong>
      * it increases the gain chance up to the configured maximum and increases
      * the amount awarded on a successful roll within the formula's limits.
-     * Lower difficulty can reduce the gain chance to zero. This parameter
+     * Lower training intensity can reduce the gain chance to zero. This parameter
      * controls skill progression, not the chance of succeeding at the activity.</p>
      *
      * <p>Gains respect the skill's lock and individual cap. Fractional gains
@@ -45,8 +53,8 @@ public interface WorldSkill {
      *
      * @param mobile the mobile whose skill may increase
      * @param skillId the skill identifier
-     * @param difficulty the activity's training difficulty; higher values favor progression
-     * @param context contextual information about the gain attempt
+     * @param trainingIntensity the activity's training intensity; higher values favor progression
+     * @param context contextual attributes for the gain attempt
      */
-    void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context);
+    void tryGain(UOMobile mobile, int skillId, double trainingIntensity, SkillGainContext context);
 }

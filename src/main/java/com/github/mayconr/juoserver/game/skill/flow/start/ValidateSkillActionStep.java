@@ -1,21 +1,21 @@
-package com.github.mayconr.juoserver.game.skill.flow.perform;
+package com.github.mayconr.juoserver.game.skill.flow.start;
 
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
-public final class ValidatePerformSkillStep extends AbstractFlowStep<PerformSkillContext> {
+public final class ValidateSkillActionStep extends AbstractFlowStep<StartSkillActionContext> {
     private final UOFileReader fileReader;
 
-    public ValidatePerformSkillStep(UOFileReader fileReader) {
-        super("validate-perform-skill");
+    public ValidateSkillActionStep(UOFileReader fileReader) {
+        super("validate-skill-action");
         this.fileReader = fileReader;
     }
 
     @Override
-    public StepResult execute(PerformSkillContext context) {
+    public StepResult execute(StartSkillActionContext context) {
         var options = context.getOptions();
-        if (context.getPlayer() == null || options == null || options.swing() == null
+        if (context.getPlayer() == null || options == null || options.onSwing() == null
                 || options.onComplete() == null) {
             return StepResult.failure("INVALID_SKILL_ACTION", "Invalid player or skill action options");
         }

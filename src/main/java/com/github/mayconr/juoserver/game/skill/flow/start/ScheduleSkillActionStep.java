@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.skill.flow.perform;
+package com.github.mayconr.juoserver.game.skill.flow.start;
 
 import com.github.mayconr.juoserver.game.skill.SkillModule;
 import com.github.mayconr.juoserver.game.skill.SkillAction;
@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
-public final class ScheduleSkillActionStep extends AbstractFlowStep<PerformSkillContext> {
+public final class ScheduleSkillActionStep extends AbstractFlowStep<StartSkillActionContext> {
     private final SkillModule skills;
     private final WorldMessage messages;
 
@@ -18,7 +18,7 @@ public final class ScheduleSkillActionStep extends AbstractFlowStep<PerformSkill
     }
 
     @Override
-    public StepResult execute(PerformSkillContext context) {
+    public StepResult execute(StartSkillActionContext context) {
         var player = context.getPlayer();
         var options = context.getOptions();
         // TODO: Make the skill action interval configurable.
@@ -27,7 +27,7 @@ public final class ScheduleSkillActionStep extends AbstractFlowStep<PerformSkill
                 context.getOrigin(),
                 context.getSwings(),
                 1.0,
-                options.swing(),
+                options.onSwing(),
                 options.onComplete()
         );
         boolean reserved = skills.reserveSkillAction(player, action);

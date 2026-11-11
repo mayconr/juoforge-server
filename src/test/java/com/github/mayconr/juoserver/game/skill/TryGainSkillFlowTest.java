@@ -35,7 +35,7 @@ class TryGainSkillFlowTest {
     @Test
     void failedRollDoesNotChangeSkillOrNotify() {
         var skill = prepare(40, 100, SkillLock.UP);
-        module.tryGain(mobile, 1, 50, SkillGainContext.of(mobile));
+        module.tryGain(mobile, 1, 50, SkillGainContext.empty());
         assertEquals(40, skill.getBase());
         verify(rng).roll(0.5);
         verifyNoInteractions(events);
@@ -45,10 +45,10 @@ class TryGainSkillFlowTest {
     void accumulatesFractionalGainsAndNotifiesOnlyAfterVisibleTenthIncreases() {
         var skill = prepare(40.0995, 100, SkillLock.UP);
         when(rng.roll(anyDouble())).thenReturn(true);
-        module.tryGain(mobile, 1, 50, SkillGainContext.of(mobile));
+        module.tryGain(mobile, 1, 50, SkillGainContext.empty());
         assertTrue(skill.getBase() > 40.0995 && skill.getBase() < 40.1);
         verifyNoInteractions(events);
-        module.tryGain(mobile, 1, 50, SkillGainContext.of(mobile));
+        module.tryGain(mobile, 1, 50, SkillGainContext.empty());
         assertTrue(skill.getBase() >= 40.1 && skill.getBase() < 40.2);
         verify(events).publish(new SkillGained(mobile, skill));
     }
@@ -58,7 +58,7 @@ class TryGainSkillFlowTest {
     void respectsSkillLocks(SkillLock lock) {
         var skill = prepare(40, 100, lock);
         when(rng.roll(anyDouble())).thenReturn(true);
-        module.tryGain(mobile, 1, 50, SkillGainContext.of(mobile));
+        module.tryGain(mobile, 1, 50, SkillGainContext.empty());
         assertEquals(40, skill.getBase());
         verifyNoInteractions(events);
     }
@@ -71,7 +71,7 @@ class TryGainSkillFlowTest {
             assertEquals(50, skill.getBase());
             return null;
         }).when(events).publish(any(SkillGained.class));
-        module.tryGain(mobile, 1, 50, SkillGainContext.of(mobile));
+        module.tryGain(mobile, 1, 50, SkillGainContext.empty());
         assertEquals(50, skill.getBase());
         verify(events).publish(new SkillGained(mobile, skill));
     }
@@ -90,7 +90,7 @@ class TryGainSkillFlowTest {
     void uninitializedSkillUsesContainerDefaults() {
         var skills = new SkillContainer();
         when(mobile.getSkills()).thenReturn(skills);
-        module.tryGain(mobile, 1, 50, SkillGainContext.of(mobile));
+        module.tryGain(mobile, 1, 50, SkillGainContext.empty());
         assertEquals(0, skills.get(1).getBase());
         assertEquals(100, skills.get(1).getCap());
         verify(rng).roll(0.5);
@@ -127,14 +127,14 @@ class TryGainSkillFlowTest {
         var skill = prepare(initialBase, 100, SkillLock.UP);
         when(rng.roll(anyDouble())).thenReturn(true);
 
-        module.tryGain(mobile, 1, 100, SkillGainContext.of(mobile));
+        module.tryGain(mobile, 1, 100, SkillGainContext.empty());
         double boostedGain = skill.getBase() - initialBase;
 
         skill.setBase(initialBase);
         var flow = com.github.mayconr.juoserver.game.skill.flow.gain.TryGainSkillFlowDefinition.build(
                 new SkillGainCalculator(withoutBonus), rng, events);
         var result = flow.execute(new com.github.mayconr.juoserver.game.skill.flow.gain.TryGainSkillContext(
-                mobile, 1, 100, SkillGainContext.of(mobile)));
+                mobile, 1, 100, SkillGainContext.empty()));
         assertTrue(result.flowSucceeded());
         double ordinaryGain = skill.getBase() - initialBase;
 
@@ -150,7 +150,7 @@ class TryGainSkillFlowTest {
     void repeatedSuccessfulAttemptsProgressFromZeroThroughThirtyToCap() {
         var skill = prepare(0, 100, SkillLock.UP);
         when(rng.roll(anyDouble())).thenReturn(true);
-        var gainContext = SkillGainContext.of(mobile);
+        var gainContext = SkillGainContext.empty();
         int attempts = 0;
         int attemptsToThirty = 0;
         double previousGainAfterThirty = Double.POSITIVE_INFINITY;

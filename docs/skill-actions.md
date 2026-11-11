@@ -1,7 +1,7 @@
 # Skill action scheduling
 
-`SkillPerformOptions` contains `skillId`, optional `swingCount`,
-`swing`, and `onComplete`. Each call to `world.skill().performSkill` schedules one
+`SkillActionOptions` contains `skillId`, optional `swingCount`,
+`onSwing`, and `onComplete`. Each call to `world.skill().startSkillAction` schedules one
 action. An explicit `swingCount` overrides the player's persistent `skill.swings`
 property for that action. When omitted or null, the count comes from that property (`WorldSkill.SWINGS_PROPERTY`), read through `WorldMobile` with
 `runtimeOnly=false`. Missing or invalid values default to 1. Positive whole-number
@@ -22,16 +22,16 @@ are clamped to 1. The count is captured when scheduling; later preference change
 actions. Each swing receives its one-based execution count. Completion runs once
 after the final swing and receives the total executed count.
 
-The existing `game.skill.flow.perform` flow owns scheduling:
+The existing `game.skill.flow.start` flow owns scheduling:
 
-1. `ValidatePerformSkillStep` checks the player, required callbacks,
+1. `ValidateSkillActionStep` checks the player, required callbacks,
    skill ID, and skill existence in `UOFileReader`.
 2. `ResolveSkillSwingsStep` uses `swingCount` when supplied, otherwise reads the
    persistent preference, then normalizes the result to at least 1.
 3. `CaptureSkillActionOriginStep` stores a copy of the player position when the
    action is requested.
 4. `ScheduleSkillActionStep` creates `SkillAction` with explicit constructor
-   arguments (player, captured origin, swing count, delay, swing callback, completion
+   arguments (player, captured origin, swing count, delay, `onSwing` callback, completion
    callback), reserves it through the skill
    module, and completes the result. If an action is already reserved, it sends
    `skill.action.already_active`, completes with false, and stops normally.

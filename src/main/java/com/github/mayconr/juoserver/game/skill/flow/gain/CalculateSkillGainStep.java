@@ -14,7 +14,7 @@ public final class CalculateSkillGainStep extends AbstractFlowStep<TryGainSkillC
 
     @Override
     public StepResult execute(TryGainSkillContext context) {
-        context.setGainAmount(calculator.calculateGainAmount(context.getSkill(), context.getDifficulty()));
+        context.setGainAmount(calculator.calculateGainAmount(context.getSkill(), context.getTrainingIntensity()));
         return StepResult.success();
     }
 }

@@ -14,13 +14,13 @@ public class PlaceOrphanItemStep extends AbstractFlowStep<ItemCreationContext> {
 
     @Override
     public StepResult execute(ItemCreationContext context) {
-        final var item = context.result();
-
         if (context.getTarget() instanceof OrphanItemTarget) {
+            final var item = context.result();
             item.setCurrentLocation(ItemLocation.orphan());
-            context.setEvent(new OrphanItemCreated(context.result()));
+            context.setEvent(new OrphanItemCreated(item));
             return StepResult.success();
         }
-        return StepResult.failure("");
+        return StepResult.failure("ITEM_TARGET_MISMATCH",
+                "Cannot keep item orphan: expected an orphan target; target=" + context.getTarget());
     }
 }

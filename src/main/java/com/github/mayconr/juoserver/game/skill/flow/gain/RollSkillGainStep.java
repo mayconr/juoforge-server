@@ -17,7 +17,7 @@ public final class RollSkillGainStep extends AbstractFlowStep<TryGainSkillContex
 
     @Override
     public StepResult execute(TryGainSkillContext context) {
-        double chance = calculator.calculateChance(context.getSkill(), context.getDifficulty());
+        double chance = calculator.calculateChance(context.getSkill(), context.getTrainingIntensity());
         return rng.roll(chance) ? StepResult.success() : StepResult.stop();
     }
 }
