@@ -13,16 +13,17 @@ public final class SkillAction {
     private int swingsExecuted;
     private double remainingSeconds;
     private final double delaySeconds;
-    private final SkillCallback swing;
+    private final SkillCallback onSwing;
     private final SkillCallback onComplete;
+    private volatile boolean stopRequested;
 
     public SkillAction(Location actor, Location origin, int swings, double delaySeconds,
-                       SkillCallback swing, SkillCallback onComplete) {
+                       SkillCallback onSwing, SkillCallback onComplete) {
         this.actor = actor;
         this.origin = origin;
         this.swingsLeft = swings;
         this.delaySeconds = delaySeconds;
-        this.swing = swing;
+        this.onSwing = onSwing;
         this.onComplete = onComplete;
     }
 
@@ -36,8 +37,18 @@ public final class SkillAction {
         return actor.getX() != origin.getX() || actor.getY() != origin.getY();
     }
 
+    /** Marks the action to end on the next update, without interrupting a swing in progress. */
+    public void requestStop() {
+        stopRequested = true;
+    }
+
+    /** Whether the remaining swings must be skipped, either by request or because the actor moved. */
+    public boolean shouldCancel() {
+        return stopRequested || hasMoved();
+    }
+
     public void executeSwing() {
-        swing.execute(++swingsExecuted);
+        onSwing.execute(++swingsExecuted);
         swingsLeft--;
         remainingSeconds = delaySeconds;
     }

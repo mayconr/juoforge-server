@@ -25,6 +25,7 @@ public class PlaceEquippedItemStep extends AbstractFlowStep<ItemCreationContext>
             return StepResult.success();
         }
 
-        return StepResult.failure("");
+        return StepResult.failure("ITEM_TARGET_MISMATCH",
+                "Cannot equip item: expected an equipment target; target=" + context.getTarget());
     }
 }

@@ -28,14 +28,14 @@ The module is accessible through `world.skill()` and provides these operations:
 | Operation | Responsibility |
 |---|---|
 | `useSkill(player, skillId)` | Processes skill use and dispatches its behavior. |
-| `performSkill(player, options)` | Schedules the player's preferred swing count and completion callback, reserving one action per player. Returns `false` if an action is already active. |
+| `startSkillAction(player, options)` | Schedules the player's preferred swing count and completion callback, reserving one action per player. Returns `false` if an action is already active. |
 | `hasActiveAction(player)` | Reports whether the player has a scheduled action. |
 | `tryGain(mobile, skillId, difficulty, context)` | Attempts a gain through the progression flow. |
 | `setSkill(player, skillId, value)` | Sets the base value between zero and the cap and notifies the player, regardless of the lock. |
 
-`performSkill` takes `SkillPerformOptions`: `skillId`, optional `swingCount`,
-`swing`, and `onComplete`. Completion defaults to a no-op callback.
-The `swing` callback is required. The flow validates options and checks that the
+`startSkillAction` takes `SkillActionOptions`: `skillId`, optional `swingCount`,
+`onSwing`, and `onComplete`. Completion defaults to a no-op callback.
+The `onSwing` callback is required. The flow validates options and checks that the
 skill exists in `UOFileReader`, without requiring the `hasAction` flag.
 
 An explicit `swingCount` overrides the persistent preference for that action.
@@ -51,15 +51,15 @@ callbacks receive counts starting at 1; completion receives the total count once
 int skillId = 45; // Mining
 double difficulty = 100.0;
 
-boolean started = world.skill().performSkill(player, SkillPerformOptions.builder()
+boolean started = world.skill().startSkillAction(player, SkillActionOptions.builder()
         .skillId(skillId)
-        .swing(count -> world.skill().tryGain(
+        .onSwing(count -> world.skill().tryGain(
                 player, skillId, difficulty, SkillGainContext.of(player)))
         .onComplete(count -> world.message().send(player, "Training complete."))
         .build());
 ```
 
-`SkillPerformOptions` belongs to `game.skill` and `SkillGainContext` to `game.model`.
+`SkillActionOptions` belongs to `game.skill` and `SkillGainContext` to `game.model`.
 With the default preference, the example schedules one attempt on the next world update.
 To request more swings, set the player's persistent preference before scheduling:
 
@@ -70,7 +70,7 @@ world.skill().setSwingCount(player, 60);
 `setSwingCount` persists the preference and clamps the count to at least 1. Use
 `.swingCount(3)` on the options builder to override the saved preference for one
 action, without changing it. The minimum effective count is always 1.
-`performSkill` does not grant gains automatically; the callback calls `tryGain`.
+`startSkillAction` does not grant gains automatically; the callback calls `tryGain`.
 A false `started` means the player already has an action. The progression times
 below assume continuous attempts, with one `tryGain` call per second and no pauses
 between scheduled actions.

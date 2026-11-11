@@ -1,11 +1,11 @@
-package com.github.mayconr.juoserver.game.skill.flow.perform;
+package com.github.mayconr.juoserver.game.skill.flow.start;
 
 import com.github.mayconr.juoserver.game.mobile.WorldMobile;
 import com.github.mayconr.juoserver.game.skill.WorldSkill;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
-public final class ResolveSkillSwingsStep extends AbstractFlowStep<PerformSkillContext> {
+public final class ResolveSkillSwingsStep extends AbstractFlowStep<StartSkillActionContext> {
     private final WorldMobile mobiles;
 
     public ResolveSkillSwingsStep(WorldMobile mobiles) {
@@ -14,7 +14,7 @@ public final class ResolveSkillSwingsStep extends AbstractFlowStep<PerformSkillC
     }
 
     @Override
-    public StepResult execute(PerformSkillContext context) {
+    public StepResult execute(StartSkillActionContext context) {
         var override = context.getOptions().swingCount();
         var value = override != null
                 ? override

@@ -7,6 +7,6 @@ import com.github.mayconr.juoserver.game.model.UOMobile;
 public record SkillGainAttempt(
         UOMobile beneficiary,
         int skillId,
-        double difficulty,
+        double trainingIntensity,
         SkillGainContext gainContext
 ) {}

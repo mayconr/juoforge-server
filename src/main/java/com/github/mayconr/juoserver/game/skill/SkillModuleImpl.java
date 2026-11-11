@@ -5,7 +5,8 @@ import com.github.mayconr.juoserver.game.model.SkillGainContext;
 import com.github.mayconr.juoserver.game.model.SkillValue;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.start.StartSkillActionContext;
+import com.github.mayconr.juoserver.game.skill.flow.stop.StopSkillActionContext;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsContext;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillContext;
 import com.github.mayconr.juoserver.game.skill.flow.gain.TryGainSkillContext;
@@ -43,11 +44,22 @@ public class SkillModuleImpl implements SkillModule {
     }
 
     @Override
-    public boolean performSkill(UOPlayer player, SkillPerformOptions options) {
-        var context = new PerformSkillContext(player, options);
+    public boolean startSkillAction(UOPlayer player, SkillActionOptions options) {
+        var context = new StartSkillActionContext(player, options);
         var result = flows.execute(context);
         if (result.flowFailed()) {
-            throw ModuleOperationException.fromFailure("performSkill", result, null);
+            throw ModuleOperationException.fromFailure("startSkillAction", result, null);
+        }
+        return context.result();
+    }
+
+    @Override
+    public boolean stopSkillAction(UOPlayer player) {
+        requireNonNull(player, "Player is required");
+        var context = new StopSkillActionContext(player);
+        var result = flows.execute(context);
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("stopSkillAction", result, null);
         }
         return context.result();
     }
@@ -120,9 +132,9 @@ public class SkillModuleImpl implements SkillModule {
     }
 
     @Override
-    public void tryGain(UOMobile mobile, int skillId, double difficulty, SkillGainContext context) {
+    public void tryGain(UOMobile mobile, int skillId, double trainingIntensity, SkillGainContext context) {
         var result = flows.execute(new TryGainSkillContext(
-                mobile, skillId, difficulty, context));
+                mobile, skillId, trainingIntensity, context));
         if (result.flowFailed()) {
             throw ModuleOperationException.fromFailure("tryGain", result, null);
         }

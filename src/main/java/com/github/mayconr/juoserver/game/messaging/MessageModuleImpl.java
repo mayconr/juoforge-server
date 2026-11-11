@@ -40,8 +40,12 @@ public class MessageModuleImpl implements WorldModule, MessageModule {
     }
 
     private void internalSend(UOPlayer player, MessageContent message) {
-        final var style = templateRegistry.get(SYSTEM_STYLE_KEY)
-                .getFirst();
+        send(player, message, SYSTEM_STYLE_KEY);
+    }
+
+    @Override
+    public void send(UOPlayer player, MessageContent message, String styleName) {
+        final var style = templateRegistry.get(styleName).getFirst();
         eventBus.publish(new MessageSent(message, null, player, style));
     }
 

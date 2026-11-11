@@ -7,6 +7,8 @@ import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.github.mayconr.juoserver.game.item.ItemCreationFailure.TEMPLATE_NOT_FOUND;
+
 @Slf4j
 public class TemplateLoaderStep extends AbstractFlowStep<ItemCreationContext> {
 
@@ -41,8 +43,8 @@ public class TemplateLoaderStep extends AbstractFlowStep<ItemCreationContext> {
         }
 
         if (template == null) {
-            return StepResult.failure("ITEM_TEMPLATE_NOT_FOUND", "Item template not found. Request: " + request,
-                    "{item.template_not_found}");
+            return StepResult.failure(TEMPLATE_NOT_FOUND.code(), "Item template not found. Request: " + request,
+                    TEMPLATE_NOT_FOUND.displayMessage());
         }
 
         context.setTemplate(template);

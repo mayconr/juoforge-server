@@ -13,7 +13,7 @@ import lombok.Setter;
 public final class TryGainSkillContext extends AbstractSyncFlowContext<Void> {
     private final UOMobile mobile;
     private final int skillId;
-    private final double difficulty;
+    private final double trainingIntensity;
     private final SkillGainContext gainContext;
     @Setter
     private SkillValue skill;

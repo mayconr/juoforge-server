@@ -30,6 +30,7 @@ public class PlaceGroundItemStep extends AbstractFlowStep<ItemCreationContext> {
             context.setEvent(new GroundedItemCreated(item));
             return StepResult.success();
         }
-        return StepResult.failure("");
+        return StepResult.failure("ITEM_TARGET_MISMATCH",
+                "Cannot place item on the ground: expected a ground target; target=" + context.getTarget());
     }
 }

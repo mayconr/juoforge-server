@@ -9,22 +9,22 @@ import lombok.RequiredArgsConstructor;
 public final class SkillGainCalculator {
     private final GamePlaySettings.Skills settings;
 
-    public double calculateChance(SkillValue skill, double difficulty) {
+    public double calculateChance(SkillValue skill, double trainingIntensity) {
         final var minGainChance = settings.minGainChance();
         final var maxGainChance = settings.maxGainChance();
         final var balanceOffset = settings.balanceOffset();
 
         final var rawChance =
-                (difficulty - skill.getBase() + balanceOffset) / 100.0;
+                (trainingIntensity - skill.getBase() + balanceOffset) / 100.0;
 
         return Math.clamp(rawChance, minGainChance, maxGainChance);
     }
 
     /**
-     * Gain amount with monotonic difficulty scaling.
-     * Higher difficulty will never reduce the gain.
+     * Gain amount with monotonic training intensity scaling.
+     * Higher training intensity will never reduce the gain.
      */
-    public double calculateGainAmount(SkillValue skill, double difficulty) {
+    public double calculateGainAmount(SkillValue skill, double trainingIntensity) {
         final double baseGain = settings.baseGain();
 
         final double current = skill.getBase();
@@ -38,9 +38,9 @@ public final class SkillGainCalculator {
         double capFactor = 1.0 - (current / cap);
         capFactor = Math.clamp(capFactor, 0.1, 1.0);
 
-        // Difficulty scaling (monotonic)
-        double difficultyFactor = difficulty / cap;
-        difficultyFactor = Math.clamp(difficultyFactor, 0.5, 1.5);
+        // Training intensity scaling (monotonic)
+        double trainingIntensityFactor = trainingIntensity / cap;
+        trainingIntensityFactor = Math.clamp(trainingIntensityFactor, 0.5, 1.5);
 
         // Multipliers <= 1 or a non-positive threshold disable the beginner bonus.
         final double beginnerGainMultiplier = settings.beginnerGainMultiplier();
@@ -51,7 +51,7 @@ public final class SkillGainCalculator {
                     * Math.clamp(1.0 - current / beginnerGainThreshold, 0.0, 1.0);
         }
 
-        return baseGain * capFactor * difficultyFactor * beginnerFactor;
+        return baseGain * capFactor * trainingIntensityFactor * beginnerFactor;
     }
 
 }

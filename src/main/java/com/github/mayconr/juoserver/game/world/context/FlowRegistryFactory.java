@@ -125,8 +125,10 @@ import com.github.mayconr.juoserver.game.skill.flow.lock.SendSkillsLockFlowDefin
 import com.github.mayconr.juoserver.game.skill.flow.set.SetSkillContext;
 import com.github.mayconr.juoserver.game.skill.flow.set.SetSkillFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.use.UseSkillFlowDefinition;
-import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillContext;
-import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillFlowDefinition;
+import com.github.mayconr.juoserver.game.skill.flow.start.StartSkillActionContext;
+import com.github.mayconr.juoserver.game.skill.flow.start.StartSkillActionFlowDefinition;
+import com.github.mayconr.juoserver.game.skill.flow.stop.StopSkillActionContext;
+import com.github.mayconr.juoserver.game.skill.flow.stop.StopSkillActionFlowDefinition;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
@@ -298,9 +300,11 @@ public class FlowRegistryFactory {
         registry.register(SendTargetFlowDefinition.class.getSimpleName(), SendTargetFlowDefinition.build(modules, infra), SendTargetContext.class);
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
-        registry.register(PerformSkillFlowDefinition.class.getSimpleName(),
-                PerformSkillFlowDefinition.build(infra.fileReader(), modules.skill(), modules.message(), modules.mobile()),
-                PerformSkillContext.class);
+        registry.register(StartSkillActionFlowDefinition.class.getSimpleName(),
+                StartSkillActionFlowDefinition.build(infra.fileReader(), modules.skill(), modules.message(), modules.mobile()),
+                StartSkillActionContext.class);
+        registry.register(StopSkillActionFlowDefinition.class.getSimpleName(),
+                StopSkillActionFlowDefinition.build(modules.skill()), StopSkillActionContext.class);
         registry.register(UpdateSkillActionsFlowDefinition.class.getSimpleName(),
                 UpdateSkillActionsFlowDefinition.build(modules.skill()), UpdateSkillActionsContext.class);
         registry.register(SetSkillSwingCountFlowDefinition.class.getSimpleName(),

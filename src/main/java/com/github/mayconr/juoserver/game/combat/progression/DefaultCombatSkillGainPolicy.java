@@ -10,9 +10,9 @@ import java.util.Optional;
 
 /**
  * Attempts the attacker's weapon skill and Tactics on every resolved swing,
- * whether it hits or misses. Difficulty is the defender's effective weapon skill,
+ * whether it hits or misses. Training intensity is the defender's effective weapon skill,
  * with a minimum of 1.0, including when the defender has no skills.
- * Replace this policy to change eligibility, beneficiaries, skills or difficulty.
+ * Replace this policy to change eligibility, beneficiaries, skills or training intensity.
  */
 public class DefaultCombatSkillGainPolicy implements CombatSkillGainPolicy {
     private static final int TACTICS = 27;
@@ -21,16 +21,16 @@ public class DefaultCombatSkillGainPolicy implements CombatSkillGainPolicy {
     @Override
     public List<SkillGainAttempt> resolve(CombatSkillGainContext context) {
         var attacker = context.attacker();
-        double difficulty = Optional.ofNullable(context.defender().getSkills())
+        double trainingIntensity = Optional.ofNullable(context.defender().getSkills())
                 .map(skills -> skills.get(CombatWeaponSkillResolver.forStyle(context.defenderStyle())))
                 .map(SkillValue::getValue)
                 .map(value -> Math.max(MIN_DIFFICULTY, value))
                 .orElse(MIN_DIFFICULTY);
 
-        var gainContext = SkillGainContext.of(attacker);
+        var gainContext = SkillGainContext.empty();
         return List.of(
-                new SkillGainAttempt(attacker, CombatWeaponSkillResolver.forStyle(context.attackerStyle()), difficulty, gainContext),
-                new SkillGainAttempt(attacker, TACTICS, difficulty, gainContext)
+                new SkillGainAttempt(attacker, CombatWeaponSkillResolver.forStyle(context.attackerStyle()), trainingIntensity, gainContext),
+                new SkillGainAttempt(attacker, TACTICS, trainingIntensity, gainContext)
         );
     }
 }

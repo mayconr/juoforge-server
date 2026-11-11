@@ -76,6 +76,23 @@ lifecycle (`initialize`, `saveWorld`) and exposes each responsibility through a 
 - `PropertyStore` and `WorldPersistence` are public only because they cross subpackages;
   they are internal to the world storage and must not be used by modules or shards.
 
+## Item creation
+
+`WorldItem.createItem` is deprecated. Item creation must go through `WorldItem.tryCreateItem`,
+which returns an `ItemCreationResult`: `Created` with the item, or `Rejected` with the
+`ItemCreationFailure` game rule that prevented it and its player-facing `displayMessage()`.
+Failures that are not game-rule rejections are still raised as `ModuleOperationException`.
+
+- New code must call `tryCreateItem` and handle `Rejected` explicitly, for example by
+  stopping the flow with the rejection's display message. Do not call `createItem`.
+- Whenever you modify code that calls `createItem`, migrate those calls in the touched code
+  to `tryCreateItem`, including its tests. Use `orThrow()` only where a rejection is
+  a programming error, such as corpses, mounts or starter items.
+- Add new game-rule rejections to `ItemCreationFailure`, and make the step that detects them
+  return the enum's `code()` and `displayMessage()`.
+- When `createItem` no longer has callers, remove it from `WorldItem` and `ItemModuleImpl`
+  and update this section.
+
 ## Documentation language
 
 - Write and maintain this project's documentation in English, including `AGENTS.md`,

@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.item;
 
+import com.github.mayconr.juoserver.game.item.ItemCreationResult.Created;
+import com.github.mayconr.juoserver.game.item.ItemCreationResult.Rejected;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
@@ -9,6 +11,7 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
+import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.RequiredArgsConstructor;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
@@ -33,20 +36,33 @@ public class ItemModuleImpl implements ItemModule {
         this.flows = context.flows();
     }
 
+    @Deprecated
     @Override
     public UOItem createItem(ItemRequest request, ItemTarget target) {
-        return createItem(request, target, null);
+        return tryCreateItem(request, target).orThrow();
+    }
+
+    @Deprecated
+    @Override
+    public UOItem createItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> options) {
+        return tryCreateItem(request, target, options).orThrow();
     }
 
     @Override
-    public UOItem createItem(ItemRequest request, ItemTarget target, Consumer<ItemCreationOptions> options) {
+    public ItemCreationResult tryCreateItem(ItemRequest request, ItemTarget target) {
+        return tryCreateItem(request, target, null);
+    }
+
+    @Override
+    public ItemCreationResult tryCreateItem(ItemRequest request, ItemTarget target,
+                                            Consumer<ItemCreationOptions> options) {
         try {
             var context = new ItemCreationContext(request, target, options);
             var result = flows.execute(context);
             if (result.flowFailed()) {
-                throw ModuleOperationException.fromFailure("createItem", result, "{item.creation_failed}");
+                return rejectOrThrow(request, target, result);
             }
-            return context.result("Cannot create item for request " + request);
+            return new Created(context.result("Cannot create item for request " + request));
         } catch (ModuleOperationException error) {
             log.error("Item creation failed: request={}, target={}, code={}, reason={}",
                     request, target, error.getCode(), error.getMessage(), error);
@@ -56,6 +72,15 @@ public class ItemModuleImpl implements ItemModule {
                     request, target, error.getMessage(), error);
             throw ModuleOperationException.unexpected("createItem", error, "{item.creation_failed}");
         }
+    }
+
+    /** Returns game-rule failures as rejections and raises any other failure. */
+    private ItemCreationResult rejectOrThrow(ItemRequest request, ItemTarget target, StepResult result) {
+        var error = ModuleOperationException.fromFailure("createItem", result, "{item.creation_failed}");
+        var reason = ItemCreationFailure.fromCode(error.getCode()).orElseThrow(() -> error);
+        log.debug("Item creation rejected: request={}, target={}, reason={}, detail={}",
+                request, target, reason, error.getMessage());
+        return new Rejected(reason, error.getMessage());
     }
 
     @Override

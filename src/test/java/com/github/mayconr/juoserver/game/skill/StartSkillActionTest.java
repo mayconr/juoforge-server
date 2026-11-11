@@ -8,12 +8,12 @@ import com.github.mayconr.juoserver.game.model.DefaultAttributeMap;
 import com.github.mayconr.juoserver.game.mobile.MobileModuleImpl;
 import com.github.mayconr.juoserver.game.mobile.WorldMobile;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
-import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillContext;
+import com.github.mayconr.juoserver.game.skill.flow.start.StartSkillActionContext;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsContext;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.swings.SetSkillSwingCountContext;
 import com.github.mayconr.juoserver.game.skill.flow.swings.SetSkillSwingCountFlowDefinition;
-import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillFlowDefinition;
+import com.github.mayconr.juoserver.game.skill.flow.start.StartSkillActionFlowDefinition;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-class PerformSkillTest {
+class StartSkillActionTest {
     private final WorldMessage messages = mock(WorldMessage.class);
     private final WorldMobile mobiles = new MobileModuleImpl(null, null, null, null, null);
 
@@ -51,9 +51,9 @@ class PerformSkillTest {
         when(reader.getSkill(1)).thenReturn(exists ? Optional.of(mock(Skill.class)) : Optional.empty());
         var player = player(1);
         when(skills.reserveSkillAction(eq(player), any())).thenReturn(true);
-        var context = new PerformSkillContext(player, options(count -> {}));
+        var context = new StartSkillActionContext(player, options(count -> {}));
 
-        var result = PerformSkillFlowDefinition.build(reader, skills, messages, mobiles).execute(context);
+        var result = StartSkillActionFlowDefinition.build(reader, skills, messages, mobiles).execute(context);
 
         if (exists) {
             assertTrue(result.flowSucceeded());
@@ -72,8 +72,8 @@ class PerformSkillTest {
         var player = player(1);
         var swing = mock(SkillCallback.class);
         var completion = mock(SkillCallback.class);
-        assertTrue(module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swing(swing).onComplete(completion).build()));
+        assertTrue(module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).onSwing(swing).onComplete(completion).build()));
         assertTrue(module.hasActiveAction(player));
         verifyNoInteractions(swing, completion);
 
@@ -92,8 +92,8 @@ class PerformSkillTest {
         var module = module();
         var player = player(1);
         var swing = mock(SkillCallback.class);
-        assertTrue(module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swingCount(2).swing(swing).build()));
+        assertTrue(module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).swingCount(2).onSwing(swing).build()));
 
         module.update(0);
         verify(swing).execute(1);
@@ -116,8 +116,8 @@ class PerformSkillTest {
         var player = player(1);
         var swing = mock(SkillCallback.class);
         var completion = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swingCount(3).swing(swing).onComplete(completion).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).swingCount(3).onSwing(swing).onComplete(completion).build());
 
         player.setLocation(1, 0);
         module.update(0);
@@ -135,8 +135,8 @@ class PerformSkillTest {
         var player = player(1);
         var swing = mock(SkillCallback.class);
         var completion = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swingCount(3).swing(swing).onComplete(completion).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).swingCount(3).onSwing(swing).onComplete(completion).build());
 
         module.update(0);
         player.setLocation(0, 1);
@@ -156,8 +156,8 @@ class PerformSkillTest {
         var player = player(1);
         var swing = mock(SkillCallback.class);
         var completion = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swingCount(2).swing(swing).onComplete(completion).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).swingCount(2).onSwing(swing).onComplete(completion).build());
 
         module.update(0);
         player.setLocation(1, 1);
@@ -176,8 +176,8 @@ class PerformSkillTest {
         var module = module();
         var player = player(1);
         var swing = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swingCount(2).swing(swing).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).swingCount(2).onSwing(swing).build());
 
         module.update(0);
         player.setZ(5);
@@ -192,10 +192,10 @@ class PerformSkillTest {
         var module = module();
         var player = player(1);
         var swing = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
+        module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1)
                 .swingCount(2)
-                .swing(swing)
+                .onSwing(swing)
                 .onComplete(count -> { throw new IllegalStateException("failed completion"); })
                 .build());
 
@@ -212,8 +212,8 @@ class PerformSkillTest {
         var player = player(1);
         var original = mock(SkillCallback.class);
         var rejected = mock(SkillCallback.class);
-        assertTrue(module.performSkill(player, options(original)));
-        assertFalse(module.performSkill(player, options(rejected)));
+        assertTrue(module.startSkillAction(player, options(original)));
+        assertFalse(module.startSkillAction(player, options(rejected)));
 
         module.update(1);
 
@@ -229,8 +229,8 @@ class PerformSkillTest {
         var swing = mock(SkillCallback.class);
         var completion = mock(SkillCallback.class);
         doThrow(new IllegalStateException("failed")).when(swing).execute(1);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swing(swing).onComplete(completion).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).onSwing(swing).onComplete(completion).build());
 
         module.update(1);
 
@@ -243,10 +243,10 @@ class PerformSkillTest {
         var module = module();
         var player = player(1);
         var next = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
+        module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1)
-                .swing(count -> {})
-                .onComplete(count -> assertTrue(module.performSkill(player, options(next))))
+                .onSwing(count -> {})
+                .onComplete(count -> assertTrue(module.startSkillAction(player, options(next))))
                 .build());
 
         module.update(1);
@@ -263,8 +263,8 @@ class PerformSkillTest {
         var module = module();
         var player = player(1);
         var swing = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swing(swing).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).onSwing(swing).build());
 
         var error = assertThrows(ModuleOperationException.class, () -> module.update(delta));
 
@@ -281,8 +281,8 @@ class PerformSkillTest {
         var first = player(1);
         var second = player(2);
         var successful = mock(SkillCallback.class);
-        module.performSkill(first, options(count -> { throw new IllegalStateException("failed"); }));
-        module.performSkill(second, options(successful));
+        module.startSkillAction(first, options(count -> { throw new IllegalStateException("failed"); }));
+        module.startSkillAction(second, options(successful));
 
         module.update(1);
 
@@ -296,11 +296,11 @@ class PerformSkillTest {
         var module = module();
         var player = player(1);
         var next = mock(SkillCallback.class);
-        module.performSkill(player, SkillPerformOptions.builder()
+        module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1)
-                .swing(count -> {})
+                .onSwing(count -> {})
                 .onComplete(count -> {
-                    assertTrue(module.performSkill(player, options(next)));
+                    assertTrue(module.startSkillAction(player, options(next)));
                     throw new IllegalStateException("failed completion");
                 })
                 .build());
@@ -320,8 +320,8 @@ class PerformSkillTest {
         var swing = mock(SkillCallback.class);
         var completion = mock(SkillCallback.class);
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, 3L, false);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swing(swing).onComplete(completion).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).onSwing(swing).onComplete(completion).build());
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, 9, false);
 
         module.update(0);
@@ -353,7 +353,7 @@ class PerformSkillTest {
         var player = player(1);
         var swing = mock(SkillCallback.class);
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, count, false);
-        module.performSkill(player, options(swing));
+        module.startSkillAction(player, options(swing));
 
         module.update(1);
         module.update(1);
@@ -369,7 +369,7 @@ class PerformSkillTest {
         var player = player(1);
         var swing = mock(SkillCallback.class);
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, 5, true);
-        module.performSkill(player, options(swing));
+        module.startSkillAction(player, options(swing));
 
         module.update(1);
 
@@ -384,7 +384,7 @@ class PerformSkillTest {
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, 2, false);
         var reloaded = new UOPlayer(player.toData());
         var swing = mock(SkillCallback.class);
-        module.performSkill(reloaded, options(swing));
+        module.startSkillAction(reloaded, options(swing));
 
         module.update(1);
         assertTrue(module.hasActiveAction(reloaded));
@@ -403,10 +403,10 @@ class PerformSkillTest {
         var swing = mock(SkillCallback.class);
         var completion = mock(SkillCallback.class);
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, 3, false);
-        module.performSkill(player, SkillPerformOptions.builder()
+        module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1)
                 .swingCount(override)
-                .swing(swing)
+                .onSwing(swing)
                 .onComplete(completion)
                 .build());
         int expected = Math.max(1, override);
@@ -428,8 +428,8 @@ class PerformSkillTest {
         var player = player(1);
         var swing = mock(SkillCallback.class);
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, 2, false);
-        module.performSkill(player, SkillPerformOptions.builder()
-                .skillId(1).swingCount(null).swing(swing).build());
+        module.startSkillAction(player, SkillActionOptions.builder()
+                .skillId(1).swingCount(null).onSwing(swing).build());
 
         module.update(1);
         assertTrue(module.hasActiveAction(player));
@@ -452,7 +452,7 @@ class PerformSkillTest {
         int expected = Math.max(1, count);
         assertEquals(expected, mobiles.getProperty(player, WorldSkill.SWINGS_PROPERTY, false));
         var reloaded = new UOPlayer(player.toData());
-        module.performSkill(reloaded, options(swing));
+        module.startSkillAction(reloaded, options(swing));
         for (int index = 1; index <= expected; index++) {
             module.update(1);
             verify(swing).execute(index);
@@ -478,14 +478,14 @@ class PerformSkillTest {
         var reader = mock(UOFileReader.class);
         when(reader.getSkill(1)).thenReturn(Optional.of(mock(Skill.class)));
         var registry = new DefaultFlowRegistry();
-        registry.register("perform-skill", PerformSkillFlowDefinition.build(reader, module, messages, mobiles), PerformSkillContext.class);
+        registry.register("start-skill-action", StartSkillActionFlowDefinition.build(reader, module, messages, mobiles), StartSkillActionContext.class);
         registry.register("update-skill-actions", UpdateSkillActionsFlowDefinition.build(module), UpdateSkillActionsContext.class);
         registry.register("set-skill-swing-count", SetSkillSwingCountFlowDefinition.build(mobiles), SetSkillSwingCountContext.class);
         module.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         return module;
     }
 
-    private SkillPerformOptions options(SkillCallback swing) {
-        return SkillPerformOptions.builder().skillId(1).swing(swing).build();
+    private SkillActionOptions options(SkillCallback swing) {
+        return SkillActionOptions.builder().skillId(1).onSwing(swing).build();
     }
 }
