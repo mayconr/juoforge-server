@@ -6,6 +6,7 @@ import com.github.mayconr.juoforge.reader.view.GameDataProviderFactory;
 import com.github.mayconr.juoforge.reader.view.LandTile;
 import com.github.mayconr.juoforge.reader.view.StaticTile;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -22,11 +24,13 @@ public class UOFileReaderImpl implements UOFileReader{
     private final GamePlaySettings settings;
     private GameDataProvider gameDataProvider;
     private MovementCollisionService collisionService;
+    private WalkSurfaceResolver walkSurfaceResolver;
 
     public void loadFiles() {
         log.info("Loading UO files...");
         gameDataProvider = GameDataProviderFactory.create(Path.of(settings.files().dataFileRoot()), true);
         collisionService = new MovementCollisionService(gameDataProvider);
+        walkSurfaceResolver = new WalkSurfaceResolver(gameDataProvider);
         log.info("Loading UO files done!");
     }
 
@@ -58,6 +62,11 @@ public class UOFileReaderImpl implements UOFileReader{
     @Override
     public boolean hasBlockingCollision(UOMobile mobile, int x, int y, int z) {
         return collisionService.hasBlockingCollision(mobile, x, y, z);
+    }
+
+    @Override
+    public OptionalInt resolveWalkZ(Location from, Direction direction) {
+        return walkSurfaceResolver.resolveWalkZ(from, direction);
     }
 
     @Override

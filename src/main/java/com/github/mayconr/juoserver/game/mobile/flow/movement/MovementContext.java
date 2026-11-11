@@ -26,7 +26,12 @@ public class MovementContext extends AbstractSyncFlowContext<Void> implements Up
     private final boolean isRequested;
 
     public static MovementContext of(UOMobile mobile, MoveRequest moveRequest) {
-        return new MovementContext(mobile, moveRequest.getDirection(), moveRequest.isRunning(), moveRequest, true);
+        final var context = new MovementContext(
+                mobile, moveRequest.getDirection(), moveRequest.isRunning(), moveRequest, true
+        );
+        // A rejected step must echo the client sequence, even when it fails before the sequence update.
+        context.setSequence(moveRequest.getSequence());
+        return context;
     }
 
     public static MovementContext of(UOMobile mobile, Direction direction, boolean running) {

@@ -3,11 +3,13 @@ package com.github.mayconr.juoserver.infrastructure.datafile;
 import com.github.mayconr.juoforge.reader.skill.Skill;
 import com.github.mayconr.juoforge.reader.view.LandTile;
 import com.github.mayconr.juoforge.reader.view.StaticTile;
+import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 public interface UOFileReader {
 
@@ -22,6 +24,13 @@ public interface UOFileReader {
     boolean hasBlockingCollision(UOMobile mobile, int x, int y, int z);
 
     boolean hasBlockingCollision(UOMobile mobile, Location location);
+
+    /**
+     * Resolves the Z reached by walking one tile from {@code from} towards {@code direction}.
+     *
+     * @return the destination Z, or empty when the step is blocked
+     */
+    OptionalInt resolveWalkZ(Location from, Direction direction);
 
     Optional<Skill> getSkill(int skillId);
 }

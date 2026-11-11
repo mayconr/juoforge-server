@@ -7,7 +7,11 @@ import com.github.mayconr.juoserver.game.mobile.flow.movement.apply.UpdateSequen
 import com.github.mayconr.juoserver.game.mobile.flow.movement.hook.MovementFailureHook;
 import com.github.mayconr.juoserver.game.mobile.flow.movement.resolver.ResolveMoveIntentStep;
 import com.github.mayconr.juoserver.game.mobile.flow.movement.resolver.ResolveTargetLocationStep;
-import com.github.mayconr.juoserver.game.mobile.flow.movement.validation.*;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.resolver.ResolveTargetZStep;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.validation.ValidateMobileCollisionStep;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.validation.ValidateMovementDelayStep;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.validation.ValidateMovementParamsStep;
+import com.github.mayconr.juoserver.game.mobile.flow.movement.validation.ValidateSequenceStep;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
@@ -25,12 +29,12 @@ public class MovementFlowDefinition {
                 .step(new ValidateSequenceStep(), MovementContext::isRequested)
                 // Validate delay between move requests
                 .step(new ValidateMovementDelayStep(infra.eventBus()))
-                // Resolve the x,y,z destination of the movement
+                // Resolve the x,y destination of the movement
                 .step(new ResolveTargetLocationStep())
+                // Resolve the destination z from the map, failing when it is not walkable
+                .step(new ResolveTargetZStep(infra.fileReader()))
                 // Check if the target has other mobile
                 .step(new ValidateMobileCollisionStep(infra.storage()))
-                // Check if the target is passable
-                .step(new ValidateTargetTileStep(infra.fileReader()))
                 // Update the sequence
                 .step(new UpdateSequenceStep())
                 // Apply the movement
