@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.WeaponStyle;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
@@ -13,9 +13,9 @@ import java.util.Optional;
 @Slf4j
 public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public WeaponResolverStep(RealmStorage storage) {
+    public WeaponResolverStep(WorldStorage storage) {
         super("WeaponResolverStep");
         this.storage = storage;
     }

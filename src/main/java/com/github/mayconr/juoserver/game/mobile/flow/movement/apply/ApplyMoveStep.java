@@ -4,13 +4,13 @@ import com.github.mayconr.juoserver.game.mobile.flow.movement.MovementContext;
 import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class ApplyMoveStep extends AbstractFlowStep<MovementContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ApplyMoveStep(RealmStorage storage) {
+    public ApplyMoveStep(WorldStorage storage) {
         super("ApplyMoveStep");
         this.storage = storage;
     }

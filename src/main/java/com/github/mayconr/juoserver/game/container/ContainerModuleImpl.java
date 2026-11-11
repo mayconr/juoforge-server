@@ -19,7 +19,7 @@ import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.RequiredArgsConstructor;
 
 import java.util.HashSet;
@@ -28,7 +28,7 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 public class ContainerModuleImpl implements ContainerModule {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final ContainerHandler containerHandler;
 
     @Override

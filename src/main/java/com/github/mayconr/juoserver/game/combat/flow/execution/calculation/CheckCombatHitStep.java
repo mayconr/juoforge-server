@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.game.model.WeaponStyle;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 /**
  * Determines whether a combat swing hits before damage is calculated and applied.
@@ -34,10 +34,10 @@ import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
  * without closing the combat session.
  */
 public class CheckCombatHitStep extends AbstractFlowStep<CombatExecutionContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final RNG rng;
 
-    public CheckCombatHitStep(RealmStorage storage, RNG rng) {
+    public CheckCombatHitStep(WorldStorage storage, RNG rng) {
         super("CheckCombatHitStep");
         this.storage = storage;
         this.rng = rng;

@@ -5,14 +5,14 @@ import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class UnequipMountItemStep extends AbstractFlowStep<UnmountContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus  eventBus;
 
-    public UnequipMountItemStep(RealmStorage storage,  EventBus eventBus) {
+    public UnequipMountItemStep(WorldStorage storage,  EventBus eventBus) {
         super("UnequipMountItem");
         this.storage = storage;
         this.eventBus = eventBus;

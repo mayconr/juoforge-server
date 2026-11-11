@@ -24,7 +24,7 @@ class PerceivePlayersStepTest {
         var offline = player(false, true);
         var anotherNpc = mock(UONpc.class);
         List<UOMobile> candidates = List.of(alive, dead, offline, anotherNpc);
-        when(world.storage().getMobilesInRange(eq(npc), eq(3), any())).thenAnswer(invocation -> {
+        when(world.mobile().getMobilesInRange(eq(npc), eq(3), any())).thenAnswer(invocation -> {
             Predicate<UOMobile> filter = invocation.getArgument(2);
             return candidates.stream().filter(filter).toList();
         });
@@ -36,7 +36,7 @@ class PerceivePlayersStepTest {
         assertEquals(List.of(alive), context.getNearbyPlayers());
         assertSame(offline, context.getTarget());
         assertTrue(context.actions().isEmpty());
-        when(world.storage().getMobilesInRange(eq(npc), eq(3), any())).thenReturn(List.of());
+        when(world.mobile().getMobilesInRange(eq(npc), eq(3), any())).thenReturn(List.of());
         assertTrue(step.execute(context).shouldContinue());
         assertTrue(context.getNearbyPlayers().isEmpty());
     }

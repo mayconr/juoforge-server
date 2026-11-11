@@ -7,7 +7,7 @@ import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 
 class OpenSpellBookFlowTest {
     private final EventBus events = mock(EventBus.class);
-    private final RealmStorage storage = mock(RealmStorage.class);
+    private final WorldStorage storage = mock(WorldStorage.class);
     private final UOPlayer player = mock(UOPlayer.class);
     private final UOItem book = mock(UOItem.class);
     private final com.github.mayconr.juoserver.infrastructure.flow.Flow<OpenSpellBookContext> flow =

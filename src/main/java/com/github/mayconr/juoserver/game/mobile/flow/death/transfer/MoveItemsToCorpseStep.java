@@ -6,7 +6,7 @@ import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -19,9 +19,9 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathContext> {
             Layer.SHOP_BUY, Layer.SHOP_SELL, Layer.SHOP_BUY_RESTOCK);
     private final MobileModule mobileModule;
     private final ItemModule itemModule;
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public MoveItemsToCorpseStep(MobileModule mobileModule, ItemModule itemModule, RealmStorage storage) {
+    public MoveItemsToCorpseStep(MobileModule mobileModule, ItemModule itemModule, WorldStorage storage) {
         super("move_item_corpse_step");
         this.mobileModule = mobileModule;
         this.itemModule = itemModule;

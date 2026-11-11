@@ -2,12 +2,12 @@ package com.github.mayconr.juoserver.game.player.flow.deletion;
 
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class DeletePlayerStep extends AbstractFlowStep<DeletePlayerContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public DeletePlayerStep(RealmStorage storage) {
+    public DeletePlayerStep(WorldStorage storage) {
         super("delete-player");
         this.storage = storage;
     }

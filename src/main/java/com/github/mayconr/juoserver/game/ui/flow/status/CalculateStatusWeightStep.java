@@ -3,13 +3,13 @@ package com.github.mayconr.juoserver.game.ui.flow.status;
 import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class CalculateStatusWeightStep extends AbstractFlowStep<StatusGumpContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final WorldContainer containers;
 
-    public CalculateStatusWeightStep(RealmStorage storage, WorldContainer containers) {
+    public CalculateStatusWeightStep(WorldStorage storage, WorldContainer containers) {
         super("calculate-status-weight");
         this.storage = storage;
         this.containers = containers;

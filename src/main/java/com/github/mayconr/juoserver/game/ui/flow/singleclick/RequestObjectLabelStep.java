@@ -6,15 +6,15 @@ import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 import java.util.Optional;
 
 public final class RequestObjectLabelStep extends AbstractFlowStep<SingleClickContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus events;
 
-    public RequestObjectLabelStep(RealmStorage storage, EventBus events) {
+    public RequestObjectLabelStep(WorldStorage storage, EventBus events) {
         super("request-object-label");
         this.storage = storage;
         this.events = events;

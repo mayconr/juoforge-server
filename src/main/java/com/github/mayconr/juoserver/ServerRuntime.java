@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowExecutor;
 import com.github.mayconr.juoserver.infrastructure.gameloop.GameLoop;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 
 public interface ServerRuntime {
@@ -28,7 +28,7 @@ public interface ServerRuntime {
 
     EventBus eventBus();
 
-    RealmStorage storage();
+    WorldStorage storage();
 
     RegionSystem regionSystem();
 

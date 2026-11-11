@@ -36,7 +36,12 @@ import com.github.mayconr.juoserver.infrastructure.region.RegionSystem;
 import com.github.mayconr.juoserver.infrastructure.region.RegionSystemImpl;
 import com.github.mayconr.juoserver.infrastructure.rng.DefaultRNG;
 import com.github.mayconr.juoserver.infrastructure.rng.RNG;
-import com.github.mayconr.juoserver.infrastructure.storage.*;
+import com.github.mayconr.juoserver.infrastructure.storage.CachedWorldStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemMapper;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
 import lombok.RequiredArgsConstructor;
@@ -132,7 +137,7 @@ public final class WorldBootstrap {
         ItemStorage itemStorage = configuration.itemStorage();
         AccountStorage accountStorage = configuration.accountStorage();
         ItemMapper itemMapper = new ItemMapper(itemTemplateByName);
-        RealmStorage storage = new CachedRealmStorage(mobileStorage, itemStorage, accountStorage, itemMapper, configuration.documentStorage());
+        WorldStorage storage = new CachedWorldStorage(mobileStorage, itemStorage, accountStorage, itemMapper, configuration.propertyStorage());
 
         // --- Serial
         SerialGenerator serialGenerator = new SerialGenerator(storage);
@@ -223,7 +228,7 @@ public final class WorldBootstrap {
                                          Map<String, TemplateRegistry> registryMap,
                                          GamePlaySettings settings,
                                          EventBus eventBus,
-                                         RealmStorage storage,
+                                         WorldStorage storage,
                                          RegionSystem regionSystem,
                                          UOFileReader fileReader,
                                          GameLoop gameLoop,

@@ -3,13 +3,13 @@ package com.github.mayconr.juoserver.game.combat.flow.preparation.resolver;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class ResolveTargetStep extends AbstractFlowStep<CombatPreparationContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ResolveTargetStep(RealmStorage storage) {
+    public ResolveTargetStep(WorldStorage storage) {
         super("ResolveTargetStep");
         this.storage = storage;
     }

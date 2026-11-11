@@ -4,13 +4,13 @@ import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class LoadMountItemStep extends AbstractFlowStep<UnmountContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public LoadMountItemStep(RealmStorage storage) {
+    public LoadMountItemStep(WorldStorage storage) {
         super("LoadMountItem");
         this.storage = storage;
     }

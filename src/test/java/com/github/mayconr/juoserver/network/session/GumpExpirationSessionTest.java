@@ -23,7 +23,7 @@ class GumpExpirationSessionTest {
     void sendsSilentCloseOnlyToTheActiveOwner(int gumpId) {
         var bus = new DefaultEventBus();
         var manager = new NettySessionManager(mock(WorldInternal.class, RETURNS_DEEP_STUBS),
-                null, new GamePlaySettings(), bus, mock(MessageLocalizer.class));
+                null, new GamePlaySettings(), bus, mock(MessageLocalizer.class), null);
         var ownerChannel = new EmbeddedChannel();
         var otherChannel = new EmbeddedChannel();
         try {

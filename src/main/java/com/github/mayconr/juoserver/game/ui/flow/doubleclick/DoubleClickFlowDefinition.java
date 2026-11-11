@@ -5,12 +5,12 @@ import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class DoubleClickFlowDefinition {
     private DoubleClickFlowDefinition() { }
 
-    public static Flow<DoubleClickContext> build(RealmStorage storage,
+    public static Flow<DoubleClickContext> build(WorldStorage storage,
                                                 DoubleClickPolicy policy, WorldItem items, WorldContainer containers) {
         return FlowFactory.<DoubleClickContext>builder()
                 .step(new AuthorizeDoubleClickStep(policy))

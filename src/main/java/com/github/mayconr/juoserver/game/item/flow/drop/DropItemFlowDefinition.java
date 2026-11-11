@@ -16,7 +16,7 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowBuilder;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class DropItemFlowDefinition {
     private DropItemFlowDefinition() {
@@ -30,7 +30,7 @@ public class DropItemFlowDefinition {
                 .build();
     }
 
-    private static FlowBuilder<DropItemContext> dropItemPhase(RealmStorage storage) {
+    private static FlowBuilder<DropItemContext> dropItemPhase(WorldStorage storage) {
         return FlowFactory.<DropItemContext>builder()
                 .step(new ResolveItemStep(storage), DropItemContext::isDroppedItem)
                 .step(new ResolveDropTypeStep(), DropItemContext::isDroppedItem)
@@ -44,7 +44,7 @@ public class DropItemFlowDefinition {
                 .step(new ValidateInteractionRangeStep(mobileModule, messageModule));
     }
 
-    private static FlowBuilder<DropItemContext> itemPlacementPhase(RealmStorage storage, EventBus eventBus, WorldContainer containers) {
+    private static FlowBuilder<DropItemContext> itemPlacementPhase(WorldStorage storage, EventBus eventBus, WorldContainer containers) {
         return FlowFactory.<DropItemContext>builder()
                 .step(new TransformToOrphanStep(storage))
                 .step(new DropItemGroundStep(storage, eventBus), DropItemContext::isGroundDrop)

@@ -3,15 +3,15 @@ package com.github.mayconr.juoserver.game.mobile.flow.equip.load;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LoadEquipItemStep extends AbstractFlowStep<EquipItemContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public LoadEquipItemStep(RealmStorage storage) {
+    public LoadEquipItemStep(WorldStorage storage) {
         super("load_equip_item");
         this.storage = storage;
     }

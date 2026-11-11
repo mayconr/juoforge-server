@@ -41,7 +41,7 @@ class WorldViewHandlerTest {
         when(npc.isAlive()).thenReturn(true);
         var dead = mock(UONpc.class);
         var item = mock(UOItem.class);
-        when(world.storage().getMobilesInRange(eq(player), eq(18), any()))
+        when(world.mobile().getMobilesInRange(eq(player), eq(18), any()))
                 .thenReturn(List.of(player, online, offline, npc, dead));
         when(world.item().getItemsInRange(player, 18)).thenReturn(List.of(item));
         when(world.mobile().getEquippedItems(any())).thenReturn(Map.of());
@@ -81,7 +81,7 @@ class WorldViewHandlerTest {
             assertEquals(1, flushCounter.count);
             verify(world.mobile(), never()).getEquippedItems(offline);
             verify(world.mobile(), never()).getEquippedItems(dead);
-            verify(world.storage()).getMobilesInRange(eq(player), eq(18), argThat(filter ->
+            verify(world.mobile()).getMobilesInRange(eq(player), eq(18), argThat(filter ->
                     filter.test(online) && filter.test(npc) && !filter.test(offline) && !filter.test(dead)));
             verify(world.item()).getItemsInRange(player, 18);
         } finally {

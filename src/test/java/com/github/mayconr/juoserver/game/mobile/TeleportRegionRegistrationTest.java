@@ -11,7 +11,7 @@ import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
 import com.github.mayconr.juoserver.infrastructure.region.*;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -46,7 +46,7 @@ class TeleportRegionRegistrationTest {
             assertEquals(Set.of(42), regionModule.getPlayerSerials(city));
             return null;
         }).when(ai).activateRegion(city);
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = new DefaultEventBus();
         var published = new java.util.ArrayList<MobileMoved>();
         events.register(MobileMoved.class, event -> {

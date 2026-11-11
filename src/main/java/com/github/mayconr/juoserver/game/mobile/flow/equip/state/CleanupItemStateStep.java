@@ -7,12 +7,12 @@ import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.model.OrphanLocation;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class CleanupItemStateStep extends AbstractFlowStep<EquipItemContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public CleanupItemStateStep(RealmStorage storage) {
+    public CleanupItemStateStep(WorldStorage storage) {
         super("cleanup_item_state");
         this.storage = storage;
     }

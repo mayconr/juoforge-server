@@ -11,7 +11,7 @@ import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 class EquipItemResultTest {
     private final EventBus events = mock(EventBus.class);
-    private final RealmStorage storage = mock(RealmStorage.class);
+    private final WorldStorage storage = mock(WorldStorage.class);
     private final DefaultFlowRegistry registry = new DefaultFlowRegistry();
     private final GameInfra infra = GameInfra.builder().storage(storage).eventBus(events).build();
     private final MobileModuleImpl module = new MobileModuleImpl(null, null, events, storage, new com.github.mayconr.juoserver.game.GamePlaySettings());

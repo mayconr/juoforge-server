@@ -128,7 +128,7 @@ import com.github.mayconr.juoserver.game.skill.flow.perform.PerformSkillFlowDefi
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.serialization.DataMapper;
 import com.github.mayconr.juoserver.infrastructure.serialization.JacksonDataMapper;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateRegistry;
@@ -175,7 +175,7 @@ public class FlowRegistryFactory {
             Wallet wallet,
             SpellCastRegistry spellCastRegistry,
             EventBus eventBus,
-            RealmStorage storage,
+            WorldStorage storage,
             SerialGenerator serialGenerator,
             GamePlaySettings settings,
             UOFileReader fileReader,

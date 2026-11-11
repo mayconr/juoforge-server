@@ -9,8 +9,10 @@ import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 /** Public mobile operations, including synchronized persistent and runtime property access. */
 public interface WorldMobile {
@@ -31,6 +33,9 @@ public interface WorldMobile {
 
     /** Calculates carrying capacity from the mobile's strength and gameplay settings. */
     int calculateMaxWeight(UOMobile mobile);
+
+    /** Returns mobiles within the radius of the location that match the filter, using the spatial index. */
+    List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);
 
     /** Runs the movement flow for a step in the given direction. */
     void move(UOMobile mobile, Direction direction);

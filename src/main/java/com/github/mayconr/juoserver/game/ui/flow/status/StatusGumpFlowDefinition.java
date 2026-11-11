@@ -5,12 +5,12 @@ import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.game.mobile.WorldMobile;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class StatusGumpFlowDefinition {
     private StatusGumpFlowDefinition() { }
 
-    public static Flow<StatusGumpContext> build(EventBus events, RealmStorage storage, WorldContainer containers, WorldMobile mobiles) {
+    public static Flow<StatusGumpContext> build(EventBus events, WorldStorage storage, WorldContainer containers, WorldMobile mobiles) {
         return FlowFactory.<StatusGumpContext>builder()
                 .step(new FindStatusMobileStep(storage))
                 .step(new CalculateStatusWeightStep(storage, containers))

@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.infrastructure.storage;
+package com.github.mayconr.juoserver.infrastructure.storage.mobile;
 
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOMobile;

@@ -5,6 +5,7 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.player.exception.PlayerNameAlreadyExistsException;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
 import com.github.mayconr.juoserver.network.packet.*;
@@ -31,6 +32,7 @@ public class NettyPlayerSession implements PlayerSession {
     private final GamePlaySettings settings;
     private final EventBus eventBus;
     private final WorldInternal world;
+    private final WorldStorage storage;
 
     private SocketAddress remoteAddress;
     private String clientVersion;
@@ -47,15 +49,29 @@ public class NettyPlayerSession implements PlayerSession {
 
     private volatile SessionState state;
 
-    public NettyPlayerSession(Channel channel, ChannelGroup channelGroup, GamePlaySettings settings, EventBus eventBus, WorldInternal world) {
-        this(new SessionPacketWriter(channel, channelGroup), settings, eventBus, world);
+    public NettyPlayerSession(
+            Channel channel,
+            ChannelGroup channelGroup,
+            GamePlaySettings settings,
+            EventBus eventBus,
+            WorldInternal world,
+            WorldStorage storage
+    ) {
+        this(new SessionPacketWriter(channel, channelGroup), settings, eventBus, world, storage);
     }
 
-    NettyPlayerSession(SessionPacketWriter packetWriter, GamePlaySettings settings, EventBus eventBus, WorldInternal world) {
+    NettyPlayerSession(
+            SessionPacketWriter packetWriter,
+            GamePlaySettings settings,
+            EventBus eventBus,
+            WorldInternal world,
+            WorldStorage storage
+    ) {
         this.packetWriter = packetWriter;
         this.settings = settings;
         this.eventBus = eventBus;
         this.world = world;
+        this.storage = storage;
         this.state = SessionState.CONNECTED;
     }
 
@@ -131,7 +147,7 @@ public class NettyPlayerSession implements PlayerSession {
             throw new IllegalStateException("Session is not connected. Session state is " + state);
         }
 
-        world.storage().getAccountByUsername(username)
+        storage.getAccountByUsername(username)
                 .thenApply(account->{
                     synchronized (this) {
                         requireOpenSession();

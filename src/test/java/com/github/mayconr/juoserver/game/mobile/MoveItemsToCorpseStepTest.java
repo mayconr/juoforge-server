@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
 import com.github.mayconr.juoserver.game.mobile.flow.death.transfer.MoveItemsToCorpseStep;
 import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -26,7 +26,7 @@ class MoveItemsToCorpseStepTest {
         when(weapon.getFlags()).thenReturn(List.of());
         victim.getEquippedItems().put(Layer.MOUNT, 100);
         victim.getEquippedItems().put(Layer.ONE_HANDED, 101);
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         when(storage.getItem(100)).thenReturn(Optional.of(mount));
         when(storage.getItem(101)).thenReturn(Optional.of(weapon));
         var mobiles = mock(MobileModule.class);

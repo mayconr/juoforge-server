@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.npc.flow.removal.NpcRemovalContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -42,7 +42,7 @@ class NpcRemovalRequesterTest {
 
     @Test
     void expiredDeadNpcUsesNamedProcessAndRemovalModule() {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var module = mock(NpcModule.class);
         var service = new NpcDespawnService(storage, module);
         var npc = mock(UONpc.class);

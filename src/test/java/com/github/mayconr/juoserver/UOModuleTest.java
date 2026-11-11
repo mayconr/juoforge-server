@@ -28,7 +28,7 @@ class UOModuleTest {
     @Test
     void moduleConfigurationDoesNotExposeShardSettingsOrStorage() {
         var restricted = java.util.Set.of("serverSettings", "gameplaySettings", "content",
-                "mobileStorage", "itemStorage", "accountStorage", "documentStorage", "settings", "ai");
+                "mobileStorage", "itemStorage", "accountStorage", "propertyStorage", "settings", "ai");
         for (var method : ModuleConfiguration.class.getMethods()) {
             assertFalse(restricted.contains(method.getName()), method.toString());
         }

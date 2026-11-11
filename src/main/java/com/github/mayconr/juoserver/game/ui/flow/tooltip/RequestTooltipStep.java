@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.model.TooltipSupport;
 import com.github.mayconr.juoserver.game.model.event.TooltipRequested;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
@@ -13,9 +13,9 @@ import java.util.ArrayList;
 public final class RequestTooltipStep extends AbstractFlowStep<TooltipContext> {
 
     private final EventBus eventBus;
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public RequestTooltipStep(EventBus eventBus, RealmStorage storage) {
+    public RequestTooltipStep(EventBus eventBus, WorldStorage storage) {
         super("request-tooltip");
         this.eventBus = eventBus;
         this.storage = storage;

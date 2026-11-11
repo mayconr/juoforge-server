@@ -27,7 +27,7 @@ class ClientTypeHandlerTest {
             assertEquals(0x0A, command.marker());
             assertEquals(flags, command.flags());
             assertEquals(0, buffer.readableBytes());
-            var session = new NettyPlayerSession(channel, null, null, null, null);
+            var session = new NettyPlayerSession(channel, null, null, null, null, null);
             assertEquals(0, session.getClientExpansionFlags());
             new GeneralInformationHandler(null).channelRead0(session, null, packet);
             assertEquals(flags, session.getClientExpansionFlags());

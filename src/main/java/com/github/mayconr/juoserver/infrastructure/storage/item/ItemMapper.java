@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.infrastructure.storage;
+package com.github.mayconr.juoserver.infrastructure.storage.item;
 
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;

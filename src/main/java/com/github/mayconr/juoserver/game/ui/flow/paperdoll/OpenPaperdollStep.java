@@ -4,14 +4,14 @@ import com.github.mayconr.juoserver.game.model.event.PaperdollOpened;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.OpenPaperdoll;
 
 public final class OpenPaperdollStep extends AbstractFlowStep<OpenPaperdollContext> {
     private final EventBus events;
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public OpenPaperdollStep(EventBus events, RealmStorage storage) {
+    public OpenPaperdollStep(EventBus events, WorldStorage storage) {
         super("open-paperdoll");
         this.events = events;
         this.storage = storage;

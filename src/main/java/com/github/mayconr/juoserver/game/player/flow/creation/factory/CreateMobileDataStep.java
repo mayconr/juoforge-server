@@ -5,7 +5,7 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -15,7 +15,7 @@ public class CreateMobileDataStep extends AbstractFlowStep<PlayerCreationContext
 
     private final SerialGenerator serialGenerator;
 
-    public CreateMobileDataStep(SerialGenerator serialGenerator,  RealmStorage storage) {
+    public CreateMobileDataStep(SerialGenerator serialGenerator,  WorldStorage storage) {
         super("CreateMobileData");
         this.serialGenerator = serialGenerator;
     }

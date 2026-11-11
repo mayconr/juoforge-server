@@ -37,7 +37,7 @@ class WorldEntrySessionTest {
             when(world.player()).thenReturn(module);
             var loading = new CompletableFuture<UOMobile>();
             when(module.loadMobile(1)).thenReturn(loading);
-            var session = new NettyPlayerSession(channel, null, null, bus, world);
+            var session = new NettyPlayerSession(channel, null, null, bus, world, null);
             TestFields.setField(session, "state", SessionState.CHARACTER_SELECTED);
             TestFields.setField(session, "mobileSerialId", 1);
             var entry = session.enteringWorld();
@@ -64,7 +64,7 @@ class WorldEntrySessionTest {
             when(world.player()).thenReturn(module);
             var player = mock(UOPlayer.class);
             when(module.loadMobile(1)).thenReturn(CompletableFuture.completedFuture(player));
-            var session = new NettyPlayerSession(channel, null, null, bus, world);
+            var session = new NettyPlayerSession(channel, null, null, bus, world, null);
             TestFields.setField(session, "state", SessionState.CHARACTER_SELECTED);
             TestFields.setField(session, "mobileSerialId", 1);
             assertSame(player, session.enteringWorld().join());
@@ -87,7 +87,7 @@ class WorldEntrySessionTest {
             var bus = mock(EventBus.class);
             when(world.player()).thenReturn(module);
             when(module.loadMobile(1)).thenReturn(CompletableFuture.completedFuture(mock(UONpc.class)));
-            var session = new NettyPlayerSession(channel, null, null, bus, world);
+            var session = new NettyPlayerSession(channel, null, null, bus, world, null);
             TestFields.setField(session, "state", SessionState.CHARACTER_SELECTED);
             TestFields.setField(session, "mobileSerialId", 1);
             var activation = mock(Runnable.class);

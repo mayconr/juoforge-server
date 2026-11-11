@@ -23,12 +23,12 @@ class AIProfilePolicyTest {
         var player = mock(UOPlayer.class);
         var context = new AIFlowContext(npc, world);
         when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", 8, 3, null, List.of()));
-        when(world.storage().getMobilesInRange(eq(npc), eq(8), any())).thenReturn(List.of(player));
+        when(world.mobile().getMobilesInRange(eq(npc), eq(8), any())).thenReturn(List.of(player));
         assertTrue(new NearbyPlayerActivationPolicy(24).isActive(context));
-        verify(world.storage()).getMobilesInRange(eq(npc), eq(8), any());
+        verify(world.mobile()).getMobilesInRange(eq(npc), eq(8), any());
         when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", null, 3, null, List.of()));
         new NearbyPlayerActivationPolicy(24).isActive(context);
-        verify(world.storage()).getMobilesInRange(eq(npc), eq(24), any());
+        verify(world.mobile()).getMobilesInRange(eq(npc), eq(24), any());
     }
 
     @Test

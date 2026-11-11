@@ -7,14 +7,14 @@ import com.github.mayconr.juoserver.game.item.trigger.Trigger;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.api.Test;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ItemModuleTest {
-    private final RealmStorage storage = mock(RealmStorage.class);
+    private final WorldStorage storage = mock(WorldStorage.class);
     private final EventBus events = mock(EventBus.class);
     private final ItemUseService itemUse = mock(ItemUseService.class);
     private final ItemModule module = new ItemModuleImpl(new ItemHandler(storage, events),

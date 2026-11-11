@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.game.ui.flow.skill.SkillGumpFlowDefinition;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -22,7 +22,7 @@ class SkillGumpFlowTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void requestsSkillsOfTheTargetOrReportsMissingMobile(boolean exists) {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         var target = mock(UONpc.class);

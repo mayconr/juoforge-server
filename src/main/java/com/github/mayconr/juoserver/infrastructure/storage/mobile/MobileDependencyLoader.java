@@ -1,4 +1,8 @@
-package com.github.mayconr.juoserver.infrastructure.storage;
+package com.github.mayconr.juoserver.infrastructure.storage.mobile;
+
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemCache;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemMapper;
+import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
 
 import com.github.mayconr.juoserver.game.model.SkillContainer;
 import com.github.mayconr.juoserver.game.model.UOMobile;

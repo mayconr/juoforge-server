@@ -13,7 +13,7 @@ public record NearbyPlayerActivationPolicy(int radius) implements AIActivationPo
         var behavior = context.npc().getBehavior();
         int activationRadius = behavior != null && behavior.activationRadius() != null
                 ? behavior.activationRadius() : radius;
-        return !context.world().storage().getMobilesInRange(context.npc(), activationRadius,
+        return !context.world().mobile().getMobilesInRange(context.npc(), activationRadius,
                 mobile -> mobile instanceof UOPlayer player && player.isConnected()).isEmpty();
     }
 }

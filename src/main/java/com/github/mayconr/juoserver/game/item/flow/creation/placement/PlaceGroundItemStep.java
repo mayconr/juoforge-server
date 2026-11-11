@@ -7,13 +7,13 @@ import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.event.GroundedItemCreated;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class PlaceGroundItemStep extends AbstractFlowStep<ItemCreationContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public PlaceGroundItemStep(RealmStorage storage) {
+    public PlaceGroundItemStep(WorldStorage storage) {
         super("place-ground-item");
         this.storage = storage;
     }

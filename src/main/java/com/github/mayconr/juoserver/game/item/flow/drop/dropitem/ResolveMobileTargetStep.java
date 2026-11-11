@@ -6,15 +6,15 @@ import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ResolveMobileTargetStep extends AbstractFlowStep<DropItemContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ResolveMobileTargetStep(RealmStorage storage) {
+    public ResolveMobileTargetStep(WorldStorage storage) {
         super("resolve_mobile_target");
         this.storage = storage;
     }

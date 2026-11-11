@@ -7,14 +7,14 @@ import com.github.mayconr.juoserver.game.item.trigger.Trigger;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public final class UseClickedItemStep extends AbstractFlowStep<DoubleClickContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final WorldItem items;
     private final WorldContainer containers;
 
-    public UseClickedItemStep(RealmStorage storage, WorldItem items, WorldContainer containers) {
+    public UseClickedItemStep(WorldStorage storage, WorldItem items, WorldContainer containers) {
         super("use-clicked-item");
         this.storage = storage;
         this.items = items;

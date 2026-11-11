@@ -6,14 +6,14 @@ import com.github.mayconr.juoserver.game.model.event.ItemDroppedOnTheGround;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 public class DropItemGroundStep extends AbstractFlowStep<DropItemContext> {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus eventBus;
 
-    public DropItemGroundStep(RealmStorage storage,  EventBus eventBus) {
+    public DropItemGroundStep(WorldStorage storage,  EventBus eventBus) {
         super("drop-item-ground");
         this.storage = storage;
         this.eventBus = eventBus;

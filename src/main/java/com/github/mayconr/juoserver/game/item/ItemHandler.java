@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.game.item;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ItemHandler {
 
-    private final RealmStorage storage;
+    private final WorldStorage storage;
     private final EventBus eventBus;
 
     public void deleteItem(UOItem item) {

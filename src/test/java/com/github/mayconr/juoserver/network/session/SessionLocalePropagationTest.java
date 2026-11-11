@@ -24,7 +24,7 @@ class SessionLocalePropagationTest {
             when(world.player()).thenReturn(players);
             var player = new UOPlayer(new UOMobileData());
             when(players.loadMobile(1)).thenReturn(CompletableFuture.completedFuture(player));
-            var session = new NettyPlayerSession(channel, null, null, mock(EventBus.class), world);
+            var session = new NettyPlayerSession(channel, null, null, mock(EventBus.class), world, null);
             session.setLocale(ClientLocale.PT_BR);
             TestFields.setField(session, "state", SessionState.CHARACTER_SELECTED);
             TestFields.setField(session, "mobileSerialId", 1);

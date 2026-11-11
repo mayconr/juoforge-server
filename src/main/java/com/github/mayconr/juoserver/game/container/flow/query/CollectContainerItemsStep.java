@@ -3,15 +3,15 @@ package com.github.mayconr.juoserver.game.container.flow.query;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
 
 public final class CollectContainerItemsStep extends AbstractFlowStep<GetContainerItemsContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public CollectContainerItemsStep(RealmStorage storage) {
+    public CollectContainerItemsStep(WorldStorage storage) {
         super("collect-container-items");
         this.storage = storage;
     }

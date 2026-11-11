@@ -8,7 +8,7 @@ import com.github.mayconr.juoserver.game.ui.flow.status.StatusGumpFlowDefinition
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -23,7 +23,7 @@ class StatusGumpFlowTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void requestsStatusOfTheTargetOrReportsMissingMobile(boolean exists) {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         var target = mock(UONpc.class);
@@ -46,7 +46,7 @@ class StatusGumpFlowTest {
     }
     @org.junit.jupiter.api.Test
     void includesBackpackWeightFromContainerModule() {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         var containers = mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
@@ -64,7 +64,7 @@ class StatusGumpFlowTest {
 
     @org.junit.jupiter.api.Test
     void missingBackpackDoesNotSendIncorrectWeight() {
-        var storage = mock(RealmStorage.class);
+        var storage = mock(WorldStorage.class);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         when(storage.getMobile(42)).thenReturn(Optional.of(player));

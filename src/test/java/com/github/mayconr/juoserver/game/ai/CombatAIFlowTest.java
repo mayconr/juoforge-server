@@ -35,7 +35,7 @@ class CombatAIFlowTest {
         var npc = mock(UONpc.class, RETURNS_DEEP_STUBS);
         when(npc.getBehavior()).thenReturn(new com.github.mayconr.juoserver.game.model.BehaviorDefinition(
                 "AGGRESSIVE", 24, 3, null, java.util.List.of()));
-        when(world.storage().getMobilesInRange(eq(npc), eq(3), any())).thenReturn(java.util.List.of());
+        when(world.mobile().getMobilesInRange(eq(npc), eq(3), any())).thenReturn(java.util.List.of());
         engine.attach(npc);
         engine.activate(npc);
 
@@ -55,6 +55,6 @@ class CombatAIFlowTest {
         assertTrue(context.getNearbyPlayers().isEmpty());
         assertTrue(context.actions().isEmpty());
         assertEquals(8, context.trace().entries().size());
-        verify(world.storage()).getMobilesInRange(eq(npc), eq(3), any());
+        verify(world.mobile()).getMobilesInRange(eq(npc), eq(3), any());
     }
 }

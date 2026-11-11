@@ -6,7 +6,7 @@ import com.github.mayconr.juoserver.game.ui.flow.tooltip.TooltipContext;
 import com.github.mayconr.juoserver.game.ui.flow.tooltip.TooltipFlowDefinition;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 class TooltipFlowTest {
-    private final RealmStorage storage = mock(RealmStorage.class);
+    private final WorldStorage storage = mock(WorldStorage.class);
     private final EventBus events = mock(EventBus.class);
     private final UOPlayer player = mock(UOPlayer.class);
 

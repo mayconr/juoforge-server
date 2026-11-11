@@ -7,14 +7,14 @@ import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.spell.flow.open.OpenSpellBookContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import com.github.mayconr.juoserver.infrastructure.storage.RealmStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 import java.util.HashSet;
 
 public class ValidateSpellBookAccessStep extends AbstractFlowStep<OpenSpellBookContext> {
-    private final RealmStorage storage;
+    private final WorldStorage storage;
 
-    public ValidateSpellBookAccessStep(RealmStorage storage) {
+    public ValidateSpellBookAccessStep(WorldStorage storage) {
         super("ValidateSpellBookAccess");
         this.storage = storage;
     }
