@@ -33,4 +33,18 @@ public interface UOFileReader {
     OptionalInt resolveWalkZ(Location from, Direction direction);
 
     Optional<Skill> getSkill(int skillId);
+
+    /**
+     * Reads the client tiledata for an item graphic.
+     *
+     * @return the tiledata entry, or empty when the graphic id is outside tiledata
+     */
+    Optional<ItemTileInfo> getItemTileInfo(int modelId);
+
+    /**
+     * Whether the client treats the item graphic as a stack. Graphics outside tiledata are not stackable.
+     */
+    default boolean isStackable(int modelId) {
+        return getItemTileInfo(modelId).map(ItemTileInfo::stackable).orElse(false);
+    }
 }

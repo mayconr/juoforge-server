@@ -22,6 +22,8 @@ public class ItemCreationContext extends AbstractSyncFlowContext<UOItem> impleme
 
     private ItemCreationOptions options;
     private ItemTemplate template;
+    /** Whether the template graphic is stackable according to the client tiledata. */
+    private boolean stackable;
     private UOItemData data;
     private ItemLocation itemLocation;
     private GameEvent event;

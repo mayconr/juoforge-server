@@ -1,8 +1,11 @@
 package com.github.mayconr.juoserver.game.economy;
 
 import com.github.mayconr.juoserver.game.economy.flow.purchase.*;
+import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.game.economy.stock.StockEntry;
 import com.github.mayconr.juoserver.game.item.WorldItem;
+import com.github.mayconr.juoserver.game.wallet.Wallet;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.model.*;
@@ -40,7 +43,7 @@ class VendorPurchaseFlowTest {
         var target = ContainerItemTarget.of(backpack, options -> options.tryStack(false));
         when(items.createItem(ItemRequest.byTemplate(template), target)).thenReturn(first, second);
 
-        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, containers, events)
+        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, containers, events, null)
                 .execute(new VendorPurchaseContext(player, request, session));
 
         assertTrue(result.flowSucceeded());
@@ -49,6 +52,36 @@ class VendorPurchaseFlowTest {
         verify(items, times(2)).createItem(ItemRequest.byTemplate(template), target);
         verify(events).publish(new VendorPurchaseCompleted(player, List.of(first, second)));
         verify(player).setVendorSession(null);
+    }
+
+    @Test
+    void deliversStackableGraphicAsSingleStack() {
+        var handler = mock(VendorHandler.class);
+        var wallet = mock(Wallet.class);
+        var items = mock(WorldItem.class);
+        var containers = mock(WorldContainer.class);
+        var player = mock(UOPlayer.class);
+        var backpack = mock(UOContainer.class);
+        var request = mock(VendorBuyRequest.class);
+        var template = mock(ItemTemplate.class);
+        when(template.modelId()).thenReturn(0x1BF2);
+        var fileReader = mock(UOFileReader.class);
+        when(fileReader.isStackable(0x1BF2)).thenReturn(true);
+        var stock = new StockEntry(template, 10, 1, 50);
+        var session = new VendorSession(Map.of(123, new VendorSessionItem(123, 10, stock)));
+        when(containers.getContainerBySerialId(player.getBackpack())).thenReturn(Optional.of(backpack));
+        when(handler.resolveVendorPurchase(player, request, wallet)).thenReturn(
+                VendorPurchaseResult.success(List.of(new PurchasedItem(template, 20))));
+        var target = ContainerItemTarget.of(backpack, options -> options.tryStack(false));
+        var stack = ItemRequest.byTemplate(template).withAmount(20);
+        when(items.createItem(stack, target)).thenReturn(mock(UOItem.class));
+
+        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, containers, mock(EventBus.class),
+                        fileReader)
+                .execute(new VendorPurchaseContext(player, request, session));
+
+        assertTrue(result.flowSucceeded());
+        verify(items, times(1)).createItem(stack, target);
     }
 
     @Test
@@ -65,7 +98,7 @@ class VendorPurchaseFlowTest {
         when(containers.getContainerBySerialId(player.getBackpack())).thenReturn(Optional.of(mock(UOContainer.class)));
         when(handler.resolveVendorPurchase(player, request, wallet)).thenReturn(VendorPurchaseResult.failed());
 
-        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, containers, events)
+        var result = VendorPurchaseFlowDefinition.build(handler, wallet, items, containers, events, null)
                 .execute(new VendorPurchaseContext(player, request, session));
 
         assertTrue(result.flowFailed());

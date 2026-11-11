@@ -19,7 +19,7 @@ class GenerateLootFlowTest {
     private final JacksonDataMapper dataMapper = new JacksonDataMapper();
     private final PendingLoot pendingLoot = new PendingLoot(dataMapper);
     private final ItemTemplate gold = new ItemTemplate("gold_coin", "gold", null, 0xEED, true, 0, null, 0,
-            List.of(ItemFlag.STACKABLE), Map.of(), 0, null, null);
+            List.of(), Map.of(), 0, null, null);
     private final InMemoryTemplateRegistry<String, ItemTemplate> names =
             new InMemoryTemplateRegistry<>(List.of(gold), ItemTemplate::name);
     private final InMemoryTemplateRegistry<Integer, ItemTemplate> models =

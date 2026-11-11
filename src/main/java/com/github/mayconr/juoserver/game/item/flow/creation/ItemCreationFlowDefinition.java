@@ -13,7 +13,9 @@ import com.github.mayconr.juoserver.game.item.flow.creation.placement.PlaceConta
 import com.github.mayconr.juoserver.game.item.flow.creation.placement.PlaceEquippedItemStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.placement.PlaceGroundItemStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.placement.PlaceOrphanItemStep;
+import com.github.mayconr.juoserver.game.item.flow.creation.template.ResolveItemTileDataStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.template.TemplateLoaderStep;
+import com.github.mayconr.juoserver.game.item.flow.creation.validation.ValidateItemAmountStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.validation.ValidateItemCreation;
 import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
@@ -33,6 +35,8 @@ public final class ItemCreationFlowDefinition {
                 .step(new ValidateItemCreation())
                 .step(new ExecuteOptionsStep())
                 .step(new TemplateLoaderStep(templates.itemByName(), templates.itemByModelId()))
+                .step(new ResolveItemTileDataStep(infra.fileReader()))
+                .step(new ValidateItemAmountStep())
                 .step(new CreateItemDataStep(infra.serialGenerator()))
                 .appendGroup("BackpackWeight", backpackWeightPhase(infra.storage(), containers, mobiles))
                 .step(new CreateItemStep(infra.storage()))

@@ -1,7 +1,14 @@
 package com.github.mayconr.juoserver.game.skill;
 
-/** A validated action with a captured swing count and simulation-time delay. */
+import com.github.mayconr.juoserver.game.model.Location;
+
+/**
+ * A validated action with a captured swing count and simulation-time delay.
+ * The actor's position is compared to the origin captured when the action was requested.
+ */
 public final class SkillAction {
+    private final Location actor;
+    private final Location origin;
     private int swingsLeft;
     private int swingsExecuted;
     private double remainingSeconds;
@@ -9,7 +16,10 @@ public final class SkillAction {
     private final SkillCallback swing;
     private final SkillCallback onComplete;
 
-    public SkillAction(int swings, double delaySeconds, SkillCallback swing, SkillCallback onComplete) {
+    public SkillAction(Location actor, Location origin, int swings, double delaySeconds,
+                       SkillCallback swing, SkillCallback onComplete) {
+        this.actor = actor;
+        this.origin = origin;
         this.swingsLeft = swings;
         this.delaySeconds = delaySeconds;
         this.swing = swing;
@@ -19,6 +29,11 @@ public final class SkillAction {
     public boolean advance(double delta) {
         remainingSeconds -= delta;
         return remainingSeconds <= 1e-9;
+    }
+
+    /** Whether the actor left the tile where the action was requested. */
+    public boolean hasMoved() {
+        return actor.getX() != origin.getX() || actor.getY() != origin.getY();
     }
 
     public void executeSwing() {

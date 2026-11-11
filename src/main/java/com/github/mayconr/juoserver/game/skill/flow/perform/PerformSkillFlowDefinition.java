@@ -15,6 +15,7 @@ public final class PerformSkillFlowDefinition {
         return FlowFactory.<PerformSkillContext>builder()
                 .step(new ValidatePerformSkillStep(fileReader))
                 .step(new ResolveSkillSwingsStep(mobiles))
+                .step(new CaptureSkillActionOriginStep())
                 .step(new ScheduleSkillActionStep(skills, messages))
                 .build();
     }

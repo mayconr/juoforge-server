@@ -42,6 +42,15 @@ public record ItemTemplate(String name,
         family = family == null ? "OTHER" : family;
         attr = attr == null ? Map.of() : Map.copyOf(attr);
         flags = flags == null ? Collections.emptyList() : flags;
+        rejectStackableFlag(name, flags);
+    }
+
+    /** Stackability is resolved from the client tiledata of the graphic, so templates must not declare it. */
+    private static void rejectStackableFlag(String name, List<ItemFlag> flags) {
+        if (flags.contains(ItemFlag.STACKABLE)) {
+            throw new IllegalArgumentException("Item template " + name
+                    + " must not declare STACKABLE; it is resolved from the client tiledata of its modelId");
+        }
     }
 
     /** Nullable JSON input distinguishes an omitted movable flag from explicit false. */

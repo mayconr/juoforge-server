@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.infrastructure.datafile;
 
 import com.github.mayconr.juoforge.reader.skill.Skill;
+import com.github.mayconr.juoforge.reader.tiledata.ItemTileData;
+import com.github.mayconr.juoforge.reader.tiledata.TileFlag;
 import com.github.mayconr.juoforge.reader.view.GameDataProvider;
 import com.github.mayconr.juoforge.reader.view.GameDataProviderFactory;
 import com.github.mayconr.juoforge.reader.view.LandTile;
@@ -16,6 +18,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -72,5 +76,29 @@ public class UOFileReaderImpl implements UOFileReader{
     @Override
     public Optional<Skill> getSkill(int skillId) {
         return gameDataProvider.skillBy(skillId);
+    }
+
+    @Override
+    public Optional<ItemTileInfo> getItemTileInfo(int modelId) {
+        return gameDataProvider.itemTileData(modelId).map(data -> toItemTileInfo(modelId, data));
+    }
+
+    private static ItemTileInfo toItemTileInfo(int modelId, ItemTileData data) {
+        return new ItemTileInfo(
+                modelId,
+                data.name(),
+                data.isStackable(),
+                flagNames(data.flags()),
+                data.weight(),
+                data.layer(),
+                data.count(),
+                data.animId(),
+                data.hue(),
+                data.lightIndex(),
+                data.height());
+    }
+
+    private static Set<String> flagNames(Set<TileFlag> flags) {
+        return flags.stream().map(TileFlag::name).collect(Collectors.toUnmodifiableSet());
     }
 }

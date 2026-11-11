@@ -21,6 +21,8 @@ public interface WorldSkill {
      * The optional swingCount overrides the persistent skill.swings preference; the default and minimum are 1.
      * The first swing runs on the next update, followed by a fixed second between swings.
      * At most one swing runs per update.
+     * The player position is captured when the action is requested; if the player leaves that tile,
+     * the remaining swings are cancelled and onComplete runs with the swings already executed.
      * Callbacks run on the game loop.
      */
     boolean performSkill(UOPlayer player, SkillPerformOptions options);

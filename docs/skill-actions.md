@@ -28,8 +28,11 @@ The existing `game.skill.flow.perform` flow owns scheduling:
    skill ID, and skill existence in `UOFileReader`.
 2. `ResolveSkillSwingsStep` uses `swingCount` when supplied, otherwise reads the
    persistent preference, then normalizes the result to at least 1.
-3. `ScheduleSkillActionStep` creates `SkillAction` with explicit constructor
-   arguments (swing count, delay, swing callback, completion callback), reserves it through the skill
+3. `CaptureSkillActionOriginStep` stores a copy of the player position when the
+   action is requested.
+4. `ScheduleSkillActionStep` creates `SkillAction` with explicit constructor
+   arguments (player, captured origin, swing count, delay, swing callback, completion
+   callback), reserves it through the skill
    module, and completes the result. If an action is already reserved, it sends
    `skill.action.already_active`, completes with false, and stops normally.
 
@@ -60,7 +63,13 @@ snapshot and conditional-release operations.
 1. `ValidateSkillActionsUpdateStep` rejects negative or nonfinite intervals.
 2. `AdvanceSkillActionsStep` snapshots reservations, advances simulation time,
    and collects actions whose delay has elapsed.
-3. `ExecuteSkillActionsStep` invokes one swing for each ready action and retains
+3. `CancelMovedSkillActionsStep` cancels actions whose player left the captured
+   origin tile (X or Y differs). It checks every reservation on each update, not
+   only ready ones, so leaving and returning between swings still cancels. It
+   releases the reservation, removes it from the ready actions, skips the
+   remaining swings and invokes completion once with the swings already executed.
+   Completion failures are logged.
+4. `ExecuteSkillActionsStep` invokes one swing for each ready action and retains
    its reservation while more swings remain. After the last swing it releases the
    reservation before completion. Individual failures are logged and release the
    affected reservation without interrupting other actions.
