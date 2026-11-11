@@ -402,9 +402,7 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeItemModule() {
-        final var itemHandler = new ItemHandler(storage, eventBus);
-
-        this.itemModule = new ItemModuleImpl(itemHandler, storage, itemTemplateRegistry, itemUseService);
+        this.itemModule = new ItemModuleImpl(storage, itemTemplateRegistry, itemUseService);
     }
 
     private void initializeCombatModule() {

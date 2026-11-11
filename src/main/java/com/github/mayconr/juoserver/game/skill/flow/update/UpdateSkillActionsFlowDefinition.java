@@ -11,6 +11,7 @@ public final class UpdateSkillActionsFlowDefinition {
         return FlowFactory.<UpdateSkillActionsContext>builder()
                 .step(new ValidateSkillActionsUpdateStep())
                 .step(new AdvanceSkillActionsStep(skills))
+                .step(new CancelMovedSkillActionsStep(skills))
                 .step(new ExecuteSkillActionsStep(skills))
                 .build();
     }

@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.infrastructure.datafile;
 
 import com.github.mayconr.juoforge.reader.skill.Skill;
+import com.github.mayconr.juoforge.reader.tiledata.ItemTileData;
 import com.github.mayconr.juoforge.reader.tiledata.TileFlag;
 import com.github.mayconr.juoforge.reader.view.GameDataProvider;
 import com.github.mayconr.juoforge.reader.view.LandTile;
@@ -122,6 +123,11 @@ class WalkSurfaceResolverTest {
 
         @Override
         public Optional<Skill> skillBy(int skillId) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<ItemTileData> itemTileData(int itemId) {
             return Optional.empty();
         }
 

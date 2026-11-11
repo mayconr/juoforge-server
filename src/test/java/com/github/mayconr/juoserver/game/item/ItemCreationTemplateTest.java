@@ -8,6 +8,7 @@ import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.*;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
@@ -42,8 +43,11 @@ class ItemCreationTemplateTest {
         var item = mock(com.github.mayconr.juoserver.game.model.UOItem.class);
         when(storage.createItem(data)).thenReturn(item);
         when(containers.addItem(eq(backpack), eq(item), anyBoolean(), anyBoolean())).thenReturn(item);
+        var fileReader = mock(UOFileReader.class);
+        when(fileReader.isStackable(anyInt())).thenReturn(true);
         var flow = ItemCreationFlowDefinition.build(
-                GameInfra.builder().storage(storage).eventBus(events).serialGenerator(serials).build(),
+                GameInfra.builder().storage(storage).eventBus(events).serialGenerator(serials)
+                        .fileReader(fileReader).build(),
                 GameTemplates.builder().itemByName(names).itemByModelId(models).build(), containers, mobiles);
         var result = flow.execute(new ItemCreationContext(ItemRequest.byTemplate(template).withAmount(4), ItemTarget.container(backpack)));
         if (overweight) {
@@ -93,7 +97,7 @@ class ItemCreationTemplateTest {
     void bothModuleOverloadsPreserveTemplateFailure(boolean withOptions) {
         var registry = new DefaultFlowRegistry();
         registry.register("create-item", flow(), ItemCreationContext.class);
-        var module = new ItemModuleImpl(null, storage, null, null);
+        var module = new ItemModuleImpl(storage, null, null);
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
         var request = ItemRequest.byName("missing_item");

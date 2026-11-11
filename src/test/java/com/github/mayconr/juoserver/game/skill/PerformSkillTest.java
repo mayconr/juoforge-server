@@ -111,6 +111,102 @@ class PerformSkillTest {
     }
 
     @Test
+    void movingBeforeTheFirstSwingCancelsAllSwingsAndCompletesOnce() {
+        var module = module();
+        var player = player(1);
+        var swing = mock(SkillCallback.class);
+        var completion = mock(SkillCallback.class);
+        module.performSkill(player, SkillPerformOptions.builder()
+                .skillId(1).swingCount(3).swing(swing).onComplete(completion).build());
+
+        player.setLocation(1, 0);
+        module.update(0);
+        module.update(100);
+
+        assertFalse(module.hasActiveAction(player));
+        verifyNoInteractions(swing);
+        verify(completion).execute(0);
+        verifyNoMoreInteractions(completion);
+    }
+
+    @Test
+    void movingBetweenSwingsCancelsTheRemainingSwings() {
+        var module = module();
+        var player = player(1);
+        var swing = mock(SkillCallback.class);
+        var completion = mock(SkillCallback.class);
+        module.performSkill(player, SkillPerformOptions.builder()
+                .skillId(1).swingCount(3).swing(swing).onComplete(completion).build());
+
+        module.update(0);
+        player.setLocation(0, 1);
+        module.update(1);
+        module.update(1);
+
+        assertFalse(module.hasActiveAction(player));
+        var order = inOrder(swing, completion);
+        order.verify(swing).execute(1);
+        order.verify(completion).execute(1);
+        verifyNoMoreInteractions(swing, completion);
+    }
+
+    @Test
+    void leavingTheOriginBetweenSwingsCancelsEvenAfterReturning() {
+        var module = module();
+        var player = player(1);
+        var swing = mock(SkillCallback.class);
+        var completion = mock(SkillCallback.class);
+        module.performSkill(player, SkillPerformOptions.builder()
+                .skillId(1).swingCount(2).swing(swing).onComplete(completion).build());
+
+        module.update(0);
+        player.setLocation(1, 1);
+        module.update(0.5);
+        player.setLocation(0, 0);
+        module.update(0.5);
+
+        verify(swing).execute(1);
+        verify(swing, never()).execute(2);
+        verify(completion).execute(1);
+        assertFalse(module.hasActiveAction(player));
+    }
+
+    @Test
+    void changingOnlyHeightDoesNotCancelTheAction() {
+        var module = module();
+        var player = player(1);
+        var swing = mock(SkillCallback.class);
+        module.performSkill(player, SkillPerformOptions.builder()
+                .skillId(1).swingCount(2).swing(swing).build());
+
+        module.update(0);
+        player.setZ(5);
+        module.update(1);
+
+        verify(swing).execute(1);
+        verify(swing).execute(2);
+    }
+
+    @Test
+    void failedCompletionAfterMovementStillReleasesTheAction() {
+        var module = module();
+        var player = player(1);
+        var swing = mock(SkillCallback.class);
+        module.performSkill(player, SkillPerformOptions.builder()
+                .skillId(1)
+                .swingCount(2)
+                .swing(swing)
+                .onComplete(count -> { throw new IllegalStateException("failed completion"); })
+                .build());
+
+        player.setLocation(1, 0);
+        module.update(0);
+
+        assertFalse(module.hasActiveAction(player));
+        verifyNoInteractions(swing);
+    }
+
+    @Test
     void busyActionIsNotReplacedAndNotifiesPlayer() {
         var module = module();
         var player = player(1);

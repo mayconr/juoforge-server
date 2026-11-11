@@ -62,9 +62,9 @@
 			<version>3.18.0</version>
 		</dependency>
 		<dependency>
-			<groupId>om.github.mayconr</groupId>
+			<groupId>com.github.mayconr</groupId>
 			<artifactId>juoforge-filereader</artifactId>
-			<version>1.0.0</version>
+			<version>1.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>

@@ -97,7 +97,7 @@ class NpcEquipmentPersistenceTest {
         var registry = new DefaultFlowRegistry();
         var context = DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build();
-        var itemModule = new ItemModuleImpl(null, storage, null, null);
+        var itemModule = new ItemModuleImpl(storage, null, null);
         itemModule.initialize(context);
         registry.register("create-item", ItemCreationFlowDefinition.build(infra, templates, new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new com.github.mayconr.juoserver.game.item.ContainerHandler(infra.eventBus(), storage)), mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class)), ItemCreationContext.class);
         registry.register("create-npc", NpcCreationFlowDefinition.build(

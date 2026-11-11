@@ -78,6 +78,8 @@ import com.github.mayconr.juoserver.game.interaction.flow.target.send.SendTarget
 import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationFlowDefinition;
+import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
+import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
@@ -266,7 +268,9 @@ public class FlowRegistryFactory {
         registry.register(DeletePlayerFlowDefinition.class.getSimpleName(),
                 DeletePlayerFlowDefinition.build(infra.storage()), DeletePlayerContext.class);
         registry.register(VendorPurchaseFlowDefinition.class.getSimpleName(),
-                VendorPurchaseFlowDefinition.build(infra.vendorHandler(), infra.wallet(), modules.item(), modules.container(), infra.eventBus()), VendorPurchaseContext.class);
+                VendorPurchaseFlowDefinition.build(infra.vendorHandler(), infra.wallet(), modules.item(),
+                        modules.container(), infra.eventBus(), infra.fileReader()),
+                VendorPurchaseContext.class);
         registry.register(BeginVendorPurchaseFlowDefinition.class.getSimpleName(),
                 BeginVendorPurchaseFlowDefinition.build(infra.vendorHandler(), infra.eventBus()), BeginVendorPurchaseContext.class);
         registry.register(CastSpellFlowDefinition.class.getSimpleName(),
@@ -283,6 +287,8 @@ public class FlowRegistryFactory {
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext.class);
         registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates, modules.container(), modules.mobile()), ItemCreationContext.class);
         registry.register(DropItemFlowDefinition.class.getSimpleName(), DropItemFlowDefinition.build(modules, infra), DropItemContext.class);
+        registry.register(DeleteItemFlowDefinition.class.getSimpleName(),
+                DeleteItemFlowDefinition.build(infra.storage(), infra.eventBus(), modules.ui()), DeleteItemContext.class);
         registry.register(PlayerCreationFlowDefinition.class.getSimpleName(), PlayerCreationFlowDefinition.build(modules, infra, templates), PlayerCreationContext.class);
         registry.register(UnmountFlowDefinition.class.getSimpleName(), UnmountFlowDefinition.build(modules, infra, templates), UnmountContext.class);
         registry.register(MountFlowDefinition.class.getSimpleName(), MountFlowDefinition.build(modules, infra, templates), MountContext.class);

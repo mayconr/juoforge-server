@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.item;
 
+import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
@@ -22,7 +23,6 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class ItemModuleImpl implements ItemModule {
 
-    private final ItemHandler itemHandler;
     private final WorldStorage storage;
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final ItemUseService itemUseService;
@@ -90,7 +90,10 @@ public class ItemModuleImpl implements ItemModule {
 
     @Override
     public void deleteItem(UOItem item) {
-        itemHandler.deleteItem(item);
+        var result = flows.execute(new DeleteItemContext(item));
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("deleteItem", result, null);
+        }
     }
 
     @Override
