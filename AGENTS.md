@@ -39,6 +39,23 @@ between them. Juoforge's implementation must follow its own architectural and
 language conventions. Consulting these implementations does not authorize
 copying or deriving processes or flows from them for juoforge.
 
+## Client data and MUL files
+
+Juoforge implements game mechanics only. It must not contain client data or
+knowledge about the client's MUL files.
+
+- Do not hardcode values that describe how the client renders or stores content,
+  such as gump IDs and their areas, art or gump dimensions, hues, animation frame
+  data, or tables copied from client resources.
+- Do not add code that reads, interprets, or documents MUL files, their formats,
+  offsets, or contents.
+- Keep only the network protocol (packet formats and field semantics) and the
+  mechanics built on it. When the client decides how something is displayed,
+  such as the final position of an item inside a container gump, send a valid
+  value and let the client handle the presentation.
+- References under `docs/references/` may be consulted to verify how the client
+  behaves, but their data must not be copied into juoforge.
+
 ## Java imports
 
 - Always add an explicit `import` for each class used and use its simple name in code.

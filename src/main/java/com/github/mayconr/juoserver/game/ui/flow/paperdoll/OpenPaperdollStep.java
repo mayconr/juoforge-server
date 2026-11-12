@@ -23,7 +23,7 @@ public final class OpenPaperdollStep extends AbstractFlowStep<OpenPaperdollConte
         if (context.getMobileSerial() == player.getSerialId()) {
             events.publish(new PaperdollOpened(player, player, OpenPaperdoll.Flag.NORMAL));
         } else {
-            storage.getMobile(context.getMobileSerial()).ifPresent(mobile ->
+            storage.mobiles().get(context.getMobileSerial()).ifPresent(mobile ->
                     events.publish(new PaperdollOpened(player, mobile, OpenPaperdoll.Flag.NORMAL)));
         }
         return StepResult.success();

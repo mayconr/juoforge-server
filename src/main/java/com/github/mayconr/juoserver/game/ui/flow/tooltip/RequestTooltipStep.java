@@ -4,10 +4,9 @@ import com.github.mayconr.juoserver.game.model.TooltipSupport;
 import com.github.mayconr.juoserver.game.model.event.TooltipRequested;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
-import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import java.util.ArrayList;
 
 public final class RequestTooltipStep extends AbstractFlowStep<TooltipContext> {
@@ -29,12 +28,12 @@ public final class RequestTooltipStep extends AbstractFlowStep<TooltipContext> {
         for (int serialId : serials) {
             // Mobiles
             if (SerialGenerator.isMobile(serialId)) {
-                storage.getMobile(serialId).ifPresent(objects::add);
+                storage.mobiles().get(serialId).ifPresent(objects::add);
                 continue;
             }
             // Items
             if (SerialGenerator.isItem(serialId)) {
-                storage.getItem(serialId).ifPresent(objects::add);
+                storage.items().get(serialId).ifPresent(objects::add);
                 continue;
             }
             // Vendor session (buy gump)

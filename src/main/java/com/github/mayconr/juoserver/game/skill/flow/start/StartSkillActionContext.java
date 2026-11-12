@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.skill.flow.start;
 
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.skill.SkillActionAnimation;
 import com.github.mayconr.juoserver.game.skill.SkillActionOptions;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import lombok.Getter;
@@ -15,6 +16,12 @@ public final class StartSkillActionContext extends AbstractSyncFlowContext<Boole
     private final SkillActionOptions options;
     @Setter
     private int swings = 1;
+    /** Duration captured at action start, in seconds, used between swings. */
+    @Setter
+    private double durationSeconds;
+    /** Animation repeated at the start of every swing cycle; null when the action has none. */
+    @Setter
+    private SkillActionAnimation animation;
     /** Player position when the action was requested; moving away from it cancels the remaining swings. */
     @Setter
     private Location origin;

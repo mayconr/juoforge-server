@@ -28,9 +28,9 @@ public class StackItemStep extends AbstractFlowStep<DropItemContext> {
         final var itemStacked = context.getTargetStack().itemStack();
         final var itemDropped = context.getItem();
 
-        itemStacked.increaseAmount(itemDropped.getAmount());
+        itemStacked.absorbStack(itemDropped);
 
-        storage.deleteItem(itemDropped);
+        storage.items().delete(itemDropped);
 
         switch (itemStacked.getCurrentLocation()) {
             case GroundLocation location -> {
@@ -39,7 +39,7 @@ public class StackItemStep extends AbstractFlowStep<DropItemContext> {
             }
             case ContainerLocation location -> {
                 log.info("Stacking container item");
-                var container = storage.getContainer(location.containerSerialId())
+                var container = storage.items().getContainer(location.containerSerialId())
                                 .orElseThrow(() -> new IllegalStateException("Container not found"));
                 eventBus.publish(new ItemStacked(player, itemStacked, itemDropped, ItemStacked.StackDestination.CONTAINER, container));
             }

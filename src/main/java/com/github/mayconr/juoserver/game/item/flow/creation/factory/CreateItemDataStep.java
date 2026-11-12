@@ -1,7 +1,9 @@
 package com.github.mayconr.juoserver.game.item.flow.creation.factory;
 
+import com.github.mayconr.juoserver.game.item.ItemRequest;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
+import com.github.mayconr.juoserver.game.model.UOItemData;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
@@ -28,21 +30,25 @@ public class CreateItemDataStep extends AbstractFlowStep<ItemCreationContext> {
             return StepResult.failure("template is null");
         }
 
-        final var request = context.getRequest();
-
         var data = template.toData(serialGenerator.getNextItem());
-
-        // Override template defaults
-        if (request.hue() != null) {
-            data.setHue(request.hue());
-        }
-        data.setAmount(request.amount());
-        data.setDirection(request.direction());
+        applyRequest(data, context.getRequest());
         data.setFlags(withStackable(data.getFlags(), context.isStackable()));
 
         context.setData(data);
 
         return StepResult.success();
+    }
+
+    /** Overrides the template defaults with the values requested for this item. */
+    private static void applyRequest(UOItemData data, ItemRequest request) {
+        if (request.hue() != null) {
+            data.setHue(request.hue());
+        }
+        if (request.material() != null) {
+            data.setMaterial(request.material());
+        }
+        data.setAmount(request.amount());
+        data.setDirection(request.direction());
     }
 
     /** STACKABLE comes from the client tiledata resolved into the context, never from the template. */

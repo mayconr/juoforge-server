@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.world.context;
 
+import com.github.mayconr.juoserver.game.interaction.WorldInteraction;
 import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsContext;
 import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsContext;
@@ -169,6 +170,7 @@ public class FlowRegistryFactory {
             DamageModule damage,
             LootModule loot,
             SkillModule skill,
+            WorldInteraction interaction,
             UIModule ui
     ) {}
 
@@ -301,12 +303,14 @@ public class FlowRegistryFactory {
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
         registry.register(StartSkillActionFlowDefinition.class.getSimpleName(),
-                StartSkillActionFlowDefinition.build(infra.fileReader(), modules.skill(), modules.message(), modules.mobile()),
+                StartSkillActionFlowDefinition.build(
+                        infra.fileReader(), modules.skill(), modules.message(), modules.mobile(), modules.interaction()),
                 StartSkillActionContext.class);
         registry.register(StopSkillActionFlowDefinition.class.getSimpleName(),
                 StopSkillActionFlowDefinition.build(modules.skill()), StopSkillActionContext.class);
         registry.register(UpdateSkillActionsFlowDefinition.class.getSimpleName(),
-                UpdateSkillActionsFlowDefinition.build(modules.skill()), UpdateSkillActionsContext.class);
+                UpdateSkillActionsFlowDefinition.build(modules.skill(), modules.interaction()),
+                UpdateSkillActionsContext.class);
         registry.register(SetSkillSwingCountFlowDefinition.class.getSimpleName(),
                 SetSkillSwingCountFlowDefinition.build(modules.mobile()), SetSkillSwingCountContext.class);
         registry.register(TeleportFlowDefinition.class.getSimpleName(), TeleportFlowDefinition.build(modules, infra), TeleportContext.class);

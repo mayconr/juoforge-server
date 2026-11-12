@@ -1,6 +1,10 @@
 package com.github.mayconr.juoserver.game.item;
 
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.ItemCreationOptions;
+import com.github.mayconr.juoserver.game.model.ItemTarget;
+import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
@@ -14,6 +18,19 @@ public interface WorldItem {
 
     /** Dispatches item use to the registered triggers. */
     void use(ItemUseContext context);
+
+    /**
+     * Rolls quality in [-1, 1] for an item request; does not create or modify an item.
+     * Luck in [-100, 100] biases intermediate rolls; zero luck leaves the distribution unchanged.
+     * Modifier zero guarantees -1 and modifier 100 guarantees +1, regardless of luck.
+     * Luck and modifier outside their ranges are clamped to the nearest bound.
+     *
+     * @param mobile source of luck
+     * @param modifier value in [0, 100], independent of any particular skill; values outside are clamped
+     * @return quality suitable for {@link ItemRequest#withQuality(float)}
+     * @throws IllegalArgumentException if modifier is NaN
+     */
+    float calculateQuality(UOMobile mobile, double modifier);
 
     /**
      * Creates and places an item using the default creation options, treating any rejection as an error.

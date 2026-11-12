@@ -7,7 +7,6 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
-
 import java.util.Optional;
 
 public final class RequestObjectLabelStep extends AbstractFlowStep<SingleClickContext> {
@@ -25,9 +24,9 @@ public final class RequestObjectLabelStep extends AbstractFlowStep<SingleClickCo
         int serial = context.getRequest().getSerialId();
         Optional<? extends UOObject<?>> object = Optional.empty();
         if (SerialGenerator.isMobile(serial)) {
-            object = storage.getMobile(serial);
+            object = storage.mobiles().get(serial);
         } else if (SerialGenerator.isItem(serial)) {
-            object = storage.getItem(serial);
+            object = storage.items().get(serial);
         }
         object.ifPresent(value -> events.publish(new ObjectLabelRequested(context.getPlayer(), value)));
         return StepResult.success();

@@ -215,6 +215,7 @@ public class GeneralInformation extends AbstractPacket {
 
         this.command = switch (subCommand) {
             case ContextMenuRequestExtendedCommand.SUB_COMMAND -> new ContextMenuRequestExtendedCommand(buffer);
+            case ContextMenuSelectionExtendedCommand.SUB_COMMAND -> new ContextMenuSelectionExtendedCommand(buffer);
             case ClientTypeExtendedCommand.SUB_COMMAND -> new ClientTypeExtendedCommand(buffer);
             case ClientVersionExtendedCommand.SUB_COMMAND -> new ClientVersionExtendedCommand(buffer, getLength());
             case LanguageExtendedCommand.SUB_COMMAND -> new LanguageExtendedCommand(buffer);

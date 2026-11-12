@@ -1,6 +1,11 @@
 package com.github.mayconr.juoserver.game.interaction.flow.target.resolve;
 
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.CursorTarget;
+import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.model.TargetResult;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.shared.step.LightOfSightContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import com.github.mayconr.juoserver.network.packet.Target;
@@ -28,11 +33,16 @@ public class ResolveTargetContext extends AbstractSyncFlowContext<Void> implemen
 
     private UOMobile mobile;
     private UOItem item;
+    private boolean inOwnBackpack;
 
     private TargetResult targetResult;
 
     public static ResolveTargetContext of(UOPlayer player, Target target, boolean validateLOS) {
         return new ResolveTargetContext(player, target, validateLOS);
+    }
+
+    public boolean shouldValidateLOS() {
+        return validateLOS && !inOwnBackpack;
     }
 
     @Override

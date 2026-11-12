@@ -18,6 +18,10 @@ public class UOItem extends UOObject<UOItemData> {
     private int amount;
     private int hue;
     private int unitWeight;
+    /** Raw material properties; {@code null} when the item is not a material. */
+    private ItemMaterial material;
+    /** Material properties already include this quality; loading never reapplies it. */
+    private float quality;
     private boolean movable;
     private boolean hidden;
     private Direction direction;
@@ -37,6 +41,8 @@ public class UOItem extends UOObject<UOItemData> {
         this.direction = data.getDirection();
         this.flags = data.getFlags();
         this.unitWeight = data.getUnitWeight();
+        this.material = data.getMaterial();
+        this.quality = data.getQuality();
         this.currentLocation = switch (data.getLocationType() == null ? ItemLocationType.EQUIPPED : data.getLocationType()) {
             case EQUIPPED -> ItemLocation.equipped(data.getOwnerSerialId());
             case CONTAINER -> ItemLocation.container(data.getContainerSerialId());
@@ -83,6 +89,8 @@ public class UOItem extends UOObject<UOItemData> {
         }
         data.setFlags(flags);
         data.setUnitWeight(unitWeight);
+        data.setMaterial(material);
+        data.setQuality(quality);
     }
 
     public boolean hasFlag(ItemFlag flag) {
@@ -96,6 +104,17 @@ public class UOItem extends UOObject<UOItemData> {
 
     public void increaseAmount(int amount) {
         this.amount += amount;
+    }
+
+    /**
+     * Adds another stack to this one: material and quality become averages weighted by the original
+     * amounts, then the amounts are summed. The other stack is left unchanged.
+     */
+    public void absorbStack(UOItem other) {
+        this.material = ItemMaterial.merge(material, amount, other.getMaterial(), other.getAmount());
+        this.quality = (float) (((double) quality * amount + (double) other.getQuality() * other.getAmount())
+                / ((long) amount + other.getAmount()));
+        increaseAmount(other.getAmount());
     }
 
     public void setCurrentLocation(ItemLocation currentLocation) {

@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.game.item.template;
 import com.github.mayconr.juoserver.game.model.DefaultAttributeMap;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
+import com.github.mayconr.juoserver.game.model.ItemMaterial;
 import com.github.mayconr.juoserver.game.model.ItemLocationType;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOItemData;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.mayconr.juoserver.infrastructure.template.BaseTemplate;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +37,15 @@ public record ItemTemplate(String name,
                            Weapon weapon,
                            String script,
                            int unitWeight,
-                           String family)
+                           String family,
+                           // Raw material
+                           Material material)
 
             implements BaseTemplate {
     public ItemTemplate {
         family = family == null ? "OTHER" : family;
         attr = attr == null ? Map.of() : Map.copyOf(attr);
-        flags = flags == null ? Collections.emptyList() : flags;
+        flags = flags == null ? Collections.emptyList() : List.copyOf(flags);
         rejectStackableFlag(name, flags);
     }
 
@@ -71,9 +75,20 @@ public record ItemTemplate(String name,
             @JsonProperty("weapon") Weapon weapon,
             @JsonProperty("script") String script,
             @JsonProperty("unitWeight") int unitWeight,
-            @JsonProperty("family") String family) {
+            @JsonProperty("family") String family,
+            @JsonProperty("material") Material material) {
         this(name, displayName, layer, modelId, movable == null || movable.booleanValue(), hue,
-                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family);
+                stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family,
+                material);
+    }
+
+    /** Creates a template without raw material properties. */
+    public ItemTemplate(String name, String displayName, Layer layer, int modelId,
+                        boolean movable, int hue, String stockType, int basePrice,
+                        List<ItemFlag> flags, Map<String, Object> attr, int containerGumpId,
+                        String mountName, Weapon weapon, String script, int unitWeight, String family) {
+        this(name, displayName, layer, modelId, movable, hue, stockType, basePrice,
+                flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family, null);
     }
 
     public ItemTemplate(String name, String displayName, Layer layer, int modelId,
@@ -104,6 +119,27 @@ public record ItemTemplate(String name,
 
     public record BaseDamage(int min, int max) {}
 
+    /**
+     * Optional physical properties of a raw material; {@code null} when the item is not a material.
+     *
+     * @param density       mass per volume of the material
+     * @param hardness      resistance to scratching and deformation
+     * @param toughness     resistance to fracture under impact
+     * @param magicAffinity how readily the material holds magic
+     */
+    public record Material(int density, int hardness, int toughness, int magicAffinity) {
+
+        /** Converts the template material into the material carried by an item instance. */
+        public ItemMaterial toItemMaterial() {
+            return new ItemMaterial(density, hardness, toughness, magicAffinity);
+        }
+    }
+
+    /** Item instance material derived from this template; {@code null} when the template has none. */
+    private ItemMaterial itemMaterial() {
+        return material == null ? null : material.toItemMaterial();
+    }
+
     public UOItemData toData(int serialId) {
         final var data = new UOItemData();
         data.setId(UUID.randomUUID());
@@ -119,11 +155,12 @@ public record ItemTemplate(String name,
         data.setLayer(layer);
         data.setAmount(1);
         data.setUnitWeight(unitWeight);
+        data.setMaterial(itemMaterial());
         data.setHue(hue);
         data.setMovable(movable);
         data.setHidden(false);
         data.setDirection(Direction.NORTH);
-        data.setFlags(flags);
+        data.setFlags(new ArrayList<>(flags));
         data.setContainerGumpId(containerGumpId);
         data.setLocationType(ItemLocationType.ORPHAN);
         return data;

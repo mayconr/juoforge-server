@@ -1,33 +1,37 @@
 package com.github.mayconr.juoserver;
 
 
-import com.github.mayconr.juoserver.game.loot.LootPolicy;
-import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
-
-import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
-import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
-import java.util.Map;
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
+import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
-import com.github.mayconr.juoserver.game.economy.PricingStrategy;
+import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
+import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.loot.LootPolicy;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastTrigger;
+import com.github.mayconr.juoserver.game.ui.contextmenu.ContextMenuEntry;
+import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventRegistry;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractContext;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
-
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** Configuration available to modules when registering their contribution to the world. */
 public interface ModuleConfiguration {
+
+    /** Registers an item or mobile menu entry factory evaluated at bootstrap with the initialized runtime. */
+    void addContextMenuEntry(Function<ServerRuntime, ContextMenuEntry> factory);
+
+    List<Function<ServerRuntime, ContextMenuEntry>> contextMenuEntries();
 
     /**
      * Registers initialization run once per bootstrap, in registration order, after

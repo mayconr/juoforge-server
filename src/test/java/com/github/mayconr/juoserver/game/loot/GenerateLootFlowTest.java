@@ -95,6 +95,19 @@ class GenerateLootFlowTest {
     }
 
     @Test
+    void requestedMaterialSurvivesThePlanAndItsPendingStorage() {
+        var request = request();
+        var material = new ItemMaterial(80, 70, 60, 5);
+        when(policy.resolve(request, rng)).thenReturn(List.of(ItemRequest.byName("gold_coin").withMaterial(material)));
+        var context = new GenerateLootContext(request);
+
+        assertTrue(GenerateLootFlowDefinition.build(policy, rng, names, models, dataMapper).execute(context).flowSucceeded());
+
+        assertEquals(material, context.result().getFirst().material());
+        assertEquals(material, pendingLoot.read(request.corpse()).getFirst().material());
+    }
+
+    @Test
     void coreRegistryIncludesGenerationAndDefaultsToEmptyLoot() {
         var infra = FlowRegistryFactory.GameInfra.builder().build();
         assertNotNull(infra.lootPolicy());

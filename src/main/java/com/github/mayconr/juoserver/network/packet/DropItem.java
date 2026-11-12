@@ -12,6 +12,11 @@ import lombok.ToString;
 public class DropItem extends AbstractPacket implements Location {
 
     public static final int CODE = (byte) 0x08;
+    /**
+     * Coordinate sent by the client as 0xFFFF, read here as a signed short, when the item is dropped onto a
+     * mobile or onto a container without choosing a position inside it.
+     */
+    public static final int NO_CONTAINER_POSITION = -1;
     private final int serialId;
     private final int x;
     private final int y;

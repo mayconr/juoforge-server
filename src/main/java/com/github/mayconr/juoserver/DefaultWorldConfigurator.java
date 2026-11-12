@@ -1,22 +1,20 @@
 package com.github.mayconr.juoserver;
 
-import com.github.mayconr.juoserver.infrastructure.storage.property.PropertyStorage;
-
 import com.github.mayconr.juoserver.game.GamePlaySettings;
-import com.github.mayconr.juoserver.game.loot.LootPolicy;
-import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
-
-import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
-import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
+import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
-import com.github.mayconr.juoserver.game.economy.PricingStrategy;
+import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
+import com.github.mayconr.juoserver.game.economy.PricingStrategy;
 import com.github.mayconr.juoserver.game.economy.ScarcityBasedPricingStrategy;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseTrigger;
+import com.github.mayconr.juoserver.game.loot.LootPolicy;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastTrigger;
+import com.github.mayconr.juoserver.game.ui.contextmenu.ContextMenuEntry;
+import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
 import com.github.mayconr.juoserver.game.wallet.PhisycalGoldWallet;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.World;
@@ -27,20 +25,20 @@ import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.property.PropertyStorage;
 import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoaderNew;
 import com.github.mayconr.juoserver.infrastructure.template.TemplateLoader;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import static java.util.Objects.*;
 
@@ -228,6 +226,18 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
     // ===== Economy =====
     private Function<World, Wallet> wallet = PhisycalGoldWallet::new;
     private Supplier<PricingStrategy> pricingStrategy = ScarcityBasedPricingStrategy::new;
+
+    private final List<Function<ServerRuntime, ContextMenuEntry>> contextMenuEntries = new ArrayList<>();
+
+    @Override
+    public void addContextMenuEntry(Function<ServerRuntime, ContextMenuEntry> factory) {
+        contextMenuEntries.add(requireNonNull(factory, "Context menu factory is required"));
+    }
+
+    @Override
+    public List<Function<ServerRuntime, ContextMenuEntry>> contextMenuEntries() {
+        return List.copyOf(contextMenuEntries);
+    }
 
     // ===== Item trigger ====
     private final Map<String, Function<ServerRuntime, ItemUseTrigger>> itemTriggerList = new LinkedHashMap<>();

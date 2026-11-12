@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.ui.flow.doubleclick;
 
-import com.github.mayconr.juoserver.game.item.WorldItem;
 import com.github.mayconr.juoserver.game.container.WorldContainer;
+import com.github.mayconr.juoserver.game.item.WorldItem;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.Trigger;
 import com.github.mayconr.juoserver.game.model.Container;
@@ -23,7 +23,7 @@ public final class UseClickedItemStep extends AbstractFlowStep<DoubleClickContex
 
     @Override
     public StepResult execute(DoubleClickContext context) {
-        storage.getItem(context.getRequest().getSerialId()).ifPresent(item -> {
+        storage.items().get(context.getRequest().getSerialId()).ifPresent(item -> {
             if (item instanceof Container container) {
                 containers.openContainer(context.getPlayer(), container);
             } else {

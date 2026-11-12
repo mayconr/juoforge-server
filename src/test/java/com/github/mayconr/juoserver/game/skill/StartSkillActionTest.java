@@ -1,5 +1,11 @@
 package com.github.mayconr.juoserver.game.skill;
 
+import com.github.mayconr.juoserver.game.interaction.WorldInteraction;
+import com.github.mayconr.juoserver.game.model.AnimationOptions;
+import com.github.mayconr.juoserver.game.model.AnimationType;
+import com.github.mayconr.juoserver.game.model.AnimationGroup;
+import com.github.mayconr.juoserver.game.skill.flow.start.AnimateSkillActionStep;
+import com.github.mayconr.juoserver.game.skill.flow.start.CalculateSkillActionDurationStep;
 import com.github.mayconr.juoforge.reader.skill.Skill;
 import com.github.mayconr.juoserver.game.messaging.WorldMessage;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -23,6 +29,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,7 +48,80 @@ import static org.mockito.Mockito.when;
 
 class StartSkillActionTest {
     private final WorldMessage messages = mock(WorldMessage.class);
+    private final WorldInteraction interaction = mock(WorldInteraction.class);
     private final WorldMobile mobiles = new MobileModuleImpl(null, null, null, null, null);
+
+    @Test
+    void lowerDexterityLengthensAnimationFramesAndSwingDelay() {
+        var reader = mock(UOFileReader.class);
+        var skills = mock(SkillModule.class);
+        var player = mock(UOPlayer.class);
+        when(player.getDexterity()).thenReturn(50);
+        when(reader.getSkill(1)).thenReturn(Optional.of(mock(Skill.class)));
+        when(skills.reserveSkillAction(eq(player), any())).thenReturn(true);
+        var options = SkillActionOptions.builder()
+                .skillId(1)
+                .swingCount(2)
+                .animationGroup(AnimationGroup.ATTACK_ONE_HANDED_WIDE)
+                .onSwing(count -> {})
+                .build();
+        var context = new StartSkillActionContext(player, options);
+
+        var result = StartSkillActionFlowDefinition.build(reader, skills, messages, mobiles, interaction)
+                .execute(context);
+
+        assertTrue(result.flowSucceeded());
+        assertEquals(200.0 / 150.0, context.getDurationSeconds(), 1e-9);
+        verify(interaction).sendAnimation(player,
+                AnimationOptions.simpleForward(AnimationType.ATTACK_ONE_HANDED_WIDE, 27));
+        var action = ArgumentCaptor.forClass(SkillAction.class);
+        verify(skills).reserveSkillAction(eq(player), action.capture());
+        assertFalse(action.getValue().advance(1.33));
+        assertTrue(action.getValue().advance(0.01));
+        action.getValue().executeSwing();
+        assertFalse(action.getValue().advance(1.33));
+        assertTrue(action.getValue().advance(0.01));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void sendsMiningAnimationBeforeScheduling(boolean mounted) {
+        var reader = mock(UOFileReader.class);
+        var skills = mock(SkillModule.class);
+        var player = mock(UOPlayer.class);
+        when(player.isMounted()).thenReturn(mounted);
+        when(player.getDexterity()).thenReturn(100);
+        when(reader.getSkill(1)).thenReturn(Optional.of(mock(Skill.class)));
+        when(skills.reserveSkillAction(eq(player), any())).thenReturn(true);
+        var options = SkillActionOptions.builder()
+                .skillId(1)
+                .swingCount(1)
+                .animationGroup(AnimationGroup.ATTACK_ONE_HANDED_WIDE)
+                .onSwing(count -> {})
+                .build();
+
+        StartSkillActionFlowDefinition.build(reader, skills, messages, mobiles, interaction)
+                .execute(new StartSkillActionContext(player, options));
+
+        var type = mounted ? AnimationType.MOUNTED_ATTACK_MELEE : AnimationType.ATTACK_ONE_HANDED_WIDE;
+        var order = inOrder(interaction, skills);
+        order.verify(interaction).sendAnimation(player, AnimationOptions.simpleForward(type, 20));
+        order.verify(skills).reserveSkillAction(eq(player), any());
+    }
+
+    @Test
+    void preservesCustomAnimationWhenMounted() {
+        var player = mock(UOPlayer.class);
+        when(player.isMounted()).thenReturn(true);
+        when(player.getDexterity()).thenReturn(100);
+        var options = SkillActionOptions.builder().animationGroup(AnimationGroup.SALUTE).build();
+
+        var context = new StartSkillActionContext(player, options);
+        new CalculateSkillActionDurationStep().execute(context);
+        new AnimateSkillActionStep(interaction).execute(context);
+
+        verify(interaction).sendAnimation(player, AnimationOptions.simpleForward(AnimationType.SALUTE, 20));
+    }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -53,7 +133,7 @@ class StartSkillActionTest {
         when(skills.reserveSkillAction(eq(player), any())).thenReturn(true);
         var context = new StartSkillActionContext(player, options(count -> {}));
 
-        var result = StartSkillActionFlowDefinition.build(reader, skills, messages, mobiles).execute(context);
+        var result = StartSkillActionFlowDefinition.build(reader, skills, messages, mobiles, interaction).execute(context);
 
         if (exists) {
             assertTrue(result.flowSucceeded());
@@ -67,7 +147,63 @@ class StartSkillActionTest {
     }
 
     @Test
-    void singleSwingRunsBeforeDelayAndCompletesExactlyOnce() {
+    void everySwingCycleAnimatesThenWaitsTheDurationBeforeSwinging() {
+        var module = module();
+        var player = player(1);
+        var swing = mock(SkillCallback.class);
+        var completion = mock(SkillCallback.class);
+        var animation = AnimationOptions.simpleForward(AnimationType.ATTACK_ONE_HANDED_WIDE, 20);
+        module.startSkillAction(player, animatedOptions(3, swing, completion));
+
+        verify(interaction).sendAnimation(player, animation);
+        module.update(0.5);
+        verifyNoInteractions(swing);
+        for (int index = 0; index < 3; index++) {
+            module.update(index == 0 ? 0.5 : 1);
+        }
+        module.update(100);
+
+        var order = inOrder(interaction, swing, completion);
+        order.verify(interaction).sendAnimation(player, animation);
+        order.verify(swing).execute(1);
+        order.verify(interaction).sendAnimation(player, animation);
+        order.verify(swing).execute(2);
+        order.verify(interaction).sendAnimation(player, animation);
+        order.verify(swing).execute(3);
+        order.verify(completion).execute(3);
+        verifyNoMoreInteractions(interaction, swing, completion);
+    }
+
+    @Test
+    void cancelledActionDoesNotAnimateAnotherCycle() {
+        var module = module();
+        var player = player(1);
+        module.startSkillAction(player, animatedOptions(3, count -> {}, count -> {}));
+
+        player.setLocation(1, 0);
+        module.update(1);
+
+        verify(interaction).sendAnimation(eq(player), any());
+        verifyNoMoreInteractions(interaction);
+    }
+
+    @Test
+    void failedSwingDoesNotAnimateAnotherCycle() {
+        var module = module();
+        var player = player(1);
+        module.startSkillAction(player, animatedOptions(3, count -> {
+            throw new IllegalStateException("failed");
+        }, count -> {}));
+
+        module.update(1);
+
+        assertFalse(module.hasActiveAction(player));
+        verify(interaction).sendAnimation(eq(player), any());
+        verifyNoMoreInteractions(interaction);
+    }
+
+    @Test
+    void singleSwingWaitsTheDurationAndCompletesExactlyOnce() {
         var module = module();
         var player = player(1);
         var swing = mock(SkillCallback.class);
@@ -77,7 +213,10 @@ class StartSkillActionTest {
         assertTrue(module.hasActiveAction(player));
         verifyNoInteractions(swing, completion);
 
-        module.update(0);
+        module.update(0.5);
+        assertTrue(module.hasActiveAction(player));
+        verifyNoInteractions(swing, completion);
+        module.update(0.5);
         assertFalse(module.hasActiveAction(player));
         module.update(1);
 
@@ -88,14 +227,16 @@ class StartSkillActionTest {
     }
 
     @Test
-    void firstSwingRunsBeforeDelayAndLaterSwingsWaitOneSecond() {
+    void everySwingWaitsTheDurationIncludingTheFirst() {
         var module = module();
         var player = player(1);
         var swing = mock(SkillCallback.class);
         assertTrue(module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1).swingCount(2).onSwing(swing).build()));
 
-        module.update(0);
+        module.update(0.5);
+        verifyNoInteractions(swing);
+        module.update(0.5);
         verify(swing).execute(1);
         assertTrue(module.hasActiveAction(player));
         module.update(0.5);
@@ -138,7 +279,7 @@ class StartSkillActionTest {
         module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1).swingCount(3).onSwing(swing).onComplete(completion).build());
 
-        module.update(0);
+        module.update(1);
         player.setLocation(0, 1);
         module.update(1);
         module.update(1);
@@ -159,7 +300,7 @@ class StartSkillActionTest {
         module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1).swingCount(2).onSwing(swing).onComplete(completion).build());
 
-        module.update(0);
+        module.update(1);
         player.setLocation(1, 1);
         module.update(0.5);
         player.setLocation(0, 0);
@@ -179,7 +320,7 @@ class StartSkillActionTest {
         module.startSkillAction(player, SkillActionOptions.builder()
                 .skillId(1).swingCount(2).onSwing(swing).build());
 
-        module.update(0);
+        module.update(1);
         player.setZ(5);
         module.update(1);
 
@@ -324,7 +465,7 @@ class StartSkillActionTest {
                 .skillId(1).onSwing(swing).onComplete(completion).build());
         mobiles.setProperty(player, WorldSkill.SWINGS_PROPERTY, 9, false);
 
-        module.update(0);
+        module.update(1);
         verify(swing).execute(1);
         verifyNoInteractions(completion);
         module.update(0.5);
@@ -470,6 +611,7 @@ class StartSkillActionTest {
         var data = new UOMobileData();
         data.setSerialId(serial);
         data.setPersistentAttrMap(new DefaultAttributeMap());
+        data.setDexterity(100);
         return new UOPlayer(data);
     }
 
@@ -478,11 +620,21 @@ class StartSkillActionTest {
         var reader = mock(UOFileReader.class);
         when(reader.getSkill(1)).thenReturn(Optional.of(mock(Skill.class)));
         var registry = new DefaultFlowRegistry();
-        registry.register("start-skill-action", StartSkillActionFlowDefinition.build(reader, module, messages, mobiles), StartSkillActionContext.class);
-        registry.register("update-skill-actions", UpdateSkillActionsFlowDefinition.build(module), UpdateSkillActionsContext.class);
+        registry.register("start-skill-action", StartSkillActionFlowDefinition.build(reader, module, messages, mobiles, interaction), StartSkillActionContext.class);
+        registry.register("update-skill-actions", UpdateSkillActionsFlowDefinition.build(module, interaction), UpdateSkillActionsContext.class);
         registry.register("set-skill-swing-count", SetSkillSwingCountFlowDefinition.build(mobiles), SetSkillSwingCountContext.class);
         module.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         return module;
+    }
+
+    private SkillActionOptions animatedOptions(int swings, SkillCallback swing, SkillCallback completion) {
+        return SkillActionOptions.builder()
+                .skillId(1)
+                .swingCount(swings)
+                .animationGroup(AnimationGroup.ATTACK_ONE_HANDED_WIDE)
+                .onSwing(swing)
+                .onComplete(completion)
+                .build();
     }
 
     private SkillActionOptions options(SkillCallback swing) {
