@@ -14,7 +14,7 @@ public final class FindStatusMobileStep extends AbstractFlowStep<StatusGumpConte
 
     @Override
     public StepResult execute(StatusGumpContext context) {
-        var mobile = storage.getMobile(context.getMobileSerial()).orElse(null);
+        var mobile = storage.mobiles().get(context.getMobileSerial()).orElse(null);
         if (mobile == null) {
             return StepResult.failure("MOBILE_NOT_FOUND", "Mobile not found " + context.getMobileSerial());
         }

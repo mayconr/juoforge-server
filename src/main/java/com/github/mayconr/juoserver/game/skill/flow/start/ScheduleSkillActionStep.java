@@ -21,12 +21,12 @@ public final class ScheduleSkillActionStep extends AbstractFlowStep<StartSkillAc
     public StepResult execute(StartSkillActionContext context) {
         var player = context.getPlayer();
         var options = context.getOptions();
-        // TODO: Make the skill action interval configurable.
         var action = new SkillAction(
                 player,
                 context.getOrigin(),
                 context.getSwings(),
-                1.0,
+                context.getDurationSeconds(),
+                context.getAnimation(),
                 options.onSwing(),
                 options.onComplete()
         );

@@ -30,18 +30,26 @@ The existing `game.skill.flow.start` flow owns scheduling:
    persistent preference, then normalizes the result to at least 1.
 3. `CaptureSkillActionOriginStep` stores a copy of the player position when the
    action is requested.
-4. `ScheduleSkillActionStep` creates `SkillAction` with explicit constructor
-   arguments (player, captured origin, swing count, delay, `onSwing` callback, completion
-   callback), reserves it through the skill
+4. `CalculateSkillActionDurationStep` captures the swing-cycle duration from the
+   player's dexterity: `1.0 * (100 + 100) / (100 + dex)` seconds. The 1-second base
+   applies at 100 dexterity; lower dexterity lengthens it (2 seconds at 0) and higher
+   dexterity shortens it (0.5 seconds at 300), with no lower or upper limit. Negative
+   dexterity is treated as 0.
+5. `AnimateSkillActionStep`, when `animationGroup` is set, resolves a
+   `SkillActionAnimation` whose frame count matches the duration and sends it for
+   the first swing cycle.
+6. `ScheduleSkillActionStep` creates `SkillAction` with explicit constructor
+   arguments (player, captured origin, swing count, duration, animation, `onSwing`
+   callback, completion callback), reserves it through the skill
    module, and completes the result. If an action is already reserved, it sends
    `skill.action.already_active`, completes with false, and stops normally.
 
 `SkillModuleImpl.reserveSkillAction` only performs the atomic per-player
 reservation. Scheduling rules and busy-player notification live in the flow.
 The module delegates each game-loop update to `UpdateSkillActionsFlowDefinition`.
-`ScheduleSkillActionStep` fixes the interval at one second, with a TODO to make
-it configurable. The first swing runs on the next world update, before waiting; the interval applies only between swings. At most one swing per action runs
-per update, even when an update covers several delay intervals.
+Every swing cycle sends the animation (when present), waits the captured duration
+and then swings, including the first one. At most one swing per action runs per
+update, even when an update covers several delay intervals.
 
 The reservation is removed before completion, allowing the completion callback
 to schedule another action. Actions created during an update are processed on a
@@ -73,6 +81,10 @@ snapshot and conditional-release operations.
    its reservation while more swings remain. After the last swing it releases the
    reservation before completion. Individual failures are logged and release the
    affected reservation without interrupting other actions.
+5. `AnimateSkillActionsStep` starts the next cycle of every action that swung in
+   this update, still has swings left and is still reserved, sending its animation
+   against the player's current mount state. Cancelled, failed and finished actions
+   are not animated again. Animation failures are logged.
 
 Invalid intervals fail with `INVALID_SKILL_ACTION_DELTA`, propagated by the module
 as `ModuleOperationException`. Validation runs before any action is advanced.

@@ -46,7 +46,8 @@ public record ServerSettings(int ticksPerSecond, double aiUpdateIntervalSeconds,
                 gameplay.economy(),
                 new GamePlaySettings.Ai(aiUpdateIntervalSeconds),
                 gameplay.ui(),
-                gameplay.temporal()
+                gameplay.temporal(),
+                gameplay.items()
         );
     }
 }

@@ -1,20 +1,21 @@
 package com.github.mayconr.juoserver.network.handler;
 
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.ui.UIModule;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.network.packet.ContextMenuRequestExtendedCommand;
+import com.github.mayconr.juoserver.network.packet.ContextMenuSelectionExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.GeneralInformation;
 import com.github.mayconr.juoserver.network.session.PlayerSession;
 import io.netty.buffer.Unpooled;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.HexFormat;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -22,30 +23,65 @@ import static org.mockito.Mockito.when;
 
 class ContextMenuHandlerTest {
     @Test
-    void decodesClientRequestAndReturnsMockMenuUsingSameSerial() {
+    void decodesClientRequestAndDelegatesToUi() {
         var buffer = Unpooled.wrappedBuffer(HexFormat.of().parseHex("bf0009001340000032"));
-        var responseBytes = Unpooled.buffer();
         try {
             var packet = new GeneralInformation(buffer);
             var request = assertInstanceOf(ContextMenuRequestExtendedCommand.class, packet.getCommand());
             assertEquals(0x40000032, request.serialId());
             assertEquals(0, buffer.readableBytes());
+            var player = mock(UOPlayer.class);
             var session = mock(PlayerSession.class);
-            when(session.getPlayer()).thenReturn(mock(UOPlayer.class));
+            when(session.getPlayer()).thenReturn(player);
+            var world = mock(WorldInternal.class);
+            var ui = mock(UIModule.class);
+            when(world.ui()).thenReturn(ui);
             var ctx = mock(ChannelHandlerContext.class);
-            var handler = new GeneralInformationHandler(mock(WorldInternal.class));
 
-            handler.channelRead0(session, ctx, packet);
+            new GeneralInformationHandler(world).channelRead0(session, ctx, packet);
 
-            var response = ArgumentCaptor.forClass(GeneralInformation.class);
-            verify(ctx).writeAndFlush(response.capture());
-            response.getValue().writesTo(responseBytes);
-            // Header, mode 1, same serial, one entry: index 0, cliloc offset 6123, flags 0.
-            assertEquals("bf0012001400014000003201000017eb0000",
-                    HexFormat.of().formatHex(toBytes(responseBytes)));
+            verify(ui).requestContextMenu(player, request.serialId());
+            verifyNoInteractions(ctx);
         } finally {
             buffer.release();
-            responseBytes.release();
+        }
+    }
+
+    @Test
+    void decodesClassicUoSelectionAndDelegatesToUi() {
+        var buffer = Unpooled.wrappedBuffer(HexFormat.of().parseHex("bf000b001540000032ffff"));
+        try {
+            var packet = new GeneralInformation(buffer);
+            var selection = assertInstanceOf(ContextMenuSelectionExtendedCommand.class, packet.getCommand());
+            assertEquals(0x40000032, selection.serialId());
+            assertEquals(65535, selection.index());
+            assertEquals(0, buffer.readableBytes());
+            var session = mock(PlayerSession.class);
+            var player = mock(UOPlayer.class);
+            when(session.getPlayer()).thenReturn(player);
+            var world = mock(WorldInternal.class);
+            var ui = mock(UIModule.class);
+            when(world.ui()).thenReturn(ui);
+            var ctx = mock(ChannelHandlerContext.class);
+
+            new GeneralInformationHandler(world).channelRead0(session, ctx, packet);
+
+            verify(ui).onContextMenuSelection(player, 0x40000032, 65535);
+            verifyNoInteractions(ctx);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    void rejectsTruncatedAndTrailingSelectionPayloads() {
+        for (var hex : new String[]{"bf000a001540000032ff", "bf000c001540000032ffff00"}) {
+            var buffer = Unpooled.wrappedBuffer(HexFormat.of().parseHex(hex));
+            try {
+                assertThrows(IllegalArgumentException.class, () -> new GeneralInformation(buffer));
+            } finally {
+                buffer.release();
+            }
         }
     }
 
@@ -54,7 +90,7 @@ class ContextMenuHandlerTest {
         var buffer = Unpooled.wrappedBuffer(HexFormat.of().parseHex("bf0009001340000032"));
         try {
             var ctx = mock(ChannelHandlerContext.class);
-            new GeneralInformationHandler(mock(WorldInternal.class))
+            new GeneralInformationHandler(mock(WorldInternal.class, RETURNS_DEEP_STUBS))
                     .channelRead0(mock(PlayerSession.class), ctx, new GeneralInformation(buffer));
             verifyNoInteractions(ctx);
         } finally {
@@ -72,9 +108,4 @@ class ContextMenuHandlerTest {
         }
     }
 
-    private byte[] toBytes(ByteBuf buffer) {
-        var bytes = new byte[buffer.readableBytes()];
-        buffer.readBytes(bytes);
-        return bytes;
-    }
 }

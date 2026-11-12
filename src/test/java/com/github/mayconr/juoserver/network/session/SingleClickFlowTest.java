@@ -1,14 +1,23 @@
 package com.github.mayconr.juoserver.network.session;
 
-import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
-
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.ItemLocationType;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOItemData;
+import com.github.mayconr.juoserver.game.model.UOMobileData;
+import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.UOObject;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.ObjectLabelRequested;
 import com.github.mayconr.juoserver.game.ui.UIModule;
 import com.github.mayconr.juoserver.game.ui.UIModuleImpl;
-import com.github.mayconr.juoserver.game.model.event.ObjectLabelRequested;
-import com.github.mayconr.juoserver.game.ui.flow.singleclick.*;
-import com.github.mayconr.juoserver.game.world.context.*;
+import com.github.mayconr.juoserver.game.ui.flow.singleclick.SingleClickContext;
+import com.github.mayconr.juoserver.game.ui.flow.singleclick.SingleClickFlowDefinition;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry;
+import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.SendSpeech;
 import com.github.mayconr.juoserver.network.packet.SingleClickRequest;
@@ -17,12 +26,12 @@ import com.github.mayconr.juoserver.network.session.SessionView;
 import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,7 +40,7 @@ class SingleClickFlowTest {
     @ParameterizedTest
     @CsvSource({"true,true", "true,false", "false,true", "false,false"})
     void deliversObjectLabelOnlyToTheRequestingSession(boolean mobile, boolean exists) {
-        var storage = mock(WorldStorage.class);
+        var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         var events = new DefaultEventBus();
         var player = mock(UOPlayer.class);
         var observer = mock(UOPlayer.class);
@@ -42,7 +51,7 @@ class SingleClickFlowTest {
             data.setSerialId(serial);
             data.setModelId(400);
             var npc = new UONpc(data);
-            when(storage.getMobile(serial)).thenReturn(exists ? Optional.of(npc) : Optional.empty());
+            when(storage.mobiles().get(serial)).thenReturn(exists ? Optional.of(npc) : Optional.empty());
             object = npc;
         } else {
             var data = new UOItemData();
@@ -50,7 +59,7 @@ class SingleClickFlowTest {
             data.setModelId(5049);
             data.setLocationType(ItemLocationType.GROUND);
             var item = new UOItem(data, null);
-            when(storage.getItem(serial)).thenReturn(exists ? Optional.of(item) : Optional.empty());
+            when(storage.items().get(serial)).thenReturn(exists ? Optional.of(item) : Optional.empty());
             object = item;
         }
         object.setName("internal");
@@ -68,7 +77,7 @@ class SingleClickFlowTest {
             events.register(ObjectLabelRequested.class, other::onObjectLabelRequested);
             var registry = new DefaultFlowRegistry();
             registry.register("single-click", SingleClickFlowDefinition.build(storage, events), SingleClickContext.class);
-            UIModule ui = new UIModuleImpl(null);
+            UIModule ui = new UIModuleImpl(null, mock(WorldStorage.class, RETURNS_DEEP_STUBS), mock(EventBus.class), List.of());
             ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
 
             ui.singleClick(player, new SingleClickRequest(requestBytes));
@@ -99,7 +108,7 @@ class SingleClickFlowTest {
     @ParameterizedTest
     @ValueSource(ints = {0, -1, 0x60000000})
     void ignoresInvalidAndVirtualSerials(int serial) {
-        var storage = mock(WorldStorage.class);
+        var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         var events = mock(com.github.mayconr.juoserver.infrastructure.eventbus.EventBus.class);
         var buffer = Unpooled.buffer().writeByte(0x09).writeInt(serial);
         try {

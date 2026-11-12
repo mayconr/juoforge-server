@@ -7,13 +7,19 @@ import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.ItemCreationOptions;
+import com.github.mayconr.juoserver.game.model.ItemTarget;
+import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
@@ -22,14 +28,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@lombok.extern.slf4j.Slf4j
+@Slf4j
 @RequiredArgsConstructor
 public class ItemModuleImpl implements ItemModule {
 
     private final WorldStorage storage;
     private final ItemTemplateRegistry itemTemplateRegistry;
     private final ItemUseService itemUseService;
+    private final ItemQualityCalculator qualityCalculator;
     private FlowFacade flows;
+
+    public ItemModuleImpl(WorldStorage storage, ItemTemplateRegistry itemTemplateRegistry, ItemUseService itemUseService) {
+        this(storage, itemTemplateRegistry, itemUseService, new ItemQualityCalculator());
+    }
+
+    @Override
+    public float calculateQuality(UOMobile mobile, double modifier) {
+        return qualityCalculator.calculate(mobile, modifier);
+    }
 
     @Override
     public void initialize(ModuleContext context) {
@@ -100,12 +116,12 @@ public class ItemModuleImpl implements ItemModule {
 
     @Override
     public Optional<UOItem> getItemBySerialId(int serial) {
-        return storage.getItem(serial);
+        return storage.items().get(serial);
     }
 
     @Override
     public List<UOItem> getItemsInRange(Location location, int radius) {
-        return storage.getItemsInRange(location);
+        return storage.items().inRange(location);
     }
 
     @Override

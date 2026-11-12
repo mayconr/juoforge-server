@@ -44,7 +44,7 @@ public class ResourceBundleMessageLocalizer implements MessageLocalizer {
         var effectiveLocale = locale == null ? fallbackLocale : locale;
         var key = normalizeKey(content.key());
         if (key == null || key.isBlank()) return "";
-        return format(resolvePattern(key, effectiveLocale), content.params(), effectiveLocale.toJavaLocale());
+        return format(resolvePattern(key, effectiveLocale), content.params(), effectiveLocale);
     }
 
     private String normalizeKey(String key) {
@@ -89,12 +89,20 @@ public class ResourceBundleMessageLocalizer implements MessageLocalizer {
         }
     }
 
-    private String format(String pattern, Map<String, Object> params, Locale locale) {
+    private String format(String pattern, Map<String, Object> params, ClientLocale locale) {
         if (params == null || params.isEmpty()) return pattern;
         var resolved = pattern;
         for (var entry : params.entrySet()) {
-            resolved = resolved.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+            resolved = resolved.replace("{" + entry.getKey() + "}", paramText(entry.getValue(), locale));
         }
-        return new MessageFormat(resolved, locale).format(new Object[0]);
+        return new MessageFormat(resolved, locale.toJavaLocale()).format(new Object[0]);
+    }
+
+    /** Localized parameters are translated in the same locale as the message that contains them. */
+    private String paramText(Object value, ClientLocale locale) {
+        if (value instanceof LocalizedMessageContent nested) {
+            return localize(nested, locale);
+        }
+        return String.valueOf(value);
     }
 }

@@ -32,8 +32,17 @@ public final class StoreLootTemplatesStep extends AbstractFlowStep<GenerateLootC
             var resolution = new ItemCreationContext(request, ContainerItemTarget.of(corpse));
             var result = templates.execute(resolution);
             if (result.flowFailed()) return result;
-            pending.add(new ItemRequest(resolution.getTemplate(), null, null,
-                    request.hue(), request.amount(), request.direction()));
+            pending.add(new ItemRequest(
+                    resolution.getTemplate(),
+                    null,
+                    null,
+                    request.hue(),
+                    request.amount(),
+                    request.direction(),
+                    request.material(),
+                    request.quality(),
+                    request.qualityAdjustment()
+            ));
         }
         var plan = List.copyOf(pending);
         pendingLoot.store(corpse, plan);

@@ -59,6 +59,7 @@ import com.github.mayconr.juoserver.game.interaction.action.ActionHandler;
 import com.github.mayconr.juoserver.game.interaction.animation.AnimationHandler;
 import com.github.mayconr.juoserver.game.interaction.speech.SpeechHandler;
 import com.github.mayconr.juoserver.game.item.*;
+import com.github.mayconr.juoserver.game.item.ItemQualityCalculator;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
@@ -393,7 +394,7 @@ public class DefaultWorld implements WorldInternal, World {
         final var gumpSystem = new DefaultGumpSystem(eventBus, settings.ui(), messageLocalizer);
 
         this.uiModule = new UIModuleImpl(
-                gumpSystem
+                gumpSystem, storage, eventBus, List.of()
         );
     }
 
@@ -402,7 +403,12 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeItemModule() {
-        this.itemModule = new ItemModuleImpl(storage, itemTemplateRegistry, itemUseService);
+        this.itemModule = new ItemModuleImpl(
+                storage,
+                itemTemplateRegistry,
+                itemUseService,
+                new ItemQualityCalculator(settings.items().quality())
+        );
     }
 
     private void initializeCombatModule() {
@@ -460,6 +466,7 @@ public class DefaultWorld implements WorldInternal, World {
                     .damage(damageModule)
                     .loot(lootModule)
                     .skill(skillModule)
+                    .interaction(interactionModule)
                     .ui(uiModule)
                     .build())
                 .infra(GameInfra.builder()

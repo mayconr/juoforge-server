@@ -1,15 +1,14 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
-import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
-
-import com.github.mayconr.juoserver.game.model.UOMobileData;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
-import com.github.mayconr.juoserver.game.model.event.GumpExpired;
-import com.github.mayconr.juoserver.game.ui.UIModuleImpl;
-import java.util.concurrent.atomic.AtomicLong;
+import com.github.mayconr.juoserver.game.model.UOMobileData;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.GumpExpired;
 import com.github.mayconr.juoserver.game.model.event.GumpSent;
+import com.github.mayconr.juoserver.game.ui.UIModuleImpl;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
+import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.GumpSelection;
 import io.netty.buffer.Unpooled;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,7 +44,7 @@ class GumpSystemTest {
         if (expirationSeconds == null) {
             gumps.send(player, ui, handler);
         } else {
-            new UIModuleImpl(gumps).sendGump(player, ui, handler, expirationSeconds);
+            new UIModuleImpl(gumps, mock(WorldStorage.class, RETURNS_DEEP_STUBS), mock(EventBus.class), List.of()).sendGump(player, ui, handler, expirationSeconds);
         }
         return sent.get().gumpId();
     }
@@ -141,7 +141,7 @@ class GumpSystemTest {
     void uiUpdateRemovesGumpsAfterThirtySecondsAndNotifiesOnce() {
         var clock = new AtomicLong(1000);
         var gumps = new DefaultGumpSystem(bus, new GamePlaySettings.Ui(), mock(MessageLocalizer.class), clock::get);
-        var ui = new UIModuleImpl(gumps);
+        var ui = new UIModuleImpl(gumps, mock(WorldStorage.class, RETURNS_DEEP_STUBS), mock(EventBus.class), List.of());
         int id = open(gumps);
         doAnswer(invocation -> {
             assertNull(player.runtimeAttributes().get(DefaultGumpSystem.PLAYER_GUMP_ID));

@@ -21,6 +21,10 @@ public class UOItemData extends UOObjectData {
     private Direction direction;
     private List<ItemFlag> flags;
     private int unitWeight;
+    /** Raw material properties; {@code null} when the item is not a material. */
+    private ItemMaterial material;
+    /** Creation quality in [-1, 1]; material properties already include its effect. */
+    private float quality;
     // Location
     private ItemLocationType locationType;
     private Integer ownerSerialId;

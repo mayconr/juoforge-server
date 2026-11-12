@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.game.item.flow.creation.validation.PrepareCr
 import com.github.mayconr.juoserver.game.mobile.shared.ValidateBackpackWeightStep;
 
 import com.github.mayconr.juoserver.game.item.flow.creation.factory.CreateItemDataStep;
+import com.github.mayconr.juoserver.game.item.flow.creation.factory.ApplyItemQualityStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.factory.CreateItemStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.notification.NotifyItemCreatedStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.options.ExecuteOptionsStep;
@@ -17,7 +18,10 @@ import com.github.mayconr.juoserver.game.item.flow.creation.template.ResolveItem
 import com.github.mayconr.juoserver.game.item.flow.creation.template.TemplateLoaderStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.validation.ValidateItemAmountStep;
 import com.github.mayconr.juoserver.game.item.flow.creation.validation.ValidateItemCreation;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.ContainerItemTarget;
+import com.github.mayconr.juoserver.game.model.EquipItemTarget;
+import com.github.mayconr.juoserver.game.model.GroundItemTarget;
+import com.github.mayconr.juoserver.game.model.OrphanItemTarget;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
@@ -38,6 +42,7 @@ public final class ItemCreationFlowDefinition {
                 .step(new ResolveItemTileDataStep(infra.fileReader()))
                 .step(new ValidateItemAmountStep())
                 .step(new CreateItemDataStep(infra.serialGenerator()))
+                .step(new ApplyItemQualityStep())
                 .appendGroup("BackpackWeight", backpackWeightPhase(infra.storage(), containers, mobiles))
                 .step(new CreateItemStep(infra.storage()))
                 .appendGroup("Placement", placementPhase(infra.storage(), containers))

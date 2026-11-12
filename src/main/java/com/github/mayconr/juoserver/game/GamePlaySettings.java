@@ -16,11 +16,19 @@ public record GamePlaySettings(
         Economy economy,
         Ai ai,
         Ui ui,
-        Temporal temporal
+        Temporal temporal,
+        Items items
 ) {
     public GamePlaySettings {
         ui = ui == null ? new Ui() : ui;
         temporal = temporal == null ? new Temporal() : temporal;
+        items = items == null ? new Items() : items;
+    }
+
+    /** Retains the constructor used before item settings were introduced. */
+    public GamePlaySettings(String name, GameLoop gameLoop, Skills skills, Mobile mobile, World world,
+                            Files files, Client client, Economy economy, Ai ai, Ui ui, Temporal temporal) {
+        this(name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, new Items());
     }
 
     /** Retains the constructor used before temporal settings were introduced. */
@@ -68,15 +76,62 @@ public record GamePlaySettings(
     public GamePlaySettings withUi(Ui ui) {
         Objects.requireNonNull(ui, "ui is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
     }
 
     public GamePlaySettings withTemporal(Temporal temporal) {
         Objects.requireNonNull(temporal, "temporal is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
+    }
+
+    public GamePlaySettings withItems(Items items) {
+        Objects.requireNonNull(items, "items is required");
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
+        );
+    }
+
+    /** Item rules. */
+    public record Items(ItemQuality quality) {
+        public Items() {
+            this(new ItemQuality());
+        }
+
+        public Items {
+            quality = quality == null ? new ItemQuality() : quality;
+        }
+    }
+
+    /**
+     * Ranges used to roll item quality. Values outside a range are clamped to its nearest bound.
+     *
+     * @param minModifier modifier that guarantees minimum quality
+     * @param maxModifier modifier that guarantees maximum quality
+     * @param minLuck luck with the strongest bias toward lower quality; must not be positive
+     * @param maxLuck luck with the strongest bias toward higher quality; must not be negative
+     */
+    public record ItemQuality(double minModifier, double maxModifier, int minLuck, int maxLuck) {
+        public static final double DEFAULT_MIN_MODIFIER = 0.0;
+        public static final double DEFAULT_MAX_MODIFIER = 100.0;
+        public static final int DEFAULT_MIN_LUCK = -100;
+        public static final int DEFAULT_MAX_LUCK = 100;
+
+        public ItemQuality() {
+            this(DEFAULT_MIN_MODIFIER, DEFAULT_MAX_MODIFIER, DEFAULT_MIN_LUCK, DEFAULT_MAX_LUCK);
+        }
+
+        public ItemQuality {
+            if (!Double.isFinite(minModifier) || !Double.isFinite(maxModifier) || minModifier >= maxModifier) {
+                throw new IllegalArgumentException(
+                        "items.quality modifier range must be finite and minModifier must be less than maxModifier");
+            }
+            if (minLuck > 0 || maxLuck < 0) {
+                throw new IllegalArgumentException("items.quality luck range must contain zero");
+            }
+        }
     }
 
     /** Default gameplay rules; server timing and data files are supplied by WorldConfigurator. */
@@ -90,42 +145,42 @@ public record GamePlaySettings(
     public GamePlaySettings withName(String name) {
         Objects.requireNonNull(name, "name is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
     }
 
     public GamePlaySettings withSkills(Skills skills) {
         Objects.requireNonNull(skills, "skills is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
     }
 
     public GamePlaySettings withMobile(Mobile mobile) {
         Objects.requireNonNull(mobile, "mobile is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
     }
 
     public GamePlaySettings withWorld(World world) {
         Objects.requireNonNull(world, "world is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
     }
 
     public GamePlaySettings withClient(Client client) {
         Objects.requireNonNull(client, "client is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
     }
 
     public GamePlaySettings withEconomy(Economy economy) {
         Objects.requireNonNull(economy, "economy is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items
         );
     }
 

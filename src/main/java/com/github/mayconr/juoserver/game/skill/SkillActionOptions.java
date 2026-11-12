@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.skill;
 
+import com.github.mayconr.juoserver.game.model.AnimationGroup;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -12,6 +13,8 @@ public final class SkillActionOptions {
     private final Integer skillId;
     /** Optional action-specific override of the persistent skill.swings preference. */
     private final Integer swingCount;
+    /** Optional animation sent once before the action is scheduled. */
+    private final AnimationGroup animationGroup;
     private final SkillCallback onSwing;
     @Builder.Default
     private final SkillCallback onComplete = executions -> {};

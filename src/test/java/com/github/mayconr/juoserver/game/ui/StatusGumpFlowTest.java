@@ -6,13 +6,15 @@ import com.github.mayconr.juoserver.game.model.event.StatusGumpRequested;
 import com.github.mayconr.juoserver.game.ui.flow.status.StatusGumpContext;
 import com.github.mayconr.juoserver.game.ui.flow.status.StatusGumpFlowDefinition;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
-import com.github.mayconr.juoserver.game.world.context.*;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry;
+import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -23,15 +25,15 @@ class StatusGumpFlowTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void requestsStatusOfTheTargetOrReportsMissingMobile(boolean exists) {
-        var storage = mock(WorldStorage.class);
+        var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         var target = mock(UONpc.class);
         when(target.getBackpack()).thenReturn(null);
-        when(storage.getMobile(42)).thenReturn(exists ? Optional.of(target) : Optional.empty());
+        when(storage.mobiles().get(42)).thenReturn(exists ? Optional.of(target) : Optional.empty());
         var registry = new DefaultFlowRegistry();
         registry.register("status", StatusGumpFlowDefinition.build(events, storage, new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new com.github.mayconr.juoserver.game.item.ContainerHandler(events, storage)), mobiles), StatusGumpContext.class);
-        UIModule ui = new UIModuleImpl(null);
+        UIModule ui = new UIModuleImpl(null, mock(WorldStorage.class, RETURNS_DEEP_STUBS), mock(EventBus.class), List.of());
         ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
 
         if (exists) {
@@ -42,18 +44,18 @@ class StatusGumpFlowTest {
             assertEquals("MOBILE_NOT_FOUND", error.getCode());
             verifyNoInteractions(events);
         }
-        verify(storage).getMobile(42);
+        verify(storage.mobiles()).get(42);
     }
     @org.junit.jupiter.api.Test
     void includesBackpackWeightFromContainerModule() {
-        var storage = mock(WorldStorage.class);
+        var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
         var containers = mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
         var backpack = mock(com.github.mayconr.juoserver.game.model.UOContainer.class);
-        when(storage.getMobile(42)).thenReturn(Optional.of(player));
+        when(storage.mobiles().get(42)).thenReturn(Optional.of(player));
         when(player.getBackpack()).thenReturn(100);
-        when(storage.getContainer(100)).thenReturn(Optional.of(backpack));
+        when(storage.items().getContainer(100)).thenReturn(Optional.of(backpack));
         when(containers.getWeight(backpack)).thenReturn(27L);
         when(mobiles.calculateMaxWeight(player)).thenReturn(80);
         var result = StatusGumpFlowDefinition.build(events, storage, containers, mobiles)
@@ -64,10 +66,10 @@ class StatusGumpFlowTest {
 
     @org.junit.jupiter.api.Test
     void missingBackpackDoesNotSendIncorrectWeight() {
-        var storage = mock(WorldStorage.class);
+        var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         var events = mock(EventBus.class);
         var player = mock(UOPlayer.class);
-        when(storage.getMobile(42)).thenReturn(Optional.of(player));
+        when(storage.mobiles().get(42)).thenReturn(Optional.of(player));
         when(player.getBackpack()).thenReturn(100);
         var result = StatusGumpFlowDefinition.build(events, storage,
                 mock(com.github.mayconr.juoserver.game.container.WorldContainer.class), mobiles)

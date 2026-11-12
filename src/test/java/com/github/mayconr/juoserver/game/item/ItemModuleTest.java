@@ -16,6 +16,7 @@ import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
+import com.github.mayconr.juoserver.infrastructure.storage.item.Items;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.*;
 
 class ItemModuleTest {
     private final WorldStorage storage = mock(WorldStorage.class);
+    private final Items items = mock(Items.class);
     private final FlowFacade flows = mock(FlowFacade.class);
     private final ItemUseService itemUse = mock(ItemUseService.class);
     private final ItemModule module = new ItemModuleImpl(storage, mock(ItemTemplateRegistry.class), itemUse);
@@ -47,7 +49,8 @@ class ItemModuleTest {
     void deletesResolvedItemThroughTheDeletionFlow() {
         int serial = 0x40000001;
         var item = mock(UOItem.class);
-        when(storage.getItem(serial)).thenReturn(Optional.of(item));
+        when(storage.items()).thenReturn(items);
+        when(items.get(serial)).thenReturn(Optional.of(item));
         when(flows.execute(any(DeleteItemContext.class))).thenReturn(StepResult.success());
 
         module.deleteItem(serial);
@@ -104,12 +107,12 @@ class ItemModuleTest {
     }
 
     @Test
-    void createItemRaisesGameRuleRejection() {
+    void throwingResultRaisesGameRuleRejection() {
         when(flows.execute(any(ItemCreationContext.class)))
                 .thenReturn(StepResult.failure("ITEM_NOT_STACKABLE", "not stackable", "{item.not_stackable}"));
 
         var error = assertThrows(ModuleOperationException.class,
-                () -> module.createItem(ItemRequest.byName("gold").withAmount(2), ItemTarget.orphan()));
+                () -> module.tryCreateItem(ItemRequest.byName("gold").withAmount(2), ItemTarget.orphan()).orThrow());
 
         assertEquals("createItem", error.getOperation());
         assertEquals("ITEM_NOT_STACKABLE", error.getCode());
@@ -126,7 +129,8 @@ class ItemModuleTest {
     @Test
     void missingItemDoesNotRunTheDeletionFlow() {
         int serial = 0x40000001;
-        when(storage.getItem(serial)).thenReturn(Optional.empty());
+        when(storage.items()).thenReturn(items);
+        when(items.get(serial)).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> module.deleteItem(serial));
         verifyNoInteractions(flows);
     }

@@ -1,9 +1,14 @@
 package com.github.mayconr.juoserver.game.item.flow.drop;
 
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext.DropTarget;
-import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.*;
+import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.ResolveDropTypeStep;
+import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.ResolveGroundTargetStep;
+import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.ResolveItemStep;
+import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.ResolveItemTargetStep;
+import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.ResolveMobileTargetStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.placement.DropItemContainerStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.placement.DropItemGroundStep;
+import com.github.mayconr.juoserver.game.item.flow.drop.placement.ResolveContainerDropPositionStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.placement.StackItemStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.placement.TransformToOrphanStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.validation.ValidateInteractionRangeStep;
@@ -48,6 +53,7 @@ public class DropItemFlowDefinition {
         return FlowFactory.<DropItemContext>builder()
                 .step(new TransformToOrphanStep(storage))
                 .step(new DropItemGroundStep(storage, eventBus), DropItemContext::isGroundDrop)
+                .step(new ResolveContainerDropPositionStep(), DropItemContext::isContainerDrop)
                 .step(new DropItemContainerStep(eventBus, containers), DropItemContext::isContainerDrop)
                 .step(new StackItemStep(storage, eventBus), DropItemContext::isStack);
 

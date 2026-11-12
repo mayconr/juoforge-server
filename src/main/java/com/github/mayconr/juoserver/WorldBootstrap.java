@@ -20,6 +20,7 @@ import com.github.mayconr.juoserver.game.player.template.BodyTemplate;
 import com.github.mayconr.juoserver.game.player.template.StartKitTemplate;
 import com.github.mayconr.juoserver.game.spell.template.SpellTemplate;
 import com.github.mayconr.juoserver.game.spell.trigger.SpellCastRegistry;
+import com.github.mayconr.juoserver.game.ui.UIModule;
 import com.github.mayconr.juoserver.game.world.DefaultWorld;
 import com.github.mayconr.juoserver.game.world.SerialGenerator;
 import com.github.mayconr.juoserver.game.world.World;
@@ -196,6 +197,8 @@ public final class WorldBootstrap {
             world.ai().registerAi(entry.getKey(), Objects.requireNonNull(entry.getValue().apply(runtime), "AI context factory returned null"));
         }
 
+        registerContextMenuEntries(world.ui(), runtime, configuration);
+
         for (var factory : configuration.spellTriggerList()) {
             spellCastRegistry.register(factory.apply(runtime));
         }
@@ -215,6 +218,14 @@ public final class WorldBootstrap {
         gameLoop.start();
 
         return runtime;
+    }
+
+    static void registerContextMenuEntries(UIModule ui, ServerRuntime runtime, ModuleConfiguration configuration) {
+        var entries = configuration.contextMenuEntries().stream()
+                .map(factory -> Objects.requireNonNull(factory.apply(runtime),
+                        "Context menu factory returned null"))
+                .toList();
+        ui.registerContextMenuEntries(entries);
     }
 
     static <T extends AbstractContext> void registerShardFlow(

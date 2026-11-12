@@ -1,20 +1,57 @@
 package com.github.mayconr.juoserver.network.session.handler;
 
-import com.github.mayconr.juoserver.network.session.SessionView;
-import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
+import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.SendSkillType;
+import com.github.mayconr.juoserver.game.model.TextType;
+import com.github.mayconr.juoserver.game.model.TooltipSupport;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.ContainerOpenedEvent;
+import com.github.mayconr.juoserver.game.model.event.ContextMenuRequested;
 import com.github.mayconr.juoserver.game.model.event.GumpExpired;
-import com.github.mayconr.juoserver.network.packet.CloseGumpExtendedCommand;
-
-import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.*;
-import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.game.model.event.GumpSent;
+import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
+import com.github.mayconr.juoserver.game.model.event.ObjectLabelRequested;
+import com.github.mayconr.juoserver.game.model.event.PaperdollOpened;
+import com.github.mayconr.juoserver.game.model.event.RawPacketSent;
+import com.github.mayconr.juoserver.game.model.event.RawPacketsSent;
+import com.github.mayconr.juoserver.game.model.event.SkillGained;
+import com.github.mayconr.juoserver.game.model.event.SkillGumpRequested;
+import com.github.mayconr.juoserver.game.model.event.SkillLocked;
+import com.github.mayconr.juoserver.game.model.event.SkillUpdated;
+import com.github.mayconr.juoserver.game.model.event.SpellBookOpened;
+import com.github.mayconr.juoserver.game.model.event.StatusGumpRequested;
+import com.github.mayconr.juoserver.game.model.event.TargetSent;
+import com.github.mayconr.juoserver.game.model.event.TooltipRequested;
+import com.github.mayconr.juoserver.game.model.event.VendorSessionOpened;
+import com.github.mayconr.juoserver.game.model.event.message.LocalizedMessageContent;
+import com.github.mayconr.juoserver.game.model.event.message.MessageSent;
+import com.github.mayconr.juoserver.game.model.event.message.PlainTextMessageContent;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
-import lombok.extern.slf4j.Slf4j;
-import com.github.mayconr.juoserver.game.model.event.message.*;
 import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
+import com.github.mayconr.juoserver.network.packet.AddMultipleItemsToContainer;
+import com.github.mayconr.juoserver.network.packet.CloseGumpExtendedCommand;
+import com.github.mayconr.juoserver.network.packet.ContextMenuExtendedCommand;
+import com.github.mayconr.juoserver.network.packet.DrawContainer;
+import com.github.mayconr.juoserver.network.packet.GeneralInformation;
+import com.github.mayconr.juoserver.network.packet.NewSpellbookExtendedCommand;
+import com.github.mayconr.juoserver.network.packet.OpenPaperdoll;
+import com.github.mayconr.juoserver.network.packet.Packet;
+import com.github.mayconr.juoserver.network.packet.SendGumpDialog;
+import com.github.mayconr.juoserver.network.packet.SendSkill;
+import com.github.mayconr.juoserver.network.packet.SendSpeech;
+import com.github.mayconr.juoserver.network.packet.SendUnicodeSpeech;
+import com.github.mayconr.juoserver.network.packet.StatusBarInfo;
+import com.github.mayconr.juoserver.network.packet.Target;
+import com.github.mayconr.juoserver.network.packet.TooltipRequest;
+import com.github.mayconr.juoserver.network.packet.VendorBuyList;
+import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
+import com.github.mayconr.juoserver.network.session.SessionView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class PlayerInterfaceHandler {
@@ -25,7 +62,7 @@ public final class PlayerInterfaceHandler {
 
     public PlayerInterfaceHandler(SessionView session, SessionPacketWriter packetWriter, WorldInternal world,
                                   MessageLocalizer localizer) {
-        this.localizer = java.util.Objects.requireNonNull(localizer, "Message localizer is required");
+        this.localizer = Objects.requireNonNull(localizer, "Message localizer is required");
         this.session = session;
         this.packetWriter = packetWriter;
         this.world = world;
@@ -126,6 +163,17 @@ public final class PlayerInterfaceHandler {
                 packetWriter.writeAndFlush(new TooltipRequest(object));
             }
         }
+    }
+
+    public void onContextMenuRequested(ContextMenuRequested event) {
+        if (!session.isPlayer(event.player())) {
+            return;
+        }
+        var entries = event.entries().stream()
+                .map(entry -> new ContextMenuExtendedCommand.Entry(entry.index(), entry.cliloc()))
+                .toList();
+        packetWriter.writeAndFlush(new GeneralInformation(
+                new ContextMenuExtendedCommand(event.serialId(), entries)));
     }
 
     public void onGumpSent(GumpSent event) {

@@ -42,6 +42,14 @@ class ResourceBundleMessageLocalizerTest {
     }
 
     @Test
+    void translatesLocalizedParametersInTheMessageLocale() {
+        var nested = MessageContent.localized("languageOnly");
+
+        assertEquals("Olá, Português!", localizer.localize(
+                MessageContent.localized("welcome", Map.of("name", nested)), ClientLocale.PT_BR));
+    }
+
+    @Test
     void doesNotUseJvmDefaultLocale() {
         var original = Locale.getDefault();
         try {
