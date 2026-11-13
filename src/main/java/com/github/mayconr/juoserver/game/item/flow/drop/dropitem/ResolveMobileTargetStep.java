@@ -23,9 +23,9 @@ public class ResolveMobileTargetStep extends AbstractFlowStep<DropItemContext> {
     public StepResult execute(DropItemContext context) {
         int serial = context.getDropItem().getContainerSerialId();
 
-        var backpackOpt = storage.getMobile(serial)
+        var backpackOpt = storage.mobiles().get(serial)
                 .map(UOMobile::getBackpack)
-                .flatMap(storage::getContainer);
+                .flatMap(storage.items()::getContainer);
 
         if (backpackOpt.isEmpty()) {
             return StepResult.failure("Backpack not found for mobile serial " + serial);

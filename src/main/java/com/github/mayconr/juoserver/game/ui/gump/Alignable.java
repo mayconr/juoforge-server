@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.ui.gump;
 
 /** Alignment within the area assigned by the parent layout. */
 public interface Alignable extends UIElement {
-    /** Centers rows horizontally, columns vertically, and other elements on both axes. */
+    /** Centers columns vertically, and rows and other elements on both axes. */
     Alignable center();
 
     /** Aligns horizontally to the left, preserving vertical alignment. */

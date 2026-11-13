@@ -80,9 +80,17 @@ import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
+import com.github.mayconr.juoserver.game.item.flow.update.UpdateItemContext;
+import com.github.mayconr.juoserver.game.item.flow.update.UpdateItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemFlowDefinition;
+import com.github.mayconr.juoserver.game.item.flow.decay.DecayItemContext;
+import com.github.mayconr.juoserver.game.item.flow.decay.DecayItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemFlowDefinition;
+import com.github.mayconr.juoserver.game.item.flow.equip.EquipHeldItemContext;
+import com.github.mayconr.juoserver.game.item.flow.equip.EquipHeldItemFlowDefinition;
+import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
+import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.messaging.MessageModule;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
@@ -290,7 +298,15 @@ public class FlowRegistryFactory {
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemFlowDefinition.build(infra.storage(), infra.eventBus(), modules.ui()),
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext.class);
         registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates, modules.container(), modules.mobile()), ItemCreationContext.class);
+        registry.register(LiftItemFlowDefinition.class.getSimpleName(),
+                LiftItemFlowDefinition.build(modules, infra), LiftItemContext.class);
         registry.register(DropItemFlowDefinition.class.getSimpleName(), DropItemFlowDefinition.build(modules, infra), DropItemContext.class);
+        registry.register(DecayItemFlowDefinition.class.getSimpleName(),
+                DecayItemFlowDefinition.build(modules, infra), DecayItemContext.class);
+        registry.register(EquipHeldItemFlowDefinition.class.getSimpleName(),
+                EquipHeldItemFlowDefinition.build(modules, infra), EquipHeldItemContext.class);
+        registry.register(UpdateItemFlowDefinition.class.getSimpleName(),
+                UpdateItemFlowDefinition.build(infra.storage(), infra.eventBus()), UpdateItemContext.class);
         registry.register(DeleteItemFlowDefinition.class.getSimpleName(),
                 DeleteItemFlowDefinition.build(infra.storage(), infra.eventBus(), modules.ui()), DeleteItemContext.class);
         registry.register(PlayerCreationFlowDefinition.class.getSimpleName(), PlayerCreationFlowDefinition.build(modules, infra, templates), PlayerCreationContext.class);

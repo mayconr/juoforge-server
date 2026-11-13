@@ -4,18 +4,31 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>juoforge-server</name>
-	<description>Ultima Online Emulator</description>
-	<packaging>jar</packaging>
-	<groupId>com.github.mayconr</groupId>
+	<description>Ultima Online Server Emulator</description>
+    <url>https://github.com/mayconr/juoforge-server</url>
+    <licenses>
+        <license>
+            <name>Mozilla Public License 2.0</name>
+            <url>https://www.mozilla.org/en-US/MPL/2.0/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>mayconr</id>
+            <name>Maycon Gregorio</name>
+            <url>https://github.com/mayconr</url>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:https://github.com/mayconr/juoforge-server.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/mayconr/juoforge-server.git</developerConnection>
+        <url>https://github.com/mayconr/juoforge-server</url>
+    </scm>
+    <packaging>jar</packaging>
+	<groupId>io.github.mayconr</groupId>
 	<artifactId>juoforge-server</artifactId>
 	<version>0.0.5</version>
-
-	<repositories>
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
-	</repositories>
 
 	<properties>
 		<java.version>25</java.version>
@@ -62,7 +75,7 @@
 			<version>3.18.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.mayconr</groupId>
+			<groupId>io.github.mayconr</groupId>
 			<artifactId>juoforge-filereader</artifactId>
 			<version>1.1.0</version>
 		</dependency>
@@ -148,4 +161,62 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.4.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.12.0</version>
+                        <configuration>
+                            <doclint>none</doclint>
+                            <detectJavaApiLink>false</detectJavaApiLink>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.8</version>
+                        <configuration>
+                            <bestPractices>true</bestPractices>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

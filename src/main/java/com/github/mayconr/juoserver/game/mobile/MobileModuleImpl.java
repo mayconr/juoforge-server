@@ -28,7 +28,6 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
-import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -177,13 +176,6 @@ public class MobileModuleImpl implements MobileModule {
     @Override
     public boolean unequipItem(UOMobile mobile, UOItem item) {
         var context = new UnequipItemContext(mobile, item);
-        flows.execute(context);
-        return context.isUnequipped();
-    }
-
-    @Override
-    public boolean unequipItem(UOPlayer player, UnequipItem pickedUpItem) {
-        var context = new UnequipItemContext(player, pickedUpItem);
         flows.execute(context);
         return context.isUnequipped();
     }

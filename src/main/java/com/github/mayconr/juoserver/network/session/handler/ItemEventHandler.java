@@ -3,13 +3,38 @@ package com.github.mayconr.juoserver.network.session.handler;
 import com.github.mayconr.juoserver.network.session.SessionView;
 import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
 
-import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.*;
-import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.game.model.ContainerLocation;
+import com.github.mayconr.juoserver.game.model.EquippedLocation;
+import com.github.mayconr.juoserver.game.model.GroundLocation;
+import com.github.mayconr.juoserver.game.model.OrphanLocation;
+import com.github.mayconr.juoserver.game.model.UOContainer;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.EquippedItemCreated;
+import com.github.mayconr.juoserver.game.model.event.GroundedItemCreated;
+import com.github.mayconr.juoserver.game.model.event.ItemCreatedInContainer;
+import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
+import com.github.mayconr.juoserver.game.model.event.ItemDropAccepted;
+import com.github.mayconr.juoserver.game.model.event.ItemDropRejected;
+import com.github.mayconr.juoserver.game.model.event.ItemDroppedOnTheGround;
+import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
+import com.github.mayconr.juoserver.game.model.event.ItemStacked;
+import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
+import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
+import com.github.mayconr.juoserver.network.packet.AddItemToContainer;
+import com.github.mayconr.juoserver.network.packet.DeleteObject;
+import com.github.mayconr.juoserver.network.packet.DrawMobile;
+import com.github.mayconr.juoserver.network.packet.DropItemAccepted;
+import com.github.mayconr.juoserver.network.packet.EquipItem;
+import com.github.mayconr.juoserver.network.packet.ObjectInfo;
+import com.github.mayconr.juoserver.network.packet.ObjectRevision;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.extern.slf4j.Slf4j;
+import com.github.mayconr.juoserver.game.model.event.ItemLiftRejected;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked.StackDestination;
+import com.github.mayconr.juoserver.network.packet.LiftReject;
 import java.util.concurrent.TimeUnit;
+import java.util.HashSet;
 
 @Slf4j
 public final class ItemEventHandler {
@@ -39,6 +64,48 @@ public final class ItemEventHandler {
     public void onItemUnequipped(ItemUnequipped itemUnequipped) {
         if (session.shouldReceiveUpdate(itemUnequipped.mobile())) {
             packetWriter.writeAndFlush(new DrawMobile(itemUnequipped.mobile(), world.mobile().getEquippedItems(itemUnequipped.mobile())));
+        }
+    }
+
+    public void onItemLiftRejected(ItemLiftRejected event) {
+        if (session.isPlayer(event.player())) {
+            packetWriter.writeAndFlush(new LiftReject(event.reason()));
+        }
+    }
+
+    public void onItemDropAccepted(ItemDropAccepted event) {
+        if (session.isPlayer(event.player())) {
+            packetWriter.writeAndFlush(new DropItemAccepted());
+        }
+    }
+
+    public void onItemDropRejected(ItemDropRejected event) {
+        if (session.isPlayer(event.player())) {
+            packetWriter.writeAndFlush(new LiftReject(event.reason()));
+        }
+        if (event.restoredItem() != null) {
+            sendRestoredItem(event.restoredItem(), event.player());
+        }
+    }
+
+    private void sendRestoredItem(UOItem item, UOPlayer player) {
+        switch (item.getCurrentLocation()) {
+            case GroundLocation ground -> {
+                if (session.shouldReceiveUpdate(item)) {
+                    packetWriter.writeAndFlush(new ObjectInfo(item));
+                }
+            }
+            case ContainerLocation inside -> world.item().getItemBySerialId(inside.containerSerialId())
+                    .filter(UOContainer.class::isInstance)
+                    .map(UOContainer.class::cast)
+                    .filter(this::canSeeContainer)
+                    .ifPresent(container -> packetWriter.writeAndFlush(new AddItemToContainer(container, item)));
+            case EquippedLocation equipped -> {
+                if (equipped.ownerSerialId() == player.getSerialId() && session.shouldReceiveUpdate(player)) {
+                    packetWriter.writeAndFlush(new EquipItem(player, item.getLayer(), item));
+                }
+            }
+            case OrphanLocation orphan -> { }
         }
     }
 
@@ -94,6 +161,11 @@ public final class ItemEventHandler {
 
     public void onItemUpdated(ItemUpdated event) {
         final var item = event.item();
+        if (event.previousLocation() != null && session.shouldReceiveUpdate(event.previousLocation())
+                && !session.shouldReceiveUpdate(item)) {
+            packetWriter.writeAndFlush(new DeleteObject(item));
+            return;
+        }
         if (item.getCurrentLocation() instanceof ContainerLocation
                 ? !canSeeContainer(event.container()) : !session.shouldReceiveUpdate(item)) {
             return;
@@ -108,7 +180,7 @@ public final class ItemEventHandler {
 
     private boolean canSeeContainer(UOContainer container) {
         UOItem current = container;
-        var visited = new java.util.HashSet<Integer>();
+        var visited = new HashSet<Integer>();
         while (current != null && visited.add(current.getSerialId())) {
             if (current.getCurrentLocation() instanceof EquippedLocation location) {
                 return session.player() != null && location.ownerSerialId().equals(session.player().getSerialId());

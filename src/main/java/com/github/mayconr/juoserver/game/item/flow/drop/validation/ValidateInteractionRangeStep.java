@@ -1,67 +1,43 @@
 package com.github.mayconr.juoserver.game.item.flow.drop.validation;
 
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
-import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext.DropTarget;
-import com.github.mayconr.juoserver.game.messaging.MessageModule;
-import com.github.mayconr.juoserver.game.mobile.MobileModule;
-import com.github.mayconr.juoserver.game.model.EquippedLocation;
+import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRoot.CarriedBy;
+import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRoot.OnGround;
+import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRoot.Unreachable;
+import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRootResolver;
 import com.github.mayconr.juoserver.game.model.GameMath;
-import com.github.mayconr.juoserver.game.model.OrphanLocation;
-import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-public class ValidateInteractionRangeStep extends AbstractFlowStep<DropItemContext> {
+/** Checks the destination's world location and carrier without changing the dropped item. */
+public final class ValidateInteractionRangeStep extends AbstractFlowStep<DropItemContext> {
+    private final ItemRootResolver roots;
 
-    private final MobileModule mobileModule;
-    private final MessageModule messageModule;
-
-    public ValidateInteractionRangeStep(MobileModule mobileModule, MessageModule messageModule) {
+    public ValidateInteractionRangeStep(ItemRootResolver roots) {
         super("validate-interaction-range");
-        this.mobileModule = mobileModule;
-        this.messageModule = messageModule;
+        this.roots = roots;
     }
 
     @Override
     public StepResult execute(DropItemContext context) {
-        final var player = context.getPlayer();
-        var item = context.getItem();
-
-
-        if (isDroppedOnTheGround(context) && wasEquipped(item)) {
-            var isOutOfRange = !GameMath.isInRange(player, context.getDropItem(), 2);
-            if (isOutOfRange) {
-                log.debug("{} out of range", item.getCurrentLocation());
-                mobileModule.equipItem(player, item);
-                messageModule.send(player, "{drop.too_far_away}");
-                return StepResult.failure(item.getCurrentLocation() + " out of range");
-            }
+        if (context.isGroundDrop()) {
+            return validateRange(context, context.getTargetGround().location());
         }
-
-        if (isDroppedIntoContainerOrStack(context)) {
-            if (!GameMath.isInRange(player, item, 2)) {
-                System.out.println("jogou na bag ou stack. Fora do radios");
-            }
-        }
-
-        return StepResult.success();
+        var target = context.isContainerDrop()
+                ? context.getTargetContainer().container() : context.getTargetStack().itemStack();
+        return switch (roots.resolve(target)) {
+            case OnGround ground -> validateRange(context, ground.location());
+            case CarriedBy carrier -> carrier.mobile().getSerialId() == context.getPlayer().getSerialId()
+                    ? StepResult.success()
+                    : StepResult.failure("DROP_ACCESS_DENIED", "Destination is carried by another mobile");
+            case Unreachable unreachable -> StepResult.failure("DROP_UNREACHABLE", "Destination is not in the world");
+        };
     }
 
-    private boolean isOrphanItem(UOItem item) {
-        return item.getCurrentLocation() instanceof OrphanLocation;
-    }
-
-    private boolean wasEquipped(UOItem item) {
-        return item.getPreviousLocation() instanceof EquippedLocation;
-    }
-
-    private boolean isDroppedOnTheGround(DropItemContext context) {
-        return DropTarget.GROUND.equals(context.getTarget());
-    }
-
-    private boolean isDroppedIntoContainerOrStack(DropItemContext context) {
-        return DropTarget.ITEM.equals(context.getTarget());
+    private static StepResult validateRange(DropItemContext context, Location destination) {
+        return GameMath.isInRange(context.getPlayer(), destination, 2)
+                ? StepResult.success()
+                : StepResult.failure("DROP_OUT_OF_RANGE", "Destination is out of reach");
     }
 }

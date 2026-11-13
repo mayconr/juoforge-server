@@ -14,11 +14,11 @@ class GumpContainerCenterTest {
     }
 
     @Test
-    void centersRowHorizontallyIncludingGaps() {
+    void centersRowOnBothAxesIncludingGaps() {
         var row = new Row(10, List.of(new Label("test"), new Label("test"))).center();
         var layout = render(row, 100, 100);
-        assertTrue(layout.contains("{text 27 20 1152 0}"));
-        assertTrue(layout.contains("{text 65 20 1152 1}"));
+        assertTrue(layout.contains("{text 27 63 1152 0}"));
+        assertTrue(layout.contains("{text 65 63 1152 1}"));
     }
 
     @Test
@@ -62,7 +62,7 @@ class GumpContainerCenterTest {
         var column = new Column(0).add(new Label("test")).center();
         var row = new Row(0, List.of(column)).center();
         var parent = new Panel(100, 100, row).fillChildren();
-        assertTrue(render(parent, 0, 0).contains("{text 46 20 1152 0}"));
+        assertTrue(render(parent, 0, 0).contains("{text 46 63 1152 0}"));
         var fullColumn = new Column(0).add(new Label("test")).center();
         assertTrue(render(new Panel(100, 100, fullColumn).fillChildren(), 0, 0)
                 .contains("{text 10 63 1152 0}"));

@@ -4,6 +4,9 @@ import com.github.mayconr.juoserver.game.item.ItemCreationResult.Created;
 import com.github.mayconr.juoserver.game.item.ItemCreationResult.Rejected;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
+import com.github.mayconr.juoserver.game.item.flow.equip.EquipHeldItemContext;
+import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
@@ -17,6 +20,9 @@ import com.github.mayconr.juoserver.game.world.context.ModuleContext.FlowFacade;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.item.Items;
+import com.github.mayconr.juoserver.network.packet.DropItem;
+import com.github.mayconr.juoserver.network.packet.EquipItemRequest;
+import com.github.mayconr.juoserver.network.packet.UnequipItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -122,8 +128,60 @@ class ItemModuleTest {
 
     @Test
     void rejectsMobileSerialBeforeAccessingStorage() {
+        clearInvocations(storage);
         assertThrows(IllegalArgumentException.class, () -> module.deleteItem(1));
         verifyNoInteractions(storage, flows);
+    }
+
+    @Test
+    void dropEndsTheHoldEvenWhenTheFlowFails() {
+        var player = holdingPlayer();
+        when(flows.execute(any(DropItemContext.class))).thenThrow(new IllegalStateException("failed"));
+
+        assertThrows(IllegalStateException.class, () -> module.dropItem(player, mock(DropItem.class)));
+
+        assertFalse(module.heldItems().isHoldingAny(player));
+    }
+
+    @Test
+    void equipEndsTheHold() {
+        var player = holdingPlayer();
+        when(flows.execute(any(EquipHeldItemContext.class))).thenReturn(StepResult.failure("ITEM_NOT_HELD", "not held"));
+
+        module.equipHeldItem(player, mock(EquipItemRequest.class));
+
+        assertFalse(module.heldItems().isHoldingAny(player));
+    }
+
+    @Test
+    void releaseEndsTheHold() {
+        var player = holdingPlayer();
+
+        module.releaseHeldItem(player);
+
+        assertFalse(module.heldItems().isHoldingAny(player));
+    }
+
+    @Test
+    void liftRunsTheLiftFlow() {
+        var player = mock(UOPlayer.class);
+        var request = mock(UnequipItem.class);
+
+        module.liftItem(player, request);
+
+        var context = ArgumentCaptor.forClass(LiftItemContext.class);
+        verify(flows).execute(context.capture());
+        assertSame(player, context.getValue().getPlayer());
+        assertSame(request, context.getValue().getRequest());
+    }
+
+    private UOPlayer holdingPlayer() {
+        var player = mock(UOPlayer.class);
+        when(player.getSerialId()).thenReturn(1);
+        var item = mock(UOItem.class);
+        when(item.getSerialId()).thenReturn(0x40000001);
+        assertTrue(module.heldItems().hold(player, item));
+        return player;
     }
 
     @Test

@@ -18,6 +18,6 @@ public class UnequipItem extends AbstractPacket {
         super(CODE, 7);
         buf.readByte(); // CODE
         this.serialId = buf.readInt();
-        this.amount = buf.readShort();
+        this.amount = buf.readUnsignedShort();
     }
 }

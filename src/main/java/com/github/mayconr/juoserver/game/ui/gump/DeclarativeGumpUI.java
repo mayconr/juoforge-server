@@ -1,5 +1,7 @@
 package com.github.mayconr.juoserver.game.ui.gump;
 
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.infrastructure.datafile.UOFileReader;
 import com.github.mayconr.juoserver.game.model.event.message.MessageContent;
 import java.util.function.Function;
 import java.util.ArrayList;
@@ -179,6 +181,20 @@ public class DeclarativeGumpUI {
 
     public static ItemIcon ItemIcon(int tileId, int width, int height) {
         return new ItemIcon(tileId, width, height);
+    }
+
+    /** Creates an icon with the item's model ID and hue. */
+    public static UOItemIcon ItemIcon(UOItem item) {
+        return new UOItemIcon(item);
+    }
+
+    /** Creates an item icon using the art dimensions supplied by the file reader. */
+    public static UOItemIcon ItemIcon(UOItem item, UOFileReader reader) {
+        return new UOItemIcon(item, reader);
+    }
+
+    public static UOItemIcon ItemIcon(UOItem item, int width, int height) {
+        return new UOItemIcon(item, width, height);
     }
 
     public static Checkbox Checkbox(int uncheckedId, int checkedId, int switchId) {

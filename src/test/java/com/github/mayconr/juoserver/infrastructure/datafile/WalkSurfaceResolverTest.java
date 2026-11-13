@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.datafile;
 
+import com.github.mayconr.juoforge.reader.art.ArtMetadata;
 import com.github.mayconr.juoforge.reader.skill.Skill;
 import com.github.mayconr.juoforge.reader.tiledata.ItemTileData;
 import com.github.mayconr.juoforge.reader.tiledata.TileFlag;
@@ -90,6 +91,17 @@ class WalkSurfaceResolverTest {
     }
 
     private static final class FakeMap implements GameDataProvider {
+
+        @Override
+        public Optional<ArtMetadata> itemArt(int itemId) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<ArtMetadata> landArt(int landId) {
+            return Optional.empty();
+        }
+
 
         private final Map<Long, Integer> landZ = new HashMap<>();
         private final Map<Long, List<StaticTile>> statics = new HashMap<>();

@@ -97,7 +97,7 @@ class ItemStackabilityTest {
 
     private void stubTiledata(int modelId, boolean stackable) {
         when(reader.getItemTileInfo(modelId)).thenReturn(Optional.of(new ItemTileInfo(
-                modelId, "iron ingot", stackable, Set.of(), 0, 0, 0, 0, 0, 0, 1)));
+                modelId, "iron ingot", stackable, Set.of(), 0, 0, 0, 0, 0, 0, 1, 1)));
         when(reader.isStackable(modelId)).thenCallRealMethod();
     }
 

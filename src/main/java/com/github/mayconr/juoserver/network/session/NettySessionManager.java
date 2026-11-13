@@ -14,6 +14,9 @@ import com.github.mayconr.juoserver.game.model.event.ItemCreatedInContainer;
 import com.github.mayconr.juoserver.game.model.event.ItemDeleted;
 import com.github.mayconr.juoserver.game.model.event.ItemDroppedOnTheGround;
 import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
+import com.github.mayconr.juoserver.game.model.event.ItemLiftRejected;
+import com.github.mayconr.juoserver.game.model.event.ItemDropAccepted;
+import com.github.mayconr.juoserver.game.model.event.ItemDropRejected;
 import com.github.mayconr.juoserver.game.model.event.ItemStacked;
 import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
@@ -145,6 +148,9 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(StatusGumpRequested.class, ui::onStatusGumpRequested),
                 new Event<>(TooltipRequested.class, ui::onTooltipRequested),
                 new Event<>(ObjectLabelRequested.class, ui::onObjectLabelRequested),
+                new Event<>(ItemLiftRejected.class, items::onItemLiftRejected),
+                new Event<>(ItemDropAccepted.class, items::onItemDropAccepted),
+                new Event<>(ItemDropRejected.class, items::onItemDropRejected),
                 new Event<>(ItemDroppedOnTheGround.class, items::onItemDroppedOnTheGround),
                 new Event<>(ItemStacked.class, items::onItemStacked),
                 new Event<>(GroundedItemCreated.class, items::onItemCreated),

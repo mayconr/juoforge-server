@@ -42,7 +42,8 @@ class GumpAlignmentTest {
         var row = new Row(10, List.of(new Label("A"), new Label("B")));
         assertTrue(layout(row.right()).contains("{text 276 50 "));
         assertTrue(layout(row.left()).contains("{text 100 50 "));
-        assertTrue(layout(row.center()).contains("{text 188 50 "));
+        assertTrue(layout(row.center()).contains("{text 188 93 "));
+        assertTrue(layout(row.right()).contains("{text 276 93 "));
     }
 
     @Test

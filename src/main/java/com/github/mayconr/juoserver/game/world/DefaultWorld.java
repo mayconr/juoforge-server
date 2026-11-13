@@ -407,7 +407,8 @@ public class DefaultWorld implements WorldInternal, World {
                 storage,
                 itemTemplateRegistry,
                 itemUseService,
-                new ItemQualityCalculator(settings.items().quality())
+                new ItemQualityCalculator(settings.items().quality()),
+                settings.items().decay()
         );
     }
 
@@ -594,13 +595,14 @@ public class DefaultWorld implements WorldInternal, World {
     /**
      * Handles the player session closure event.
      *
-     * <p>Despawns the associated player from the game world.</p>
+     * <p>Frees the player's cursor and despawns the associated player from the game world.</p>
      *
      * @param event session closure event
      */
     private void handleSessionClosed(PlayerSessionClosed event) {
         final var player = event.session().getPlayer();
         if (player != null) {
+            itemModule.releaseHeldItem(player);
             playerModule.despawn(player);
         }
     }
