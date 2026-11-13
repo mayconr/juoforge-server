@@ -49,10 +49,14 @@ public class Row implements Alignable, Sized {
         return this;
     }
 
-    /** Centers the children horizontally as a group. Ignored when this row uses fillChildren. */
+    /**
+     * Centers the children horizontally as a group and each child vertically within the row height.
+     * Ignored when this row uses fillChildren.
+     */
     @Override
     public Row center() {
         horizontalAlignment = HorizontalAlignment.CENTER;
+        verticalAlignment = VerticalAlignment.CENTER;
         return this;
     }
 

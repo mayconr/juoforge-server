@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -21,7 +22,9 @@ public class WorldItemIndex {
     }
 
     public void add(UOItem item) {
-        // TODO verify if item is on the ground
+        if (!item.isOnTheGround()) {
+            return;
+        }
         long key = regionKey(item.getX() / 24, item.getY() / 24);
         itemsByRegion
                 .computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet())
@@ -56,5 +59,12 @@ public class WorldItemIndex {
 
     private long regionKey(int x, int y) {
         return (((long) x) << 32) | (y & 0xFFFFFFFFL);
+    }
+
+    /** Snapshot of all indexed ground serials, independent of player visibility. */
+    public Set<Integer> groundSerials() {
+        var serials = new HashSet<Integer>();
+        itemsByRegion.values().forEach(serials::addAll);
+        return Set.copyOf(serials);
     }
 }

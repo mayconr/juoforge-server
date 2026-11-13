@@ -93,6 +93,19 @@ lifecycle (`initialize`, `saveWorld`) and exposes each responsibility through a 
 - `PropertyStore` and `WorldPersistence` are public only because they cross subpackages;
   they are internal to the world storage and must not be used by modules or shards.
 
+## Item properties
+
+- All changes to persistent or runtime properties of an existing item must go through
+  the item module's property API, exposed by `ItemModule` / `WorldItem`.
+- Use `setProperty` to set, replace or remove a property (`null` removes it), and
+  `computeProperty` for atomic read-modify-write operations. Use `getProperty` to
+  coordinate reads with these writes.
+- These operations synchronize on the item. Do not mutate
+  `item.persistentAttributes()` or `item.runtimeAttributes()` directly from flows,
+  services, handlers or shards, including decay helpers and lazy property initialization.
+- Keep direct property-map mutations inside the item module's property implementation.
+  Constructing or hydrating initial item data belongs to the creation and storage layers.
+
 ## Item creation
 
 `WorldItem.createItem` is deprecated. Item creation must go through `WorldItem.tryCreateItem`,

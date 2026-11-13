@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.item.flow.drop;
 
+import com.github.mayconr.juoserver.game.item.hold.HeldItemRequest;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
@@ -11,7 +12,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DropItemContext extends AbstractSyncFlowContext<Void> {
+public class DropItemContext extends AbstractSyncFlowContext<Void> implements HeldItemRequest {
     private final UOPlayer player;
 
     private DropItem dropItem;
@@ -20,6 +21,7 @@ public class DropItemContext extends AbstractSyncFlowContext<Void> {
     private TargetGround targetGround;
 
     private UOItem item;
+    private boolean outcomeNotified;
 
     private DropTarget target;
 
@@ -51,6 +53,11 @@ public class DropItemContext extends AbstractSyncFlowContext<Void> {
         var context = new DropItemContext(player);
         context.setTargetContainer(targetContainer);
         return context;
+    }
+
+    @Override
+    public int requestedItemSerial() {
+        return dropItem.getSerialId();
     }
 
     public boolean isDroppedItem(DropTarget type) {

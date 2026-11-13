@@ -169,8 +169,9 @@ public final class PlayerInterfaceHandler {
         if (!session.isPlayer(event.player())) {
             return;
         }
+        var locale = session.locale();
         var entries = event.entries().stream()
-                .map(entry -> new ContextMenuExtendedCommand.Entry(entry.index(), entry.cliloc()))
+                .map(entry -> new ContextMenuExtendedCommand.Entry(entry.index(), entry.cliloc().resolve(locale)))
                 .toList();
         packetWriter.writeAndFlush(new GeneralInformation(
                 new ContextMenuExtendedCommand(event.serialId(), entries)));

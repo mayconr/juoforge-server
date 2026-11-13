@@ -35,7 +35,7 @@ public interface UOFileReader {
     Optional<Skill> getSkill(int skillId);
 
     /**
-     * Reads the client tiledata for an item graphic.
+     * Reads the client tiledata and art dimensions in pixels for an item graphic.
      *
      * @return the tiledata entry, or empty when the graphic id is outside tiledata
      */

@@ -95,13 +95,36 @@ public record GamePlaySettings(
     }
 
     /** Item rules. */
-    public record Items(ItemQuality quality) {
+    public record Items(ItemQuality quality, ItemDecay decay) {
         public Items() {
-            this(new ItemQuality());
+            this(new ItemQuality(), new ItemDecay());
+        }
+
+        public Items(ItemQuality quality) {
+            this(quality, new ItemDecay());
         }
 
         public Items {
             quality = quality == null ? new ItemQuality() : quality;
+            decay = decay == null ? new ItemDecay() : decay;
+        }
+    }
+
+    /** Real seconds of server activity; stopped-server time never advances decay. */
+    public record ItemDecay(double durationSeconds, double scanIntervalSeconds) {
+        public ItemDecay() {
+            this(120.0, 60.0);
+        }
+
+        public ItemDecay {
+            validateSeconds(durationSeconds, "items.decay.durationSeconds");
+            validateSeconds(scanIntervalSeconds, "items.decay.scanIntervalSeconds");
+        }
+
+        private static void validateSeconds(double value, String name) {
+            if (!Double.isFinite(value) || value <= 0 || value >= Long.MAX_VALUE / 1000.0) {
+                throw new IllegalArgumentException(name + " must be finite, positive and fit in milliseconds");
+            }
         }
     }
 

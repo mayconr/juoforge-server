@@ -4,7 +4,6 @@ import com.github.mayconr.juoserver.game.model.*;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
-import com.github.mayconr.juoserver.network.packet.UnequipItem;
 
 /** Internal mobile module with lifecycle, client requests and state management. */
 public interface MobileModule extends WorldMobile, WorldModule {
@@ -23,9 +22,6 @@ public interface MobileModule extends WorldMobile, WorldModule {
 
     /** Runs the unequip flow and returns whether the item was unequipped. */
     boolean unequipItem(UOMobile mobile, UOItem item);
-
-    /** Handles a client pickup request through the unequip flow. */
-    boolean unequipItem(UOPlayer player, UnequipItem pickedUpItem);
 
     /** Schedules NPC despawn after the given delay in seconds. */
     void scheduleDespawn(UONpc npc, int secs);

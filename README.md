@@ -4,6 +4,8 @@ Network configuration: [standalone mode or juoforge-gateway integration](docs/ne
 
 Gump system: [components, usage examples, and limitations](docs/gumps.md).
 
+Ground item decay: [timing, configuration, and container contents](docs/item-decay.md).
+
 An Ultima Online server written in Java. Gameplay rules are configured in
 [`GamePlaySettings`](src/main/java/com/github/mayconr/juoserver/game/GamePlaySettings.java).
 
@@ -20,6 +22,8 @@ mvn clean install
 The build uses `--release 25`, without preview features. Lombok annotation
 processing is explicitly configured in Maven. Spring Boot 3.5 manages compatible
 dependency versions, including Lombok, Mockito, and Netty.
+
+Maven Central artifact preparation: [release profile and signing](docs/maven-central.md).
 
 ## Skills module
 

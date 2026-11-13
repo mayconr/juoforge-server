@@ -22,7 +22,7 @@ public class ResolveItemTargetStep extends AbstractFlowStep<DropItemContext> {
     public StepResult execute(DropItemContext context) {
         int serial = context.getDropItem().getContainerSerialId();
 
-        var targetOpt = storage.getItem(serial);
+        var targetOpt = storage.items().get(serial);
         if (targetOpt.isEmpty()) {
             return StepResult.failure("Container not found for serial " + serial);
         }

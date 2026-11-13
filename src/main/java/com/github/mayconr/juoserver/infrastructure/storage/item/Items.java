@@ -42,6 +42,9 @@ public interface Items {
 
     List<UOItem> inRange(Location location);
 
+    /** Snapshot of ground items across all indexed regions. */
+    List<UOItem> onGround();
+
     void placeOnGround(UOItem item);
 
     void removeFromGround(UOItem item);

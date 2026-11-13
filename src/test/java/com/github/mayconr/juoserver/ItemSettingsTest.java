@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.GamePlaySettings.ItemQuality;
+import com.github.mayconr.juoserver.game.GamePlaySettings.ItemDecay;
 import com.github.mayconr.juoserver.game.GamePlaySettings.Items;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,6 +12,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ItemSettingsTest {
+
+    @Test
+    void decayDefaultsToTwoMinutesWithOneMinuteScans() {
+        assertEquals(new ItemDecay(120, 60), new GamePlaySettings().items().decay());
+        var custom = new Items(null, new ItemDecay(300, 15));
+        assertEquals(custom, new GamePlaySettings().withItems(custom).withName("test").items());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0, 60", "-1, 60", "NaN, 60", "Infinity, 60", "120, 0", "120, -1", "120, NaN", "120, Infinity"})
+    void decayRejectsInvalidDurations(double duration, double interval) {
+        assertThrows(IllegalArgumentException.class, () -> new ItemDecay(duration, interval));
+    }
 
     @Test
     void defaultsToModifierZeroToHundredAndSymmetricLuck() {

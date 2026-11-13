@@ -100,11 +100,15 @@ class ItemCreationTemplateTest {
         var module = new ItemModuleImpl(storage, null, null);
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
+        clearInvocations(storage);
         var request = ItemRequest.byName("missing_item");
 
         var error = assertThrows(ModuleOperationException.class, () -> {
-            if (withOptions) module.createItem(request, ItemTarget.orphan(), options -> options.renderOnCreate(false));
-            else module.createItem(request, ItemTarget.orphan());
+            if (withOptions) {
+                module.tryCreateItem(request, ItemTarget.orphan(), options -> options.renderOnCreate(false)).orThrow();
+            } else {
+                module.tryCreateItem(request, ItemTarget.orphan()).orThrow();
+            }
         });
 
         assertEquals("ITEM_TEMPLATE_NOT_FOUND", error.getCode());

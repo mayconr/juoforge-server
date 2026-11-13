@@ -12,9 +12,25 @@ import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 /** Public item operations for creation, removal, lookup and container contents. */
 public interface WorldItem {
+
+    /** Updates a ground item's position and model together. Null fields preserve current values. */
+    void updateItem(UOItem item, ItemChange change);
+
+    /** Sets a property under the item monitor. Null removes it; runtimeOnly selects runtime storage. */
+    void setProperty(UOItem item, String key, Object value, boolean runtimeOnly);
+
+    /** Reads a property under the item monitor, returning null when absent. */
+    Object getProperty(UOItem item, String key, boolean runtimeOnly);
+
+    /** Reads a property under the item monitor, using the default when absent. */
+    <T> T getProperty(UOItem item, String key, T defaultValue, boolean runtimeOnly);
+
+    /** Atomically computes a property under the item monitor; null removes it. */
+    <T> T computeProperty(UOItem item, String key, BiFunction<String, T, T> update, boolean runtimeOnly);
 
     /** Dispatches item use to the registered triggers. */
     void use(ItemUseContext context);

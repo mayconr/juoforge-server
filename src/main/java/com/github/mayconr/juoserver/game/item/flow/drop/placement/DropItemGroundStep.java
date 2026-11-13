@@ -27,7 +27,7 @@ public class DropItemGroundStep extends AbstractFlowStep<DropItemContext> {
 
         item.setCurrentLocation(new GroundLocation());
         item.setLocation(location);
-        storage.placeOnTheGround(item);
+        storage.items().placeOnGround(item);
         eventBus.publish(new ItemDroppedOnTheGround(player, item, location));
 
         return StepResult.success();

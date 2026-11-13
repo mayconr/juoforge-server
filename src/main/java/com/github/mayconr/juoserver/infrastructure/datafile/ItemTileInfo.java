@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.infrastructure.datafile;
 import java.util.Set;
 
 /**
- * Client tiledata for an item graphic, decoupled from the file reader library.
+ * Client tiledata and art dimensions for an item graphic, decoupled from the file reader library.
  *
  * @param modelId    item graphic id
  * @param name       tiledata name; stackable names usually carry the {@code %s} plural suffix
@@ -15,7 +15,8 @@ import java.util.Set;
  * @param animId     tiledata animation id
  * @param hue        tiledata hue
  * @param lightIndex tiledata light index
- * @param height     tiledata height
+ * @param width      art width in pixels, or zero when art is unavailable
+ * @param height     art height in pixels, or zero when art is unavailable
  */
 public record ItemTileInfo(
         int modelId,
@@ -28,6 +29,7 @@ public record ItemTileInfo(
         int animId,
         int hue,
         int lightIndex,
+        int width,
         int height
 ) {
     public ItemTileInfo {

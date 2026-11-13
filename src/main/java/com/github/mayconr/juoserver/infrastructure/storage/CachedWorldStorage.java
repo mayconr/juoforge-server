@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.item.ItemCache;
 import com.github.mayconr.juoserver.infrastructure.storage.item.ItemMapper;
 import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.item.Items;
+import com.github.mayconr.juoserver.infrastructure.storage.item.GroundItemsQuery;
 import com.github.mayconr.juoserver.infrastructure.storage.item.WorldItemIndex;
 import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileCache;
 import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileDependencyLoader;
@@ -89,7 +90,7 @@ public class CachedWorldStorage implements WorldStorage {
 
     @Override
     public Items items() {
-        return new WorldStorageViews.ItemsView(this);
+        return new WorldStorageViews.ItemsView(this, new GroundItemsQuery(itemCache, worldItemIndex)::get);
     }
 
     private final List<Integer> dirtyMobiles = new ArrayList<>();

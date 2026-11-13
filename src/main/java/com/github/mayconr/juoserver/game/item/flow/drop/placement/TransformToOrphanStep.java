@@ -25,14 +25,14 @@ public class TransformToOrphanStep extends AbstractFlowStep<DropItemContext> {
         // Item was equipped
         switch (item.getCurrentLocation()) {
             case EquippedLocation location -> {
-                var owner = storage.getMobile(location.ownerSerialId())
+                var owner = storage.mobiles().get(location.ownerSerialId())
                         .orElseThrow(() -> new IllegalStateException("Owner not found"));
                 owner.getEquippedItems().remove(item.getLayer());
             }
             case OrphanLocation l -> {}
-            case GroundLocation l -> storage.removeFromTheGround(item);
+            case GroundLocation l -> storage.items().removeFromGround(item);
             case ContainerLocation location -> {
-                var container = storage.getContainer(location.containerSerialId())
+                var container = storage.items().getContainer(location.containerSerialId())
                         .orElseThrow(() -> new IllegalStateException("Container not found"));
                 container.removeItemFromContainer(item);
             }

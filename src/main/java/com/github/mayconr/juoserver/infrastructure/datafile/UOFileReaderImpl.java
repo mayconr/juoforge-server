@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.infrastructure.datafile;
 
+import com.github.mayconr.juoforge.reader.art.ArtMetadata;
 import com.github.mayconr.juoforge.reader.skill.Skill;
 import com.github.mayconr.juoforge.reader.tiledata.ItemTileData;
 import com.github.mayconr.juoforge.reader.tiledata.TileFlag;
@@ -83,7 +84,8 @@ public class UOFileReaderImpl implements UOFileReader{
         return gameDataProvider.itemTileData(modelId).map(data -> toItemTileInfo(modelId, data));
     }
 
-    private static ItemTileInfo toItemTileInfo(int modelId, ItemTileData data) {
+    private ItemTileInfo toItemTileInfo(int modelId, ItemTileData data) {
+        var art = gameDataProvider.itemArt(modelId);
         return new ItemTileInfo(
                 modelId,
                 data.name(),
@@ -95,7 +97,8 @@ public class UOFileReaderImpl implements UOFileReader{
                 data.animId(),
                 data.hue(),
                 data.lightIndex(),
-                data.height());
+                art.map(ArtMetadata::width).orElse(0),
+                art.map(ArtMetadata::height).orElse(0));
     }
 
     private static Set<String> flagNames(Set<TileFlag> flags) {

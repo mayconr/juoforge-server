@@ -15,6 +15,6 @@ public class ItemUnequippedHandler extends PlayerSessionChannelInboundHandler<Un
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, UnequipItem msg) {
-        world.mobile().unequipItem(session.getPlayer(), msg);
+        world.item().liftItem(session.getPlayer(), msg);
     }
 }

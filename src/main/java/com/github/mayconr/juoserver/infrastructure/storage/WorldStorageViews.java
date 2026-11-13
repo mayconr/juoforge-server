@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.infrastructure.storage;
 
 import com.github.mayconr.juoserver.infrastructure.storage.account.Accounts;
 import com.github.mayconr.juoserver.infrastructure.storage.item.Items;
+import java.util.function.Supplier;
 import com.github.mayconr.juoserver.infrastructure.storage.mobile.Mobiles;
 import com.github.mayconr.juoserver.infrastructure.storage.serial.Serials;
 
@@ -149,7 +150,7 @@ final class WorldStorageViews {
         }
     }
 
-    record ItemsView(WorldStorage storage) implements Items {
+    record ItemsView(WorldStorage storage, Supplier<List<UOItem>> groundItems) implements Items {
 
         ItemsView {
             Objects.requireNonNull(storage, "World storage is required");
@@ -188,6 +189,11 @@ final class WorldStorageViews {
         @Override
         public List<UOItem> inRange(Location location) {
             return storage.getItemsInRange(location);
+        }
+
+        @Override
+        public List<UOItem> onGround() {
+            return groundItems.get();
         }
 
         @Override

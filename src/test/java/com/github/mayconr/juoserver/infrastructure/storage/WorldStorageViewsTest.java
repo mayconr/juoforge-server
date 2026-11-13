@@ -86,7 +86,7 @@ class WorldStorageViewsTest {
 
     @Test
     void itemsDelegateToTheWorldStorage() {
-        var items = new WorldStorageViews.ItemsView(storage);
+        var items = new WorldStorageViews.ItemsView(storage, List::of);
         var item = mock(UOItem.class);
         var data = mock(UOItemData.class);
         var container = mock(UOContainer.class);

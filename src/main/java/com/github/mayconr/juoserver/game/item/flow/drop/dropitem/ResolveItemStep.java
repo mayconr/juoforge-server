@@ -20,7 +20,7 @@ public class ResolveItemStep extends AbstractFlowStep<DropItemContext> {
     public StepResult execute(DropItemContext context) {
         int serial = context.getDropItem().getSerialId();
 
-        return storage.getItem(serial)
+        return storage.items().get(serial)
                 .map(item -> {
                     context.setItem(item);
                     return StepResult.success();
