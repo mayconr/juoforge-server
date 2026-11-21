@@ -19,7 +19,7 @@ public class UnmountFlowDefinition {
         return FlowFactory.<UnmountContext>builder()
                 .step(new ValidateUnmountStep())
                 .step(new LoadMountItemStep(infra.storage()))
-                .step(new UnequipMountItemStep(infra.storage(), infra.eventBus()))
+                .step(new UnequipMountItemStep(infra.storage(), infra.eventBus(), modules.mobile()))
                 .step(new LoadMountNpcNameStep(templates.mountByItemName()))
                 .step(new CreateMountNpcStep(modules.npc()))
                 .build();

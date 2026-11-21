@@ -7,11 +7,14 @@ import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.flow.equip.EquipHeldItemContext;
 import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplateRegistry;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseService;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.item.trigger.Trigger;
 import com.github.mayconr.juoserver.game.model.ItemTarget;
+import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
@@ -144,6 +147,34 @@ class ItemModuleTest {
     }
 
     @Test
+    void worldItemDropsIntoAContainerWithoutAClientRequest() {
+        WorldItem worldItems = module;
+        var player = mock(UOPlayer.class);
+        var item = mock(UOItem.class);
+        var container = mock(UOContainer.class);
+        when(flows.execute(any(DropItemContext.class))).thenReturn(StepResult.success());
+
+        assertTrue(worldItems.dropItem(player, item, ItemTarget.container(container)).flowSucceeded());
+
+        var context = ArgumentCaptor.forClass(DropItemContext.class);
+        verify(flows).execute(context.capture());
+        assertSame(player, context.getValue().getMobile());
+        assertSame(item, context.getValue().getItem());
+        assertSame(container, context.getValue().getTargetContainer().container());
+        assertFalse(context.getValue().isDroppedItem());
+    }
+
+    @Test
+    void worldItemRejectsTargetsThatDoNotRepresentDrops() {
+        WorldItem worldItems = module;
+
+        var result = worldItems.dropItem(mock(UOPlayer.class), mock(UOItem.class), ItemTarget.orphan());
+
+        assertEquals("DROP_INVALID_TARGET", result.code());
+        verifyNoInteractions(flows);
+    }
+
+    @Test
     void equipEndsTheHold() {
         var player = holdingPlayer();
         when(flows.execute(any(EquipHeldItemContext.class))).thenReturn(StepResult.failure("ITEM_NOT_HELD", "not held"));
@@ -151,6 +182,92 @@ class ItemModuleTest {
         module.equipHeldItem(player, mock(EquipItemRequest.class));
 
         assertFalse(module.heldItems().isHoldingAny(player));
+    }
+
+    @Test
+    void equipsWithoutAClientRequestOrHeldItem() {
+        var player = mock(UOPlayer.class);
+        var item = mock(UOItem.class);
+        when(flows.execute(any(EquipItemContext.class))).thenAnswer(invocation -> {
+            var context = invocation.<EquipItemContext>getArgument(0);
+            assertSame(player, context.getMobile());
+            assertSame(item, context.getItem());
+            assertNull(context.getEquipItem());
+            context.setEquipped(true);
+            return StepResult.success();
+        });
+
+        WorldItem worldItems = module;
+        assertTrue(worldItems.equipItem(player, item));
+        verify(flows).execute(any(EquipItemContext.class));
+    }
+
+    @Test
+    void equipmentRequiresTheFlowToConfirmEquipment() {
+        when(flows.execute(any(EquipItemContext.class))).thenReturn(StepResult.success());
+
+        assertFalse(module.equipItem(mock(UOPlayer.class), mock(UOItem.class)));
+    }
+
+    @Test
+    void unequipsThroughTheUnequipFlowWithoutAClientRequest() {
+        var player = mock(UOPlayer.class);
+        var item = mock(UOItem.class);
+        when(flows.execute(any(UnequipItemContext.class))).thenAnswer(invocation -> {
+            var context = invocation.<UnequipItemContext>getArgument(0);
+            assertSame(player, context.getMobile());
+            assertSame(item, context.getItem());
+            context.setUnequipped(true);
+            return StepResult.success();
+        });
+
+        WorldItem worldItems = module;
+        assertTrue(worldItems.unequipItem(player, item));
+        verify(flows).execute(any(UnequipItemContext.class));
+    }
+
+    @Test
+    void unequipPassesTheRequestedDestinationToTheFlow() {
+        var player = mock(UOPlayer.class);
+        var item = mock(UOItem.class);
+        var target = ItemTarget.dropAt(player);
+        when(flows.execute(any(UnequipItemContext.class))).thenAnswer(invocation -> {
+            var context = invocation.<UnequipItemContext>getArgument(0);
+            assertSame(target, context.getTarget());
+            context.setUnequipped(true);
+            return StepResult.success();
+        });
+
+        WorldItem worldItems = module;
+        assertTrue(worldItems.unequipItem(player, item, target));
+        verify(flows).execute(any(UnequipItemContext.class));
+    }
+
+    @Test
+    void unequipRequiresTheFlowToConfirmRemoval() {
+        when(flows.execute(any(UnequipItemContext.class))).thenReturn(StepResult.success());
+
+        assertFalse(module.unequipItem(mock(UOPlayer.class), mock(UOItem.class)));
+    }
+
+    @Test
+    void unequipReturnsFalseWhenTheFlowFailsAfterRemoval() {
+        when(flows.execute(any(UnequipItemContext.class))).thenAnswer(invocation -> {
+            invocation.<UnequipItemContext>getArgument(0).setUnequipped(true);
+            return StepResult.failure("UNEQUIP_FAILED", "Equipment notification failed");
+        });
+
+        assertFalse(module.unequipItem(mock(UOPlayer.class), mock(UOItem.class)));
+    }
+
+    @Test
+    void equipmentReturnsFalseWhenTheFlowFailsAfterEquipping() {
+        when(flows.execute(any(EquipItemContext.class))).thenAnswer(invocation -> {
+            invocation.<EquipItemContext>getArgument(0).setEquipped(true);
+            return StepResult.failure("EQUIP_FAILED", "Equipment notification failed");
+        });
+
+        assertFalse(module.equipItem(mock(UOPlayer.class), mock(UOItem.class)));
     }
 
     @Test

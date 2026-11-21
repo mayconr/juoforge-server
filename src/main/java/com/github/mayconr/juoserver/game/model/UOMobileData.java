@@ -45,19 +45,14 @@ public class UOMobileData extends UOObjectData {
     private int maxFollowers;
 
     private int physicalResist;
-    private int maxPhysicalResist;
 
     private int fireResist;
-    private int maxFireResist;
 
     private int coldResist;
-    private int maxColdResist;
 
     private int poisonResist;
-    private int maxPoisonResist;
 
     private int energyResist;
-    private int maxEnergyResist;
 
     private int luck;
 

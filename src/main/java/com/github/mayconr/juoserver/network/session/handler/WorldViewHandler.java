@@ -162,7 +162,7 @@ public final class WorldViewHandler {
             packetWriter.write(new SendSkill(session.player()));
             packetWriter.write(new DrawGamePlayer(session.player()));
             packetWriter.write(new DrawMobile(session.player(), world.mobile().getEquippedItems(session.player())));
-            packetWriter.write(new StatusBarInfo(session.player()));
+            packetWriter.write(new StatusBarInfo(session.player(), settings.mobile()));
             packetWriter.write(new LoginComplete());
             packetWriter.flush();
 

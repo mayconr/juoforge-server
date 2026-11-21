@@ -4,9 +4,7 @@ import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class LoadEquipItemStep extends AbstractFlowStep<EquipItemContext> {
 
     private final WorldStorage storage;
@@ -18,13 +16,13 @@ public class LoadEquipItemStep extends AbstractFlowStep<EquipItemContext> {
 
     @Override
     public StepResult execute(EquipItemContext context) {
-        final var equipItem = context.getEquipItem();
+        final var itemSerialId = context.getItemSerialId();
 
-        if (equipItem == null) {
-            return StepResult.failure("item is null");
+        if (itemSerialId == null) {
+            return StepResult.failure("item serial is null");
         }
 
-        var itemOpt = storage.getItem(equipItem.getItemSerialId());
+        var itemOpt = storage.items().get(itemSerialId);
         if (itemOpt.isEmpty()) {
             return StepResult.failure("item is empty");
         }

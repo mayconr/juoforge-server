@@ -1,13 +1,18 @@
 package com.github.mayconr.juoserver.game.mobile.flow.equip.apply;
 
+import com.github.mayconr.juoserver.game.item.ItemPlacement;
+import com.github.mayconr.juoserver.game.mobile.WorldMobile;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
-import com.github.mayconr.juoserver.game.model.EquippedLocation;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
 public class EquipItemStep extends AbstractFlowStep<EquipItemContext> {
-    public EquipItemStep() {
+
+    private final WorldMobile mobiles;
+
+    public EquipItemStep(WorldMobile mobiles) {
         super("equip_item");
+        this.mobiles = mobiles;
     }
 
     @Override
@@ -15,8 +20,7 @@ public class EquipItemStep extends AbstractFlowStep<EquipItemContext> {
         final var mobile = context.getMobile();
         final var item = context.getItem();
 
-        item.setCurrentLocation(new EquippedLocation(mobile.getSerialId()));
-        mobile.equipItem(item);
+        ItemPlacement.equip(mobile, item, mobiles);
         context.setEquipped(true);
 
         return StepResult.success();

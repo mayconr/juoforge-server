@@ -13,13 +13,20 @@ public class EquipItemContext extends AbstractSyncFlowContext<Void> {
     private final UOMobile mobile;
 
     private EquipItemRequest equipItem;
+    private Integer itemSerialId;
     private UOItem item;
 
     private boolean equipped;
+    private boolean notify = true;
 
     public EquipItemContext(UOMobile mobile, EquipItemRequest equipItem) {
         this.mobile = mobile;
         this.equipItem = equipItem;
+    }
+
+    public EquipItemContext(UOMobile mobile, int itemSerialId) {
+        this.mobile = mobile;
+        this.itemSerialId = itemSerialId;
     }
 
     public EquipItemContext(UOMobile mobile, UOItem item) {

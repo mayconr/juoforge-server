@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.container.flow.add;
 
+import com.github.mayconr.juoserver.game.item.ItemPlacement;
 import com.github.mayconr.juoserver.game.model.ContainerLocation;
 import com.github.mayconr.juoserver.game.model.EquippedLocation;
 import com.github.mayconr.juoserver.game.model.GroundLocation;
@@ -87,8 +88,7 @@ public final class PlaceContainerItemStep extends AbstractFlowStep<AddContainerI
     }
 
     private static void place(AddContainerItemContext context, UOContainer container, UOItem item) {
-        item.setCurrentLocation(ItemLocation.container(container.getSerialId()));
-        container.addItemToContainer(item);
+        ItemPlacement.placeInContainer(container, item);
         context.complete(item);
     }
 }

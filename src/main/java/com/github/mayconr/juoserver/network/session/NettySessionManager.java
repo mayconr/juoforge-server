@@ -26,6 +26,7 @@ import com.github.mayconr.juoserver.game.model.event.MobileEnteredLineOfSight;
 import com.github.mayconr.juoserver.game.model.event.MobileMoveRejected;
 import com.github.mayconr.juoserver.game.model.event.MobileMoveResync;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
+import com.github.mayconr.juoserver.game.model.event.MobileResistancesChanged;
 import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
 import com.github.mayconr.juoserver.game.model.event.MobileStatusChanged;
@@ -59,6 +60,7 @@ import com.github.mayconr.juoserver.network.session.handler.CombatEventHandler;
 import com.github.mayconr.juoserver.network.session.handler.ItemEventHandler;
 import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
 import com.github.mayconr.juoserver.network.session.handler.WorldViewHandler;
+import com.github.mayconr.juoserver.network.session.handler.ResistanceEventHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import java.util.List;
@@ -131,12 +133,14 @@ public class NettySessionManager implements SessionManager {
         var items = new ItemEventHandler(view, packetWriter, world);
         var ui = new PlayerInterfaceHandler(view, packetWriter, world, localizer);
         var combat = new CombatEventHandler(view, packetWriter, world);
+        var resistances = new ResistanceEventHandler(view, packetWriter);
         return List.of(
                 new Event<>(MobileMoved.class, worldView::onMobileMoved),
                 new Event<>(MobileMoveRejected.class, worldView::onMobileMoveRejected),
                 new Event<>(MobileMoveResync.class, worldView::onMobileResynced),
                 new Event<>(MobileSpeech.class, ui::onMobileSpeech),
                 new Event<>(ItemEquipped.class, items::onItemEquipped),
+                new Event<>(MobileResistancesChanged.class, resistances::onResistancesChanged),
                 new Event<>(ItemUnequipped.class, items::onItemUnequipped),
                 new Event<>(MobileEnteredLineOfSight.class, worldView::onEnteredLineOfSight),
                 new Event<>(NpcCreated.class, worldView::onNpcCreated),

@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.game.mobile.flow.unequip;
 
+import com.github.mayconr.juoserver.game.mobile.WorldMobile;
+import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.mobile.flow.unequip.validation.ValidateUnequipTargetStep;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.apply.UnequipItemStep;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.notification.NotifyUnequipItemStep;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.validation.ValidateUnequipItemStep;
@@ -11,10 +14,11 @@ public final class UnequipItemFlowDefinition {
     private UnequipItemFlowDefinition() {
     }
 
-    public static Flow<UnequipItemContext> build(GameInfra infra) {
+    public static Flow<UnequipItemContext> build(GameInfra infra, WorldMobile mobiles, ItemModule items) {
         return FlowFactory.<UnequipItemContext>builder()
                 .step(new ValidateUnequipItemStep())
-                .step(new UnequipItemStep())
+                .step(new ValidateUnequipTargetStep())
+                .step(new UnequipItemStep(infra, mobiles, items))
                 .step(new NotifyUnequipItemStep(infra.eventBus()))
                 .build();
     }

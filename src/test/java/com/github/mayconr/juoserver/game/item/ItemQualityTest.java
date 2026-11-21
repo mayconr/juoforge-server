@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.item;
 
+import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationFlowDefinition;
 import com.github.mayconr.juoserver.game.container.WorldContainer;
@@ -130,7 +131,7 @@ class ItemQualityTest {
                 .eventBus(mock(EventBus.class))
                 .build();
         var flow = ItemCreationFlowDefinition.build(infra, GameTemplates.builder().build(),
-                mock(WorldContainer.class), mock(WorldMobile.class));
+                mock(WorldContainer.class), mock(WorldMobile.class), mock(ItemModule.class));
 
         assertTrue(flow.execute(context).shouldContinue());
 

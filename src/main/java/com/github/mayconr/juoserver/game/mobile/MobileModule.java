@@ -1,6 +1,12 @@
 package com.github.mayconr.juoserver.game.mobile;
 
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.ItemTarget;
+
+import com.github.mayconr.juoserver.game.model.DeathRequest;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
@@ -22,6 +28,9 @@ public interface MobileModule extends WorldMobile, WorldModule {
 
     /** Runs the unequip flow and returns whether the item was unequipped. */
     boolean unequipItem(UOMobile mobile, UOItem item);
+
+    /** Unequips to an orphan target or drops on the ground through the drop flow. */
+    boolean unequipItem(UOMobile mobile, UOItem item, ItemTarget target);
 
     /** Schedules NPC despawn after the given delay in seconds. */
     void scheduleDespawn(UONpc npc, int secs);

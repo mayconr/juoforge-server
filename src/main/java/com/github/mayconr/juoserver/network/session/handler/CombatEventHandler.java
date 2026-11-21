@@ -50,7 +50,7 @@ public final class CombatEventHandler {
         if (session.isPlayer(event.source()) || session.isPlayer(event.target())) {
             packetWriter.enqueue(packets -> {
                 packets.write(new Damage(event.target(), event.totalDamage()));
-                packets.writeAndFlush(new StatusBarInfo(event.target()));
+                packets.writeAndFlush(new StatusBarInfo(event.target(), session.settings().mobile()));
             });
         }
     }
@@ -106,7 +106,7 @@ public final class CombatEventHandler {
         }
         packetWriter.enqueue(packets -> {
             if (session.isPlayer(target)) {
-                packets.write(new StatusBarInfo(target));
+                packets.write(new StatusBarInfo(target, session.settings().mobile()));
                 packets.write(new DeathScreen(DeathScreenType.RESURRECT));
                 packets.write(new DrawGamePlayer(target));
             }

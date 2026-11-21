@@ -153,7 +153,8 @@ public final class PlayerInterfaceHandler {
 
     public void onStatusGumpRequested(StatusGumpRequested event) {
         if (session.isPlayer(event.player())) {
-            packetWriter.writeAndFlush(new StatusBarInfo(event.requestedFor(), event.weight(), event.maxWeight()));
+            packetWriter.writeAndFlush(new StatusBarInfo(
+                    event.requestedFor(), event.weight(), event.maxWeight(), session.settings().mobile()));
         }
     }
 

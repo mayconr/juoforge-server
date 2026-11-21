@@ -8,6 +8,7 @@ import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.item.trigger.ItemUseContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
+import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,29 @@ import java.util.function.BiFunction;
 
 /** Public item operations for creation, removal, lookup and container contents. */
 public interface WorldItem {
+
+    /**
+     * Equips an existing item through the equipment flow without a client request or held item.
+     * Applies equipment validation, location cleanup, resistance updates and notifications.
+     * Returns true only when the flow succeeds and the item is equipped.
+     */
+    boolean equipItem(UOMobile mobile, UOItem item);
+
+    /**
+     * Unequips an item through the unequip flow, leaving it orphaned.
+     * Applies validation, resistance updates and notifications.
+     * Returns true only when the flow succeeds and the item is unequipped.
+     */
+    boolean unequipItem(UOMobile mobile, UOItem item);
+
+    /** Unequips to an orphan target or drops on the ground through the drop flow. */
+    boolean unequipItem(UOMobile mobile, UOItem item, ItemTarget target);
+
+    /**
+     * Drops an existing item on the ground or into a container without a client request.
+     * Container drops keep the item as a separate stack. Items held on a player's cursor are rejected.
+     */
+    StepResult dropItem(UOMobile mobile, UOItem item, ItemTarget target);
 
     /** Updates a ground item's position and model together. Null fields preserve current values. */
     void updateItem(UOItem item, ItemChange change);

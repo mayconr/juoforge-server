@@ -60,8 +60,55 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
 
     @Override
     public void addModule(UOModule module) {
-        requireNonNull(module, "Module is required").register(this);
-        log.info("Module registered: {}", module.getClass().getName());
+        requireModule(module);
+    }
+
+    private final Map<Class<? extends UOModule>, UOModule> modules = new HashMap<>();
+    private final List<Class<? extends UOModule>> registeringModules = new ArrayList<>();
+    private boolean moduleRegistrationFailed;
+
+    @Override
+    public void requireModule(UOModule module) {
+        requireNonNull(module, "Module is required");
+        if (moduleRegistrationFailed) {
+            throw new IllegalStateException("Module registration failed; discard this world configuration");
+        }
+        var type = module.getClass();
+        if (registeringModules.contains(type)) {
+            throw moduleDependencyCycle(type);
+        }
+        var existing = modules.get(type);
+        if (existing != null) {
+            if (existing != module) {
+                throw new IllegalArgumentException("Conflicting module instance: " + type.getName());
+            }
+            return;
+        }
+        registerModule(module);
+    }
+
+    private void registerModule(UOModule module) {
+        var type = module.getClass();
+        registeringModules.add(type);
+        try {
+            module.register(this);
+            modules.put(type, module);
+            log.info("Module registered: {}", type.getName());
+        } catch (RuntimeException | Error failure) {
+            moduleRegistrationFailed = true;
+            throw failure;
+        } finally {
+            registeringModules.removeLast();
+        }
+    }
+
+    private IllegalArgumentException moduleDependencyCycle(Class<? extends UOModule> type) {
+        var path = new ArrayList<String>();
+        for (var moduleType : registeringModules) {
+            path.add(moduleType.getName());
+        }
+        path.add(type.getName());
+        return new IllegalArgumentException("Module dependency cycle: " + String.join(" -> ", path));
     }
 
     private final List<String> messageBundles = new ArrayList<>();
