@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.item;
 
+import com.github.mayconr.juoserver.game.model.ItemTarget;
 import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
 import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.hold.HeldItems;
@@ -175,16 +176,16 @@ class LiftItemFlowTest {
     @Test
     void equippedItemIsTakenOffWhenLifted() {
         var item = stored(equippedItem(ITEM, PLAYER));
-        when(mobileModule.unequipItem(player, item)).thenReturn(true);
+        when(mobileModule.unequipItem(player, item, ItemTarget.orphan())).thenReturn(true);
 
         assertLifted(lift(ITEM, 1));
-        verify(mobileModule).unequipItem(player, item);
+        verify(mobileModule).unequipItem(player, item, ItemTarget.orphan());
     }
 
     @Test
     void equippedItemThatCannotBeTakenOffFreesTheCursor() {
         var item = stored(equippedItem(ITEM, PLAYER));
-        when(mobileModule.unequipItem(player, item)).thenReturn(false);
+        when(mobileModule.unequipItem(player, item, ItemTarget.orphan())).thenReturn(false);
 
         assertRefused(lift(ITEM, 1), LiftRejectReason.CANNOT_LIFT);
     }
@@ -195,7 +196,7 @@ class LiftItemFlowTest {
 
         lift(ITEM, 1);
 
-        verify(mobileModule, never()).unequipItem(any(), any());
+        verify(mobileModule, never()).unequipItem(any(), any(), any());
     }
 
     private LiftItemContext lift(int serial, int amount) {

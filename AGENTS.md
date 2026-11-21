@@ -93,6 +93,14 @@ lifecycle (`initialize`, `saveWorld`) and exposes each responsibility through a 
 - `PropertyStore` and `WorldPersistence` are public only because they cross subpackages;
   they are internal to the world storage and must not be used by modules or shards.
 
+## UOMobile responsibilities
+
+`UOMobile` stores mobile data and provides local data access and manipulation only.
+It must not reference, accept, or call systems, modules, services, storage, sessions,
+or an event bus, and must not publish events. Keep orchestration and side effects in
+`WorldMobile` and its module implementation. For example, resistance updates and
+`MobileResistancesChanged` publication belong to `WorldMobile`, not `UOMobile`.
+
 ## Item properties
 
 - All changes to persistent or runtime properties of an existing item must go through

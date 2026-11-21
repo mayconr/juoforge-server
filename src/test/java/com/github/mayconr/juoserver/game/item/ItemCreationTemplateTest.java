@@ -1,5 +1,15 @@
 package com.github.mayconr.juoserver.game.item;
 
+import com.github.mayconr.juoserver.infrastructure.flow.Flow;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOItemData;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOContainer;
+import com.github.mayconr.juoserver.game.model.ItemLocation;
+import com.github.mayconr.juoserver.game.mobile.WorldMobile;
+import com.github.mayconr.juoserver.game.container.WorldContainer;
+import com.github.mayconr.juoserver.game.container.ContainerModuleImpl;
+import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.flow.creation.*;
 import com.github.mayconr.juoserver.game.item.flow.creation.template.TemplateLoaderStep;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
@@ -25,22 +35,22 @@ class ItemCreationTemplateTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void backpackCapacityIsCheckedBeforeCreatingOrNotifying(boolean overweight) {
-        var containers = mock(com.github.mayconr.juoserver.game.container.WorldContainer.class);
-        var mobiles = mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class);
-        var mobile = mock(com.github.mayconr.juoserver.game.model.UOMobile.class);
-        var backpack = mock(com.github.mayconr.juoserver.game.model.UOContainer.class);
+        var containers = mock(WorldContainer.class);
+        var mobiles = mock(WorldMobile.class);
+        var mobile = mock(UOMobile.class);
+        var backpack = mock(UOContainer.class);
         when(backpack.getSerialId()).thenReturn(100);
-        when(backpack.getCurrentLocation()).thenReturn(com.github.mayconr.juoserver.game.model.ItemLocation.equipped(42));
+        when(backpack.getCurrentLocation()).thenReturn(ItemLocation.equipped(42));
         when(mobile.getBackpack()).thenReturn(100);
         when(storage.getMobile(42)).thenReturn(java.util.Optional.of(mobile));
         when(containers.getContainerBySerialId(100)).thenReturn(java.util.Optional.of(backpack));
         when(containers.getWeight(backpack)).thenReturn(overweight ? 61L : 60L);
         when(mobiles.calculateMaxWeight(mobile)).thenReturn(80);
         var template = mock(ItemTemplate.class);
-        var data = new com.github.mayconr.juoserver.game.model.UOItemData();
+        var data = new UOItemData();
         data.setUnitWeight(5);
         when(template.toData(anyInt())).thenReturn(data);
-        var item = mock(com.github.mayconr.juoserver.game.model.UOItem.class);
+        var item = mock(UOItem.class);
         when(storage.createItem(data)).thenReturn(item);
         when(containers.addItem(eq(backpack), eq(item), anyBoolean(), anyBoolean())).thenReturn(item);
         var fileReader = mock(UOFileReader.class);
@@ -48,7 +58,7 @@ class ItemCreationTemplateTest {
         var flow = ItemCreationFlowDefinition.build(
                 GameInfra.builder().storage(storage).eventBus(events).serialGenerator(serials)
                         .fileReader(fileReader).build(),
-                GameTemplates.builder().itemByName(names).itemByModelId(models).build(), containers, mobiles);
+                GameTemplates.builder().itemByName(names).itemByModelId(models).build(), containers, mobiles, mock(ItemModule.class));
         var result = flow.execute(new ItemCreationContext(ItemRequest.byTemplate(template).withAmount(4), ItemTarget.container(backpack)));
         if (overweight) {
             assertEquals("BACKPACK_OVERWEIGHT", result.code());
@@ -70,12 +80,12 @@ class ItemCreationTemplateTest {
     private final EventBus events = mock(EventBus.class);
     private final SerialGenerator serials = mock(SerialGenerator.class);
 
-    private com.github.mayconr.juoserver.infrastructure.flow.Flow<ItemCreationContext> flow() {
+    private Flow<ItemCreationContext> flow() {
         return ItemCreationFlowDefinition.build(GameInfra.builder().storage(storage).eventBus(events)
                         .serialGenerator(serials).build(),
                 GameTemplates.builder().itemByName(names).itemByModelId(models).build(),
-                new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new ContainerHandler(events, storage)),
-                mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class));
+                new ContainerModuleImpl(storage, new ContainerHandler(events, storage)),
+                mock(WorldMobile.class), mock(ItemModule.class));
     }
 
     @ParameterizedTest

@@ -1,15 +1,29 @@
 package com.github.mayconr.juoserver.game.mobile;
 
-import com.github.mayconr.juoserver.game.mobile.flow.equip.*;
-import com.github.mayconr.juoserver.game.mobile.flow.mount.*;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemFlowDefinition;
+import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
+import com.github.mayconr.juoserver.game.mobile.flow.mount.MountFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.item.ItemCreationResult;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.EquippedLocation;
+import com.github.mayconr.juoserver.game.model.ItemLocationType;
+import com.github.mayconr.juoserver.game.model.Layer;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOItemData;
+import com.github.mayconr.juoserver.game.model.UOMobileData;
+import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.event.ItemEquipped;
-import com.github.mayconr.juoserver.game.world.context.*;
-import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.*;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry;
+import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
@@ -25,7 +39,7 @@ class EquipItemResultTest {
     private final WorldStorage storage = mock(WorldStorage.class);
     private final DefaultFlowRegistry registry = new DefaultFlowRegistry();
     private final GameInfra infra = GameInfra.builder().storage(storage).eventBus(events).build();
-    private final MobileModuleImpl module = new MobileModuleImpl(null, null, events, storage, new com.github.mayconr.juoserver.game.GamePlaySettings());
+    private final MobileModuleImpl module = new MobileModuleImpl(null, null, events, storage, new GamePlaySettings());
 
     private UOPlayer player() {
         var data = new UOMobileData();
@@ -42,7 +56,7 @@ class EquipItemResultTest {
     }
 
     private void initialize() {
-        registry.register("equip", EquipItemFlowDefinition.build(infra), EquipItemContext.class);
+        registry.register("equip", EquipItemFlowDefinition.build(infra, module), EquipItemContext.class);
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
     }
@@ -67,7 +81,7 @@ class EquipItemResultTest {
         npc.setName("horse");
         var mountItem = item(Layer.MOUNT);
         var items = mock(ItemModule.class);
-        when(items.createItem(any(), any())).thenReturn(mountItem);
+        when(items.tryCreateItem(any(), any())).thenReturn(new ItemCreationResult.Created(mountItem));
         var npcs = mock(NpcModule.class);
         var mounts = new InMemoryTemplateRegistry<>(
                 List.of(new MountTemplate("horse_mount", "horse", "horse_item")), MountTemplate::npcName);

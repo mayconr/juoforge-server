@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.model.ResistanceType;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.Location;
@@ -30,6 +31,15 @@ public interface WorldMobile {
 
     /** Sets a primary attribute and refreshes the player status through UI. */
     void setAttribute(UOMobile mobile, MobileAttribute attribute, int value);
+
+    /** Sets one resistance within configured limits and notifies the client on every call. */
+    void setResistance(UOMobile mobile, ResistanceType type, int value);
+
+    /** Adds the item's resistances to the mobile, as when the item becomes equipped. */
+    void addItemResistances(UOMobile mobile, UOItem item);
+
+    /** Removes the item's resistances from the mobile, as when the item stops being equipped. */
+    void removeItemResistances(UOMobile mobile, UOItem item);
 
     /** Calculates carrying capacity from the mobile's strength and gameplay settings. */
     int calculateMaxWeight(UOMobile mobile);

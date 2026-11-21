@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.item.flow.creation;
 
 import com.github.mayconr.juoserver.game.container.WorldContainer;
+import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.mobile.WorldMobile;
 import com.github.mayconr.juoserver.game.item.flow.creation.validation.PrepareCreatedItemBackpackWeightStep;
 import com.github.mayconr.juoserver.game.mobile.shared.ValidateBackpackWeightStep;
@@ -34,7 +35,13 @@ public final class ItemCreationFlowDefinition {
     private ItemCreationFlowDefinition() {
     }
 
-    public static Flow<ItemCreationContext> build(GameInfra infra, GameTemplates templates, WorldContainer containers, WorldMobile mobiles) {
+    public static Flow<ItemCreationContext> build(
+            GameInfra infra,
+            GameTemplates templates,
+            WorldContainer containers,
+            WorldMobile mobiles,
+            ItemModule items
+    ) {
         return FlowFactory.<ItemCreationContext>builder()
                 .step(new ValidateItemCreation())
                 .step(new ExecuteOptionsStep())
@@ -45,7 +52,7 @@ public final class ItemCreationFlowDefinition {
                 .step(new ApplyItemQualityStep())
                 .appendGroup("BackpackWeight", backpackWeightPhase(infra.storage(), containers, mobiles))
                 .step(new CreateItemStep(infra.storage()))
-                .appendGroup("Placement", placementPhase(infra.storage(), containers))
+                .appendGroup("Placement", placementPhase(infra.storage(), containers, items))
                 .step(new NotifyItemCreatedStep(infra.eventBus()))
                 .build();
     }
@@ -57,12 +64,13 @@ public final class ItemCreationFlowDefinition {
                 .step(new ValidateBackpackWeightStep<>(mobiles, containers), ctx -> ctx.getBackpackOwner() != null);
     }
 
-    private static FlowBuilder<ItemCreationContext> placementPhase(WorldStorage storage, WorldContainer containers) {
+    private static FlowBuilder<ItemCreationContext> placementPhase(
+            WorldStorage storage, WorldContainer containers, ItemModule items) {
         return FlowFactory.<ItemCreationContext>builder()
-                .step(new PlaceGroundItemStep(storage), ctx-> ctx.getTarget() instanceof GroundItemTarget)
-                .step(new PlaceContainerItemStep(containers), ctx-> ctx.getTarget() instanceof ContainerItemTarget)
-                .step(new PlaceEquippedItemStep(), ctx-> ctx.getTarget() instanceof EquipItemTarget)
-                .step(new PlaceOrphanItemStep(), ctx-> ctx.getTarget() instanceof OrphanItemTarget);
+                .step(new PlaceGroundItemStep(storage), ctx -> ctx.getTarget() instanceof GroundItemTarget)
+                .step(new PlaceContainerItemStep(containers), ctx -> ctx.getTarget() instanceof ContainerItemTarget)
+                .step(new PlaceEquippedItemStep(items), ctx -> ctx.getTarget() instanceof EquipItemTarget)
+                .step(new PlaceOrphanItemStep(), ctx -> ctx.getTarget() instanceof OrphanItemTarget);
     }
 
 }

@@ -110,19 +110,14 @@ public class UOMobile extends UOObject<UOMobileData> {
     // =========================
 
     private int physicalResist;
-    private int maxPhysicalResist;
 
     private int fireResist;
-    private int maxFireResist;
 
     private int coldResist;
-    private int maxColdResist;
 
     private int poisonResist;
-    private int maxPoisonResist;
 
     private int energyResist;
-    private int maxEnergyResist;
 
     // =========================
     // Combat & Bonuses
@@ -212,15 +207,10 @@ public class UOMobile extends UOObject<UOMobileData> {
 
         // Resistances
         this.physicalResist = data.getPhysicalResist();
-        this.maxPhysicalResist = data.getMaxPhysicalResist();
         this.fireResist = data.getFireResist();
-        this.maxFireResist = data.getMaxFireResist();
         this.coldResist = data.getColdResist();
-        this.maxColdResist = data.getMaxColdResist();
         this.poisonResist = data.getPoisonResist();
-        this.maxPoisonResist = data.getMaxPoisonResist();
         this.energyResist = data.getEnergyResist();
-        this.maxEnergyResist = data.getMaxEnergyResist();
 
         // Combat
         this.luck = data.getLuck();
@@ -298,11 +288,9 @@ public class UOMobile extends UOObject<UOMobileData> {
         data.setMaxFollowers(maxFollowers);
 
         data.setPhysicalResist(physicalResist);
-        data.setMaxPhysicalResist(maxPhysicalResist);
         data.setFireResist(fireResist);
         data.setColdResist(coldResist);
         data.setPoisonResist(poisonResist);
-        data.setMaxPoisonResist(maxPoisonResist);
         data.setEnergyResist(energyResist);
 
         data.setLuck(luck);
@@ -331,8 +319,8 @@ public class UOMobile extends UOObject<UOMobileData> {
         equippedItems.put(layer, serialId);
     }
 
-    public void unequipItem(UOItem item) {
-        equippedItems.remove(item.getLayer());
+    public boolean unequipItem(UOItem item) {
+        return equippedItems.remove(item.getLayer(), item.getSerialId());
     }
 
     public boolean isItemEquipped(UOItem item) {

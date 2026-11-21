@@ -5,8 +5,16 @@ import com.github.mayconr.juoserver.game.item.ItemCreationResult.Rejected;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
 import com.github.mayconr.juoserver.game.item.flow.update.UpdateItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext.TargetContainer;
+import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext.TargetGround;
+import com.github.mayconr.juoserver.game.model.ContainerItemTarget;
+import com.github.mayconr.juoserver.game.model.GroundItemTarget;
+import com.github.mayconr.juoserver.game.model.PointInTheWorld;
+import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.item.flow.equip.EquipHeldItemContext;
 import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.item.hold.HeldItems;
 import com.github.mayconr.juoserver.game.GamePlaySettings.ItemDecay;
 import com.github.mayconr.juoserver.game.item.decay.ItemDecayClock;
@@ -251,12 +259,63 @@ public class ItemModuleImpl implements ItemModule {
     }
 
     @Override
+    public StepResult dropItem(UOMobile mobile, UOItem item, ItemTarget target) {
+        Objects.requireNonNull(mobile, "Mobile is required");
+        Objects.requireNonNull(item, "Item is required");
+        var context = switch (target) {
+            case GroundItemTarget ground when ground.location() != null ->
+                    DropItemContext.ofGround(mobile, item, new TargetGround(ground.location()));
+            case ContainerItemTarget inside when inside.container() instanceof UOContainer container ->
+                    DropItemContext.ofContainer(mobile, item, new TargetContainer(container, new PointInTheWorld(0, 0, 0)));
+            case null, default -> null;
+        };
+        if (context == null) {
+            return StepResult.failure("DROP_INVALID_TARGET", "Drop requires a ground location or a container");
+        }
+        synchronized (heldItems) {
+            if (heldItems.isHeld(item)) {
+                return StepResult.failure("DROP_ITEM_HELD", "Item is held by a player");
+            }
+            return flows.execute(context);
+        }
+    }
+
+    @Override
     public void equipHeldItem(UOPlayer player, EquipItemRequest request) {
         try {
             flows.execute(new EquipHeldItemContext(player, request));
         } finally {
             heldItems.release(player);
         }
+    }
+
+    @Override
+    public boolean equipItem(UOMobile mobile, UOItem item) {
+        return equipItem(mobile, item, true);
+    }
+
+    @Override
+    public boolean equipItem(UOMobile mobile, UOItem item, boolean notify) {
+        Objects.requireNonNull(mobile, "Mobile is required");
+        Objects.requireNonNull(item, "Item is required");
+        var context = new EquipItemContext(mobile, item);
+        context.setNotify(notify);
+        var result = flows.execute(context);
+        return !result.flowFailed() && context.isEquipped();
+    }
+
+    @Override
+    public boolean unequipItem(UOMobile mobile, UOItem item) {
+        return unequipItem(mobile, item, ItemTarget.orphan());
+    }
+
+    @Override
+    public boolean unequipItem(UOMobile mobile, UOItem item, ItemTarget target) {
+        Objects.requireNonNull(mobile, "Mobile is required");
+        Objects.requireNonNull(item, "Item is required");
+        var context = new UnequipItemContext(mobile, item, Objects.requireNonNull(target, "Item target is required"));
+        var result = flows.execute(context);
+        return !result.flowFailed() && context.isUnequipped();
     }
 
     @Override

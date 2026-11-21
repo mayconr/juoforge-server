@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.game.model.DefaultAttributeMap;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
 import com.github.mayconr.juoserver.game.model.ItemMaterial;
+import com.github.mayconr.juoserver.game.model.ItemResistances;
 import com.github.mayconr.juoserver.game.model.ItemLocationType;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.UOItemData;
@@ -39,10 +40,12 @@ public record ItemTemplate(String name,
                            int unitWeight,
                            String family,
                            // Raw material
-                           Material material)
+                           Material material,
+                           ItemResistances resistances)
 
             implements BaseTemplate {
     public ItemTemplate {
+        resistances = resistances == null ? ItemResistances.NONE : resistances;
         family = family == null ? "OTHER" : family;
         attr = attr == null ? Map.of() : Map.copyOf(attr);
         flags = flags == null ? Collections.emptyList() : List.copyOf(flags);
@@ -76,10 +79,22 @@ public record ItemTemplate(String name,
             @JsonProperty("script") String script,
             @JsonProperty("unitWeight") int unitWeight,
             @JsonProperty("family") String family,
-            @JsonProperty("material") Material material) {
+            @JsonProperty("material") Material material,
+            @JsonProperty("resistances") ItemResistances resistances) {
         this(name, displayName, layer, modelId, movable == null || movable.booleanValue(), hue,
                 stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family,
-                material);
+                material, resistances);
+    }
+
+    /** Creates a template without resistance contributions. */
+    public ItemTemplate(String name, String displayName, Layer layer, int modelId,
+                        boolean movable, int hue, String stockType, int basePrice,
+                        List<ItemFlag> flags, Map<String, Object> attr, int containerGumpId,
+                        String mountName, Weapon weapon, String script, int unitWeight, String family,
+                        Material material) {
+        this(name, displayName, layer, modelId, movable, hue, stockType, basePrice,
+                flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family, material,
+                ItemResistances.NONE);
     }
 
     /** Creates a template without raw material properties. */
@@ -156,6 +171,7 @@ public record ItemTemplate(String name,
         data.setAmount(1);
         data.setUnitWeight(unitWeight);
         data.setMaterial(itemMaterial());
+        data.setResistances(resistances);
         data.setHue(hue);
         data.setMovable(movable);
         data.setHidden(false);

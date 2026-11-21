@@ -31,7 +31,7 @@ public class CreateMountItemStep extends AbstractFlowStep<MountContext> {
                     "{mount.not_mountable}");
         }
 
-        var item = itemModule.createItem(ItemRequest.byName(mountTemplate.itemName()), ItemTarget.orphan());
+        var item = itemModule.tryCreateItem(ItemRequest.byName(mountTemplate.itemName()), ItemTarget.orphan()).orThrow();
 
         context.setMountItem(item);
 

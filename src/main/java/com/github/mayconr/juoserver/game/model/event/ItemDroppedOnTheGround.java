@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.game.model.event;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.UOItem;
-import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 
-public record ItemDroppedOnTheGround(UOPlayer player, UOItem item, Location location) implements GameEvent {
+public record ItemDroppedOnTheGround(UOMobile player, UOItem item, Location location) implements GameEvent {
 }

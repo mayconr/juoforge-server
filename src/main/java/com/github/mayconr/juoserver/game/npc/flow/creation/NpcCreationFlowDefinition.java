@@ -12,6 +12,7 @@ import com.github.mayconr.juoserver.game.npc.flow.creation.resolve.ResolveNpcAIP
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
+import com.github.mayconr.juoserver.game.mobile.shared.InitializeEquipmentResistancesStep;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
 
@@ -27,6 +28,8 @@ public final class NpcCreationFlowDefinition {
                 .step(new ResolveNpcAIProfileStep(templates.npcAIProfileResolver()))
                 .step(new CreateNpcEquippedItemsStep(modules.item()))
                 .step(new CreateNpcStep(infra.storage()))
+                .step(new InitializeEquipmentResistancesStep<>(NpcCreationContext::getNpc,
+                        infra.storage(), modules.mobile()))
                 .step(new AttachAIStep(modules.ai()))
                 .step(new ActivateAIStep(modules.ai()))
                 .step(new NotifyNpcCreation(infra.eventBus()))

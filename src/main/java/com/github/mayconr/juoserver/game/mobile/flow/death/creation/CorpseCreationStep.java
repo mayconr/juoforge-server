@@ -22,11 +22,11 @@ public class CorpseCreationStep extends AbstractFlowStep<DeathContext> {
     public StepResult execute(DeathContext context) {
         var victim = context.getVictim();
 
-        var corpse = (UOCorpse) itemModule.createItem(
+        var corpse = (UOCorpse) itemModule.tryCreateItem(
                 ItemRequest.byModelId(UO_CORPSE_ITEM_ID)
                         .withHue(victim.getHue())
                         .withDirection(victim.getDirection()),
-                new GroundItemTarget(victim), opt -> opt.renderOnCreate(false));
+                new GroundItemTarget(victim), opt -> opt.renderOnCreate(false)).orThrow();
         corpse.setCorpseId(victim.getModelId());
         //corpse.setOwnerSerialId(victim.getSerialId()); // TODO
 

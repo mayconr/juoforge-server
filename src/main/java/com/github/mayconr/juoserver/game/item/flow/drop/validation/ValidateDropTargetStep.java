@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.item.flow.drop.validation;
 
+import com.github.mayconr.juoserver.game.item.ItemPlacement;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.hold.HeldItems;
 import com.github.mayconr.juoserver.game.model.ContainerLocation;
@@ -9,7 +10,6 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
-import java.util.HashSet;
 import java.util.Objects;
 
 /** Rejects recursive containment and incompatible stacks before either item is changed. */
@@ -31,32 +31,13 @@ public final class ValidateDropTargetStep extends AbstractFlowStep<DropItemConte
         }
         var target = context.isContainerDrop()
                 ? context.getTargetContainer().container() : context.getTargetStack().itemStack();
-        if (!hasSafeAncestry(context.getItem(), target)) {
+        if (!ItemPlacement.hasSafeAncestry(context.getItem(), target, storage, heldItems::isHeld)) {
             return StepResult.failure("DROP_INVALID_CONTAINMENT", "Destination ancestry is invalid or held by a player");
         }
         if (context.isStack() && !canStack(context.getItem(), target)) {
             return StepResult.failure("DROP_INVALID_STACK", "Destination cannot absorb this stack");
         }
         return StepResult.success();
-    }
-
-    private boolean hasSafeAncestry(UOItem dropped, UOItem target) {
-        var visited = new HashSet<Integer>();
-        var current = target;
-        while (visited.add(current.getSerialId())) {
-            if (current.getSerialId() == dropped.getSerialId() || heldItems.isHeld(current)) {
-                return false;
-            }
-            if (!(current.getCurrentLocation() instanceof ContainerLocation inside)) {
-                return true;
-            }
-            var parent = storage.items().getContainer(inside.containerSerialId());
-            if (parent.isEmpty()) {
-                return false;
-            }
-            current = parent.get();
-        }
-        return false;
     }
 
     private static boolean canStack(UOItem dropped, UOItem target) {

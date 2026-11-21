@@ -1,13 +1,21 @@
 package com.github.mayconr.juoserver.network.session;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.GameMath;
+import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.model.MobileVisibility;
+import com.github.mayconr.juoserver.game.model.UOMobile;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import java.util.function.Supplier;
 
 /** Read-only access to the current session; handlers do not own lifecycle state. */
 public record SessionView(Supplier<UOPlayer> playerSupplier, Supplier<ClientLocale> localeSupplier,
                    GamePlaySettings settings) {
+    public SessionView {
+        settings = settings == null ? new GamePlaySettings() : settings;
+    }
+
     public UOPlayer player() {
         return playerSupplier.get();
     }

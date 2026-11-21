@@ -11,6 +11,7 @@ import com.github.mayconr.juoserver.game.model.ItemLocation;
 import com.github.mayconr.juoserver.game.model.ItemLocationType;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.LiftRejectReason;
+import com.github.mayconr.juoserver.game.model.PointInTheWorld;
 import com.github.mayconr.juoserver.game.model.event.ItemDropAccepted;
 import com.github.mayconr.juoserver.game.model.event.ItemDropRejected;
 import com.github.mayconr.juoserver.game.model.UOContainer;
@@ -256,6 +257,30 @@ class DropItemValidationTest {
         verify(events).publish(new ItemDropRejected(player, LiftRejectReason.INSPECIFIC, dropped));
         verifyNoMoreInteractions(events);
         assertFalse(held.isHoldingAny(player));
+    }
+
+    @Test
+    void failedProgrammaticContainerDropRestoresOriginWithoutClientRecovery() {
+        held.release(player);
+        var origin = container(0x40000003);
+        var target = container(0x40000002);
+        ItemPlacement.placeInContainer(origin, dropped);
+        dropped.setLocation(20, 30);
+        doAnswer(invocation -> {
+            ItemPlacement.placeInContainer(target, dropped);
+            throw new IllegalStateException("Placement failed");
+        }).when(containers).addItem(target, dropped, false);
+        var context = DropItemContext.ofContainer(player, dropped,
+                new DropItemContext.TargetContainer(target, new PointInTheWorld(5, 5, 0)));
+
+        assertEquals("FLOW_EXCEPTION", flow.execute(context).code());
+
+        assertEquals(ItemLocation.container(origin.getSerialId()), dropped.getCurrentLocation());
+        assertTrue(origin.getContainerItems().contains(dropped.getSerialId()));
+        assertFalse(target.getContainerItems().contains(dropped.getSerialId()));
+        assertEquals(20, dropped.getX());
+        assertEquals(30, dropped.getY());
+        verifyNoInteractions(events);
     }
 
     @Test

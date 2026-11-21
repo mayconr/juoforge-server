@@ -5,6 +5,7 @@ import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @Setter
 public class DropItemContext extends AbstractSyncFlowContext<Void> implements HeldItemRequest {
     private final UOPlayer player;
+    private final UOMobile mobile;
 
     private DropItem dropItem;
     private TargetContainer targetContainer;
@@ -25,8 +27,9 @@ public class DropItemContext extends AbstractSyncFlowContext<Void> implements He
 
     private DropTarget target;
 
-    private DropItemContext(UOPlayer player) {
-        this.player = player;
+    private DropItemContext(UOMobile mobile) {
+        this.mobile = mobile;
+        this.player = mobile instanceof UOPlayer player ? player : null;
     }
 
     // FACTORIES
@@ -42,10 +45,17 @@ public class DropItemContext extends AbstractSyncFlowContext<Void> implements He
         return context;
     }
 
-    public static DropItemContext ofGround(UOPlayer player, UOItem item, TargetGround ground) {
-        var context = new DropItemContext(player);
+    public static DropItemContext ofGround(UOMobile mobile, UOItem item, TargetGround ground) {
+        var context = new DropItemContext(mobile);
         context.setItem(item);
         context.setTargetGround(ground);
+        return context;
+    }
+
+    public static DropItemContext ofContainer(UOMobile mobile, UOItem item, TargetContainer container) {
+        var context = new DropItemContext(mobile);
+        context.setItem(item);
+        context.setTargetContainer(container);
         return context;
     }
 

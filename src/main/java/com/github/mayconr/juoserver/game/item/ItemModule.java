@@ -3,12 +3,16 @@ package com.github.mayconr.juoserver.game.item;
 import com.github.mayconr.juoserver.game.item.hold.HeldItems;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.world.WorldModule;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import com.github.mayconr.juoserver.network.packet.EquipItemRequest;
 import com.github.mayconr.juoserver.network.packet.UnequipItem;
 
 public interface ItemModule extends WorldItem, WorldModule {
+
+    /** Equips an item, optionally deferring the equipment notification to the caller. */
+    boolean equipItem(UOMobile mobile, UOItem item, boolean notify);
 
     /** Renews the persistent drop date in the world's active-time clock. */
     void recordGroundInteraction(UOItem item);

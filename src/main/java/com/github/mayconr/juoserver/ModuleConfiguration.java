@@ -28,6 +28,14 @@ import java.util.function.Supplier;
 /** Configuration available to modules when registering their contribution to the world. */
 public interface ModuleConfiguration {
 
+    /**
+     * Registers a dependency immediately, before the caller continues registration.
+     * Requiring the same instance again has no effect. Each module class has one
+     * instance per world configuration; conflicting instances and cycles are rejected.
+     * This declares configuration dependencies, not runtime initialization order.
+     */
+    void requireModule(UOModule module);
+
     /** Registers an item or mobile menu entry factory evaluated at bootstrap with the initialized runtime. */
     void addContextMenuEntry(Function<ServerRuntime, ContextMenuEntry> factory);
 

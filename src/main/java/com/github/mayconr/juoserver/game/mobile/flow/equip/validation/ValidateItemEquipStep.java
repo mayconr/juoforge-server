@@ -16,6 +16,14 @@ public class ValidateItemEquipStep extends AbstractFlowStep<EquipItemContext> {
         if (context.getItem() == null) {
             return StepResult.failure("item is null");
         }
+        var item = context.getItem();
+        if (item.getLayer() == null) {
+            return StepResult.failure("item has no equipment layer");
+        }
+        var mobile = context.getMobile();
+        if (!mobile.isLayerAvailable(item.getLayer()) && !mobile.isItemEquipped(item)) {
+            return StepResult.failure("equipment layer is occupied");
+        }
         return StepResult.success();
     }
 }

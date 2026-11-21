@@ -9,7 +9,7 @@ import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
 
 /** Configures shard content, settings and storage and registers modules. */
 public interface WorldConfigurator extends ModuleConfiguration {
-    /** Registers a module immediately, passing this same world configuration to it. */
+    /** Registers a module immediately using the same dependency checks as {@link #requireModule(UOModule)}. */
     void addModule(UOModule module);
 
     void content(WorldContent content);

@@ -7,6 +7,7 @@ import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRoot.Unre
 import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRootResolver;
 import com.github.mayconr.juoserver.game.model.GameMath;
 import com.github.mayconr.juoserver.game.model.Location;
+import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
@@ -22,21 +23,21 @@ public final class ValidateInteractionRangeStep extends AbstractFlowStep<DropIte
     @Override
     public StepResult execute(DropItemContext context) {
         if (context.isGroundDrop()) {
-            return validateRange(context, context.getTargetGround().location());
+            return validateRange(context.getMobile(), context.getTargetGround().location());
         }
         var target = context.isContainerDrop()
                 ? context.getTargetContainer().container() : context.getTargetStack().itemStack();
         return switch (roots.resolve(target)) {
-            case OnGround ground -> validateRange(context, ground.location());
-            case CarriedBy carrier -> carrier.mobile().getSerialId() == context.getPlayer().getSerialId()
+            case OnGround ground -> validateRange(context.getMobile(), ground.location());
+            case CarriedBy carrier -> carrier.mobile().getSerialId() == context.getMobile().getSerialId()
                     ? StepResult.success()
                     : StepResult.failure("DROP_ACCESS_DENIED", "Destination is carried by another mobile");
             case Unreachable unreachable -> StepResult.failure("DROP_UNREACHABLE", "Destination is not in the world");
         };
     }
 
-    private static StepResult validateRange(DropItemContext context, Location destination) {
-        return GameMath.isInRange(context.getPlayer(), destination, 2)
+    public static StepResult validateRange(UOMobile mobile, Location destination) {
+        return GameMath.isInRange(mobile, destination, 2)
                 ? StepResult.success()
                 : StepResult.failure("DROP_OUT_OF_RANGE", "Destination is out of reach");
     }

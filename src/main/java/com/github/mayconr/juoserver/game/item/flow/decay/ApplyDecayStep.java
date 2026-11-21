@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver.game.item.flow.decay;
 
 import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.model.ContainerLocation;
-import com.github.mayconr.juoserver.game.model.ItemLocation;
+import com.github.mayconr.juoserver.game.item.ItemPlacement;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.event.GroundedItemCreated;
@@ -65,11 +65,9 @@ public final class ApplyDecayStep extends AbstractFlowStep<DecayItemContext> {
     }
 
     private void spill(UOContainer container, UOItem child) {
+        ItemPlacement.placeOnGround(storage, child, container);
         container.removeItemFromContainer(child);
-        child.setCurrentLocation(ItemLocation.ground());
-        child.setLocation(container);
         items.recordGroundInteraction(child);
-        storage.items().placeOnGround(child);
         events.publish(new GroundedItemCreated(child));
     }
 }

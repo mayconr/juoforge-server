@@ -292,12 +292,12 @@ public class FlowRegistryFactory {
         registry.register(DamageFlowDefinition.class.getSimpleName(), DamageFlowDefinition.build(modules, infra), DamageContext.class);
         registry.register(NpcCreationFlowDefinition.class.getSimpleName(), NpcCreationFlowDefinition.build(modules, infra, templates), NpcCreationContext.class);
         registry.register(NpcRemovalFlowDefinition.class.getSimpleName(), NpcRemovalFlowDefinition.build(modules, infra), NpcRemovalContext.class);
-        registry.register(UnequipItemFlowDefinition.class.getSimpleName(), UnequipItemFlowDefinition.build(infra), UnequipItemContext.class);
-        registry.register(EquipItemFlowDefinition.class.getSimpleName(), EquipItemFlowDefinition.build(infra), EquipItemContext.class);
+        registry.register(UnequipItemFlowDefinition.class.getSimpleName(), UnequipItemFlowDefinition.build(infra, modules.mobile(), modules.item()), UnequipItemContext.class);
+        registry.register(EquipItemFlowDefinition.class.getSimpleName(), EquipItemFlowDefinition.build(infra, modules.mobile()), EquipItemContext.class);
         registry.register("AddContainerItemFlowDefinition",
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemFlowDefinition.build(infra.storage(), infra.eventBus(), modules.ui()),
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext.class);
-        registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates, modules.container(), modules.mobile()), ItemCreationContext.class);
+        registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates, modules.container(), modules.mobile(), modules.item()), ItemCreationContext.class);
         registry.register(LiftItemFlowDefinition.class.getSimpleName(),
                 LiftItemFlowDefinition.build(modules, infra), LiftItemContext.class);
         registry.register(DropItemFlowDefinition.class.getSimpleName(), DropItemFlowDefinition.build(modules, infra), DropItemContext.class);

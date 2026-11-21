@@ -1,5 +1,10 @@
 package com.github.mayconr.juoserver.infrastructure.storage;
 
+import com.github.mayconr.juoserver.game.mobile.WorldMobile;
+import com.github.mayconr.juoserver.game.item.ContainerHandler;
+import com.github.mayconr.juoserver.game.container.ContainerModuleImpl;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
+import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemFlowDefinition;
 import com.github.mayconr.juoserver.infrastructure.storage.item.ItemMapper;
 import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
@@ -99,7 +104,8 @@ class NpcEquipmentPersistenceTest {
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build();
         var itemModule = new ItemModuleImpl(storage, null, null);
         itemModule.initialize(context);
-        registry.register("create-item", ItemCreationFlowDefinition.build(infra, templates, new com.github.mayconr.juoserver.game.container.ContainerModuleImpl(storage, new com.github.mayconr.juoserver.game.item.ContainerHandler(infra.eventBus(), storage)), mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class)), ItemCreationContext.class);
+        registry.register("create-item", ItemCreationFlowDefinition.build(infra, templates, new ContainerModuleImpl(storage, new ContainerHandler(infra.eventBus(), storage)), mock(WorldMobile.class), itemModule), ItemCreationContext.class);
+        registry.register("equip-item", EquipItemFlowDefinition.build(infra, mock(WorldMobile.class)), EquipItemContext.class);
         registry.register("create-npc", NpcCreationFlowDefinition.build(
                 GameModules.builder().item(itemModule).ai(mock(AIModule.class)).build(), infra, templates), NpcCreationContext.class);
         var npcModule = new NpcModuleImpl();

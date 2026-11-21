@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.item.flow.drop.placement;
 
+import com.github.mayconr.juoserver.game.item.ItemPlacement;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
-import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.model.event.ItemDroppedOnTheGround;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
@@ -21,13 +21,11 @@ public class DropItemGroundStep extends AbstractFlowStep<DropItemContext> {
 
     @Override
     public StepResult execute(DropItemContext context) {
-        final var player = context.getPlayer();
+        final var player = context.getMobile();
         final var item = context.getItem();
         final var location = context.getTargetGround().location();
 
-        item.setCurrentLocation(new GroundLocation());
-        item.setLocation(location);
-        storage.items().placeOnGround(item);
+        ItemPlacement.placeOnGround(storage, item, location);
         eventBus.publish(new ItemDroppedOnTheGround(player, item, location));
 
         return StepResult.success();

@@ -36,6 +36,10 @@ public class UOCorpse extends UOContainer {
         }
         item.setCurrentLocation(ItemLocation.container(getSerialId()));
         super.addItemToContainer(item);
+        recordEquippedItem(item);
+    }
+
+    public void recordEquippedItem(UOItem item) {
         equippedItems.put(item.getLayer(), item.getSerialId());
     }
 

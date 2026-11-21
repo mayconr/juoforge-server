@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.network.packet;
 
 import java.nio.charset.StandardCharsets;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings.Mobile;
 import com.github.mayconr.juoserver.game.model.Gender;
 import com.github.mayconr.juoserver.game.model.Race;
 import com.github.mayconr.juoserver.game.model.UOMobile;
@@ -16,6 +17,7 @@ public class StatusBarInfo extends AbstractPacket {
     private final UOMobile mobile;
     private final int weight;
     private final int maxWeight;
+    private final int maxResistance;
 
     public StatusBarInfo(UOMobile mobile) {
         this(mobile, mobile.getWeight());
@@ -26,10 +28,23 @@ public class StatusBarInfo extends AbstractPacket {
     }
 
     public StatusBarInfo(UOMobile mobile, int weight, int maxWeight) {
+        this(mobile, weight, maxWeight, Mobile.DEFAULT_MAX_RESISTANCE);
+    }
+
+    public StatusBarInfo(UOMobile mobile, Mobile settings) {
+        this(mobile, mobile.getWeight(), mobile.getMaxWeight(), settings.maxResistance());
+    }
+
+    public StatusBarInfo(UOMobile mobile, int weight, int maxWeight, Mobile settings) {
+        this(mobile, weight, maxWeight, settings.maxResistance());
+    }
+
+    private StatusBarInfo(UOMobile mobile, int weight, int maxWeight, int maxResistance) {
         super(CODE, calculateLength(mobile));
         this.mobile = mobile;
         this.weight = Math.clamp(weight, 0, 0xFFFF);
         this.maxWeight = Math.clamp(maxWeight, 0, 0xFFFF);
+        this.maxResistance = Math.clamp(maxResistance, Short.MIN_VALUE, Short.MAX_VALUE);
     }
 
     @Override
@@ -84,12 +99,12 @@ public class StatusBarInfo extends AbstractPacket {
         buf.writeShort(mobile.getDamageMax()); // 87
         buf.writeInt(mobile.getTithingPoints()); // 91
 
-        // UOKR+ attributes
-        buf.writeShort(mobile.getMaxPhysicalResist());
-        buf.writeShort(mobile.getMaxFireResist());
-        buf.writeShort(mobile.getMaxColdResist());
-        buf.writeShort(mobile.getMaxPoisonResist());
-        buf.writeShort(mobile.getMaxEnergyResist());
+        // UOKR+ attributes, starting with five resistance cap fields
+        buf.writeShort(maxResistance);
+        buf.writeShort(maxResistance);
+        buf.writeShort(maxResistance);
+        buf.writeShort(maxResistance);
+        buf.writeShort(maxResistance);
         buf.writeShort(mobile.getDefenseChanceIncrease());
         buf.writeShort(mobile.getMaxDefenseChanceIncrease());
         buf.writeShort(mobile.getHitChanceIncrease());

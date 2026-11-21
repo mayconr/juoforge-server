@@ -207,8 +207,15 @@ public record GamePlaySettings(
         );
     }
 
-    public record Mobile(String backpackItem, Integer mountRange, CarryWeight carryWeight, Vitals vitals) {
+    public record Mobile(String backpackItem, Integer mountRange, CarryWeight carryWeight, Vitals vitals,
+                         Integer minResistance, Integer maxResistance) {
         public static final int DEFAULT_MOUNT_RANGE = 2;
+        public static final int DEFAULT_MIN_RESISTANCE = 0;
+        public static final int DEFAULT_MAX_RESISTANCE = 100;
+
+        public Mobile(String backpackItem, Integer mountRange, CarryWeight carryWeight, Vitals vitals) {
+            this(backpackItem, mountRange, carryWeight, vitals, null, null);
+        }
 
         public Mobile(String backpackItem, Integer mountRange) {
             this(backpackItem, mountRange, null, null);
@@ -220,10 +227,15 @@ public record GamePlaySettings(
 
         public Mobile withVitals(Vitals vitals) {
             Objects.requireNonNull(vitals, "vitals is required");
-            return new Mobile(backpackItem, mountRange, carryWeight, vitals);
+            return new Mobile(backpackItem, mountRange, carryWeight, vitals, minResistance, maxResistance);
         }
 
         public Mobile {
+            minResistance = minResistance == null ? DEFAULT_MIN_RESISTANCE : minResistance;
+            maxResistance = maxResistance == null ? DEFAULT_MAX_RESISTANCE : maxResistance;
+            if (minResistance > maxResistance) {
+                throw new IllegalArgumentException("mobile.minResistance must not exceed mobile.maxResistance");
+            }
             vitals = vitals == null ? new Vitals(100) : vitals;
             mountRange = mountRange == null ? DEFAULT_MOUNT_RANGE : mountRange;
             carryWeight = carryWeight == null ? new CarryWeight() : carryWeight;

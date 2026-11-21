@@ -11,6 +11,7 @@ import com.github.mayconr.juoserver.game.player.flow.creation.validation.Validat
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
+import com.github.mayconr.juoserver.game.mobile.shared.InitializeEquipmentResistancesStep;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowFactory;
 
@@ -27,6 +28,8 @@ public final class PlayerCreationFlowDefinition {
                 .step(new CreateStarterItemsStep(infra.settings(), templates.startKitBySkillId(), modules.item()))
                 .step(new CreateMobileDataStep(infra.serialGenerator(), infra.storage()))
                 .step(new CreateMobileStep(infra.storage()))
+                .step(new InitializeEquipmentResistancesStep<>(PlayerCreationContext::getPlayer,
+                        infra.storage(), modules.mobile()))
                 .step(new SavePlayerStep(infra.storage(), infra.serialGenerator()))
                 .build();
     }

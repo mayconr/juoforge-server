@@ -1,29 +1,33 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.model.ItemTarget;
+import com.github.mayconr.juoserver.game.model.ResistanceType;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
-import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeContext;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
 import com.github.mayconr.juoserver.game.mobile.flow.movement.MovementContext;
+import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionContext;
 import com.github.mayconr.juoserver.game.mobile.flow.resync.ResyncContext;
+import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeContext;
 import com.github.mayconr.juoserver.game.mobile.flow.teleport.TeleportContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
 import com.github.mayconr.juoserver.game.mobile.npc.NpcDespawnService;
-import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.AttributeMap;
 import com.github.mayconr.juoserver.game.model.DeathRequest;
+import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionContext;
+import com.github.mayconr.juoserver.game.model.event.MobileResistancesChanged;
+import com.github.mayconr.juoserver.game.model.event.MobileResistancesChanged.Values;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
-import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.game.world.ModuleOperationException;
+import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
@@ -92,6 +96,44 @@ public class MobileModuleImpl implements MobileModule {
             throw ModuleOperationException.fromFailure("setAttribute", result, null);
         }
     }
+
+    @Override
+    public void setResistance(UOMobile mobile, ResistanceType type, int value) {
+        updateResistance(mobile, type, value);
+    }
+
+    private void updateResistance(UOMobile mobile, ResistanceType type, int value) {
+        Objects.requireNonNull(type, "Resistance type is required");
+        var limits = settings.mobile();
+        int boundedValue = Math.clamp(value, limits.minResistance(), limits.maxResistance());
+        Values previous;
+        synchronized (mobile) {
+            if (type.getValue(mobile) == boundedValue) {
+                return;
+            }
+            previous = Values.from(mobile);
+            type.setValue(mobile, boundedValue);
+        }
+        eventBus.publish(new MobileResistancesChanged(mobile, previous));
+    }
+
+    @Override
+    public void addItemResistances(UOMobile mobile, UOItem item) {
+        applyItemResistances(mobile, item, 1);
+    }
+
+    @Override
+    public void removeItemResistances(UOMobile mobile, UOItem item) {
+        applyItemResistances(mobile, item, -1);
+    }
+
+    private void applyItemResistances(UOMobile mobile, UOItem item, int sign) {
+        Objects.requireNonNull(item, "Item is required");
+        for (var type : ResistanceType.values()) {
+            updateResistance(mobile, type, type.getValue(mobile) + sign * item.getResistances().getValue(type));
+        }
+    }
+
     @Override
     public int calculateMaxWeight(UOMobile mobile) {
         var carryWeight = settings.mobile().carryWeight();
@@ -100,7 +142,7 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter) {
-        return storage.getMobilesInRange(location, radius, filter);
+        return storage.mobiles().inRange(location, radius, filter);
     }
 
     @Override
@@ -175,9 +217,14 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public boolean unequipItem(UOMobile mobile, UOItem item) {
-        var context = new UnequipItemContext(mobile, item);
-        flows.execute(context);
-        return context.isUnequipped();
+        return unequipItem(mobile, item, ItemTarget.orphan());
+    }
+
+    @Override
+    public boolean unequipItem(UOMobile mobile, UOItem item, ItemTarget target) {
+        var context = new UnequipItemContext(mobile, item, Objects.requireNonNull(target, "Item target is required"));
+        var result = flows.execute(context);
+        return !result.flowFailed() && context.isUnequipped();
     }
 
     @Override
@@ -202,7 +249,7 @@ public class MobileModuleImpl implements MobileModule {
         for (Map.Entry<Layer, Integer> entry : equippedSerials.entrySet()) {
             var itemSerial = entry.getValue();
 
-            var item = storage.getItem(itemSerial)
+            var item = storage.items().get(itemSerial)
                     .orElseThrow(() -> new IllegalStateException("Cannot find equipped Item ["+itemSerial+"] for player " + mobile.getName()));
             equippedItems.put(entry.getKey(), item);
         }

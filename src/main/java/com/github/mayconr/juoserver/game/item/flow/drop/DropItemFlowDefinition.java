@@ -23,6 +23,7 @@ import com.github.mayconr.juoserver.game.item.hold.RequireHeldItemStep;
 import com.github.mayconr.juoserver.game.item.hold.RestoreHeldItem;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
+import com.github.mayconr.juoserver.game.mobile.WorldMobile;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.flow.Flow;
 import com.github.mayconr.juoserver.infrastructure.flow.FlowBuilder;
@@ -40,13 +41,15 @@ public class DropItemFlowDefinition {
         return FlowFactory.<DropItemContext>builder()
                 .appendGroup("DropItemPhase", dropItemPhase(infra.storage(), modules.item().heldItems()))
                 .appendGroup("ValidationPhase", validationPhase(infra.storage(), modules.item().heldItems()))
-                .appendGroup("ItemPlacementPhase", itemPlacementPhase(infra.storage(), infra.eventBus(), modules.container()))
+                .appendGroup("ItemPlacementPhase", itemPlacementPhase(infra.storage(), infra.eventBus(),
+                        modules.container(), modules.mobile()))
                 .step(new RecordGroundDropStep(modules.item()))
                 .step(new AcceptDropStep(modules.item().heldItems(), infra.eventBus()), DropItemContext::isDroppedItem)
                 .hook(new FlowHook<>(
                         HookTarget.any(),
                         new RejectDropHook(modules.item().heldItems(),
-                                new RestoreHeldItem(infra.storage(), modules.item()::recordGroundInteraction), infra.eventBus()),
+                                new RestoreHeldItem(infra.storage(), modules.item()::recordGroundInteraction,
+                                        modules.mobile()), infra.eventBus()),
                         HookPosition.AFTER_FAILURE
                 ))
                 .build();
@@ -71,13 +74,14 @@ public class DropItemFlowDefinition {
     private static FlowBuilder<DropItemContext> itemPlacementPhase(
             WorldStorage storage,
             EventBus eventBus,
-            WorldContainer containers
+            WorldContainer containers,
+            WorldMobile mobiles
     ) {
         return FlowFactory.<DropItemContext>builder()
-                .step(new TransformToOrphanStep(storage))
+                .step(new TransformToOrphanStep(storage, mobiles), context -> !context.isContainerDrop())
                 .step(new DropItemGroundStep(storage, eventBus), DropItemContext::isGroundDrop)
                 .step(new ResolveContainerDropPositionStep(), DropItemContext::isContainerDrop)
-                .step(new DropItemContainerStep(eventBus, containers), DropItemContext::isContainerDrop)
+                .step(new DropItemContainerStep(eventBus, containers, storage, mobiles), DropItemContext::isContainerDrop)
                 .step(new StackItemStep(storage, eventBus), DropItemContext::isStack);
 
     }

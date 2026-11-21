@@ -138,7 +138,14 @@ public final class ItemEventHandler {
 
     public void onEquippedItemCreated(EquippedItemCreated event) {
         if (session.shouldReceiveUpdate(event.mobile())) {
-            packetWriter.writeAndFlush(new DrawMobile(event.mobile(), world.mobile().getEquippedItems(event.mobile())));
+            packetWriter.enqueue(packets -> {
+                if (session.shouldReceiveUpdate(event.mobile())
+                        && event.item().getCurrentLocation() instanceof EquippedLocation location
+                        && location.ownerSerialId().equals(event.mobile().getSerialId())) {
+                    packets.write(new DrawMobile(event.mobile(), world.mobile().getEquippedItems(event.mobile())));
+                    packets.writeAndFlush(new EquipItem(event.mobile(), event.item().getLayer(), event.item()));
+                }
+            });
         }
     }
 

@@ -2,12 +2,22 @@ package com.github.mayconr.juoserver.game.mobile;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.item.ItemModule;
-import com.github.mayconr.juoserver.game.mobile.flow.mount.*;
+import com.github.mayconr.juoserver.game.item.ItemCreationResult;
+import com.github.mayconr.juoserver.game.mobile.flow.mount.MountContext;
+import com.github.mayconr.juoserver.game.mobile.flow.mount.MountFlowDefinition;
 import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOMobileData;
+import com.github.mayconr.juoserver.game.model.UONpc;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
-import com.github.mayconr.juoserver.game.world.context.*;
-import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.*;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowRegistry;
+import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
+import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
+import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameTemplates;
 import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
@@ -30,7 +40,7 @@ class MountOperationTest {
         npc.setX(distance);
         var item = mock(UOItem.class);
         var items = mock(ItemModule.class);
-        when(items.createItem(any(), any())).thenReturn(item);
+        when(items.tryCreateItem(any(), any())).thenReturn(new ItemCreationResult.Created(item));
         var mobiles = mock(MobileModule.class);
         when(mobiles.equipItem(player, item)).thenReturn(equipSucceeds);
         var npcs = mock(NpcModule.class);
@@ -42,7 +52,7 @@ class MountOperationTest {
                 GameInfra.builder().settings(settings).build(), GameTemplates.builder().mountByNpcName(mounts).build());
         var registry = new DefaultFlowRegistry();
         registry.register("mount", flow, MountContext.class);
-        var module = new MobileModuleImpl(null, null, null, null, new com.github.mayconr.juoserver.game.GamePlaySettings());
+        var module = new MobileModuleImpl(null, null, null, null, new GamePlaySettings());
         module.initialize(DefaultModuleContext.builder()
                 .flowFacade(DefaultFlowFacade.builder().registry(registry).build()).build());
 
@@ -62,7 +72,7 @@ class MountOperationTest {
     void failuresWithoutDisplayMessageUseDefaultMountKey() {
         var flows = mock(ModuleContext.FlowFacade.class);
         when(flows.execute(any(MountContext.class))).thenReturn(StepResult.failure("Unexpected failure"));
-        var module = new MobileModuleImpl(null, null, null, null, new com.github.mayconr.juoserver.game.GamePlaySettings());
+        var module = new MobileModuleImpl(null, null, null, null, new GamePlaySettings());
         module.initialize(DefaultModuleContext.builder().flowFacade(flows).build());
 
         var error = assertThrows(ModuleOperationException.class, () -> module.mount(null, null));

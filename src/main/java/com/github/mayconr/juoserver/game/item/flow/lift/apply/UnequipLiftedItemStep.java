@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.item.flow.lift.apply;
 
 import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
+import com.github.mayconr.juoserver.game.model.ItemTarget;
 import com.github.mayconr.juoserver.game.model.LiftRejectReason;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
@@ -17,7 +18,7 @@ public final class UnequipLiftedItemStep extends AbstractFlowStep<LiftItemContex
 
     @Override
     public StepResult execute(LiftItemContext context) {
-        if (mobiles.unequipItem(context.getPlayer(), context.getItem())) {
+        if (mobiles.unequipItem(context.getPlayer(), context.getItem(), ItemTarget.orphan())) {
             return StepResult.success();
         }
         return context.reject(LiftRejectReason.CANNOT_LIFT,
