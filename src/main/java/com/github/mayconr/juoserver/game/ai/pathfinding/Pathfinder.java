@@ -1,49 +1,22 @@
 package com.github.mayconr.juoserver.game.ai.pathfinding;
 
-import java.util.*;
-
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Location;
 
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.function.BiFunction;
+
 public class Pathfinder {
 
-    private static class Node implements Comparable<Node> {
-        Location location;
-        Node parent;
-        double gCost;
-        double hCost;
-
-        Node(Location loc, Node parent, double g, double h) {
-            this.location = loc;
-            this.parent = parent;
-            this.gCost = g;
-            this.hCost = h;
-        }
-
-        double fCost() {
-            return gCost + hCost;
-        }
-
-        @Override
-        public int compareTo(Node o) {
-            return Double.compare(this.fCost(), o.fCost());
-        }
-    }
-
-    private static class PathfinderLocation implements Location {
-        private int x;
-        private int y;
-
-        public PathfinderLocation(Location location) {
-            this.x = location.getX();
-            this.y = location.getY();
-        }
-
-        public PathfinderLocation(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
+    private record Tile(int x, int y, int z) implements Location {
         @Override
         public int getX() {
             return x;
@@ -56,99 +29,94 @@ public class Pathfinder {
 
         @Override
         public int getZ() {
-            return 0;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof PathfinderLocation other)) return false;
-            return this.x == other.x && this.y == other.y;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
+            return z;
         }
     }
 
-    private final boolean[][] walkableMap;
-    private final int width, height;
-    private final Set<Location> dynamicBlocks;
+    private record Node(Tile tile, Node parent, Direction direction, double cost, double estimatedTotal) {}
+
+    private final BiFunction<Location, Direction, OptionalInt> resolveStep;
+    private final int maxVisited;
+    private final boolean flat;
 
     public Pathfinder(boolean[][] walkableMap, Set<Location> dynamicBlocks) {
-        this.walkableMap = walkableMap;
-        this.width = walkableMap.length;
-        this.height = walkableMap[0].length;
-        this.dynamicBlocks = dynamicBlocks;
-    }
-
-    public Optional<Direction> findNextDirection(Location startLoc, Location endLoc) {
-        Location start = new PathfinderLocation(startLoc);
-        Location end = new PathfinderLocation(endLoc);
-
-        if (start.getX() == end.getX() && start.getY() == end.getY()) {
-            return Optional.empty(); // já está no destino
-        }
-        PriorityQueue<Node> openList = new PriorityQueue<>();
-        Map<Location, Double> costSoFar = new HashMap<>();
-
-        openList.add(new Node(start, null, 0, heuristic(start, end)));
-        costSoFar.put(start, 0.0);
-
-        while (!openList.isEmpty()) {
-            Node current = openList.poll();
-
-            if (current.location.equals(end)) {
-                return extractFirstDirection(current);
+        this((from, direction) -> {
+            int x = from.getX() + direction.getDx();
+            int y = from.getY() + direction.getDy();
+            if (x < 0 || x >= walkableMap.length || y < 0 || y >= walkableMap[x].length || !walkableMap[x][y]) {
+                return OptionalInt.empty();
             }
+            boolean blocked = dynamicBlocks.stream().anyMatch(tile -> tile.getX() == x && tile.getY() == y);
+            return blocked ? OptionalInt.empty() : OptionalInt.of(0);
+        }, Integer.MAX_VALUE, true);
+    }
 
-            for (Direction dir : Direction.values()) {
-                int nx = current.location.getX() + dir.getDx();
-                int ny = current.location.getY() + dir.getDy();
-                Location neighbor = new PathfinderLocation(nx, ny);
+    public Pathfinder(BiFunction<Location, Direction, OptionalInt> resolveStep, int maxVisited) {
+        this(resolveStep, maxVisited, false);
+    }
 
-                if (!isWalkable(neighbor)) continue;
+    private Pathfinder(BiFunction<Location, Direction, OptionalInt> resolveStep, int maxVisited, boolean flat) {
+        this.resolveStep = resolveStep;
+        this.maxVisited = maxVisited;
+        this.flat = flat;
+    }
 
-                double newCost =
-                        current.gCost
-                                + ((dir.getDx() == 0 || dir.getDy() == 0) ? 1.0 : Math.sqrt(2));
+    public Optional<Direction> findNextDirection(Location start, Location goal) {
+        return findPath(start, goal).stream().findFirst();
+    }
 
-                if (!costSoFar.containsKey(neighbor) || newCost < costSoFar.get(neighbor)) {
-                    costSoFar.put(neighbor, newCost);
-                    Node next = new Node(neighbor, current, newCost, heuristic(neighbor, end));
-                    openList.add(next);
-                }
+    public List<Direction> findPath(Location start, Location goal) {
+        Tile origin = toTile(start);
+        Tile destination = toTile(goal);
+        var open = new PriorityQueue<>(Comparator.comparingDouble(Node::estimatedTotal));
+        Map<Tile, Double> bestCosts = new HashMap<>();
+        open.add(new Node(origin, null, null, 0, distance(origin, destination)));
+        bestCosts.put(origin, 0.0);
+
+        int visited = 0;
+        while (!open.isEmpty() && visited < maxVisited) {
+            Node current = open.remove();
+            if (current.cost() > bestCosts.get(current.tile())) {
+                continue;
+            }
+            if (current.tile().equals(destination)) {
+                return directionsTo(current);
+            }
+            visited++;
+            expand(current, destination, open, bestCosts);
+        }
+        return List.of();
+    }
+
+    private void expand(Node current, Tile goal, PriorityQueue<Node> open, Map<Tile, Double> bestCosts) {
+        for (Direction direction : Direction.values()) {
+            var z = resolveStep.apply(current.tile(), direction);
+            if (z.isEmpty()) {
+                continue;
+            }
+            var neighbor = new Tile(current.tile().x() + direction.getDx(),
+                    current.tile().y() + direction.getDy(), z.getAsInt());
+            double cost = current.cost() + distance(current.tile(), neighbor);
+            if (cost < bestCosts.getOrDefault(neighbor, Double.POSITIVE_INFINITY)) {
+                bestCosts.put(neighbor, cost);
+                open.add(new Node(neighbor, current, direction, cost, cost + distance(neighbor, goal)));
             }
         }
-
-        return Optional.empty(); // sem caminho possível
     }
 
-    private Optional<Direction> extractFirstDirection(Node endNode) {
-        Node current = endNode;
+    private Tile toTile(Location position) {
+        return new Tile(position.getX(), position.getY(), flat ? 0 : position.getZ());
+    }
 
-        if (current.parent == null) return Optional.empty();
-
-        while (current.parent != null && current.parent.parent != null) {
-            current = current.parent;
+    private List<Direction> directionsTo(Node goal) {
+        var directions = new ArrayDeque<Direction>();
+        for (Node node = goal; node.parent() != null; node = node.parent()) {
+            directions.addFirst(node.direction());
         }
-
-        int dx = current.location.getX() - current.parent.location.getX();
-        int dy = current.location.getY() - current.parent.location.getY();
-        return Optional.of(Direction.fromDelta(dx, dy));
+        return List.copyOf(directions);
     }
 
-    private double heuristic(Location a, Location b) {
-        return Math.hypot(a.getX() - b.getX(), a.getY() - b.getY());
-    }
-
-    private boolean isWalkable(Location loc) {
-        return loc.getX() >= 0
-                && loc.getX() < width
-                && loc.getY() >= 0
-                && loc.getY() < height
-                && walkableMap[loc.getX()][loc.getY()]
-                && !dynamicBlocks.contains(loc);
+    private double distance(Tile from, Tile to) {
+        return Math.hypot(from.x() - to.x(), from.y() - to.y());
     }
 }

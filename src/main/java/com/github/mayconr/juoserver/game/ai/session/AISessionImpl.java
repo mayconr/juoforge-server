@@ -1,6 +1,6 @@
 package com.github.mayconr.juoserver.game.ai.session;
 
-import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AIExecutionPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 
 import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
@@ -11,12 +11,19 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.function.Consumer;
 
+/**
+ * Runs the AI flow for one NPC. On each update, an active session checks the execution policy
+ * before running the flow and dispatching the actions it produces.
+ * Incoming speech is queued only while the session is active and both policies allow it.
+ * The speech policy is checked again before the flow runs.
+ * Deactivation or a blocked update clears pending actions and speech.
+ */
 @RequiredArgsConstructor
 public class AISessionImpl<T extends AIFlowContext> implements AISession<T> {
     private final ModuleContext.FlowFacade flows;
     private final T context;
     private final Consumer<NpcAction> dispatcher;
-    private final AIActivationPolicy activationPolicy;
+    private final AIExecutionPolicy executionPolicy;
     private final AISpeechPolicy speechPolicy;
     private volatile boolean activated;
 
@@ -28,15 +35,13 @@ public class AISessionImpl<T extends AIFlowContext> implements AISession<T> {
     @Override
     public void deactivate() {
         activated = false;
-        context.discardSpeech(speech -> true);
         context.clearActions();
     }
 
     @Override
     public void update(double delta) {
         if (!activated) return;
-        if (!activationPolicy.isActive(context)) {
-            context.discardSpeech(speech -> true);
+        if (!executionPolicy.canRun(context)) {
             context.clearActions();
             return;
         }
@@ -52,7 +57,7 @@ public class AISessionImpl<T extends AIFlowContext> implements AISession<T> {
 
     @Override
     public void onSpeech(MobileSpeech speech) {
-        if (activated && speechPolicy.accepts(context, speech) && activationPolicy.isActive(context)) {
+        if (activated && speechPolicy.accepts(context, speech) && executionPolicy.canRun(context)) {
             context.enqueueEvent(speech);
         }
     }

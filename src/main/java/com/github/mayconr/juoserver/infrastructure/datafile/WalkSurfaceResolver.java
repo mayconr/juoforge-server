@@ -8,7 +8,10 @@ import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.Location;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -26,13 +29,29 @@ public class WalkSurfaceResolver {
 
     static final int PERSON_HEIGHT = 16;
     static final int STEP_HEIGHT = 2;
+    private static final int MAX_CACHED_STEPS = 16_384;
 
     private final GameDataProvider gameDataProvider;
+    // The resolver belongs to one loaded map. Reloading the map creates a new resolver.
+    private final Map<WalkStep, OptionalInt> walkZCache = Collections.synchronizedMap(
+            new LinkedHashMap<>(256, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<WalkStep, OptionalInt> eldest) {
+                    return size() > MAX_CACHED_STEPS;
+                }
+            }
+    );
 
     /**
      * @return the destination Z, or empty when the step is blocked
      */
     public OptionalInt resolveWalkZ(Location from, Direction direction) {
+        var step = new WalkStep(from.getX(), from.getY(), from.getZ(), direction);
+        return walkZCache.computeIfAbsent(step, this::calculateWalkZ);
+    }
+
+    private OptionalInt calculateWalkZ(WalkStep from) {
+        var direction = from.direction();
         final var start = startSurface(from.getX(), from.getY(), from.getZ());
         if (start.isEmpty()) {
             return OptionalInt.empty();
@@ -44,6 +63,23 @@ public class WalkSurfaceResolver {
         }
 
         return canPassDiagonalCorners(from, direction, start.get()) ? forwardZ : OptionalInt.empty();
+    }
+
+    private record WalkStep(int x, int y, int z, Direction direction) implements Location {
+        @Override
+        public int getX() {
+            return x;
+        }
+
+        @Override
+        public int getY() {
+            return y;
+        }
+
+        @Override
+        public int getZ() {
+            return z;
+        }
     }
 
     private boolean isDiagonal(Direction direction) {

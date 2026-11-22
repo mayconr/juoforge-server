@@ -40,7 +40,6 @@ import com.github.mayconr.juoserver.game.ai.actions.SpeechAction;
 import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.ai.actions.CancelAttackAction;
 import com.github.mayconr.juoserver.game.ai.actions.AttackAction;
-import com.github.mayconr.juoserver.game.combat.CombatHandler;
 import com.github.mayconr.juoserver.game.combat.CombatModule;
 import com.github.mayconr.juoserver.game.combat.WorldCombat;
 import com.github.mayconr.juoserver.game.combat.CombatModuleImpl;
@@ -374,7 +373,8 @@ public class DefaultWorld implements WorldInternal, World {
 
             switch (e) {
                 //case SpeechAction say -> world.message().printTextAbove(, say.content(), say.speechTo());
-                case WalkAction walkAction -> mobile().move(walkAction.npc(), walkAction.direction());
+                case WalkAction walkAction ->
+                        mobile().move(walkAction.npc(), walkAction.direction());
                 case CancelAttackAction cancel -> combat().requestCancelAttack(cancel.npc());
                 case AttackAction attack -> combat().requestAttack(attack.npc(), attack.targetSerial());
                 case SellListAction buyList -> {
@@ -413,9 +413,8 @@ public class DefaultWorld implements WorldInternal, World {
     }
 
     private void initializeCombatModule() {
-        final var combatService = new CombatHandler(eventBus);
 
-        this.combatModule = new CombatModuleImpl(combatService);
+        this.combatModule = new CombatModuleImpl();
     }
 
     private void initializeMobileModule(Wallet wallet) {

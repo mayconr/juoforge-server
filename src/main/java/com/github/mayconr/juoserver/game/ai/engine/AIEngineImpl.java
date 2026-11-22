@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.game.ai.engine;
 import com.github.mayconr.juoserver.WorldConfigurator;
 import com.github.mayconr.juoserver.game.ai.session.AISession;
 import com.github.mayconr.juoserver.game.ai.session.AISessionImpl;
-import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AIExecutionPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 
 import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
@@ -32,7 +32,7 @@ public class AIEngineImpl implements AIEngine {
 
     private final World world;
     private final Consumer<NpcAction> actionDispatcher;
-    private final AIActivationPolicy activationPolicy;
+    private final AIExecutionPolicy executionPolicy;
     private final AISpeechPolicy speechPolicy;
     private final GamePlaySettings.Ai settings;
     private double accumulatedDelta;
@@ -43,7 +43,7 @@ public class AIEngineImpl implements AIEngine {
         Objects.requireNonNull(worldCfg, "World configuration is required");
         this.world = world;
         this.actionDispatcher = actionDispatcher;
-        this.activationPolicy = Objects.requireNonNull(worldCfg.aiActivationPolicy().get(), "AI activation policy is required");
+        this.executionPolicy = Objects.requireNonNull(worldCfg.aiExecutionPolicy().get(), "AI execution policy is required");
         this.speechPolicy = Objects.requireNonNull(worldCfg.aiSpeechPolicy().get(), "AI speech policy is required");
         this.settings = Objects.requireNonNull(worldCfg.ai(), "AI settings are required");
     }
@@ -86,7 +86,7 @@ public class AIEngineImpl implements AIEngine {
         var filter = context.speechFilter().orElse(null);
         AISpeechPolicy sessionSpeechPolicy = filter == null ? speechPolicy : (ctx, speech) -> filter.test(speech);
         AISession<AIFlowContext> session = new AISessionImpl<>(flows, context, actionDispatcher,
-                activationPolicy, sessionSpeechPolicy);
+                executionPolicy, sessionSpeechPolicy);
 
         sessions.put(id, session);
         aiTypes.put(id, aiType);

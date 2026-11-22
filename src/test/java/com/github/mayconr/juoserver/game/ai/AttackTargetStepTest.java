@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.game.ai;
 import com.github.mayconr.juoserver.game.ai.actions.AttackAction;
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
-import com.github.mayconr.juoserver.game.ai.definition.aggressive.steps.AttackTargetStep;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.attack.AttackTargetStep;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.World;

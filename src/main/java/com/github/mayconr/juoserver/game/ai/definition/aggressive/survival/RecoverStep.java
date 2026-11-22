@@ -1,13 +1,13 @@
-package com.github.mayconr.juoserver.game.ai.definition.aggressive.steps;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive.survival;
 
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
-/** Placeholder: Cancel combat and move away from threats; stop the flow when handled. */
-public final class FleeStep extends AbstractFlowStep<AggressiveAIContext> {
-    public FleeStep() {
-        super("FleeStep");
+/** Placeholder: Wait in safety until recovered; stop the flow when handled. */
+public final class RecoverStep extends AbstractFlowStep<AggressiveAIContext> {
+    public RecoverStep() {
+        super("RecoverStep");
     }
 
     @Override

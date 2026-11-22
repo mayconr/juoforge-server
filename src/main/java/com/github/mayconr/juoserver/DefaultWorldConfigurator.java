@@ -2,9 +2,9 @@ package com.github.mayconr.juoserver;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
-import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AIExecutionPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
-import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerExecutionPolicy;
 import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
 import com.github.mayconr.juoserver.game.combat.progression.DefaultCombatSkillGainPolicy;
@@ -190,19 +190,19 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
         return requireNonNull(content, "Shard must configure world content");
     }
 
-    private Supplier<AIActivationPolicy> aiActivationPolicy =
-            () -> new NearbyPlayerActivationPolicy(gameplaySettings().world().visibility().range());
+    private Supplier<AIExecutionPolicy> aiExecutionPolicy =
+            () -> new NearbyPlayerExecutionPolicy(gameplaySettings().world().visibility().range());
     private Supplier<AISpeechPolicy> aiSpeechPolicy =
             () -> AISpeechPolicy.nearbyVendor(gameplaySettings().world().visibility().range());
 
     @Override
-    public void aiActivationPolicy(Supplier<AIActivationPolicy> factory) {
-        this.aiActivationPolicy = requireNonNull(factory, "AI activation policy factory is required");
+    public void aiExecutionPolicy(Supplier<AIExecutionPolicy> factory) {
+        this.aiExecutionPolicy = requireNonNull(factory, "AI execution policy factory is required");
     }
 
     @Override
-    public Supplier<AIActivationPolicy> aiActivationPolicy() {
-        return aiActivationPolicy;
+    public Supplier<AIExecutionPolicy> aiExecutionPolicy() {
+        return aiExecutionPolicy;
     }
 
     @Override

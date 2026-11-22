@@ -6,26 +6,22 @@ import com.github.mayconr.juoserver.game.combat.commands.CombatCommand;
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext.CombatOrigin;
+import com.github.mayconr.juoserver.game.combat.flow.warmode.ToggleWarModeContext;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.WarModeType;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
-@RequiredArgsConstructor
 public class CombatModuleImpl implements CombatModule {
 
     private static final double UPDATE_DELAY_SECONDS = 1;
-
-    private final CombatHandler combatHandler;
 
     private final Queue<CombatCommand> commandQueue = new ConcurrentLinkedQueue<>();
     private final Map<Integer, AttackCommand> pendingAttacks = new ConcurrentHashMap<>();
@@ -91,7 +87,7 @@ public class CombatModuleImpl implements CombatModule {
 
     @Override
     public void toggleWarMode(UOPlayer player, WarModeType type) {
-        combatHandler.toggleWarMode(player, type);
+        flows.execute(new ToggleWarModeContext(player, type));
         if (type == WarModeType.NORMAL) {
             requestCancelAttack(player);
         }

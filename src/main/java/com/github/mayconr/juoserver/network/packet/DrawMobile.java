@@ -58,7 +58,7 @@ public class DrawMobile extends AbstractPacket {
         buf.writeShort(mobile.getX());
         buf.writeShort(mobile.getY());
         buf.writeByte(mobile.getZ());
-        buf.writeByte(mobile.getDirection().getCode());
+        buf.writeByte(mobile.getDirection().getCode() | (mobile.isRunning() ? 0x80 : 0));
 
         int hue = mobile.getHue();
         if (isDead) {

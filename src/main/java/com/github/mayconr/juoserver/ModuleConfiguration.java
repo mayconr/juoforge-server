@@ -2,7 +2,7 @@ package com.github.mayconr.juoserver;
 
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
-import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AIExecutionPolicy;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
 import com.github.mayconr.juoserver.game.ai.registry.AIContextFactory;
 import com.github.mayconr.juoserver.game.combat.progression.CombatSkillGainPolicy;
@@ -67,9 +67,9 @@ public interface ModuleConfiguration {
     Supplier<LootPolicy> lootPolicy();
 
     /** Replaces the policy that decides whether an AI session may execute. */
-    void aiActivationPolicy(Supplier<AIActivationPolicy> factory);
+    void aiExecutionPolicy(Supplier<AIExecutionPolicy> factory);
 
-    Supplier<AIActivationPolicy> aiActivationPolicy();
+    Supplier<AIExecutionPolicy> aiExecutionPolicy();
 
     /** Replaces the policy that decides which speech events an AI session accepts. */
     void aiSpeechPolicy(Supplier<AISpeechPolicy> factory);

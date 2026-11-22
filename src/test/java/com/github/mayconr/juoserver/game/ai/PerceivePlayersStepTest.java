@@ -1,7 +1,7 @@
 package com.github.mayconr.juoserver.game.ai;
 
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
-import com.github.mayconr.juoserver.game.ai.definition.aggressive.steps.PerceivePlayersStep;
+import com.github.mayconr.juoserver.game.ai.definition.aggressive.perception.PerceivePlayersStep;
 import com.github.mayconr.juoserver.game.model.BehaviorDefinition;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UONpc;

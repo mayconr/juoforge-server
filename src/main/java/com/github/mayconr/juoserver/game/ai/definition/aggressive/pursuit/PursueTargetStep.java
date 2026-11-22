@@ -1,8 +1,7 @@
-package com.github.mayconr.juoserver.game.ai.definition.aggressive.steps;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive.pursuit;
 
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;
-import com.github.mayconr.juoserver.game.ai.actions.WalkAction;
 import com.github.mayconr.juoserver.game.model.Direction;
 import com.github.mayconr.juoserver.game.model.GameMath;
 import com.github.mayconr.juoserver.game.combat.CombatAttackRange;
@@ -11,7 +10,7 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
-/** Requests one movement per AI update until the target is within attack range. */
+/** Calculates the direct direction toward a target outside attack range. */
 public final class PursueTargetStep extends AbstractFlowStep<AggressiveAIContext> {
     public PursueTargetStep() {
         super("PursueTargetStep");
@@ -19,6 +18,10 @@ public final class PursueTargetStep extends AbstractFlowStep<AggressiveAIContext
 
     @Override
     public StepResult execute(AggressiveAIContext context) {
+        var pursuit = context.getPursuit();
+        pursuit.setNextDirection(null);
+        pursuit.setMovementBlocked(false);
+
         if (isSurviving(context)) {
             return StepResult.skip();
         }
@@ -35,8 +38,8 @@ public final class PursueTargetStep extends AbstractFlowStep<AggressiveAIContext
         }
 
         context.setState(CombatAIState.PURSUING);
-        enqueueMovementTowardTarget(context);
-        return StepResult.stop();
+        pursuit.setNextDirection(directionTowardTarget(context.npc(), context.getTarget()));
+        return StepResult.success();
     }
 
     private boolean isSurviving(AggressiveAIContext context) {
@@ -57,19 +60,9 @@ public final class PursueTargetStep extends AbstractFlowStep<AggressiveAIContext
                 CombatAttackRange.resolve(context.npc(), context.world().mobile()));
     }
 
-    private void enqueueMovementTowardTarget(AggressiveAIContext context) {
-        var npc = context.npc();
-        var target = context.getTarget();
-        // Different elevation on the same tile needs navigation, not a horizontal direction.
-        if (isAtSameHorizontalPosition(npc, target)) {
-            return;
-        }
+    private Direction directionTowardTarget(UONpc npc, UOPlayer target) {
         int dx = Integer.compare(target.getX(), npc.getX());
         int dy = Integer.compare(target.getY(), npc.getY());
-        context.enqueueAction(new WalkAction(npc, Direction.fromDelta(dx, dy)));
-    }
-
-    private boolean isAtSameHorizontalPosition(UONpc npc, UOPlayer target) {
-        return npc.getX() == target.getX() && npc.getY() == target.getY();
+        return dx == 0 && dy == 0 ? null : Direction.fromDelta(dx, dy);
     }
 }

@@ -3,12 +3,17 @@ package com.github.mayconr.juoserver.game.ai.definition;
 import com.github.mayconr.juoserver.game.ai.actions.NpcAction;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.event.MobileSpeech;
-import java.util.function.Predicate;
 import com.github.mayconr.juoserver.game.world.World;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.function.Predicate;
 
 public class AIFlowContext extends AbstractSyncFlowContext<Void> {
 
@@ -93,6 +98,7 @@ public class AIFlowContext extends AbstractSyncFlowContext<Void> {
     }
 
     public void clearActions() {
+        events.removeIf(MobileSpeech.class::isInstance);
         actions.clear();
     }
 

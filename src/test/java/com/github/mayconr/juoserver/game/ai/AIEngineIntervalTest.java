@@ -19,7 +19,7 @@ class AIEngineIntervalTest {
     private AIEngineImpl engine(double interval) {
         var settings = new GamePlaySettings.Ai(interval);
         var cfg = spy(new DefaultWorldConfigurator());
-        cfg.aiActivationPolicy(() -> context -> true);
+        cfg.aiExecutionPolicy(() -> context -> true);
         cfg.aiSpeechPolicy(() -> (context, speech) -> false);
         doReturn(settings).when(cfg).ai();
         var engine = new AIEngineImpl(mock(World.class), action -> {}, cfg);

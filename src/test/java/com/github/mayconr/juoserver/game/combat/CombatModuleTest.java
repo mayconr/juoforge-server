@@ -1,11 +1,15 @@
 package com.github.mayconr.juoserver.game.combat;
 
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
+import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.network.packet.AttackRequest;
+import com.github.mayconr.juoserver.support.TestFields;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -13,15 +17,14 @@ import static org.mockito.Mockito.*;
 class CombatModuleTest {
     @Test
     void queuedNpcCancellationRemovesCombatBeforeItExecutes() {
-        var module = new CombatModuleImpl(mock(CombatHandler.class));
+        var module = new CombatModuleImpl();
         var flows = mock(ModuleContext.FlowFacade.class);
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);
         module.initialize(context);
-        var npc = mock(com.github.mayconr.juoserver.game.model.UONpc.class);
-        var registry = (CombatSessionRegistry) com.github.mayconr.juoserver.support.TestFields
-                .getField(module, "registry");
-        var session = new CombatSession(java.util.UUID.randomUUID(), npc, mock(UOPlayer.class),
+        var npc = mock(UONpc.class);
+        var registry = (CombatSessionRegistry) TestFields.getField(module, "registry");
+        var session = new CombatSession(UUID.randomUUID(), npc, mock(UOPlayer.class),
                 new CombatSession.PhysicalTrigger());
         registry.register(session);
         module.requestCancelAttack(npc);
@@ -34,7 +37,7 @@ class CombatModuleTest {
 
     @Test
     void publicApiAndPacketAdapterQueueEquivalentAttacks() {
-        var module = new CombatModuleImpl(mock(CombatHandler.class));
+        var module = new CombatModuleImpl();
         var flows = mock(ModuleContext.FlowFacade.class);
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);
