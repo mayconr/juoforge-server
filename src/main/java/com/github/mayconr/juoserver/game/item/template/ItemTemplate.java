@@ -41,7 +41,9 @@ public record ItemTemplate(String name,
                            String family,
                            // Raw material
                            Material material,
-                           ItemResistances resistances)
+                           ItemResistances resistances,
+                           // Items whose model alternates with the next one, such as weapons with two directions
+                           boolean flippable)
 
             implements BaseTemplate {
     public ItemTemplate {
@@ -80,10 +82,22 @@ public record ItemTemplate(String name,
             @JsonProperty("unitWeight") int unitWeight,
             @JsonProperty("family") String family,
             @JsonProperty("material") Material material,
-            @JsonProperty("resistances") ItemResistances resistances) {
+            @JsonProperty("resistances") ItemResistances resistances,
+            @JsonProperty("flippable") boolean flippable) {
         this(name, displayName, layer, modelId, movable == null || movable.booleanValue(), hue,
                 stockType, basePrice, flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family,
-                material, resistances);
+                material, resistances, flippable);
+    }
+
+    /** Creates a template that cannot be flipped. */
+    public ItemTemplate(String name, String displayName, Layer layer, int modelId,
+                        boolean movable, int hue, String stockType, int basePrice,
+                        List<ItemFlag> flags, Map<String, Object> attr, int containerGumpId,
+                        String mountName, Weapon weapon, String script, int unitWeight, String family,
+                        Material material, ItemResistances resistances) {
+        this(name, displayName, layer, modelId, movable, hue, stockType, basePrice,
+                flags, attr, containerGumpId, mountName, weapon, script, unitWeight, family, material,
+                resistances, false);
     }
 
     /** Creates a template without resistance contributions. */

@@ -41,7 +41,14 @@ public interface WorldItem {
      */
     StepResult dropItem(UOMobile mobile, UOItem item, ItemTarget target);
 
-    /** Updates a ground item's position and model together. Null fields preserve current values. */
+    /**
+     * Updates a ground item's position and model together. Null fields preserve current values.
+     * A {@link ItemChange#flipModel()} change alternates the model of a flippable item on the ground or in a
+     * container between its template model and the next one, and refreshes it on the clients.
+     *
+     * @throws ModuleOperationException if the change cannot be applied, such as flipping an item that is
+     *         not flippable or is equipped
+     */
     void updateItem(UOItem item, ItemChange change);
 
     /** Sets a property under the item monitor. Null removes it; runtimeOnly selects runtime storage. */
