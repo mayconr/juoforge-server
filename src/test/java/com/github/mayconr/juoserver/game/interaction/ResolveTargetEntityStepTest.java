@@ -26,7 +26,7 @@ class ResolveTargetEntityStepTest {
     private final ResolveTargetEntityStep step = new ResolveTargetEntityStep(storage);
 
     @ParameterizedTest
-    @CsvSource({"1, BACKPACK, false", "2, BACKPACK, true", "1, BANK, true"})
+    @CsvSource({"1, BACKPACK, false", "2, BACKPACK, true", "1, SHOP_SELL, true"})
     void onlyOwnBackpackSkipsLineOfSight(int owner, Layer layer, boolean validateLOS) {
         when(player.getSerialId()).thenReturn(1);
         var backpack = item(0x40000001, ItemLocation.equipped(owner));

@@ -23,7 +23,7 @@ import java.util.Objects;
 public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathContext> {
 
     private static final EnumSet<Layer> RETAINED_LAYERS = EnumSet.of(
-            Layer.BACKPACK, Layer.BANK, Layer.HAIR, Layer.FACIAL_HAIR,
+            Layer.BACKPACK, Layer.HAIR, Layer.FACIAL_HAIR,
             Layer.SHOP_BUY, Layer.SHOP_SELL, Layer.SHOP_BUY_RESTOCK
     );
 

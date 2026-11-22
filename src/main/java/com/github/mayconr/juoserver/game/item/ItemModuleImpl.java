@@ -3,6 +3,7 @@ package com.github.mayconr.juoserver.game.item;
 import com.github.mayconr.juoserver.game.item.ItemCreationResult.Created;
 import com.github.mayconr.juoserver.game.item.ItemCreationResult.Rejected;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
+import com.github.mayconr.juoserver.game.item.flow.flip.FlipItemContext;
 import com.github.mayconr.juoserver.game.item.flow.update.UpdateItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext.TargetContainer;
@@ -200,10 +201,12 @@ public class ItemModuleImpl implements ItemModule {
     public void updateItem(UOItem item, ItemChange change) {
         Objects.requireNonNull(item, "Item is required");
         Objects.requireNonNull(change, "Item change is required");
-        if (change.location() == null && change.modelId() == null) {
+        if (change.isEmpty()) {
             return;
         }
-        var result = flows.execute(new UpdateItemContext(item, change));
+        var result = change.flip()
+                ? flows.execute(new FlipItemContext(item))
+                : flows.execute(new UpdateItemContext(item, change));
         if (result.flowFailed()) {
             throw ModuleOperationException.fromFailure("updateItem", result, null);
         }

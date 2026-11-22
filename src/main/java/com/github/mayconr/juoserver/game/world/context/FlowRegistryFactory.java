@@ -82,6 +82,8 @@ import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationContext;
 import com.github.mayconr.juoserver.game.item.flow.creation.ItemCreationFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemContext;
+import com.github.mayconr.juoserver.game.item.flow.flip.FlipItemContext;
+import com.github.mayconr.juoserver.game.item.flow.flip.FlipItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.update.UpdateItemContext;
 import com.github.mayconr.juoserver.game.item.flow.update.UpdateItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.delete.DeleteItemFlowDefinition;
@@ -309,6 +311,8 @@ public class FlowRegistryFactory {
                 EquipHeldItemFlowDefinition.build(modules, infra), EquipHeldItemContext.class);
         registry.register(UpdateItemFlowDefinition.class.getSimpleName(),
                 UpdateItemFlowDefinition.build(infra.storage(), infra.eventBus()), UpdateItemContext.class);
+        registry.register(FlipItemFlowDefinition.class.getSimpleName(),
+                FlipItemFlowDefinition.build(infra.storage(), infra.eventBus()), FlipItemContext.class);
         registry.register(DeleteItemFlowDefinition.class.getSimpleName(),
                 DeleteItemFlowDefinition.build(infra.storage(), infra.eventBus(), modules.ui()), DeleteItemContext.class);
         registry.register(PlayerCreationFlowDefinition.class.getSimpleName(), PlayerCreationFlowDefinition.build(modules, infra, templates), PlayerCreationContext.class);
