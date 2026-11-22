@@ -53,8 +53,16 @@ public interface WorldMobile {
     /** Runs the movement flow for a walking or running step in the given direction. */
     void move(UOMobile mobile, Direction direction, boolean running);
 
-    /** Runs the teleport flow to relocate the mobile. */
+    /** Runs the teleport flow to relocate the mobile, rejecting destinations blocked by obstacles. */
     void teleport(UOMobile mobile, Location location);
+
+    /**
+     * Runs the teleport flow to relocate the mobile, optionally skipping the obstacle validation.
+     * Permissions are not checked: callers decide who may ignore obstacles.
+     *
+     * @param ignoreObstacles true to accept a destination blocked by terrain or statics
+     */
+    void teleport(UOMobile mobile, Location location, boolean ignoreObstacles);
 
     /**
      * Runs the mount flow using the given NPC as the player's mount.

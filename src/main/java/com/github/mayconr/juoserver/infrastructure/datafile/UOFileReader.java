@@ -13,6 +13,9 @@ import java.util.OptionalInt;
 
 public interface UOFileReader {
 
+    /** Returns the dimensions of the current world map in tiles. */
+    MapDetails getMapDetails();
+
     LandTile getLandTile(Location location);
 
     LandTile getLandTile(int x, int y);

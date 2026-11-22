@@ -24,7 +24,9 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
-public class UOFileReaderImpl implements UOFileReader{
+public class UOFileReaderImpl implements UOFileReader {
+
+    private static final MapDetails DEFAULT_MAP_DETAILS = new MapDetails(7168, 4096);
 
     private final GamePlaySettings settings;
     private GameDataProvider gameDataProvider;
@@ -37,6 +39,12 @@ public class UOFileReaderImpl implements UOFileReader{
         collisionService = new MovementCollisionService(gameDataProvider);
         walkSurfaceResolver = new WalkSurfaceResolver(gameDataProvider);
         log.info("Loading UO files done!");
+    }
+
+    @Override
+    public MapDetails getMapDetails() {
+        // TODO Read the map dimensions from GameDataProvider when it exposes them.
+        return DEFAULT_MAP_DETAILS;
     }
 
     @Override

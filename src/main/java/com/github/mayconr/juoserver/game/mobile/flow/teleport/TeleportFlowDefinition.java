@@ -15,7 +15,7 @@ public class TeleportFlowDefinition {
 
     public static Flow<TeleportContext> build(FlowRegistryFactory.GameModules modules, FlowRegistryFactory.GameInfra infra) {
         return FlowFactory.<TeleportContext>builder()
-                .step(new ValidateDestinationStep(infra.fileReader()))
+                .step(new ValidateDestinationStep(infra.fileReader()), TeleportContext::shouldValidateObstacles)
                 .step(new ResolveDirectionStep())
                 .step(new ApplyTeleport(infra.storage()))
                 .step(new UpdateMobileRegionStep<>(modules.region()))
