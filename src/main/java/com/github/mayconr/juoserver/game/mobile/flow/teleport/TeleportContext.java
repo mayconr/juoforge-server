@@ -13,17 +13,27 @@ import lombok.EqualsAndHashCode;
 public class TeleportContext extends AbstractSyncFlowContext<Void> implements UpdateMobileRegionContext {
     private final UOMobile mobile;
     private final Location location;
+    private final boolean ignoreObstacles;
 
     private Direction direction;
     private Location from;
 
-    private TeleportContext(UOMobile mobile, Location location) {
+    private TeleportContext(UOMobile mobile, Location location, boolean ignoreObstacles) {
         this.mobile = mobile;
         this.location = location;
+        this.ignoreObstacles = ignoreObstacles;
     }
 
     public static TeleportContext of(UOMobile mobile, Location location) {
-        return new TeleportContext(mobile, location);
+        return of(mobile, location, false);
+    }
+
+    public static TeleportContext of(UOMobile mobile, Location location, boolean ignoreObstacles) {
+        return new TeleportContext(mobile, location, ignoreObstacles);
+    }
+
+    public boolean shouldValidateObstacles() {
+        return !ignoreObstacles;
     }
 
     @Override

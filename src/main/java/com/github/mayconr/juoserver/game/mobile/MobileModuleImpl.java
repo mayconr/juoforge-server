@@ -197,7 +197,12 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void teleport(UOMobile mobile, Location location) {
-        flows.execute(TeleportContext.of(mobile, location));
+        teleport(mobile, location, false);
+    }
+
+    @Override
+    public void teleport(UOMobile mobile, Location location, boolean ignoreObstacles) {
+        flows.execute(TeleportContext.of(mobile, location, ignoreObstacles));
     }
 
     @Override
