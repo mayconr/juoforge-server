@@ -57,7 +57,7 @@ public interface PlayerSession {
     /** Updates the language reported by this client connection. */
     void setLocale(ClientLocale locale);
 
-    void authenticate(String username);
+    void authenticate(String username, String password);
 
     /**
      * Selects a character from the account character list.

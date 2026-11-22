@@ -144,7 +144,7 @@ public class CachedWorldStorage implements WorldStorage {
                 return CompletableFuture.completedFuture(data);
             })
             .thenAccept(initialDataConsumer)
-            .whenComplete(this::logging);
+            .join();
     }
 
     // Serial allocation

@@ -19,6 +19,8 @@ public class UOItem extends UOObject<UOItemData> {
     private int hue;
     private int unitWeight;
     private final ItemResistances resistances;
+    private final int minDamage;
+    private final int maxDamage;
     /** Raw material properties; {@code null} when the item is not a material. */
     private ItemMaterial material;
     /** Material properties already include this quality; loading never reapplies it. */
@@ -43,6 +45,11 @@ public class UOItem extends UOObject<UOItemData> {
         this.flags = data.getFlags();
         this.unitWeight = data.getUnitWeight();
         this.resistances = data.getResistances() == null ? ItemResistances.NONE : data.getResistances();
+        this.minDamage = data.getMinDamage();
+        this.maxDamage = data.getMaxDamage();
+        if (minDamage < 0 || maxDamage < minDamage) {
+            throw new IllegalArgumentException("Item damage must satisfy 0 <= minDamage <= maxDamage");
+        }
         this.material = data.getMaterial();
         this.quality = data.getQuality();
         this.currentLocation = switch (data.getLocationType() == null ? ItemLocationType.EQUIPPED : data.getLocationType()) {
@@ -92,6 +99,8 @@ public class UOItem extends UOObject<UOItemData> {
         data.setFlags(flags);
         data.setUnitWeight(unitWeight);
         data.setResistances(resistances);
+        data.setMinDamage(minDamage);
+        data.setMaxDamage(maxDamage);
         data.setMaterial(material);
         data.setQuality(quality);
     }

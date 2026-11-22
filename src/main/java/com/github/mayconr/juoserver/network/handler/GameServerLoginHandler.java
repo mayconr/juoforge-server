@@ -14,7 +14,7 @@ public class GameServerLoginHandler extends PlayerSessionChannelInboundHandler<G
 
     @Override
     protected void channelRead0(PlayerSession session, ChannelHandlerContext ctx, GameServerLogin msg) {
-        session.authenticate(msg.getUsername());
+        session.authenticate(msg.getUsername(), msg.getPassword());
     }
 
 }

@@ -1,14 +1,23 @@
 package com.github.mayconr.juoserver.network.session;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
-import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.*;
+import com.github.mayconr.juoserver.game.model.AccountMobile;
+import com.github.mayconr.juoserver.game.model.CharacterListFlag;
+import com.github.mayconr.juoserver.game.model.RegionType;
+import com.github.mayconr.juoserver.game.model.UOAccount;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.PlayerSessionStatusChanged;
 import com.github.mayconr.juoserver.game.player.exception.PlayerNameAlreadyExistsException;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.region.RegionNode;
-import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.network.packet.CharacterList;
+import com.github.mayconr.juoserver.network.packet.CreateCharacter;
+import com.github.mayconr.juoserver.network.packet.DeleteCharacter;
+import com.github.mayconr.juoserver.network.packet.EnableLockedClientFeatures;
+import com.github.mayconr.juoserver.network.packet.LoginReject;
+import com.github.mayconr.juoserver.network.packet.MoveResyncAck;
 import com.github.mayconr.juoserver.network.packet.EnableLockedClientFeatures.ClientFeatureFlag;
 import com.github.mayconr.juoserver.infrastructure.i18n.ClientLocale;
 import io.netty.channel.Channel;
@@ -18,7 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -85,7 +96,7 @@ public class NettyPlayerSession implements PlayerSession {
 
     @Override
     public synchronized void setLocale(ClientLocale locale) {
-        this.locale = java.util.Objects.requireNonNull(locale, "Client locale is required");
+        this.locale = Objects.requireNonNull(locale, "Client locale is required");
         if (player != null) player.setLocale(locale);
         log.info("Session [{}] locale updated to {}", remoteAddress, locale);
     }
@@ -141,58 +152,62 @@ public class NettyPlayerSession implements PlayerSession {
     }
 
     @Override
-    public synchronized void authenticate(String username) {
+    public synchronized void authenticate(String username, String password) {
         requireOpenSession();
         if (!SessionState.CONNECTED.equals(state)) {
             throw new IllegalStateException("Session is not connected. Session state is " + state);
         }
 
-        storage.getAccountByUsername(username)
-                .thenApply(account->{
-                    synchronized (this) {
-                        requireOpenSession();
-                        this.account = account;
-                        return account;
+        storage.accounts().findByUsername(username)
+                .thenCompose(candidate -> {
+                    if (candidate == null || password == null || password.isEmpty()
+                            || !password.equals(candidate.getPassword())) {
+                        reject(LoginReject.Reason.INCORRECT_PASSWORD);
+                        return CompletableFuture.completedFuture(null);
                     }
-                })
-                .thenCompose(world.player()::getPlayerMobiles)
-                .thenAccept(mobiles->{
-                    synchronized (this) {
-                        requireOpenSession();
-                        availableStartingLocations.clear();
-                        availableMobiles.clear();
-
-                        int mobileCounter = 0;
-                        for (AccountMobile mobile : mobiles) {
-                            availableMobiles.put(mobileCounter++, mobile);
-                        }
-
-                        final var counter = new AtomicInteger(0);
-                        world.map().getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> availableStartingLocations.put(counter.getAndIncrement(), region));
-
-                        updateAndNotifyStatus(SessionState.AUTHENTICATED);
-
-                        packetWriter.enqueue(packets -> {
-                            int unlockedFeatures = 0;
-                            for (ClientFeatureFlag flag : settings.client().unlockedFeatures()) {
-                                unlockedFeatures |= flag.mask();
-                            }
-
-                            packets.write(new EnableLockedClientFeatures(unlockedFeatures, true));
-                            packets.writeAndFlush(new CharacterList(
-                                    mobiles,
-                                    availableStartingLocations,
-                                    CharacterListFlag.ENABLE_AOS_COMMON,
-                                    CharacterListFlag.SAMURAI_NINJA_CLASSES,
-                                    CharacterListFlag.ENABLE_NPC_POPUP,
-                                    CharacterListFlag.ELVEN_RACE));
-                        });
-                    }
+                    return world.player().getPlayerMobiles(candidate)
+                            .thenAccept(mobiles -> completeAuthentication(candidate, mobiles));
                 }).whenComplete((unused, throwable) -> {
                     if (throwable != null) {
                         log.error("Error while trying to connect to server", throwable);
                     }
                 });
+    }
+
+    private synchronized void completeAuthentication(UOAccount candidate, List<AccountMobile> mobiles) {
+        requireOpenSession();
+        if (state != SessionState.CONNECTED) {
+            return;
+        }
+        this.account = candidate;
+        availableStartingLocations.clear();
+        availableMobiles.clear();
+
+        int mobileCounter = 0;
+        for (AccountMobile mobile : mobiles) {
+            availableMobiles.put(mobileCounter++, mobile);
+        }
+
+        final var counter = new AtomicInteger(0);
+        world.map().getRegionsByType(RegionType.STARTING_LOCATION).forEach(region -> availableStartingLocations.put(counter.getAndIncrement(), region));
+
+        updateAndNotifyStatus(SessionState.AUTHENTICATED);
+
+        packetWriter.enqueue(packets -> {
+            int unlockedFeatures = 0;
+            for (ClientFeatureFlag flag : settings.client().unlockedFeatures()) {
+                unlockedFeatures |= flag.mask();
+            }
+
+            packets.write(new EnableLockedClientFeatures(unlockedFeatures, true));
+            packets.writeAndFlush(new CharacterList(
+                    mobiles,
+                    availableStartingLocations,
+                    CharacterListFlag.ENABLE_AOS_COMMON,
+                    CharacterListFlag.SAMURAI_NINJA_CLASSES,
+                    CharacterListFlag.ENABLE_NPC_POPUP,
+                    CharacterListFlag.ELVEN_RACE));
+        });
     }
 
     @Override
@@ -271,6 +286,8 @@ public class NettyPlayerSession implements PlayerSession {
                             throw new IllegalStateException("Loaded mobile is not a player: " + mobileSerialId);
                         }
                         pl.setLocale(locale);
+                        pl.setAccessLevel(account != null && account.getId().equals(pl.getAccountId())
+                                ? account.getAccessLevel() : 0);
                         this.player = pl;
                         return pl;
                     }

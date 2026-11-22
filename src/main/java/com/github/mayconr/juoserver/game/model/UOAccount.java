@@ -11,8 +11,17 @@ public class UOAccount {
     private final UUID id;
     private final String username;
     private String password;
+    private final int accessLevel;
 
     public UOAccount(UUID id, String username, String password) {
+        this(id, username, password, 0);
+    }
+
+    public UOAccount(UUID id, String username, String password, int accessLevel) {
+        if (accessLevel < 0) {
+            throw new IllegalArgumentException("Access level must be non-negative");
+        }
+        this.accessLevel = accessLevel;
         this.id = id;
         this.username = username;
         this.password = password;
