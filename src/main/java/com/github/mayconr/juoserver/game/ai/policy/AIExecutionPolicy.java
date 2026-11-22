@@ -5,16 +5,16 @@ import java.util.Objects;
 
 /** Decides whether a session may execute. Policies can inspect NPC and world state. */
 @FunctionalInterface
-public interface AIActivationPolicy {
-    boolean isActive(AIFlowContext context);
+public interface AIExecutionPolicy {
+    boolean canRun(AIFlowContext context);
 
-    default AIActivationPolicy and(AIActivationPolicy other) {
+    default AIExecutionPolicy and(AIExecutionPolicy other) {
         Objects.requireNonNull(other);
-        return context -> isActive(context) && other.isActive(context);
+        return context -> canRun(context) && other.canRun(context);
     }
 
-    default AIActivationPolicy or(AIActivationPolicy other) {
+    default AIExecutionPolicy or(AIExecutionPolicy other) {
         Objects.requireNonNull(other);
-        return context -> isActive(context) || other.isActive(context);
+        return context -> canRun(context) || other.canRun(context);
     }
 }

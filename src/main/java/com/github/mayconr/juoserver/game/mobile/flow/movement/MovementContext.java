@@ -8,10 +8,8 @@ import com.github.mayconr.juoserver.infrastructure.flow.AbstractSyncFlowContext;
 import com.github.mayconr.juoserver.network.packet.MoveRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
-@RequiredArgsConstructor
 @Data
 public class MovementContext extends AbstractSyncFlowContext<Void> implements UpdateMobileRegionContext {
 
@@ -21,9 +19,19 @@ public class MovementContext extends AbstractSyncFlowContext<Void> implements Up
 
     private final UOMobile mobile;
     private final Direction direction;
-    private final boolean running;
+    private boolean running;
     private final MoveRequest moveRequest;
     private final boolean isRequested;
+
+    public MovementContext(
+            UOMobile mobile, Direction direction, boolean running, MoveRequest moveRequest, boolean isRequested
+    ) {
+        this.mobile = mobile;
+        this.direction = direction;
+        this.running = running;
+        this.moveRequest = moveRequest;
+        this.isRequested = isRequested;
+    }
 
     public static MovementContext of(UOMobile mobile, MoveRequest moveRequest) {
         final var context = new MovementContext(

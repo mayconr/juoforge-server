@@ -23,6 +23,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class WalkSurfaceResolverTest {
 
@@ -81,6 +84,22 @@ class WalkSurfaceResolverTest {
         map.addStatic(10, 9, 0, 20, TileFlag.IMPASSABLE);
 
         assertTrue(resolver.resolveWalkZ(new PointInTheWorld(10, 10, 0), Direction.NORTHEAST).isEmpty());
+    }
+
+    @Test
+    void reusesWalkableAndBlockedStepsForTheSameCoordinatesAndDirection() {
+        map.addStatic(10, 9, 0, 20, TileFlag.IMPASSABLE);
+        var provider = spy(map);
+        var cachedResolver = new WalkSurfaceResolver(provider);
+        var start = new PointInTheWorld(10, 10, 0);
+        assertEquals(OptionalInt.of(0), cachedResolver.resolveWalkZ(start, Direction.EAST));
+        assertTrue(cachedResolver.resolveWalkZ(start, Direction.NORTHEAST).isEmpty());
+        clearInvocations(provider);
+
+        var sameCoordinates = new PointInTheWorld(10, 10, 0);
+        assertEquals(OptionalInt.of(0), cachedResolver.resolveWalkZ(sameCoordinates, Direction.EAST));
+        assertTrue(cachedResolver.resolveWalkZ(sameCoordinates, Direction.NORTHEAST).isEmpty());
+        verifyNoInteractions(provider);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.ai.definition.aggressive.steps;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive.targeting;
 
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.CombatAIState;

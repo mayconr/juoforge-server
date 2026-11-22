@@ -4,7 +4,7 @@ import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.game.ai.definition.vendor.VendorAIContext;
 import com.github.mayconr.juoserver.game.ai.policy.AISpeechPolicy;
-import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.NearbyPlayerExecutionPolicy;
 import com.github.mayconr.juoserver.game.model.BehaviorDefinition;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
@@ -24,10 +24,10 @@ class AIProfilePolicyTest {
         var context = new AIFlowContext(npc, world);
         when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", 8, 3, null, List.of()));
         when(world.mobile().getMobilesInRange(eq(npc), eq(8), any())).thenReturn(List.of(player));
-        assertTrue(new NearbyPlayerActivationPolicy(24).isActive(context));
+        assertTrue(new NearbyPlayerExecutionPolicy(24).canRun(context));
         verify(world.mobile()).getMobilesInRange(eq(npc), eq(8), any());
         when(npc.getBehavior()).thenReturn(new BehaviorDefinition("AGGRESSIVE", null, 3, null, List.of()));
-        new NearbyPlayerActivationPolicy(24).isActive(context);
+        new NearbyPlayerExecutionPolicy(24).canRun(context);
         verify(world.mobile()).getMobilesInRange(eq(npc), eq(24), any());
     }
 

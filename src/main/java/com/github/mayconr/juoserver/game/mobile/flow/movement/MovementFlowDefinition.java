@@ -28,7 +28,7 @@ public class MovementFlowDefinition {
                 // Validate the received sequence match with the expected
                 .step(new ValidateSequenceStep(), MovementContext::isRequested)
                 // Validate delay between move requests
-                .step(new ValidateMovementDelayStep(infra.eventBus()))
+                .step(new ValidateMovementDelayStep())
                 // Resolve the x,y destination of the movement
                 .step(new ResolveTargetLocationStep())
                 // Resolve the destination z from the map, failing when it is not walkable

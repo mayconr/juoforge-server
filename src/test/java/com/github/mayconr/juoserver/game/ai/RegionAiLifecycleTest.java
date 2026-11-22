@@ -37,7 +37,7 @@ class RegionAiLifecycleTest {
         var regions = new RegionSystemImpl(Map.of("city", city, "shop", shop));
         var regionModule = new RegionModuleImpl(regions);
         var cfg = spy(new DefaultWorldConfigurator());
-        cfg.aiActivationPolicy(() -> context -> true);
+        cfg.aiExecutionPolicy(() -> context -> true);
         cfg.aiSpeechPolicy(() -> (context, speech) -> true);
         doReturn(new GamePlaySettings.Ai(0.25)).when(cfg).ai();
         var aiFlows = mock(ModuleContext.FlowFacade.class);

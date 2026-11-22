@@ -47,8 +47,11 @@ public interface WorldMobile {
     /** Returns mobiles within the radius of the location that match the filter, using the spatial index. */
     List<UOMobile> getMobilesInRange(Location location, int radius, Predicate<UOMobile> filter);
 
-    /** Runs the movement flow for a step in the given direction. */
+    /** Runs the movement flow for a walking step in the given direction. */
     void move(UOMobile mobile, Direction direction);
+
+    /** Runs the movement flow for a walking or running step in the given direction. */
+    void move(UOMobile mobile, Direction direction, boolean running);
 
     /** Runs the teleport flow to relocate the mobile. */
     void teleport(UOMobile mobile, Location location);

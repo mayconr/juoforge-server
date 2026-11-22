@@ -3,7 +3,7 @@ package com.github.mayconr.juoserver.game.ai;
 import com.github.mayconr.juoserver.game.ai.engine.AIEngine;
 import com.github.mayconr.juoserver.game.ai.session.AISession;
 import com.github.mayconr.juoserver.game.ai.session.AISessionImpl;
-import com.github.mayconr.juoserver.game.ai.policy.AIActivationPolicy;
+import com.github.mayconr.juoserver.game.ai.policy.AIExecutionPolicy;
 
 import com.github.mayconr.juoserver.game.ai.definition.AIFlowContext;
 import com.github.mayconr.juoserver.game.model.UONpc;
@@ -52,10 +52,10 @@ class AIActivationTest {
 
     @Test
     void combinesCustomRules() {
-        AIActivationPolicy no = context -> false;
-        AIActivationPolicy yes = context -> true;
-        assertFalse(yes.and(no).isActive(null));
-        assertTrue(no.or(yes).isActive(null));
+        AIExecutionPolicy no = context -> false;
+        AIExecutionPolicy yes = context -> true;
+        assertFalse(yes.and(no).canRun(null));
+        assertTrue(no.or(yes).canRun(null));
     }
 
     @Test

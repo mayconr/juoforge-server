@@ -1,4 +1,4 @@
-package com.github.mayconr.juoserver.game.ai.definition.aggressive.steps;
+package com.github.mayconr.juoserver.game.ai.definition.aggressive.survival;
 
 import com.github.mayconr.juoserver.game.ai.definition.aggressive.AggressiveAIContext;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;

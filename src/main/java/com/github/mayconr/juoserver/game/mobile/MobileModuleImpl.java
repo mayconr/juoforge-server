@@ -182,7 +182,12 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void move(UOMobile mobile, Direction direction) {
-        flows.execute(MovementContext.of(mobile, direction, false));
+        move(mobile, direction, false);
+    }
+
+    @Override
+    public void move(UOMobile mobile, Direction direction, boolean running) {
+        flows.execute(MovementContext.of(mobile, direction, running));
     }
 
     @Override

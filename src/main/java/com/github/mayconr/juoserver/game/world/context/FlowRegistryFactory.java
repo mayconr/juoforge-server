@@ -69,6 +69,8 @@ import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionCo
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionFlow;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationFlow;
+import com.github.mayconr.juoserver.game.combat.flow.warmode.ToggleWarModeContext;
+import com.github.mayconr.juoserver.game.combat.flow.warmode.ToggleWarModeFlow;
 import com.github.mayconr.juoserver.game.damage.DamageModule;
 import com.github.mayconr.juoserver.game.damage.flow.damage.DamageContext;
 import com.github.mayconr.juoserver.game.damage.flow.damage.DamageFlowDefinition;
@@ -314,7 +316,7 @@ public class FlowRegistryFactory {
         registry.register(MountFlowDefinition.class.getSimpleName(), MountFlowDefinition.build(modules, infra, templates), MountContext.class);
         registry.register(PassiveAnimalAIDefinition.class.getSimpleName(), PassiveAnimalAIDefinition.build(), PassiveAnimalAIContext.class);
         registry.register(VendorAIDefinition.class.getSimpleName(), VendorAIDefinition.build(), VendorAIContext.class);
-        registry.register(AggressiveAIDefinition.class.getSimpleName(), AggressiveAIDefinition.build(), AggressiveAIContext.class);
+        registry.register(AggressiveAIDefinition.class.getSimpleName(), AggressiveAIDefinition.build(infra.fileReader()), AggressiveAIContext.class);
         registry.register(SendTargetFlowDefinition.class.getSimpleName(), SendTargetFlowDefinition.build(modules, infra), SendTargetContext.class);
         registry.register(ResolveTargetFlowDefinition.class.getSimpleName(), ResolveTargetFlowDefinition.build(modules, infra), ResolveTargetContext.class);
         registry.register(UseSkillFlowDefinition.class.getSimpleName(), UseSkillFlowDefinition.build(modules, infra), UseSkillContext.class);
@@ -334,6 +336,11 @@ public class FlowRegistryFactory {
         registry.register(ResyncFlowDefinition.class.getSimpleName(), ResyncFlowDefinition.build(infra), ResyncContext.class);
         registry.register(CombatExecutionFlow.class.getSimpleName(), CombatExecutionFlow.build(modules, infra), CombatExecutionContext.class);
         registry.register(CombatPreparationFlow.class.getSimpleName(), CombatPreparationFlow.build(infra), CombatPreparationContext.class);
+        registry.register(
+                ToggleWarModeFlow.class.getSimpleName(),
+                ToggleWarModeFlow.build(infra),
+                ToggleWarModeContext.class
+        );
         return registry;
     }
 }

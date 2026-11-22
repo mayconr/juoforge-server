@@ -18,7 +18,7 @@ class AILifecycleTest {
     @Test
     void attachWaitsForActivationAndRepeatedActivationPreservesSession() {
         var cfg = spy(new DefaultWorldConfigurator());
-        cfg.aiActivationPolicy(() -> context -> true);
+        cfg.aiExecutionPolicy(() -> context -> true);
         cfg.aiSpeechPolicy(() -> (context, speech) -> true);
         doReturn(new GamePlaySettings.Ai(0.25)).when(cfg).ai();
         var flows = mock(ModuleContext.FlowFacade.class);
