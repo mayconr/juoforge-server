@@ -6,11 +6,30 @@ import com.github.mayconr.juoserver.infrastructure.storage.account.AccountStorag
 import com.github.mayconr.juoserver.infrastructure.storage.property.PropertyStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.item.ItemStorage;
 import com.github.mayconr.juoserver.infrastructure.storage.mobile.MobileStorage;
+import com.github.mayconr.juoserver.infrastructure.template.JsonTemplateLoaderNew;
+
+import java.nio.file.Path;
+import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 /** Configures shard content, settings and storage and registers modules. */
 public interface WorldConfigurator extends ModuleConfiguration {
     /** Registers a module immediately using the same dependency checks as {@link #requireModule(UOModule)}. */
     void addModule(UOModule module);
+
+    /**
+     * Loads templates from a JSON or YAML file, or from every such file under a directory,
+     * and returns them as an immutable list without registering them.
+     * JSON files contain an array; YAML files contain an object or a list.
+     *
+     * @throws IllegalStateException when the path cannot be read or a template cannot be parsed or constructed
+     */
+    default <T> List<T> loadTemplates(Path path, Class<T> templateClass) {
+        requireNonNull(path, "Template path is required");
+        requireNonNull(templateClass, "Template class is required");
+        return new JsonTemplateLoaderNew<>(path, templateClass).loadAll();
+    }
 
     void content(WorldContent content);
 

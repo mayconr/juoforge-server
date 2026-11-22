@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +25,12 @@ public class MessageModuleImpl implements WorldModule, MessageModule {
     public static final String SPEECH_MESSAGE_STYLE = "speech.messageStyle";
     private final EventBus eventBus;
     private final TemplateRegistry<String, MessageStyleTemplate> templateRegistry;
+
+    @Override
+    public Optional<MessageStyleTemplate> findStyle(String name) {
+        return templateRegistry.get(name).stream().findFirst()
+                .or(() -> templateRegistry.get(NORMAL_STYLE_KEY).stream().findFirst());
+    }
 
     @Override
     public void send(UOPlayer player, String message) {

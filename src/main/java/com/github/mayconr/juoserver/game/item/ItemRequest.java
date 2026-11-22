@@ -23,7 +23,9 @@ public record ItemRequest(
         Direction direction,
         ItemMaterial material,
         float quality,
-        float qualityAdjustment
+        float qualityAdjustment,
+        int minDamage,
+        int maxDamage
 ) {
     public ItemRequest {
         int count = 0;
@@ -36,6 +38,9 @@ public record ItemRequest(
             throw new IllegalArgumentException("Exactly one of template, modelId or name must be provided");
         }
 
+        if (minDamage < 0 || maxDamage < minDamage) {
+            throw new IllegalArgumentException("Item damage must satisfy 0 <= minDamage <= maxDamage");
+        }
         if (amount <= 0) {
             throw new IllegalArgumentException("amount must be greater than zero");
         }
@@ -46,6 +51,11 @@ public record ItemRequest(
         if (!Float.isFinite(qualityAdjustment) || Math.abs(qualityAdjustment) > ItemQualityAdjustment.MAX_ADJUSTMENT) {
             throw new IllegalArgumentException("qualityAdjustment must be finite and between -2 and 2");
         }
+    }
+
+    public ItemRequest(ItemTemplate template, Integer modelId, String name, Integer hue, int amount,
+                       Direction direction, ItemMaterial material, float quality, float qualityAdjustment) {
+        this(template, modelId, name, hue, amount, direction, material, quality, qualityAdjustment, 0, 0);
     }
 
     /** Creates a request without quality adjustment. */
@@ -97,25 +107,36 @@ public record ItemRequest(
     }
 
     public ItemRequest withHue(int hue) {
-        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality, qualityAdjustment);
+        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality,
+                qualityAdjustment, minDamage, maxDamage);
     }
 
     public ItemRequest withAmount(int amount) {
-        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality, qualityAdjustment);
+        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality,
+                qualityAdjustment, minDamage, maxDamage);
     }
 
     public ItemRequest withDirection(Direction direction) {
-        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality, qualityAdjustment);
+        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality,
+                qualityAdjustment, minDamage, maxDamage);
     }
 
     /** Replaces the template material on the created item; {@code null} inherits the template material again. */
     public ItemRequest withMaterial(ItemMaterial material) {
-        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality, qualityAdjustment);
+        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality,
+                qualityAdjustment, minDamage, maxDamage);
+    }
+
+    /** Sets the created item's damage range. Two zeroes inherit the template range. */
+    public ItemRequest withDamage(int minDamage, int maxDamage) {
+        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality,
+                qualityAdjustment, minDamage, maxDamage);
     }
 
     /** Declares the quality the resolved material already reflects; it is stored without changing the material. */
     public ItemRequest withQuality(float quality) {
-        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality, qualityAdjustment);
+        return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality,
+                qualityAdjustment, minDamage, maxDamage);
     }
 
     /**
@@ -124,6 +145,6 @@ public record ItemRequest(
      */
     public ItemRequest adjustQuality(float adjustment) {
         return new ItemRequest(template, modelId, name, hue, amount, direction, material, quality,
-                qualityAdjustment + adjustment);
+                qualityAdjustment + adjustment, minDamage, maxDamage);
     }
 }

@@ -1,6 +1,11 @@
 package com.github.mayconr.juoserver.network.session;
 
+import com.github.mayconr.juoserver.game.messaging.MessageModule;
+import com.github.mayconr.juoserver.game.messaging.MessageModuleImpl;
+import com.github.mayconr.juoserver.game.messaging.template.MessageStyleTemplate;
 import com.github.mayconr.juoserver.game.model.ItemLocationType;
+import com.github.mayconr.juoserver.game.model.Notoriety;
+import com.github.mayconr.juoserver.game.model.TextType;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOItemData;
 import com.github.mayconr.juoserver.game.model.UOMobileData;
@@ -19,10 +24,9 @@ import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
 import com.github.mayconr.juoserver.infrastructure.eventbus.EventBus;
 import com.github.mayconr.juoserver.infrastructure.i18n.MessageLocalizer;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
+import com.github.mayconr.juoserver.infrastructure.template.InMemoryTemplateRegistry;
 import com.github.mayconr.juoserver.network.packet.SendSpeech;
 import com.github.mayconr.juoserver.network.packet.SingleClickRequest;
-import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
-import com.github.mayconr.juoserver.network.session.SessionView;
 import com.github.mayconr.juoserver.network.session.handler.PlayerInterfaceHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -38,10 +42,13 @@ import static org.mockito.Mockito.*;
 
 class SingleClickFlowTest {
     @ParameterizedTest
-    @CsvSource({"true,true", "true,false", "false,true", "false,false"})
-    void deliversObjectLabelOnlyToTheRequestingSession(boolean mobile, boolean exists) {
+    @CsvSource({"true,true,true", "true,true,false", "true,false,true", "false,true,true", "false,false,true"})
+    void deliversObjectLabelOnlyToTheRequestingSession(boolean mobile, boolean exists, boolean configured) {
         var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         var events = new DefaultEventBus();
+        var style = new MessageStyleTemplate("NOTORIETY_MURDERER", TextType.LABEL, 34, 5);
+        var styles = new InMemoryTemplateRegistry<>(configured ? List.of(style) : List.of(), MessageStyleTemplate::name);
+        var messages = new MessageModuleImpl(events, styles);
         var player = mock(UOPlayer.class);
         var observer = mock(UOPlayer.class);
         int serial = mobile ? 42 : 0x40000000;
@@ -50,6 +57,7 @@ class SingleClickFlowTest {
             var data = new UOMobileData();
             data.setSerialId(serial);
             data.setModelId(400);
+            data.setNotoriety(Notoriety.MURDERER);
             var npc = new UONpc(data);
             when(storage.mobiles().get(serial)).thenReturn(exists ? Optional.of(npc) : Optional.empty());
             object = npc;
@@ -76,7 +84,8 @@ class SingleClickFlowTest {
             events.register(ObjectLabelRequested.class, requester::onObjectLabelRequested);
             events.register(ObjectLabelRequested.class, other::onObjectLabelRequested);
             var registry = new DefaultFlowRegistry();
-            registry.register("single-click", SingleClickFlowDefinition.build(storage, events), SingleClickContext.class);
+            registry.register("single-click", SingleClickFlowDefinition.build(storage, events, messages),
+                    SingleClickContext.class);
             UIModule ui = new UIModuleImpl(null, mock(WorldStorage.class, RETURNS_DEEP_STUBS), mock(EventBus.class), List.of());
             ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
 
@@ -93,6 +102,8 @@ class SingleClickFlowTest {
                 assertEquals(serial, encoded.getInt(3));
                 assertEquals(object.getModelId(), encoded.getUnsignedShort(7));
                 assertEquals(0x06, encoded.getUnsignedByte(9));
+                assertEquals(mobile && configured ? 34 : 0x03B2, encoded.getUnsignedShort(10));
+                assertEquals(mobile && configured ? 5 : 3, encoded.getUnsignedShort(12));
                 assertEquals("Visible name", encoded.toString(44, encoded.readableBytes() - 45, StandardCharsets.US_ASCII));
                 assertEquals(0, encoded.getUnsignedByte(encoded.writerIndex() - 1));
             }
@@ -109,12 +120,13 @@ class SingleClickFlowTest {
     @ValueSource(ints = {0, -1, 0x60000000})
     void ignoresInvalidAndVirtualSerials(int serial) {
         var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
-        var events = mock(com.github.mayconr.juoserver.infrastructure.eventbus.EventBus.class);
+        var events = mock(EventBus.class);
+        var messages = mock(MessageModule.class);
         var buffer = Unpooled.buffer().writeByte(0x09).writeInt(serial);
         try {
-            SingleClickFlowDefinition.build(storage, events)
+            SingleClickFlowDefinition.build(storage, events, messages)
                     .execute(new SingleClickContext(mock(UOPlayer.class), new SingleClickRequest(buffer)));
-            verifyNoInteractions(storage, events);
+            verifyNoInteractions(storage, events, messages);
         } finally {
             buffer.release();
         }

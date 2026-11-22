@@ -15,6 +15,7 @@ public class GameServerLogin extends AbstractPacket {
     public static final int CODE = (byte) 0x91;
     private final int key;
     private final String username;
+    @ToString.Exclude
     private final String password;
 
     public GameServerLogin(ByteBuf buf) {

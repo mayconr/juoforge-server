@@ -20,6 +20,7 @@ public class UOPlayer extends UOMobile {
     }
 
     private UUID accountId;
+    private volatile int accessLevel;
     private String password;
     private volatile boolean connected;
     private VendorSession vendorSession;

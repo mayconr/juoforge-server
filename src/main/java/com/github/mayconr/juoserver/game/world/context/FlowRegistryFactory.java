@@ -253,7 +253,7 @@ public class FlowRegistryFactory {
         registry.register(TooltipFlowDefinition.class.getSimpleName(),
                 TooltipFlowDefinition.build(infra.eventBus(), infra.storage()), TooltipContext.class);
         registry.register(SingleClickFlowDefinition.class.getSimpleName(),
-                SingleClickFlowDefinition.build(infra.storage(), infra.eventBus()), SingleClickContext.class);
+                SingleClickFlowDefinition.build(infra.storage(), infra.eventBus(), modules.message()), SingleClickContext.class);
         registry.register("RecalculateGoldFlowDefinition",
                 com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldFlowDefinition.build(infra.wallet(), infra.eventBus(), modules.ui()),
                 com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldContext.class);
@@ -262,7 +262,7 @@ public class FlowRegistryFactory {
         registry.register(SkillGumpFlowDefinition.class.getSimpleName(),
                 SkillGumpFlowDefinition.build(infra.eventBus(), infra.storage()), SkillGumpContext.class);
         registry.register(DoubleClickFlowDefinition.class.getSimpleName(),
-                DoubleClickFlowDefinition.build(infra.storage(), infra.doubleClickPolicy(), modules.item(), modules.container()), DoubleClickContext.class);
+                DoubleClickFlowDefinition.build(infra.storage(), infra.doubleClickPolicy(), modules.item(), modules.container(), modules.ui()), DoubleClickContext.class);
         registry.register(OpenPaperdollFlowDefinition.class.getSimpleName(),
                 OpenPaperdollFlowDefinition.build(infra.eventBus(), infra.storage()), OpenPaperdollContext.class);
         registry.register(OpenContainerFlowDefinition.class.getSimpleName(),

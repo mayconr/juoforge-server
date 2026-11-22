@@ -38,7 +38,8 @@ class DoubleClickPolicyTest {
     private UIModule ui(EventBus events, WorldStorage storage, DoubleClickPolicy policy, WorldItem items) {
         var registry = new DefaultFlowRegistry();
         var ui = new UIModuleImpl(null, mock(WorldStorage.class, RETURNS_DEEP_STUBS), mock(EventBus.class), List.of());
-        registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items, containers), DoubleClickContext.class);
+        registry.register("double-click", DoubleClickFlowDefinition.build(storage, policy, items, containers, ui),
+                DoubleClickContext.class);
         registry.register("open-paperdoll", OpenPaperdollFlowDefinition.build(events, storage), OpenPaperdollContext.class);
         ui.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
         clearInvocations(storage);
@@ -62,8 +63,9 @@ class DoubleClickPolicyTest {
         if (serial == 3) {
             verifyNoInteractions(events);
         } else {
-            verify(events).publish(new PaperdollOpened(player,
-                    serial == 1 ? player : other, OpenPaperdoll.Flag.NORMAL));
+            verify(events).publish(serial == 1
+                    ? new PaperdollOpened(player, player, OpenPaperdoll.Flag.CAN_ALTER_PAPERDOLL)
+                    : new PaperdollOpened(player, other, OpenPaperdoll.Flag.NORMAL));
         }
         verifyNoInteractions(items);
         if (serial == 1) verifyNoInteractions(storage);
@@ -71,7 +73,40 @@ class DoubleClickPolicyTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void doubleClickOnMobileDoesNotOpenPaperdoll(boolean self) {
+    void paperdollRequestOpensThePlayersOwnPaperdollWithLiftEnabled(boolean ownSerial) {
+        var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
+        var events = mock(EventBus.class);
+        var items = mock(WorldItem.class);
+        var player = mock(UOPlayer.class);
+        var click = mock(DoubleClick.class);
+        when(player.getSerialId()).thenReturn(1);
+        when(click.getSerialId()).thenReturn(ownSerial ? 1 : 2);
+        when(click.isPaperdollRequest()).thenReturn(true);
+
+        ui(events, storage, DoubleClickPolicy.allowAll(), items).doubleClick(player, click);
+
+        verify(events).publish(new PaperdollOpened(player, player, OpenPaperdoll.Flag.CAN_ALTER_PAPERDOLL));
+        verifyNoInteractions(storage, items);
+    }
+
+    @Test
+    void doubleClickOnOwnMobileOpensPaperdollWithLiftEnabled() {
+        var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
+        var events = mock(EventBus.class);
+        var items = mock(WorldItem.class);
+        var player = mock(UOPlayer.class);
+        var click = mock(DoubleClick.class);
+        when(player.getSerialId()).thenReturn(1);
+        when(click.getSerialId()).thenReturn(1);
+
+        ui(events, storage, DoubleClickPolicy.allowAll(), items).doubleClick(player, click);
+
+        verify(events).publish(new PaperdollOpened(player, player, OpenPaperdoll.Flag.CAN_ALTER_PAPERDOLL));
+        verifyNoInteractions(storage, items);
+    }
+
+    @Test
+    void doubleClickOnOtherMobileOpensItsPaperdollWithoutLift() {
         var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         var events = mock(EventBus.class);
         var items = mock(WorldItem.class);
@@ -79,11 +114,14 @@ class DoubleClickPolicyTest {
         var other = mock(UONpc.class);
         var click = mock(DoubleClick.class);
         when(player.getSerialId()).thenReturn(1);
-        when(click.getSerialId()).thenReturn(self ? 1 : 2);
-        when(click.isPaperdool()).thenReturn(self);
+        when(click.getSerialId()).thenReturn(2);
         when(storage.mobiles().get(2)).thenReturn(Optional.of(other));
+
         ui(events, storage, DoubleClickPolicy.allowAll(), items).doubleClick(player, click);
-        verifyNoInteractions(events, storage, items);
+
+        verify(events).publish(new PaperdollOpened(player, other, OpenPaperdoll.Flag.NORMAL));
+        verify(storage, never()).items();
+        verifyNoInteractions(items);
     }
 
     @Test

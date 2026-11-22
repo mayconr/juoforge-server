@@ -14,6 +14,10 @@ public final class DoubleClickContext extends AbstractSyncFlowContext<Void> {
     private final DoubleClick request;
 
     public boolean targetsMobile() {
-        return request.isPaperdool() || UOMobile.isMobile(request.getSerialId());
+        return request.isPaperdollRequest() || UOMobile.isMobile(request.getSerialId());
+    }
+
+    public int paperdollSerial() {
+        return request.isPaperdollRequest() ? player.getSerialId() : request.getSerialId();
     }
 }

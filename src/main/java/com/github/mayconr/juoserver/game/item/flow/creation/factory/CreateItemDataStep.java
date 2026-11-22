@@ -49,6 +49,8 @@ public class CreateItemDataStep extends AbstractFlowStep<ItemCreationContext> {
         }
         data.setAmount(request.amount());
         data.setDirection(request.direction());
+        data.setMinDamage(request.minDamage());
+        data.setMaxDamage(request.maxDamage());
     }
 
     /** STACKABLE comes from the client tiledata resolved into the context, never from the template. */

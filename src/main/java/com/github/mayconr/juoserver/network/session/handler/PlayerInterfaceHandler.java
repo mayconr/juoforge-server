@@ -80,8 +80,9 @@ public final class PlayerInterfaceHandler {
         var name = object.getDisplayName();
         if (name == null || name.isBlank()) name = object.getName();
         if (name == null || name.isBlank()) return;
-        packetWriter.writeAndFlush(new SendSpeech(TextType.LABEL, 0x03B2, object.getSerialId(),
-                object.getModelId(), 3, name, name));
+        var style = event.messageStyle();
+        packetWriter.writeAndFlush(new SendSpeech(style.type(), style.hue(), object.getSerialId(),
+                object.getModelId(), style.font(), name, name));
     }
 
     public void onMessageSent(MessageSent event) {
