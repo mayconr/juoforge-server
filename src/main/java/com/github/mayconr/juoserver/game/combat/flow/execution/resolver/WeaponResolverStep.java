@@ -36,12 +36,20 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
             return StepResult.success();
         }
         final var weaponSerial = Optional.ofNullable(equippedItems.get(Layer.ONE_HANDED))
-                .orElseGet(()->equippedItems.get(Layer.TWO_HANDED));
-        final var weapon = storage.getItem(weaponSerial)
-                .orElseThrow(()->new IllegalArgumentException("Weapon not found"));
+                .orElseGet(() -> equippedItems.get(Layer.TWO_HANDED));
+        final var weapon = storage.items().get(weaponSerial)
+                .orElseThrow(() -> new IllegalArgumentException("Weapon not found"));
+        final var template = weapon.getTemplate();
+        final var weaponDefinition = template == null ? null : template.weapon();
+        final var style = weaponDefinition == null ? null : weaponDefinition.style();
+        if (style == null) {
+            log.warn("Equipped item '{}' (serial {}) has no weapon style defined in its template",
+                    weapon.getName(), weaponSerial);
+            return StepResult.stop("COMBAT_WEAPON_STYLE_MISSING", "Equipped weapon has no style defined");
+        }
 
         context.setWeapon(weapon);
-        context.setWeaponStyle(weapon.getTemplate().weapon().style());
+        context.setWeaponStyle(style);
         return StepResult.success();
     }
 }

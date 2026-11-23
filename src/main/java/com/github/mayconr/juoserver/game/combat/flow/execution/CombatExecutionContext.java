@@ -14,6 +14,7 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 @EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
@@ -22,6 +23,8 @@ import java.util.List;
 public class CombatExecutionContext extends AbstractAsyncFlowContext<Void>
         implements CalculateDamageContext {
     private final CombatSession session;
+    private final boolean fromMovement;
+    private final BooleanSupplier swingReservation;
 
     private int hitFrame;
     private int animFrame;
@@ -37,6 +40,18 @@ public class CombatExecutionContext extends AbstractAsyncFlowContext<Void>
     private WeaponStyle weaponStyle;
     private WeaponStyle defenderWeaponStyle;
     private CombatHitResult hitResult;
+
+    public CombatExecutionContext(CombatSession session) {
+        this(session, false, () -> true);
+    }
+
+    public boolean isContactAttack() {
+        return combatType == CombatType.MELEE || combatType == CombatType.WRESTLING;
+    }
+
+    public boolean reserveSwing() {
+        return swingReservation.getAsBoolean();
+    }
 
     @Override
     public void addDamage(DamageComponent damage) {

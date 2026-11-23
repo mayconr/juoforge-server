@@ -89,6 +89,41 @@ public interface WorldContainer {
     ConsumeResult consumeItem(
             Integer containerSerial, String name, int amount, boolean searchNestedContainers);
 
+    /**
+     * Counts the loaded direct children whose internal name matches, adding stack amounts.
+     *
+     * @param container loaded container
+     * @param name exact internal item name to match
+     * @return total amount of matching items
+     * @throws IllegalStateException if a referenced item is not loaded
+     */
+    default int countItems(UOContainer container, String name) {
+        return countItems(container, name, true, false);
+    }
+
+    /**
+     * Counts loaded items whose internal name matches.
+     * The root container is never counted; nested containers are traversed even when their
+     * name does not match. All contents must have been loaded before calling this method.
+     *
+     * @param container loaded root container
+     * @param name exact internal item name to match
+     * @param countStackAmount whether each match counts its stack amount instead of one
+     * @param searchNestedContainers whether to include nested container contents
+     * @return total of matching items
+     * @throws IllegalStateException if a referenced item is not loaded or a container cycle is found
+     */
+    default int countItems(
+            UOContainer container, String name, boolean countStackAmount, boolean searchNestedContainers) {
+        return countItems(container, name, new CountItemsOptions(countStackAmount, searchNestedContainers, false));
+    }
+
+    /**
+     * Counts matching items using the supplied options. Warmup loads persisted contents into
+     * the item cache and includes items already registered in the container.
+     */
+    int countItems(UOContainer container, String name, CountItemsOptions options);
+
     /** Loads container contents, materializes pending corpse loot and publishes the opening event. */
     void openContainer(UOPlayer player, Container container);
 

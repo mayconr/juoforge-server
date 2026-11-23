@@ -1,7 +1,11 @@
 package com.github.mayconr.juoserver.game.world.context;
 
 import com.github.mayconr.juoserver.game.interaction.WorldInteraction;
+import com.github.mayconr.juoserver.game.container.flow.count.CountContainerItemsContext;
+import com.github.mayconr.juoserver.game.container.flow.count.CountContainerItemsFlowDefinition;
 import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsContext;
+import com.github.mayconr.juoserver.game.container.flow.weight.ContainerWeightContext;
+import com.github.mayconr.juoserver.game.container.flow.weight.ContainerWeightFlowDefinition;
 import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsContext;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsFlowDefinition;
@@ -275,6 +279,10 @@ public class FlowRegistryFactory {
                 OpenContainerContext.class);
         registry.register(GetContainerItemsFlowDefinition.class.getSimpleName(),
                 GetContainerItemsFlowDefinition.build(infra.storage()), GetContainerItemsContext.class);
+        registry.register(CountContainerItemsFlowDefinition.class.getSimpleName(),
+                CountContainerItemsFlowDefinition.build(infra.storage()), CountContainerItemsContext.class);
+        registry.register(ContainerWeightFlowDefinition.class.getSimpleName(),
+                ContainerWeightFlowDefinition.build(infra.storage()), ContainerWeightContext.class);
         registry.register(MaterializeLootFlowDefinition.class.getSimpleName(),
                 MaterializeLootFlowDefinition.build(modules.item(), infra.dataMapper()), MaterializeLootContext.class);
         registry.register(GenerateLootFlowDefinition.class.getSimpleName(),

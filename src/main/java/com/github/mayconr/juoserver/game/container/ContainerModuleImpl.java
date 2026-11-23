@@ -1,6 +1,10 @@
 package com.github.mayconr.juoserver.game.container;
 
 import com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext;
+import com.github.mayconr.juoserver.game.container.flow.count.CountContainerItemsContext;
+import com.github.mayconr.juoserver.game.container.flow.count.ValidateCountItemsRequestStep;
+import com.github.mayconr.juoserver.game.container.flow.weight.ContainerWeightContext;
+import com.github.mayconr.juoserver.game.container.flow.weight.ValidateContainerWeightRequestStep;
 import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsContext;
 import com.github.mayconr.juoserver.game.model.GroundLocation;
 import com.github.mayconr.juoserver.game.model.EquippedLocation;
@@ -18,13 +22,13 @@ import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.container.flow.open.OpenContainerContext;
+import com.github.mayconr.juoserver.game.world.ModuleOperationException;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @RequiredArgsConstructor
 public class ContainerModuleImpl implements ContainerModule {
@@ -61,7 +65,7 @@ public class ContainerModuleImpl implements ContainerModule {
                 Objects.requireNonNull(item, "Item is required"), tryStack, notifyClient);
         var result = flows.execute(context);
         if (result.flowFailed()) {
-            throw com.github.mayconr.juoserver.game.world.ModuleOperationException.fromFailure(
+            throw ModuleOperationException.fromFailure(
                     "addItem", result, "{item.creation_failed}");
         }
         return context.result();
@@ -86,26 +90,36 @@ public class ContainerModuleImpl implements ContainerModule {
 
 
     @Override
-    public long getContentsWeight(UOContainer container) {
-        Objects.requireNonNull(container, "Container is required");
-        return Math.addExact((long) container.getUnitWeight() * container.getAmount(),
-                contentsWeight(container, new HashSet<>()));
+    public int countItems(UOContainer container, String name, CountItemsOptions options) {
+        var context = new CountContainerItemsContext(container, name, options);
+        var result = flows.execute(context);
+        if (result.flowFailed()) {
+            throw countItemsFailure(result);
+        }
+        return context.result();
     }
 
-    private long contentsWeight(UOContainer container, Set<Integer> visited) {
-        if (!visited.add(container.getSerialId())) {
-            throw new IllegalStateException("Repeated container or cycle at serial " + container.getSerialId());
+    private RuntimeException countItemsFailure(StepResult result) {
+        if (ValidateCountItemsRequestStep.INVALID_REQUEST.equals(result.code())) {
+            return new IllegalArgumentException(result.reason());
         }
-        long weight = 0;
-        for (var serial : container.getContainerItems()) {
-            var item = storage.items().get(serial).orElseThrow(() -> new IllegalStateException(
-                    "Cannot calculate weight: item " + serial + " from container "
-                            + container.getSerialId() + " is not loaded"));
-            if (item instanceof UOContainer nested) {
-                weight = Math.addExact(weight, contentsWeight(nested, visited));
-            }
-            weight = Math.addExact(weight, (long) item.getUnitWeight() * item.getAmount());
+        return new IllegalStateException(result.reason(), result.cause());
+    }
+
+    @Override
+    public long getContentsWeight(UOContainer container) {
+        var context = new ContainerWeightContext(container);
+        var result = flows.execute(context);
+        if (result.flowFailed()) {
+            throw contentsWeightFailure(result);
         }
-        return weight;
+        return context.result();
+    }
+
+    private RuntimeException contentsWeightFailure(StepResult result) {
+        if (ValidateContainerWeightRequestStep.INVALID_REQUEST.equals(result.code())) {
+            return new IllegalArgumentException(result.reason());
+        }
+        return new IllegalStateException(result.reason(), result.cause());
     }
 }

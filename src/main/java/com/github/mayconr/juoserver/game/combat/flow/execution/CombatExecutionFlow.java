@@ -12,6 +12,7 @@ import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.ResolveC
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.ResolveCombatRadius;
 import com.github.mayconr.juoserver.game.combat.flow.execution.resolver.WeaponResolverStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.swing.CombatHitFrameDelayStep;
+import com.github.mayconr.juoserver.game.combat.flow.execution.swing.ReserveCombatSwingStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.validation.ValidateTargetDistanceStep;
 import com.github.mayconr.juoserver.game.combat.flow.execution.validation.ValidateCombatSessionStep;
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory;
@@ -28,7 +29,7 @@ public class CombatExecutionFlow {
             .appendGroup("CombatSetup", setup(infra))
             .appendGroup("CombatSwing", swing(infra))
             .step(new ValidateCombatSessionStep())
-            .step(new ValidateTargetDistanceStep())
+            .step(new ValidateTargetDistanceStep(), context -> !context.isContactAttack())
             .appendGroup("CombatHitResolution", hitResolution(infra))
             .appendGroup("CombatSkillGain", skillGain(modules, infra))
             .appendGroup("CombatDamage", damage(modules))
@@ -42,14 +43,15 @@ public class CombatExecutionFlow {
             .step(new CombatTypeResolverStep())
             .step(new ResolveCombatMaxDistanceStep())
             .step(new ResolveCombatRadius())
-            .step(new ValidateTargetDistanceStep());
+            .step(new ValidateTargetDistanceStep())
+            .step(new ReserveCombatSwingStep());
     }
 
     private static FlowBuilder<CombatExecutionContext> swing(FlowRegistryFactory.GameInfra infra) {
         return FlowFactory.<CombatExecutionContext>builder()
             .step(new CalculateSwingFramesStep())
             .step(new BroadcastAttackAnimationStep(infra.eventBus()))
-            .step(new CombatHitFrameDelayStep());
+            .step(new CombatHitFrameDelayStep(), context -> !context.isContactAttack());
     }
 
     private static FlowBuilder<CombatExecutionContext> hitResolution(FlowRegistryFactory.GameInfra infra) {
