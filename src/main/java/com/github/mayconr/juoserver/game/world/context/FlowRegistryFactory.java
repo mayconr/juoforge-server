@@ -26,8 +26,8 @@ import com.github.mayconr.juoserver.game.ui.flow.paperdoll.OpenPaperdollContext;
 import com.github.mayconr.juoserver.game.ui.flow.paperdoll.OpenPaperdollFlowDefinition;
 import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickFlowDefinition;
 import com.github.mayconr.juoserver.game.ui.policy.DoubleClickPolicy;
-import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerContext;
-import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerFlowDefinition;
+import com.github.mayconr.juoserver.game.container.flow.open.OpenContainerContext;
+import com.github.mayconr.juoserver.game.container.flow.open.OpenContainerFlowDefinition;
 import com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootContext;
 import com.github.mayconr.juoserver.game.loot.flow.materialize.MaterializeLootFlowDefinition;
 import com.github.mayconr.juoserver.game.loot.LootPolicy;
@@ -270,7 +270,9 @@ public class FlowRegistryFactory {
         registry.register(OpenPaperdollFlowDefinition.class.getSimpleName(),
                 OpenPaperdollFlowDefinition.build(infra.eventBus(), infra.storage()), OpenPaperdollContext.class);
         registry.register(OpenContainerFlowDefinition.class.getSimpleName(),
-                OpenContainerFlowDefinition.build(infra.storage(), infra.eventBus(), modules.loot()), OpenContainerContext.class);
+                OpenContainerFlowDefinition.build(
+                        infra.storage(), infra.eventBus(), modules.loot(), modules.item(), infra.settings().accessLevel()),
+                OpenContainerContext.class);
         registry.register(GetContainerItemsFlowDefinition.class.getSimpleName(),
                 GetContainerItemsFlowDefinition.build(infra.storage()), GetContainerItemsContext.class);
         registry.register(MaterializeLootFlowDefinition.class.getSimpleName(),

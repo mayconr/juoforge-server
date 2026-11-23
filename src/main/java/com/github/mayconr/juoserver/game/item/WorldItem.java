@@ -18,6 +18,13 @@ import java.util.function.BiFunction;
 /** Public item operations for creation, removal, lookup and container contents. */
 public interface WorldItem {
 
+    /** Persistent boolean property that keeps the item equipped on its owner's death. */
+    String RETAIN_EQUIPPED_ON_DEATH = "item.retainEquippedOnDeath";
+    /** Persistent boolean property for containers that must be opened before interaction. */
+    String REQUIRE_OPEN_ACCESS = "item.requireOpenAccess";
+    /** Runtime boolean property set by the module that controls access to the container. */
+    String ACCESS_OPEN = "item.accessOpen";
+
     /**
      * Equips an existing item through the equipment flow without a client request or held item.
      * Applies equipment validation, location cleanup, resistance updates and notifications.

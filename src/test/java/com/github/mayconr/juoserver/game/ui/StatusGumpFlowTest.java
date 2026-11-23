@@ -56,7 +56,7 @@ class StatusGumpFlowTest {
         when(storage.mobiles().get(42)).thenReturn(Optional.of(player));
         when(player.getBackpack()).thenReturn(100);
         when(storage.items().getContainer(100)).thenReturn(Optional.of(backpack));
-        when(containers.getWeight(backpack)).thenReturn(27L);
+        when(containers.getContentsWeight(backpack)).thenReturn(27L);
         when(mobiles.calculateMaxWeight(player)).thenReturn(80);
         var result = StatusGumpFlowDefinition.build(events, storage, containers, mobiles)
                 .execute(new StatusGumpContext(player, 42));

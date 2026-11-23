@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.item.flow.drop;
 
 import com.github.mayconr.juoserver.game.container.WorldContainer;
+import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.flow.drop.DropItemContext.DropTarget;
 import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.ResolveDropTypeStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.dropitem.ResolveGroundTargetStep;
@@ -40,7 +41,7 @@ public class DropItemFlowDefinition {
     public static Flow<DropItemContext> build(GameModules modules, GameInfra infra) {
         return FlowFactory.<DropItemContext>builder()
                 .appendGroup("DropItemPhase", dropItemPhase(infra.storage(), modules.item().heldItems()))
-                .appendGroup("ValidationPhase", validationPhase(infra.storage(), modules.item().heldItems()))
+                .appendGroup("ValidationPhase", validationPhase(infra.storage(), modules.item()))
                 .appendGroup("ItemPlacementPhase", itemPlacementPhase(infra.storage(), infra.eventBus(),
                         modules.container(), modules.mobile()))
                 .step(new RecordGroundDropStep(modules.item()))
@@ -65,10 +66,10 @@ public class DropItemFlowDefinition {
                 .step(new ResolveItemTargetStep(storage), ctx -> ctx.isDroppedItem(DropTarget.ITEM));
     }
 
-    private static FlowBuilder<DropItemContext> validationPhase(WorldStorage storage, HeldItems heldItems) {
+    private static FlowBuilder<DropItemContext> validationPhase(WorldStorage storage, ItemModule items) {
         return FlowFactory.<DropItemContext>builder()
-                .step(new ValidateDropTargetStep(storage, heldItems))
-                .step(new ValidateInteractionRangeStep(new ItemRootResolver(storage)));
+                .step(new ValidateDropTargetStep(storage, items.heldItems()))
+                .step(new ValidateInteractionRangeStep(new ItemRootResolver(storage, items)));
     }
 
     private static FlowBuilder<DropItemContext> itemPlacementPhase(

@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.Container;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
-import com.github.mayconr.juoserver.game.item.flow.open.OpenContainerContext;
+import com.github.mayconr.juoserver.game.container.flow.open.OpenContainerContext;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.RequiredArgsConstructor;
@@ -76,20 +76,20 @@ public class ContainerModuleImpl implements ContainerModule {
 
     @Override
     public void openContainer(UOPlayer player, Container container) {
-        flows.execute(new OpenContainerContext(player, container));
+        openContainer(player, container, false);
     }
-
 
     @Override
-    public long getWeight(UOContainer container) {
-        Objects.requireNonNull(container, "Container is required");
-        return Math.addExact((long) container.getUnitWeight() * container.getAmount(),
-                getContentsWeight(container));
+    public void openContainer(UOPlayer player, Container container, boolean equipBeforeOpening) {
+        flows.execute(new OpenContainerContext(player, container, equipBeforeOpening));
     }
+
 
     @Override
     public long getContentsWeight(UOContainer container) {
-        return contentsWeight(Objects.requireNonNull(container, "Container is required"), new HashSet<>());
+        Objects.requireNonNull(container, "Container is required");
+        return Math.addExact((long) container.getUnitWeight() * container.getAmount(),
+                contentsWeight(container, new HashSet<>()));
     }
 
     private long contentsWeight(UOContainer container, Set<Integer> visited) {
@@ -98,7 +98,7 @@ public class ContainerModuleImpl implements ContainerModule {
         }
         long weight = 0;
         for (var serial : container.getContainerItems()) {
-            var item = storage.getItem(serial).orElseThrow(() -> new IllegalStateException(
+            var item = storage.items().get(serial).orElseThrow(() -> new IllegalStateException(
                     "Cannot calculate weight: item " + serial + " from container "
                             + container.getSerialId() + " is not loaded"));
             if (item instanceof UOContainer nested) {

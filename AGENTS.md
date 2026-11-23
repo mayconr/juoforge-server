@@ -93,6 +93,29 @@ lifecycle (`initialize`, `saveWorld`) and exposes each responsibility through a 
 - `PropertyStore` and `WorldPersistence` are public only because they cross subpackages;
   they are internal to the world storage and must not be used by modules or shards.
 
+## UOObject state changes
+
+`UOObject` and all of its subclasses (`UOMobile`, `UOPlayer`, `UONpc`, `UOItem`, `UOContainer`
+and any future ones) must change only through the world modules (`WorldMobile`, `WorldItem`,
+`WorldContainer` and the other module APIs). Every change must go through a module so that the
+modules can track dirty objects in the future.
+
+- Never change a property of a `UOObject` or of any subclass directly: do not call its setters or
+  mutate its fields, collections or attribute maps, such as location, layer, model, hue, amount,
+  stats, flags, equipment, `persistentAttributes()` and `runtimeAttributes()`. This applies to
+  flows, steps, services, handlers, commands, AI and any other code outside the module that owns
+  the object.
+- Direct mutation is allowed only inside the module implementation that owns the object, and in
+  the creation and storage layers while they build the initial data of an object that has not
+  entered the world yet.
+- If no module operation covers the change you need, abort the task and report it to the user:
+  which change is needed, where, and which module operation is missing. The user decides how to
+  proceed. Never work around it, for example with a direct setter, reflection, copying and
+  replacing the object, a hand-written packet, or a new public mutator on the object. Do not add a
+  new module operation on your own unless the task explicitly asks for it.
+- When you find existing code that changes an object directly, report it to the user instead of
+  keeping or extending that access.
+
 ## UOMobile responsibilities
 
 `UOMobile` stores mobile data and provides local data access and manipulation only.

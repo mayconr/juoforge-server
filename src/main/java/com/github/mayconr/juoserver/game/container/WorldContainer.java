@@ -92,12 +92,10 @@ public interface WorldContainer {
     /** Loads container contents, materializes pending corpse loot and publishes the opening event. */
     void openContainer(UOPlayer player, Container container);
 
-    /** Total weight, including the container itself and all nested contents.
-     * All contents must have been loaded before calling this method.
-     */
-    long getWeight(UOContainer container);
+    /** Optionally equips the container on the player before opening it. */
+    void openContainer(UOPlayer player, Container container, boolean equipBeforeOpening);
 
-    /** Weight of all nested contents, excluding the outer container's own weight.
+    /** Total weight, including the container itself and all nested contents.
      * All contents must have been loaded before calling this method.
      */
     long getContentsWeight(UOContainer container);

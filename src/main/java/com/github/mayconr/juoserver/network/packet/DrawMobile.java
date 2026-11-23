@@ -7,7 +7,6 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.infrastructure.server.AbstractPacket;
 import io.netty.buffer.ByteBuf;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -27,14 +26,18 @@ public class DrawMobile extends AbstractPacket {
     private final Map<Layer, UOItem> equippedItems;
 
     public DrawMobile(UOMobile mobile, Map<Layer, UOItem> equippedItems) {
-        super(CODE, computeLength(equippedItems.values()));
+        super(CODE, computeLength(equippedItems));
         this.mobile = mobile;
         this.equippedItems = equippedItems;
     }
 
-    private static int computeLength(Collection<UOItem> equippedItems) {
+    private static int computeLength(Map<Layer, UOItem> equippedItems) {
         int len = 0;
-        for (UOItem item : equippedItems) {
+        for (var entry : equippedItems.entrySet()) {
+            if (entry.getKey() == Layer.BANK) {
+                continue;
+            }
+            var item = entry.getValue();
             len += 7 + (item.getHue() != 0 ? 2 : 0);
         }
         return 19 + len + 4;
@@ -71,6 +74,9 @@ public class DrawMobile extends AbstractPacket {
 
         for (Map.Entry<Layer, UOItem> entry : equippedItems.entrySet()) {
             final Layer layer = entry.getKey();
+            if (layer == Layer.BANK) {
+                continue;
+            }
             final UOItem item = entry.getValue();
 
             int itemModelId = item.getModelId() & 0x7FFF;

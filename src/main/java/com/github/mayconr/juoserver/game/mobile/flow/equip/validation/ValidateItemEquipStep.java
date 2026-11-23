@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.mobile.flow.equip.validation;
 
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
+import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,9 @@ public class ValidateItemEquipStep extends AbstractFlowStep<EquipItemContext> {
         var item = context.getItem();
         if (item.getLayer() == null) {
             return StepResult.failure("item has no equipment layer");
+        }
+        if (context.getEquipItem() != null && item.getLayer() == Layer.BANK) {
+            return StepResult.failure("bank equipment is managed by the server");
         }
         var mobile = context.getMobile();
         if (!mobile.isLayerAvailable(item.getLayer()) && !mobile.isItemEquipped(item)) {

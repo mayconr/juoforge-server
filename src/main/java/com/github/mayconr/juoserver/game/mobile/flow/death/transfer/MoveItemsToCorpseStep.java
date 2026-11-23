@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.mobile.flow.death.transfer;
 
 import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.ItemPlacement;
+import com.github.mayconr.juoserver.game.item.WorldItem;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
@@ -69,7 +70,9 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathContext> {
                         || !ItemLocation.equipped(victim.getSerialId()).equals(item.getCurrentLocation())) {
                     throw new IllegalStateException("Invalid equipment origin: " + item.getSerialId());
                 }
-                equippedItems.add(item);
+                if (!Boolean.TRUE.equals(itemModule.getProperty(item, WorldItem.RETAIN_EQUIPPED_ON_DEATH, false))) {
+                    equippedItems.add(item);
+                }
             }
         }
 
