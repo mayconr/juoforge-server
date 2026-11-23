@@ -26,8 +26,10 @@ public class ApplyDamageStep extends AbstractFlowStep<CombatExecutionContext> {
     public StepResult execute(CombatExecutionContext context) {
         var availability = validateSession.execute(context);
         if (!availability.shouldContinue()) return availability;
-        var distance = validateDistance.execute(context);
-        if (!distance.shouldContinue()) return distance;
+        if (!context.isContactAttack()) {
+            var distance = validateDistance.execute(context);
+            if (!distance.shouldContinue()) return distance;
+        }
         final var session = context.getSession();
         final var attacker = session.getAttacker();
         final var target = session.getTarget();

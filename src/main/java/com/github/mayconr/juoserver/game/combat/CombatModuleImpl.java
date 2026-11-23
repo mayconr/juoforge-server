@@ -10,9 +10,9 @@ import com.github.mayconr.juoserver.game.combat.flow.warmode.ToggleWarModeContex
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.WarModeType;
+import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
@@ -21,14 +21,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CombatModuleImpl implements CombatModule {
 
-    private static final double UPDATE_DELAY_SECONDS = 1;
+    private static final double SWING_INTERVAL_SECONDS = 1;
 
     private final Queue<CombatCommand> commandQueue = new ConcurrentLinkedQueue<>();
     private final Map<Integer, AttackCommand> pendingAttacks = new ConcurrentHashMap<>();
+    private final Map<Integer, Double> nextSwingAt = new ConcurrentHashMap<>();
     private final CombatSessionRegistry registry = new CombatSessionRegistryImpl();
 
     private ModuleContext.FlowFacade flows;
-    private double updateAccumulator;
+    private volatile double elapsedSeconds;
 
     @Override
     public void initialize(ModuleContext context) {
@@ -37,16 +38,34 @@ public class CombatModuleImpl implements CombatModule {
 
     @Override
     public void update(double delta) {
-        updateAccumulator += delta;
-        if (updateAccumulator < UPDATE_DELAY_SECONDS) {
-            return;
+        elapsedSeconds += delta;
+        nextSwingAt.values().removeIf(readyAt -> readyAt <= elapsedSeconds);
+        processCommands();
+        for (CombatSession session : registry.getSessions()) {
+            if (session.isActive()) {
+                trySwing(session, false);
+            }
+            if (!session.isActive()) {
+                registry.unregister(session);
+            }
         }
-        updateAccumulator = 0;
-
-        processCombat();
     }
 
-    private void processCombat() {
+    public void onMobileMoved(MobileMoved event) {
+        if (event.teleport()) {
+            return;
+        }
+        int serial = event.mobile().getSerialId();
+        for (CombatSession session : registry.getSessions()) {
+            if (session.getTrigger() instanceof CombatSession.PhysicalTrigger
+                    && (session.getAttacker().getSerialId() == serial
+                    || session.getTarget().getSerialId() == serial)) {
+                trySwing(session, true);
+            }
+        }
+    }
+
+    private void processCommands() {
         CombatCommand command;
         while ((command = commandQueue.poll()) != null) {
             switch (command) {
@@ -70,19 +89,18 @@ public class CombatModuleImpl implements CombatModule {
             }
         }
 
-        final var inactiveSessions = new ArrayList<CombatSession>();
-        for (CombatSession session : registry.getSessions()) {
-            if (!session.isActive()) {
-                inactiveSessions.add(session);
-                continue;
-            }
-            flows.execute(new CombatExecutionContext(session));
-        }
+    }
 
-        // Remove inactive sessions
-        for (CombatSession session : inactiveSessions) {
-            registry.unregister(session);
+    private void trySwing(CombatSession session, boolean fromMovement) {
+        int serial = session.getAttacker().getSerialId();
+        if (session.isActive() && !nextSwingAt.containsKey(serial)) {
+            flows.execute(new CombatExecutionContext(session, fromMovement, () -> reserveSwing(session)));
         }
+    }
+
+    private boolean reserveSwing(CombatSession session) {
+        return session.isActive() && nextSwingAt.putIfAbsent(
+                session.getAttacker().getSerialId(), elapsedSeconds + SWING_INTERVAL_SECONDS) == null;
     }
 
     @Override

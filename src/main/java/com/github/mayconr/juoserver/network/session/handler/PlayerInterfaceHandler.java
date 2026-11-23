@@ -108,18 +108,13 @@ public final class PlayerInterfaceHandler {
         final var speech = new SendUnicodeSpeech(style.type(), style.hue(), speakerId, speakerModel,
                 style.font(), speakerName, text, speechLanguage());
 
-        if (style.type().equals(TextType.BROADCAST)) {
-            packetWriter.writeAndFlush(speech);
-        } else {
-            if (event.messageTarget() != null) {
-                if (session.isPlayer(event.messageTarget())) {
-                    packetWriter.writeAndFlush(speech);
-                }
-            } else {
-                if (event.messageSource() != null && session.shouldReceiveUpdate(event.messageSource())) {
-                    packetWriter.writeAndFlush(speech);
-                }
+        if (event.messageTarget() != null) {
+            if (session.isPlayer(event.messageTarget())) {
+                packetWriter.writeAndFlush(speech);
             }
+        } else if (style.type().equals(TextType.BROADCAST)
+                || (event.messageSource() != null && session.shouldReceiveUpdate(event.messageSource()))) {
+            packetWriter.writeAndFlush(speech);
         }
     }
 

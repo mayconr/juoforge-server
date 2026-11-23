@@ -1,18 +1,78 @@
 package com.github.mayconr.juoserver.game.combat;
 
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
+import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionFlow;
 import com.github.mayconr.juoserver.game.combat.flow.execution.damage.ApplyDamageStep;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
 import com.github.mayconr.juoserver.game.damage.DamageModule;
+import com.github.mayconr.juoserver.game.model.Direction;
+import com.github.mayconr.juoserver.game.model.PointInTheWorld;
+import com.github.mayconr.juoserver.game.model.SkillContainer;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.CombatOccurring;
+import com.github.mayconr.juoserver.game.model.event.MobileMoved;
+import com.github.mayconr.juoserver.game.skill.SkillModule;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameInfra;
+import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
+import com.github.mayconr.juoserver.support.TestFields;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CombatAttackSafetyTest {
+    @Test
+    void runningTargetCanBeHitDuringBriefContactAndCannotBeHitTwiceDuringCooldown() {
+        var attacker = mock(UONpc.class);
+        var target = mock(UOPlayer.class);
+        var targetX = new AtomicInteger(2);
+        when(attacker.isAlive()).thenReturn(true);
+        when(attacker.getStrength()).thenReturn(50);
+        when(attacker.getSkills()).thenReturn(new SkillContainer());
+        when(target.isAlive()).thenReturn(true);
+        when(target.isConnected()).thenReturn(true);
+        when(target.getSerialId()).thenReturn(2);
+        when(target.getSkills()).thenReturn(new SkillContainer());
+        when(target.getX()).thenAnswer(invocation -> targetX.get());
+
+        var events = new DefaultEventBus();
+        var damage = mock(DamageModule.class);
+        var flow = CombatExecutionFlow.build(
+                GameModules.builder().skill(mock(SkillModule.class)).damage(damage).build(),
+                GameInfra.builder().eventBus(events).rng(chance -> true)
+                        .combatSkillGainPolicy(context -> List.of()).build());
+        var flows = mock(ModuleContext.FlowFacade.class);
+        when(flows.execute(any(CombatExecutionContext.class)))
+                .thenAnswer(invocation -> flow.execute(invocation.getArgument(0)));
+        var module = module(flows);
+        var registry = (CombatSessionRegistry) TestFields.getField(module, "registry");
+        registry.register(new CombatSession(UUID.randomUUID(), attacker, target, new CombatSession.PhysicalTrigger()));
+        events.register(MobileMoved.class, module::onMobileMoved);
+        events.register(CombatOccurring.class, event -> targetX.set(2));
+
+        var entersReach = new MobileMoved(target, Direction.WEST,
+                new PointInTheWorld(2, 0, 0), new PointInTheWorld(1, 0, 0), true, 1, false);
+        module.update(0.25);
+        verifyNoInteractions(damage);
+
+        targetX.set(1);
+        events.publish(entersReach);
+        verify(damage).applyDamage(any());
+
+        targetX.set(1);
+        events.publish(entersReach);
+        verify(damage).applyDamage(any());
+
+        module.update(1);
+        verify(damage, times(2)).applyDamage(any());
+    }
+
     @Test
     void validNpcSessionAppliesDamage() {
         var attacker = mock(UONpc.class);
@@ -52,7 +112,7 @@ class CombatAttackSafetyTest {
         }).when(flows).execute(any(CombatPreparationContext.class));
         for (int i = 0; i < 5; i++) module.requestAttack(npc, 42);
         module.update(1);
-        var registry = (CombatSessionRegistry) com.github.mayconr.juoserver.support.TestFields.getField(module, "registry");
+        var registry = (CombatSessionRegistry) TestFields.getField(module, "registry");
         var first = registry.getByPlayer(npc);
         module.requestAttack(npc, 42);
         module.update(1);

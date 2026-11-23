@@ -324,7 +324,6 @@ public class DefaultWorld implements WorldInternal, World {
         initializeMobileModule(wallet);
         initializeInteractionModule();
         this.damageModule = new DamageModuleImpl(eventBus);
-        this.npcModule = new NpcModuleImpl();
         this.temporalModule = new TemporalModuleImpl(storage.properties(), eventBus, settings.temporal());
 
         initializeModules();
@@ -418,7 +417,9 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeCombatModule() {
 
-        this.combatModule = new CombatModuleImpl();
+        var combat = new CombatModuleImpl();
+        this.combatModule = combat;
+        eventBus.register(MobileMoved.class, combat::onMobileMoved);
     }
 
     private void initializeMobileModule(Wallet wallet) {
