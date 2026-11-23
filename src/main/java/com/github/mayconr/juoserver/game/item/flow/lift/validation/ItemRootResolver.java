@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.item.flow.lift.validation;
 
+import com.github.mayconr.juoserver.game.item.WorldItem;
 import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRoot.CarriedBy;
 import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRoot.OnGround;
 import com.github.mayconr.juoserver.game.item.flow.lift.validation.ItemRoot.Unreachable;
@@ -15,9 +16,11 @@ public final class ItemRootResolver {
     static final int MAX_DEPTH = 64;
 
     private final WorldStorage storage;
+    private final WorldItem items;
 
-    public ItemRootResolver(WorldStorage storage) {
+    public ItemRootResolver(WorldStorage storage, WorldItem items) {
         this.storage = storage;
+        this.items = items;
     }
 
     public ItemRoot resolve(UOItem item) {
@@ -36,6 +39,12 @@ public final class ItemRootResolver {
     }
 
     private ItemRoot rootAt(UOItem outermost) {
+        synchronized (outermost) {
+            if (Boolean.TRUE.equals(items.getProperty(outermost, WorldItem.REQUIRE_OPEN_ACCESS, false))
+                    && !Boolean.TRUE.equals(items.getProperty(outermost, WorldItem.ACCESS_OPEN, true))) {
+                return new Unreachable();
+            }
+        }
         return switch (outermost.getCurrentLocation()) {
             case GroundLocation ground -> new OnGround(outermost);
             case EquippedLocation equipped -> carrier(equipped);

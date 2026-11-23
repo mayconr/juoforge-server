@@ -6,6 +6,7 @@ import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
 import com.github.mayconr.juoserver.game.model.ContainerLocation;
 import com.github.mayconr.juoserver.game.model.EquippedLocation;
 import com.github.mayconr.juoserver.game.model.GroundLocation;
+import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.OrphanLocation;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
@@ -50,6 +51,9 @@ public final class ItemEventHandler {
 
     public void onItemEquipped(ItemEquipped equipped) {
         final var item = equipped.item();
+        if (item.getLayer() == Layer.BANK) {
+            return;
+        }
         if (session.shouldReceiveUpdate(equipped.mobile()) && item.getCurrentLocation() instanceof EquippedLocation) {
             packetWriter.schedule(packets -> {
                 if (session.shouldReceiveUpdate(equipped.mobile())
@@ -137,6 +141,9 @@ public final class ItemEventHandler {
     }
 
     public void onEquippedItemCreated(EquippedItemCreated event) {
+        if (event.item().getLayer() == Layer.BANK) {
+            return;
+        }
         if (session.shouldReceiveUpdate(event.mobile())) {
             packetWriter.enqueue(packets -> {
                 if (session.shouldReceiveUpdate(event.mobile())

@@ -56,6 +56,7 @@ class DropItemValidationTest {
     private final Mobiles mobiles = mock(Mobiles.class);
     private final EventBus events = mock(EventBus.class);
     private final ContainerModule containers = mock(ContainerModule.class);
+    private final ItemModule module = mock(ItemModule.class);
     private final UOPlayer player = mock(UOPlayer.class);
     private final HeldItems held = new HeldItems();
     private final UOItem dropped = new UOItem(data(0x40000001), null);
@@ -69,7 +70,6 @@ class DropItemValidationTest {
         when(player.getX()).thenReturn(100);
         when(player.getY()).thenReturn(100);
         when(mobiles.get(1)).thenReturn(Optional.of(player));
-        var module = mock(ItemModule.class);
         when(module.heldItems()).thenReturn(held);
         flow = DropItemFlowDefinition.build(
                 GameModules.builder().item(module).container(containers).build(),
@@ -189,6 +189,27 @@ class DropItemValidationTest {
         assertTrue(drop(pouch.getSerialId(), 0).shouldContinue());
         verify(containers).addItem(pouch, dropped, false);
         verify(events).publish(new ItemDropAccepted(player));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void requiresOpenAccessForNestedDropIntoRestrictedEquipment(boolean open) {
+        var bank = container(0x40000002);
+        bank.setCurrentLocation(ItemLocation.equipped(1));
+        var pouch = container(0x40000003);
+        pouch.setCurrentLocation(ItemLocation.container(bank.getSerialId()));
+        when(module.getProperty(bank, WorldItem.REQUIRE_OPEN_ACCESS, false)).thenReturn(true);
+        when(module.getProperty(bank, WorldItem.ACCESS_OPEN, true)).thenReturn(open);
+
+        var result = drop(pouch.getSerialId(), 0);
+
+        if (open) {
+            assertTrue(result.shouldContinue());
+            verify(containers).addItem(pouch, dropped, false);
+        } else {
+            assertEquals("DROP_UNREACHABLE", result.code());
+            verifyRejected();
+        }
     }
 
     @Test

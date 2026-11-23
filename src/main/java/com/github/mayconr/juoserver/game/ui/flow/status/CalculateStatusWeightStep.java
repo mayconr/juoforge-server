@@ -25,7 +25,7 @@ public final class CalculateStatusWeightStep extends AbstractFlowStep<StatusGump
                 return StepResult.failure("BACKPACK_NOT_FOUND",
                         "Cannot calculate status weight: backpack " + mobile.getBackpack() + " is not loaded");
             }
-            weight = Math.toIntExact(containers.getWeight(backpack));
+            weight = Math.toIntExact(containers.getContentsWeight(backpack));
         }
         context.setWeight(weight);
         return StepResult.success();

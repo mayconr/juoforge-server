@@ -52,7 +52,7 @@ class ValidateBackpackWeightStepTest {
     private void prepare(long currentWeight) {
         when(mobile.getBackpack()).thenReturn(100);
         when(containers.getContainerBySerialId(100)).thenReturn(Optional.of(backpack));
-        when(containers.getWeight(backpack)).thenReturn(currentWeight);
+        when(containers.getContentsWeight(backpack)).thenReturn(currentWeight);
         when(mobiles.calculateMaxWeight(mobile)).thenReturn(80);
     }
 }

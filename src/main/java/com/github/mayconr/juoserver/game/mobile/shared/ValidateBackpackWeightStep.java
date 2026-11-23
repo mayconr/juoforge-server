@@ -28,7 +28,7 @@ public final class ValidateBackpackWeightStep<T extends ValidateBackpackWeightCo
         if (backpack == null) {
             return StepResult.failure("BACKPACK_NOT_FOUND", "Backpack is not loaded: " + backpackSerial);
         }
-        long currentWeight = containers.getWeight(backpack);
+        long currentWeight = containers.getContentsWeight(backpack);
         int addedWeight = context.addedWeight();
         long estimatedWeight = Math.addExact(currentWeight, addedWeight);
         int maxWeight = mobiles.calculateMaxWeight(mobile);

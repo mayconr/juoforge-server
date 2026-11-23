@@ -72,7 +72,9 @@ import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.npc.ai.NpcAIProfileResolver;
-import com.github.mayconr.juoserver.game.model.*;
+import com.github.mayconr.juoserver.game.model.EquippedLocation;
+import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
 import com.github.mayconr.juoserver.game.npc.NpcModuleImpl;
@@ -111,7 +113,8 @@ import com.github.mayconr.juoserver.network.packet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -292,6 +295,7 @@ public class DefaultWorld implements WorldInternal, World {
     private final GamePlaySettings settings;
     private final WorldConfigurator worldCfg;
     private final MessageLocalizer messageLocalizer;
+    private List<UONpc> pendingNpcAi = List.of();
 
     @Override
     public void initialize() {
@@ -565,14 +569,16 @@ public class DefaultWorld implements WorldInternal, World {
         this.storage.initialize(
                 serialGenerator::getCurrentItem,
                 serialGenerator::getCurrentMobile,
-                data -> {
-                    for (UOMobile mobile : data.mobiles()) {
-                        if (mobile instanceof UONpc npc) {
-                            aiModule.attach(npc);
-                        }
-                    }
-                }
+                data -> pendingNpcAi = data.mobiles().stream()
+                        .filter(UONpc.class::isInstance)
+                        .map(UONpc.class::cast)
+                        .toList()
         );
+    }
+
+    public void attachPersistedNpcAi() {
+        pendingNpcAi.forEach(aiModule::attach);
+        pendingNpcAi = List.of();
     }
 
     private Wallet wallet() {

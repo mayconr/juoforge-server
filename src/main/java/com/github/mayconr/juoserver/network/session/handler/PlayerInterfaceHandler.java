@@ -1,5 +1,8 @@
 package com.github.mayconr.juoserver.network.session.handler;
 
+import com.github.mayconr.juoserver.game.item.WorldItem;
+import com.github.mayconr.juoserver.game.model.ItemLocation;
+import com.github.mayconr.juoserver.network.session.PacketOutput;
 import com.github.mayconr.juoserver.game.model.Layer;
 import com.github.mayconr.juoserver.game.model.SendSkillType;
 import com.github.mayconr.juoserver.game.model.TextType;
@@ -34,6 +37,7 @@ import com.github.mayconr.juoserver.network.packet.AddMultipleItemsToContainer;
 import com.github.mayconr.juoserver.network.packet.CloseGumpExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.ContextMenuExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.DrawContainer;
+import com.github.mayconr.juoserver.network.packet.EquipItem;
 import com.github.mayconr.juoserver.network.packet.GeneralInformation;
 import com.github.mayconr.juoserver.network.packet.NewSpellbookExtendedCommand;
 import com.github.mayconr.juoserver.network.packet.OpenPaperdoll;
@@ -138,18 +142,43 @@ public final class PlayerInterfaceHandler {
 
     public void onContainerOpened(ContainerOpenedEvent event) {
         if (session.isPlayer(event.player())) {
-            final var container = event.container();
-
-            packetWriter.write(new DrawContainer(container));
-            if (!container.getContainerItems().isEmpty()) {
-                var items = new ArrayList<UOItem>(container.getContainerItems().size());
-                for (var item : container.getContainerItems()) {
-                    world.item().getItemBySerialId(item).ifPresent(items::add);
+            packetWriter.enqueue(packets -> {
+                synchronized (event.player()) {
+                    if (session.isPlayer(event.player()) && canSendContainer(event)) {
+                        sendContainer(event, packets);
+                    }
                 }
-                packetWriter.write(AddMultipleItemsToContainer.ofUOItem(container, items));
-            }
-            packetWriter.flush();
+            });
         }
+    }
+
+    private boolean canSendContainer(ContainerOpenedEvent event) {
+        if (!(event.container() instanceof UOItem item)) {
+            return true;
+        }
+        return !Boolean.TRUE.equals(world.item().getProperty(item, WorldItem.REQUIRE_OPEN_ACCESS, false))
+                || Boolean.TRUE.equals(world.item().getProperty(item, WorldItem.ACCESS_OPEN, true));
+    }
+
+    private void sendContainer(ContainerOpenedEvent event, PacketOutput packets) {
+        var container = event.container();
+        if (event.equipBeforeOpening()) {
+            if (!(container instanceof UOItem item) || item.getLayer() == null
+                    || !ItemLocation.equipped(event.player().getSerialId()).equals(item.getCurrentLocation())) {
+                return;
+            }
+            packets.write(new EquipItem(event.player(), item.getLayer(), item));
+        }
+        packets.write(new DrawContainer(container));
+        var serials = container.getContainerItems();
+        if (!serials.isEmpty()) {
+            var items = new ArrayList<UOItem>(serials.size());
+            for (var serial : serials) {
+                world.item().getItemBySerialId(serial).ifPresent(items::add);
+            }
+            packets.write(AddMultipleItemsToContainer.ofUOItem(container, items));
+        }
+        packets.flush();
     }
 
     public void onStatusGumpRequested(StatusGumpRequested event) {

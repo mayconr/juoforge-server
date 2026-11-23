@@ -44,7 +44,7 @@ class ItemCreationTemplateTest {
         when(mobile.getBackpack()).thenReturn(100);
         when(storage.getMobile(42)).thenReturn(java.util.Optional.of(mobile));
         when(containers.getContainerBySerialId(100)).thenReturn(java.util.Optional.of(backpack));
-        when(containers.getWeight(backpack)).thenReturn(overweight ? 61L : 60L);
+        when(containers.getContentsWeight(backpack)).thenReturn(overweight ? 61L : 60L);
         when(mobiles.calculateMaxWeight(mobile)).thenReturn(80);
         var template = mock(ItemTemplate.class);
         var data = new UOItemData();

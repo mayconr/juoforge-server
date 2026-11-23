@@ -28,7 +28,7 @@ public final class LiftItemFlowDefinition {
                 .step(new ValidateLifterStep(heldItems))
                 .step(new ResolveLiftedItemStep(storage))
                 .step(new ValidateLiftableItemStep())
-                .step(new ValidateItemReachStep(new ItemRootResolver(storage)))
+                .step(new ValidateItemReachStep(new ItemRootResolver(storage, modules.item())))
                 .step(new HoldItemStep(heldItems, storage))
                 .step(new UnequipLiftedItemStep(modules.mobile()), context -> context.getItem().isEquipped())
                 .hook(new FlowHook<>(

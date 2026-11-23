@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.mobile;
 
 import com.github.mayconr.juoserver.game.item.ItemModule;
+import com.github.mayconr.juoserver.game.item.WorldItem;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
 import com.github.mayconr.juoserver.game.mobile.flow.death.transfer.MoveItemsToCorpseStep;
 import com.github.mayconr.juoserver.game.model.ItemFlag;
@@ -37,14 +38,20 @@ class MoveItemsToCorpseStepTest {
         when(weapon.getSerialId()).thenReturn(101);
         when(weapon.getCurrentLocation()).thenReturn(ItemLocation.equipped(victim.getSerialId()));
         when(weapon.getFlags()).thenReturn(List.of());
+        var bank = mock(UOItem.class);
+        when(bank.getLayer()).thenReturn(Layer.BANK);
+        when(bank.getCurrentLocation()).thenReturn(ItemLocation.equipped(victim.getSerialId()));
         victim.getEquippedItems().put(Layer.MOUNT, 100);
         victim.getEquippedItems().put(Layer.ONE_HANDED, 101);
+        victim.getEquippedItems().put(Layer.BANK, 102);
         var storage = mock(WorldStorage.class, RETURNS_DEEP_STUBS);
         when(storage.items().get(100)).thenReturn(Optional.of(mount));
         when(storage.items().get(101)).thenReturn(Optional.of(weapon));
+        when(storage.items().get(102)).thenReturn(Optional.of(bank));
         when(storage.mobiles().get(victim.getSerialId())).thenReturn(Optional.of(victim));
         var mobiles = mock(MobileModule.class);
         var items = mock(ItemModule.class);
+        when(items.getProperty(bank, WorldItem.RETAIN_EQUIPPED_ON_DEATH, false)).thenReturn(true);
         doAnswer(call -> {
             assertFalse(victim.isMounted());
             return null;
@@ -59,11 +66,13 @@ class MoveItemsToCorpseStepTest {
         assertTrue(result.flowSucceeded());
         assertFalse(victim.isMounted());
         assertSame(mount, context.getMountItem());
-        assertTrue(victim.getEquippedItems().isEmpty());
+        assertEquals(1, victim.getEquippedItems().size());
+        assertEquals(102, victim.getEquippedItems().get(Layer.BANK));
         verify(items).deleteItem(mount);
         verify(mobiles, never()).unequipItem(any(UOMobile.class), any(UOItem.class));
         verify(corpse).addItemToContainer(weapon);
         verify(corpse).recordEquippedItem(weapon);
         verify(corpse, never()).recordEquippedItem(mount);
+        verify(corpse, never()).addItemToContainer(bank);
     }
 }

@@ -196,6 +196,7 @@ public final class WorldBootstrap {
         for (var entry : configuration.aiList().entrySet()) {
             world.ai().registerAi(entry.getKey(), Objects.requireNonNull(entry.getValue().apply(runtime), "AI context factory returned null"));
         }
+        world.attachPersistedNpcAi();
 
         registerContextMenuEntries(world.ui(), runtime, configuration);
 
