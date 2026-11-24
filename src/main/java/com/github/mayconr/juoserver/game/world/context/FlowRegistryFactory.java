@@ -14,6 +14,8 @@ import com.github.mayconr.juoserver.game.skill.flow.swings.SetSkillSwingCountFlo
 
 import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeContext;
 import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeFlowDefinition;
+import com.github.mayconr.juoserver.game.mobile.flow.setvitals.SetVitalsContext;
+import com.github.mayconr.juoserver.game.mobile.flow.setvitals.SetVitalsFlowDefinition;
 
 import com.github.mayconr.juoserver.game.loot.LootModule;
 import com.github.mayconr.juoserver.game.ui.flow.doubleclick.DoubleClickContext;
@@ -244,6 +246,8 @@ public class FlowRegistryFactory {
                 TryGainSkillContext.class);
         registry.register(SetAttributeFlowDefinition.class.getSimpleName(),
                 SetAttributeFlowDefinition.build(modules.ui()), SetAttributeContext.class);
+        registry.register(SetVitalsFlowDefinition.class.getSimpleName(),
+                SetVitalsFlowDefinition.build(infra.eventBus()), SetVitalsContext.class);
         registry.register(PlayerSpawnFlowDefinition.class.getSimpleName(),
                 PlayerSpawnFlowDefinition.build(modules, infra), PlayerSpawnContext.class);
         registry.register(ActivateRegionFlowDefinition.class.getSimpleName(),

@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.combat;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings.Player.Status;
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionFlow;
 import com.github.mayconr.juoserver.game.combat.flow.execution.damage.ApplyDamageStep;
@@ -17,8 +18,11 @@ import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameI
 import com.github.mayconr.juoserver.game.world.context.FlowRegistryFactory.GameModules;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.support.TestFields;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,13 +31,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CombatAttackSafetyTest {
-    @Test
-    void runningTargetCanBeHitDuringBriefContactAndCannotBeHitTwiceDuringCooldown() {
-        var attacker = mock(UONpc.class);
+    @ParameterizedTest
+    @CsvSource({"0, false, 1.0", "100, false, 0.5", "150, false, 0.5", "100, true, 0.625"})
+    void runningTargetCanBeHitDuringBriefContactAndCannotBeHitTwiceDuringCooldown(
+            int dexterity, boolean playerAttacker, double swingInterval) {
+        var attacker = playerAttacker ? mock(UOPlayer.class) : mock(UONpc.class);
         var target = mock(UOPlayer.class);
         var targetX = new AtomicInteger(2);
         when(attacker.isAlive()).thenReturn(true);
+        if (attacker instanceof UOPlayer player) {
+            when(player.isConnected()).thenReturn(true);
+        }
         when(attacker.getStrength()).thenReturn(50);
+        when(attacker.getDexterity()).thenReturn(dexterity);
         when(attacker.getSkills()).thenReturn(new SkillContainer());
         when(target.isAlive()).thenReturn(true);
         when(target.isConnected()).thenReturn(true);
@@ -50,7 +60,7 @@ class CombatAttackSafetyTest {
         var flows = mock(ModuleContext.FlowFacade.class);
         when(flows.execute(any(CombatExecutionContext.class)))
                 .thenAnswer(invocation -> flow.execute(invocation.getArgument(0)));
-        var module = module(flows);
+        var module = module(flows, new CombatModuleImpl(new Status(60), mock(WorldStorage.class)));
         var registry = (CombatSessionRegistry) TestFields.getField(module, "registry");
         registry.register(new CombatSession(UUID.randomUUID(), attacker, target, new CombatSession.PhysicalTrigger()));
         events.register(MobileMoved.class, module::onMobileMoved);
@@ -69,7 +79,10 @@ class CombatAttackSafetyTest {
         events.publish(entersReach);
         verify(damage).applyDamage(any());
 
-        module.update(1);
+        module.update(swingInterval - 0.25);
+        verify(damage).applyDamage(any());
+
+        module.update(0.25);
         verify(damage, times(2)).applyDamage(any());
     }
 
@@ -90,7 +103,10 @@ class CombatAttackSafetyTest {
     }
 
     private CombatModuleImpl module(ModuleContext.FlowFacade flows) {
-        var module = new CombatModuleImpl();
+        return module(flows, new CombatModuleImpl(new Status(), mock(WorldStorage.class)));
+    }
+
+    private CombatModuleImpl module(ModuleContext.FlowFacade flows, CombatModuleImpl module) {
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);
         module.initialize(context);

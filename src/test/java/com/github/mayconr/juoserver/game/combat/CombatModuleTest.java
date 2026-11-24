@@ -1,9 +1,11 @@
 package com.github.mayconr.juoserver.game.combat;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings.Player.Status;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.network.packet.AttackRequest;
 import com.github.mayconr.juoserver.support.TestFields;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,7 @@ import static org.mockito.Mockito.*;
 class CombatModuleTest {
     @Test
     void queuedNpcCancellationRemovesCombatBeforeItExecutes() {
-        var module = new CombatModuleImpl();
+        var module = new CombatModuleImpl(new Status(), mock(WorldStorage.class));
         var flows = mock(ModuleContext.FlowFacade.class);
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);
@@ -37,7 +39,7 @@ class CombatModuleTest {
 
     @Test
     void publicApiAndPacketAdapterQueueEquivalentAttacks() {
-        var module = new CombatModuleImpl();
+        var module = new CombatModuleImpl(new Status(), mock(WorldStorage.class));
         var flows = mock(ModuleContext.FlowFacade.class);
         var context = mock(ModuleContext.class);
         when(context.flows()).thenReturn(flows);

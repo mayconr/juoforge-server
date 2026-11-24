@@ -15,7 +15,6 @@ import java.util.Optional;
  * Replace this policy to change eligibility, beneficiaries, skills or training intensity.
  */
 public class DefaultCombatSkillGainPolicy implements CombatSkillGainPolicy {
-    private static final int TACTICS = 27;
     private static final double MIN_DIFFICULTY = 25;
 
     @Override
@@ -30,7 +29,7 @@ public class DefaultCombatSkillGainPolicy implements CombatSkillGainPolicy {
         var gainContext = SkillGainContext.empty();
         return List.of(
                 new SkillGainAttempt(attacker, CombatWeaponSkillResolver.forStyle(context.attackerStyle()), trainingIntensity, gainContext),
-                new SkillGainAttempt(attacker, TACTICS, trainingIntensity, gainContext)
+                new SkillGainAttempt(attacker, SkillValue.TACTICS_ID, trainingIntensity, gainContext)
         );
     }
 }

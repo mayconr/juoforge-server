@@ -417,7 +417,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeCombatModule() {
 
-        var combat = new CombatModuleImpl();
+        var combat = new CombatModuleImpl(settings.player().status(), storage);
         this.combatModule = combat;
         eventBus.register(MobileMoved.class, combat::onMobileMoved);
     }

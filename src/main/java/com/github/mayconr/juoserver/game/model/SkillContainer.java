@@ -26,6 +26,11 @@ public class SkillContainer {
         return skillMap.computeIfAbsent(id, SkillValue::zero);
     }
 
+    public double getEffectiveValue(int id) {
+        var skill = skillMap.get(id);
+        return skill == null ? 0.0 : skill.getValue();
+    }
+
     public void set(Integer id, SkillValue value) {
         skillMap.put(id, value);
     }

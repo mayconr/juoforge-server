@@ -21,6 +21,7 @@ import com.github.mayconr.juoserver.game.model.event.ItemStacked;
 import com.github.mayconr.juoserver.game.model.event.ItemUnequipped;
 import com.github.mayconr.juoserver.game.model.event.ItemUpdated;
 import com.github.mayconr.juoserver.game.model.event.MobileDamagedEvent;
+import com.github.mayconr.juoserver.game.model.event.MobileVitalsSet;
 import com.github.mayconr.juoserver.game.model.event.MobileDeathEvent;
 import com.github.mayconr.juoserver.game.model.event.MobileEnteredLineOfSight;
 import com.github.mayconr.juoserver.game.model.event.MobileMoveRejected;
@@ -179,6 +180,7 @@ public class NettySessionManager implements SessionManager {
                 new Event<>(RawPacketsSent.class, ui::onRawPacketsSent),
                 new Event<>(PlayerLoggedOut.class, worldView::onPlayerLoggedOut),
                 new Event<>(MobileDamagedEvent.class, combat::onMobileDamaged),
+                new Event<>(MobileVitalsSet.class, combat::onVitalsSet),
                 new Event<>(MobileDeathEvent.class, combat::onMobileDeath),
                 new Event<>(MobileResurrectEvent.class, combat::onMobileResurrect),
                 new Event<>(CombatStarted.class, combat::onCombatStarted),

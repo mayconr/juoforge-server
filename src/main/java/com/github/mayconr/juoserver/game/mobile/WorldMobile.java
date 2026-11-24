@@ -32,6 +32,9 @@ public interface WorldMobile {
     /** Sets a primary attribute and refreshes the player status through UI. */
     void setAttribute(UOMobile mobile, MobileAttribute attribute, int value);
 
+    /** Sets the maximum and current value of one vital and notifies clients. */
+    void setVitals(UOMobile mobile, VitalType type, int max, int value);
+
     /** Sets one resistance within configured limits and notifies the client on every call. */
     void setResistance(UOMobile mobile, ResistanceType type, int value);
 

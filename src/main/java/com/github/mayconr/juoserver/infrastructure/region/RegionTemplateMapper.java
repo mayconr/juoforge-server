@@ -73,6 +73,13 @@ class RegionTemplateMapper {
             );
         }
 
+        if ("polygon".equalsIgnoreCase(area.type())) {
+            if (area.points() == null) {
+                throw new IllegalArgumentException("Polygon area requires points.");
+            }
+            return new PolygonalArea(area.points());
+        }
+
         throw new IllegalArgumentException("Unsupported area type: " + area.type());
     }
 }
