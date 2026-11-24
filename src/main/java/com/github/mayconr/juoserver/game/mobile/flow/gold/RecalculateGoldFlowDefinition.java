@@ -12,7 +12,8 @@ public final class RecalculateGoldFlowDefinition {
     public static Flow<RecalculateGoldContext> build(Wallet wallet, EventBus events, WorldUI ui) {
         return FlowFactory.<RecalculateGoldContext>builder()
                 .step(new CalculateGoldStep(wallet))
-                .step(new NotifyGoldStep(events, ui))
+                .step(new NotifyGoldStep(events, ui),
+                        context -> context.isNotifyClient() && context.getOldBalance() != context.getMobile().getGold())
                 .build();
     }
 }

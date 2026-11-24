@@ -72,8 +72,6 @@ import com.github.mayconr.juoserver.game.mobile.template.MountTemplate;
 import com.github.mayconr.juoserver.game.mobile.template.NpcTemplate;
 import com.github.mayconr.juoserver.game.npc.stats.NpcStatsResolver;
 import com.github.mayconr.juoserver.game.npc.ai.NpcAIProfileResolver;
-import com.github.mayconr.juoserver.game.model.EquippedLocation;
-import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UONpc;
 import com.github.mayconr.juoserver.game.model.event.*;
 import com.github.mayconr.juoserver.game.npc.NpcModule;
@@ -87,6 +85,7 @@ import com.github.mayconr.juoserver.game.skill.SkillModule;
 import com.github.mayconr.juoserver.game.skill.SkillModuleImpl;
 import com.github.mayconr.juoserver.game.ui.*;
 import com.github.mayconr.juoserver.game.ui.gump.DefaultGumpSystem;
+import com.github.mayconr.juoserver.game.wallet.BackpackGoldUpdates;
 import com.github.mayconr.juoserver.game.wallet.Wallet;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
 import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
@@ -417,7 +416,7 @@ public class DefaultWorld implements WorldInternal, World {
 
     private void initializeCombatModule() {
 
-        var combat = new CombatModuleImpl();
+        var combat = new CombatModuleImpl(settings.player().status(), storage);
         this.combatModule = combat;
         eventBus.register(MobileMoved.class, combat::onMobileMoved);
     }
@@ -553,17 +552,7 @@ public class DefaultWorld implements WorldInternal, World {
         eventBus.register(PlayerSessionStatusChanged.class, this::handleSessionStateChanged);
         eventBus.register(PlayerSessionClosed.class, this::handleSessionClosed);
 
-        eventBus.register(
-                ItemDroppedInContainer.class,
-                event -> mobileModule.recalculateGold(event.player()),
-                event -> wallet().isGold(event.item())
-        );
-
-        eventBus.register(
-                ItemCreatedInContainer.class,
-                event -> {},//mobileModule.recalculateGold(((UOItem) event.container()).getOwner()),
-                event -> wallet().isGold(event.item()) && event.container() instanceof UOItem item && item.getCurrentLocation() instanceof EquippedLocation
-        );
+        new BackpackGoldUpdates(economyWallet, mobileModule, storage).register(eventBus);
     }
 
     private void initializeStorage() {
@@ -580,10 +569,6 @@ public class DefaultWorld implements WorldInternal, World {
     public void attachPersistedNpcAi() {
         pendingNpcAi.forEach(aiModule::attach);
         pendingNpcAi = List.of();
-    }
-
-    private Wallet wallet() {
-        return worldCfg.wallet().apply(this);
     }
 
     /*

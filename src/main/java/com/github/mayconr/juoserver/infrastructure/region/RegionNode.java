@@ -7,7 +7,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -26,6 +32,12 @@ public class RegionNode {
     private boolean aiActivationScope;
 
     @Setter
+    private RegionLore lore;
+
+    @Setter
+    private RegionTeleport teleport;
+
+    @Setter
     private RegionNode parent;
     private final List<RegionNode> children = new ArrayList<>();
     private final Map<String, Object> properties = new HashMap<>();
@@ -38,6 +50,10 @@ public class RegionNode {
 
     public Optional<RegionNode> getParent() {
         return Optional.ofNullable(parent);
+    }
+
+    public Optional<RegionLore> getLore() {
+        return Optional.ofNullable(lore);
     }
 
     public List<RegionNode> getChildren() {

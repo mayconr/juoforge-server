@@ -5,6 +5,7 @@ import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.world.WorldModule;
+import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.network.packet.DropItem;
 import com.github.mayconr.juoserver.network.packet.EquipItemRequest;
 import com.github.mayconr.juoserver.network.packet.UnequipItem;
@@ -22,6 +23,9 @@ public interface ItemModule extends WorldItem, WorldModule {
 
     /** Puts the requested item on the player's cursor, or refuses the lift to the client. */
     void liftItem(UOPlayer player, UnequipItem request);
+
+    /** Keeps the requested amount on the held serial and places the remainder at its origin. */
+    StepResult splitHeldStack(UOPlayer player, UOItem item, int amount);
 
     /**
      * Places the held item and emits ItemDropAccepted, or restores its lift origin and emits ItemDropRejected.

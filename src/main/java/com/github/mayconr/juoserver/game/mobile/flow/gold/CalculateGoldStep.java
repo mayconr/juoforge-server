@@ -17,7 +17,7 @@ public final class CalculateGoldStep extends AbstractFlowStep<RecalculateGoldCon
         var mobile = context.getMobile();
         if (mobile == null) return StepResult.failure("MISSING_MOBILE", "Mobile is required to recalculate gold");
         context.setOldBalance(mobile.getGold());
-        mobile.setGold(wallet.getBalance(mobile));
+        context.getUpdateBalance().accept(wallet.getBalance(mobile));
         return StepResult.success();
     }
 }

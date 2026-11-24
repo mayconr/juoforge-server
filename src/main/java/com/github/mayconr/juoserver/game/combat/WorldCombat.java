@@ -14,4 +14,6 @@ public interface WorldCombat {
     /** Queues cancellation before attacks are executed on the next combat update. */
     void requestCancelAttack(UOMobile mobile);
 
+    /** Calculates the inclusive damage range of a successful attack with the current equipment. */
+    DamageRange getEquippedDamageRange(UOMobile attacker);
 }

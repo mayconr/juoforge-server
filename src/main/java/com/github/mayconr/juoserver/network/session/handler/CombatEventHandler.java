@@ -1,11 +1,40 @@
 package com.github.mayconr.juoserver.network.session.handler;
 
+import com.github.mayconr.juoserver.game.mobile.VitalType;
 import com.github.mayconr.juoserver.network.session.SessionView;
 import com.github.mayconr.juoserver.network.session.SessionPacketWriter;
 
-import com.github.mayconr.juoserver.game.model.*;
-import com.github.mayconr.juoserver.game.model.event.*;
-import com.github.mayconr.juoserver.network.packet.*;
+import com.github.mayconr.juoserver.game.model.CharacterStatus;
+import com.github.mayconr.juoserver.game.model.DeathScreenType;
+import com.github.mayconr.juoserver.game.model.EffectType;
+import com.github.mayconr.juoserver.game.model.MobileVisibility;
+import com.github.mayconr.juoserver.game.model.UOCorpse;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.model.event.AnimationSent;
+import com.github.mayconr.juoserver.game.model.event.CombatOccurring;
+import com.github.mayconr.juoserver.game.model.event.CombatStarted;
+import com.github.mayconr.juoserver.game.model.event.MobileDamagedEvent;
+import com.github.mayconr.juoserver.game.model.event.MobileDeathEvent;
+import com.github.mayconr.juoserver.game.model.event.MobileVitalsSet;
+import com.github.mayconr.juoserver.game.model.event.MobileResurrectEvent;
+import com.github.mayconr.juoserver.game.model.event.MobileStatusChanged;
+import com.github.mayconr.juoserver.network.packet.AttackCharacter;
+import com.github.mayconr.juoserver.network.packet.CharacterAnimation;
+import com.github.mayconr.juoserver.network.packet.CharacterAnimationFactory;
+import com.github.mayconr.juoserver.network.packet.CorpseClothing;
+import com.github.mayconr.juoserver.network.packet.Damage;
+import com.github.mayconr.juoserver.network.packet.DeathAction;
+import com.github.mayconr.juoserver.network.packet.DeathScreen;
+import com.github.mayconr.juoserver.network.packet.DeleteObject;
+import com.github.mayconr.juoserver.network.packet.DrawGamePlayer;
+import com.github.mayconr.juoserver.network.packet.DrawMobile;
+import com.github.mayconr.juoserver.network.packet.GraphicalEffectPacket;
+import com.github.mayconr.juoserver.network.packet.ObjectInfo;
+import com.github.mayconr.juoserver.network.packet.RequestWarMode;
+import com.github.mayconr.juoserver.network.packet.StatusBarInfo;
+import com.github.mayconr.juoserver.network.packet.UpdateHealth;
+import com.github.mayconr.juoserver.network.packet.UpdatePlayer;
+import com.github.mayconr.juoserver.network.packet.UpdateVitals;
 import com.github.mayconr.juoserver.game.world.WorldInternal;
 import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
@@ -52,6 +81,13 @@ public final class CombatEventHandler {
                 packets.write(new Damage(event.target(), event.totalDamage()));
                 packets.writeAndFlush(new StatusBarInfo(event.target(), session.settings().mobile()));
             });
+        }
+    }
+
+    public void onVitalsSet(MobileVitalsSet event) {
+        var mobile = event.mobile();
+        if (session.isPlayer(mobile) || (event.type() == VitalType.HITPOINTS && session.shouldReceiveUpdate(mobile))) {
+            packetWriter.writeAndFlush(new UpdateVitals(event.type(), mobile.getSerialId(), event.max(), event.value()));
         }
     }
 

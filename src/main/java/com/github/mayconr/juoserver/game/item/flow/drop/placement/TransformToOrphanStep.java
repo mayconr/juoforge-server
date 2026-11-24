@@ -23,6 +23,7 @@ public class TransformToOrphanStep extends AbstractFlowStep<DropItemContext> {
     public StepResult execute(DropItemContext context) {
         var item = context.getItem();
 
+        context.setOrigin(item.getCurrentLocation());
         ItemPlacement.detach(item, storage, mobiles, true);
 
         return StepResult.success();

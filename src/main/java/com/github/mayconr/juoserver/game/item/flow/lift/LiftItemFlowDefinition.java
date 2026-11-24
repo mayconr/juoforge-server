@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.item.flow.lift;
 
 import com.github.mayconr.juoserver.game.item.flow.lift.apply.HoldItemStep;
+import com.github.mayconr.juoserver.game.item.flow.lift.apply.SplitLiftedStackStep;
 import com.github.mayconr.juoserver.game.item.flow.lift.apply.UnequipLiftedItemStep;
 import com.github.mayconr.juoserver.game.item.flow.lift.load.ResolveLiftedItemStep;
 import com.github.mayconr.juoserver.game.item.flow.lift.notification.RejectLiftHook;
@@ -30,6 +31,7 @@ public final class LiftItemFlowDefinition {
                 .step(new ValidateLiftableItemStep())
                 .step(new ValidateItemReachStep(new ItemRootResolver(storage, modules.item())))
                 .step(new HoldItemStep(heldItems, storage))
+                .step(new SplitLiftedStackStep(modules.item()), SplitLiftedStackStep::isPartialLift)
                 .step(new UnequipLiftedItemStep(modules.mobile()), context -> context.getItem().isEquipped())
                 .hook(new FlowHook<>(
                         HookTarget.any(),

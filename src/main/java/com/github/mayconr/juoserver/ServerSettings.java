@@ -48,7 +48,8 @@ public record ServerSettings(int ticksPerSecond, double aiUpdateIntervalSeconds,
                 gameplay.ui(),
                 gameplay.temporal(),
                 gameplay.items(),
-                gameplay.accessLevel()
+                gameplay.accessLevel(),
+                gameplay.player()
         );
     }
 }

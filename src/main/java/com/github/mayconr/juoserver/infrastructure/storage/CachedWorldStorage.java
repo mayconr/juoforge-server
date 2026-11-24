@@ -164,7 +164,19 @@ public class CachedWorldStorage implements WorldStorage {
         return mobileStorage.findMobileBySerialId(serialId)
                 .thenApply(MobileMapper::mapToMobile)
                 .thenCompose(mobileDependencyLoader::loadDependencies)
+                .thenCompose(this::loadPlayerBackpack)
                 .thenApply(this::cache);
+    }
+
+    private CompletableFuture<UOMobile> loadPlayerBackpack(UOMobile mobile) {
+        if (mobile instanceof UOPlayer && mobile.getBackpack() != null
+                && itemCache.get(mobile.getBackpack()) instanceof UOContainer backpack) {
+            return items().loadContainerItems(backpack).thenApply(contents -> {
+                backpack.addItemsToContainer(contents);
+                return mobile;
+            });
+        }
+        return CompletableFuture.completedFuture(mobile);
     }
 
     @Override

@@ -271,7 +271,7 @@ public class DefaultWorldConfigurator implements WorldConfigurator {
     }
 
     // ===== Economy =====
-    private Function<World, Wallet> wallet = PhisycalGoldWallet::new;
+    private Function<World, Wallet> wallet = world -> new PhisycalGoldWallet(world, gameplaySettings().economy());
     private Supplier<PricingStrategy> pricingStrategy = ScarcityBasedPricingStrategy::new;
 
     private final List<Function<ServerRuntime, ContextMenuEntry>> contextMenuEntries = new ArrayList<>();

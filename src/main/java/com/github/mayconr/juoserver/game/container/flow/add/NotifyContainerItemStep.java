@@ -21,7 +21,7 @@ public final class NotifyContainerItemStep extends AbstractFlowStep<AddContainer
     public StepResult execute(AddContainerItemContext context) {
         var container = context.getContainer();
         var owner = container.getCurrentLocation() instanceof EquippedLocation location
-                ? storage.getMobile(location.ownerSerialId()).orElse(null) : null;
+                ? storage.mobiles().get(location.ownerSerialId()).orElse(null) : null;
         events.publish(new ItemCreatedInContainer(container, context.result(), owner));
         return StepResult.success();
     }

@@ -30,10 +30,12 @@ class RegionTemplateMapper {
             );
 
             node.setAiActivationScope(template.aiActivationScope());
-
-            if (template.properties() != null) {
-                template.properties().forEach(node::addProperty);
+            node.setLore(template.lore());
+            if (node.getType() == RegionType.TELEPORT) {
+                node.setTeleport(requireTeleport(template));
             }
+
+            template.properties().forEach(node::addProperty);
 
             result.put(name, node);
         }
@@ -63,6 +65,20 @@ class RegionTemplateMapper {
         return result;
     }
 
+    private RegionTeleport requireTeleport(RegionTemplate template) {
+        var teleport = template.teleport();
+        if (teleport == null || teleport.kind() == null || teleport.kind().isBlank()) {
+            throw new IllegalArgumentException("Region '" + template.name() + "' requires teleport.kind");
+        }
+
+        var destination = teleport.destination();
+        if (destination == null || destination.x() == null || destination.y() == null || destination.z() == null) {
+            throw new IllegalArgumentException("Region '" + template.name()
+                    + "' requires teleport.destination with x, y and z");
+        }
+        return teleport;
+    }
+
     private RegionArea createArea(AreaTemplate area) {
         if ("rectangle".equalsIgnoreCase(area.type())) {
             return new RectangularArea(
@@ -71,6 +87,13 @@ class RegionTemplateMapper {
                     area.width(),
                     area.height()
             );
+        }
+
+        if ("polygon".equalsIgnoreCase(area.type())) {
+            if (area.points() == null) {
+                throw new IllegalArgumentException("Polygon area requires points.");
+            }
+            return new PolygonalArea(area.points());
         }
 
         throw new IllegalArgumentException("Unsupported area type: " + area.type());

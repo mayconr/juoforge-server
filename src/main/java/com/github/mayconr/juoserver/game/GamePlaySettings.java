@@ -18,13 +18,22 @@ public record GamePlaySettings(
         Ui ui,
         Temporal temporal,
         Items items,
-        AccessLevel accessLevel
+        AccessLevel accessLevel,
+        Player player
 ) {
     public GamePlaySettings {
         ui = ui == null ? new Ui() : ui;
         temporal = temporal == null ? new Temporal() : temporal;
         items = items == null ? new Items() : items;
         accessLevel = accessLevel == null ? new AccessLevel() : accessLevel;
+        player = player == null ? new Player() : player;
+    }
+
+    public GamePlaySettings(String name, GameLoop gameLoop, Skills skills, Mobile mobile, World world,
+                            Files files, Client client, Economy economy, Ai ai, Ui ui, Temporal temporal,
+                            Items items, AccessLevel accessLevel) {
+        this(name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel,
+                new Player());
     }
 
     public GamePlaySettings(String name, GameLoop gameLoop, Skills skills, Mobile mobile, World world,
@@ -83,21 +92,21 @@ public record GamePlaySettings(
     public GamePlaySettings withUi(Ui ui) {
         Objects.requireNonNull(ui, "ui is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
     public GamePlaySettings withTemporal(Temporal temporal) {
         Objects.requireNonNull(temporal, "temporal is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
     public GamePlaySettings withItems(Items items) {
         Objects.requireNonNull(items, "items is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
@@ -121,8 +130,40 @@ public record GamePlaySettings(
     public GamePlaySettings withAccessLevel(AccessLevel accessLevel) {
         Objects.requireNonNull(accessLevel, "accessLevel is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
+    }
+
+    public GamePlaySettings withPlayer(Player player) {
+        Objects.requireNonNull(player, "player is required");
+        return new GamePlaySettings(
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
+        );
+    }
+
+    public record Player(Status status) {
+        public Player() {
+            this(new Status());
+        }
+
+        public Player {
+            status = status == null ? new Status() : status;
+        }
+
+        public record Status(Integer maxDexterity) {
+            public static final int DEFAULT_MAX_DEXTERITY = 100;
+
+            public Status() {
+                this(DEFAULT_MAX_DEXTERITY);
+            }
+
+            public Status {
+                maxDexterity = maxDexterity == null ? DEFAULT_MAX_DEXTERITY : maxDexterity;
+                if (maxDexterity < 0) {
+                    throw new IllegalArgumentException("player.status.maxDexterity must be non-negative");
+                }
+            }
+        }
     }
 
     /** Item rules. */
@@ -199,42 +240,42 @@ public record GamePlaySettings(
     public GamePlaySettings withName(String name) {
         Objects.requireNonNull(name, "name is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
     public GamePlaySettings withSkills(Skills skills) {
         Objects.requireNonNull(skills, "skills is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
     public GamePlaySettings withMobile(Mobile mobile) {
         Objects.requireNonNull(mobile, "mobile is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
     public GamePlaySettings withWorld(World world) {
         Objects.requireNonNull(world, "world is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
     public GamePlaySettings withClient(Client client) {
         Objects.requireNonNull(client, "client is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 
     public GamePlaySettings withEconomy(Economy economy) {
         Objects.requireNonNull(economy, "economy is required");
         return new GamePlaySettings(
-                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel
+                name, gameLoop, skills, mobile, world, files, client, economy, ai, ui, temporal, items, accessLevel, player
         );
     }
 

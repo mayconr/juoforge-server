@@ -4,6 +4,10 @@ import com.github.mayconr.juoserver.game.world.context.DefaultModuleContext;
 import com.github.mayconr.juoserver.game.world.context.DefaultFlowFacade;
 
 import com.github.mayconr.juoserver.game.GamePlaySettings;
+import com.github.mayconr.juoserver.game.container.ContainerModuleImpl;
+import com.github.mayconr.juoserver.game.container.flow.load.LoadContainerContentsContext;
+import com.github.mayconr.juoserver.game.container.flow.load.LoadContainerContentsFlowDefinition;
+import com.github.mayconr.juoserver.game.item.ContainerHandler;
 import com.github.mayconr.juoserver.game.item.ItemCreationResult;
 import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldContext;
@@ -59,6 +63,15 @@ class PlayerDeathTransferTest {
         data.setFlags(flags);
         data.setPersistentAttrMap(new DefaultAttributeMap());
         return data;
+    }
+
+    private ContainerModuleImpl containerModule(WorldStorage storage) {
+        var registry = new DefaultFlowRegistry();
+        registry.register("load-container-contents",
+                LoadContainerContentsFlowDefinition.build(storage), LoadContainerContentsContext.class);
+        var containers = new ContainerModuleImpl(storage, mock(ContainerHandler.class));
+        containers.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
+        return containers;
     }
 
     @Test
@@ -117,7 +130,8 @@ class PlayerDeathTransferTest {
         }).when(events).publish(any(MobileDeathEvent.class));
         assertFalse(weapon.isMovable());
         assertTrue(backpack.getContainerItems().isEmpty()); // Contents have not been opened/loaded yet.
-        var flow = DeathFlowDefinition.build(GameModules.builder().mobile(mobile).item(items).build(),
+        var containers = containerModule(storage);
+        var flow = DeathFlowDefinition.build(GameModules.builder().mobile(mobile).item(items).container(containers).build(),
                 GameInfra.builder().storage(storage).eventBus(events).build(), GameTemplates.builder().build());
         var result = flow.execute(new DeathContext(player, new UOPlayer(new UOMobileData()), DeathCause.COMBAT));
         assertTrue(result.flowSucceeded());
@@ -154,7 +168,7 @@ class PlayerDeathTransferTest {
         var corpse = new UOCorpse(data(200, null, ItemLocationType.GROUND, List.of(ItemFlag.CORPSE)), null);
         context.corpse(corpse);
         var result = FlowFactory.<DeathContext>builder()
-                .step(new MoveItemsToCorpseStep(null, null, storage)).build().execute(context);
+                .step(new MoveItemsToCorpseStep(null, null, null, storage)).build().execute(context);
         assertTrue(result.flowFailed());
         assertEquals(2, player.getEquippedItems().size());
         assertTrue(corpse.getContainerItems().isEmpty());
