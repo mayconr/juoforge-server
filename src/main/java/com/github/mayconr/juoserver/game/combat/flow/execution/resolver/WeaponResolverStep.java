@@ -1,14 +1,11 @@
 package com.github.mayconr.juoserver.game.combat.flow.execution.resolver;
 
+import com.github.mayconr.juoserver.game.combat.EquippedWeaponResolver;
 import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionContext;
-import com.github.mayconr.juoserver.game.model.Layer;
-import com.github.mayconr.juoserver.game.model.WeaponStyle;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
 
 @Slf4j
 public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext> {
@@ -22,34 +19,16 @@ public class WeaponResolverStep extends AbstractFlowStep<CombatExecutionContext>
 
     @Override
     public StepResult execute(CombatExecutionContext context) {
-        final var session = context.getSession();
-        final var mobile = session.getAttacker();
-        final var equippedItems = mobile.getEquippedItems();
-
-        if (equippedItems == null
-                || equippedItems.isEmpty()
-                || (!equippedItems.containsKey(Layer.ONE_HANDED) && !equippedItems.containsKey(Layer.TWO_HANDED))) {
-            if (log.isDebugEnabled()) {
-                log.info("No equipped Items found");
-            }
-            context.setWeaponStyle(WeaponStyle.WRESTLING);
-            return StepResult.success();
-        }
-        final var weaponSerial = Optional.ofNullable(equippedItems.get(Layer.ONE_HANDED))
-                .orElseGet(() -> equippedItems.get(Layer.TWO_HANDED));
-        final var weapon = storage.items().get(weaponSerial)
-                .orElseThrow(() -> new IllegalArgumentException("Weapon not found"));
-        final var template = weapon.getTemplate();
-        final var weaponDefinition = template == null ? null : template.weapon();
-        final var style = weaponDefinition == null ? null : weaponDefinition.style();
-        if (style == null) {
+        var equipped = EquippedWeaponResolver.resolve(context.getSession().getAttacker(), storage);
+        if (equipped.style() == null) {
+            var weapon = equipped.item();
             log.warn("Equipped item '{}' (serial {}) has no weapon style defined in its template",
-                    weapon.getName(), weaponSerial);
+                    weapon.getName(), weapon.getSerialId());
             return StepResult.stop("COMBAT_WEAPON_STYLE_MISSING", "Equipped weapon has no style defined");
         }
 
-        context.setWeapon(weapon);
-        context.setWeaponStyle(style);
+        context.setWeapon(equipped.item());
+        context.setWeaponStyle(equipped.style());
         return StepResult.success();
     }
 }

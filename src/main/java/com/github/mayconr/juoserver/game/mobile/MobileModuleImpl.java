@@ -10,6 +10,7 @@ import com.github.mayconr.juoserver.game.mobile.flow.movement.MovementContext;
 import com.github.mayconr.juoserver.game.mobile.flow.resurrection.ResurrectionContext;
 import com.github.mayconr.juoserver.game.mobile.flow.resync.ResyncContext;
 import com.github.mayconr.juoserver.game.mobile.flow.setattribute.SetAttributeContext;
+import com.github.mayconr.juoserver.game.mobile.flow.setvitals.SetVitalsContext;
 import com.github.mayconr.juoserver.game.mobile.flow.teleport.TeleportContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unmount.UnmountContext;
@@ -94,6 +95,20 @@ public class MobileModuleImpl implements MobileModule {
         var result = flows.execute(new SetAttributeContext(mobile, attribute, value));
         if (result.flowFailed()) {
             throw ModuleOperationException.fromFailure("setAttribute", result, null);
+        }
+    }
+
+    @Override
+    public void setVitals(UOMobile mobile, VitalType type, int max, int value) {
+        Objects.requireNonNull(mobile, "Mobile is required");
+        Objects.requireNonNull(type, "Vital type is required");
+        int maximum = Math.clamp(max, 0, 0xFFFF);
+        int current = Math.clamp(value, 0, maximum);
+        synchronized (mobile) {
+            var result = flows.execute(new SetVitalsContext(mobile, type, maximum, current));
+            if (result.flowFailed()) {
+                throw ModuleOperationException.fromFailure("setVitals", result, null);
+            }
         }
     }
 

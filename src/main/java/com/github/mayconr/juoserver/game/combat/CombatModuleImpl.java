@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.combat;
 
+import com.github.mayconr.juoserver.game.GamePlaySettings.Player.Status;
 import com.github.mayconr.juoserver.game.combat.commands.AttackCommand;
 import com.github.mayconr.juoserver.game.combat.commands.CancelAttackCommand;
 import com.github.mayconr.juoserver.game.combat.commands.CombatCommand;
@@ -7,11 +8,13 @@ import com.github.mayconr.juoserver.game.combat.flow.execution.CombatExecutionCo
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext;
 import com.github.mayconr.juoserver.game.combat.flow.preparation.CombatPreparationContext.CombatOrigin;
 import com.github.mayconr.juoserver.game.combat.flow.warmode.ToggleWarModeContext;
+import com.github.mayconr.juoserver.game.damage.shared.AttackDamageCalculator;
 import com.github.mayconr.juoserver.game.model.UOMobile;
 import com.github.mayconr.juoserver.game.model.UOPlayer;
 import com.github.mayconr.juoserver.game.model.WarModeType;
 import com.github.mayconr.juoserver.game.model.event.MobileMoved;
 import com.github.mayconr.juoserver.game.world.context.ModuleContext;
+import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 
 import java.util.Map;
 import java.util.Objects;
@@ -21,15 +24,32 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CombatModuleImpl implements CombatModule {
 
-    private static final double SWING_INTERVAL_SECONDS = 1;
+    private static final double BASE_SWING_INTERVAL_SECONDS = 1;
+    private static final int MAX_NPC_SWING_DEXTERITY = 100;
 
     private final Queue<CombatCommand> commandQueue = new ConcurrentLinkedQueue<>();
     private final Map<Integer, AttackCommand> pendingAttacks = new ConcurrentHashMap<>();
     private final Map<Integer, Double> nextSwingAt = new ConcurrentHashMap<>();
     private final CombatSessionRegistry registry = new CombatSessionRegistryImpl();
+    private final Status playerStatus;
+    private final WorldStorage storage;
 
     private ModuleContext.FlowFacade flows;
     private volatile double elapsedSeconds;
+
+    public CombatModuleImpl(Status playerStatus, WorldStorage storage) {
+        this.playerStatus = Objects.requireNonNull(playerStatus, "Player status settings are required");
+        this.storage = Objects.requireNonNull(storage, "World storage is required");
+    }
+
+    @Override
+    public DamageRange getEquippedDamageRange(UOMobile attacker) {
+        var equipped = EquippedWeaponResolver.resolve(attacker, storage);
+        if (equipped.style() == null) {
+            throw new IllegalArgumentException("Equipped weapon has no style defined");
+        }
+        return AttackDamageCalculator.range(attacker, equipped.item(), equipped.style().getCombatType());
+    }
 
     @Override
     public void initialize(ModuleContext context) {
@@ -100,7 +120,17 @@ public class CombatModuleImpl implements CombatModule {
 
     private boolean reserveSwing(CombatSession session) {
         return session.isActive() && nextSwingAt.putIfAbsent(
-                session.getAttacker().getSerialId(), elapsedSeconds + SWING_INTERVAL_SECONDS) == null;
+                session.getAttacker().getSerialId(), elapsedSeconds + swingIntervalSeconds(session)) == null;
+    }
+
+    private double swingIntervalSeconds(CombatSession session) {
+        if (!(session.getTrigger() instanceof CombatSession.PhysicalTrigger)) {
+            return BASE_SWING_INTERVAL_SECONDS;
+        }
+        var attacker = session.getAttacker();
+        int maxDexterity = attacker instanceof UOPlayer ? playerStatus.maxDexterity() : MAX_NPC_SWING_DEXTERITY;
+        int dexterity = Math.clamp(attacker.getDexterity(), 0, maxDexterity);
+        return BASE_SWING_INTERVAL_SECONDS / (1.0 + dexterity / 100.0);
     }
 
     @Override

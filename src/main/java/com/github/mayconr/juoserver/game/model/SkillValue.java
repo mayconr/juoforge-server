@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class SkillValue {
 
+    public static final int TACTICS_ID = 27;
+
     private final int skillId;
     // GETTERS
     private double base;   // real skill
