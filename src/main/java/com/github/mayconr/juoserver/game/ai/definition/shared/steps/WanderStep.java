@@ -10,6 +10,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class WanderStep<T extends AIFlowContext> extends AbstractFlowStep<T> {
 
+    private static final Direction[] DIRECTIONS = Direction.values();
+    private static final int MAX_STEPS_PER_DIRECTION = 6;
+    private static final String ROUTE_KEY = "wander.route";
+
     private final double moveInterval;
 
     public WanderStep(double moveInterval) {
@@ -29,11 +33,25 @@ public class WanderStep<T extends AIFlowContext> extends AbstractFlowStep<T> {
 
         ctx.set("wander.acc", 0.0);
 
-        var directions = Direction.values();
-        var dir = directions[ThreadLocalRandom.current().nextInt(directions.length)];
+        var route = ctx.get(ROUTE_KEY, WanderRoute.class);
+        if (route == null || route.stepsRemaining() == 0) {
+            route = chooseRoute(route);
+        }
 
-        ctx.enqueueAction(new WalkAction(ctx.npc(), dir));
-
+        ctx.enqueueAction(new WalkAction(ctx.npc(), route.direction()));
+        ctx.set(ROUTE_KEY, new WanderRoute(route.direction(), route.stepsRemaining() - 1));
         return StepResult.success();
+    }
+
+    private WanderRoute chooseRoute(WanderRoute previous) {
+        var random = ThreadLocalRandom.current();
+        int directionIndex = previous == null
+                ? random.nextInt(DIRECTIONS.length)
+                : (previous.direction().ordinal() + random.nextInt(1, DIRECTIONS.length)) % DIRECTIONS.length;
+        int steps = random.nextInt(1, MAX_STEPS_PER_DIRECTION + 1);
+        return new WanderRoute(DIRECTIONS[directionIndex], steps);
+    }
+
+    private record WanderRoute(Direction direction, int stepsRemaining) {
     }
 }

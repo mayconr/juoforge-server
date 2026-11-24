@@ -14,6 +14,7 @@ import com.github.mayconr.juoserver.game.region.RegionModuleImpl;
 import com.github.mayconr.juoserver.game.player.PlayerModuleImpl;
 import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnContext;
 import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnFlowDefinition;
+import com.github.mayconr.juoserver.game.mobile.MobileModule;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.game.region.flow.transition.*;
 import com.github.mayconr.juoserver.game.world.World;
@@ -54,7 +55,7 @@ class RegionAiLifecycleTest {
         var registry = new DefaultFlowRegistry();
         var players = new PlayerModuleImpl(mock(WorldStorage.class), bus);
         registry.register("spawn", PlayerSpawnFlowDefinition.build(
-                FlowRegistryFactory.GameModules.builder().region(regionModule).ai(ai).build(),
+                FlowRegistryFactory.GameModules.builder().region(regionModule).ai(ai).mobile(mock(MobileModule.class)).build(),
                 FlowRegistryFactory.GameInfra.builder().regionSystem(regions).eventBus(bus).build()),
                 PlayerSpawnContext.class);
         registry.register("activateRegion", ActivateRegionFlowDefinition.build(ai), ActivateRegionContext.class);

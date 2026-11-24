@@ -4,6 +4,7 @@ import com.github.mayconr.juoserver.game.model.UOItem;
 import com.github.mayconr.juoserver.game.model.ConsumeResult;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import com.github.mayconr.juoserver.game.model.UOContainer;
@@ -44,6 +45,16 @@ public interface WorldContainer {
      * @return the loaded container, or an empty optional if no container is cached for that serial
      */
     Optional<UOContainer> getContainerBySerialId(int serial);
+
+    /**
+     * Loads the persisted direct children of the container into the item cache and registers them
+     * as container members, without client notifications or inventory events.
+     *
+     * @param container loaded container whose persisted contents are loaded
+     * @return future completed with the loaded direct children once they are registered
+     * @throws com.github.mayconr.juoserver.game.world.ModuleOperationException if the load cannot start
+     */
+    CompletableFuture<List<UOItem>> loadContents(UOContainer container);
 
     /**
      * Returns the loaded direct children matching the predicate, without searching nested containers.

@@ -2,6 +2,7 @@ package com.github.mayconr.juoserver.game.container;
 
 import com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext;
 import com.github.mayconr.juoserver.game.container.flow.count.CountContainerItemsContext;
+import com.github.mayconr.juoserver.game.container.flow.load.LoadContainerContentsContext;
 import com.github.mayconr.juoserver.game.container.flow.count.ValidateCountItemsRequestStep;
 import com.github.mayconr.juoserver.game.container.flow.weight.ContainerWeightContext;
 import com.github.mayconr.juoserver.game.container.flow.weight.ValidateContainerWeightRequestStep;
@@ -16,6 +17,7 @@ import com.github.mayconr.juoserver.game.model.ConsumeResult;
 import com.github.mayconr.juoserver.game.item.ContainerHandler;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import com.github.mayconr.juoserver.game.model.UOContainer;
@@ -56,6 +58,16 @@ public class ContainerModuleImpl implements ContainerModule {
     @Override
     public Optional<UOContainer> getContainerBySerialId(int serial) {
         return storage.getContainer(serial);
+    }
+
+    @Override
+    public CompletableFuture<List<UOItem>> loadContents(UOContainer container) {
+        var context = new LoadContainerContentsContext(Objects.requireNonNull(container, "Container is required"));
+        var result = flows.execute(context);
+        if (result.flowFailed()) {
+            throw ModuleOperationException.fromFailure("loadContents", result, null);
+        }
+        return context.result();
     }
 
     @Override

@@ -20,7 +20,7 @@ public final class DeathFlowDefinition {
         return FlowFactory.<DeathContext>builder()
                 .step(new ValidateDeathStep())
                 .step(new CorpseCreationStep(modules.item()))
-                .step(new MoveItemsToCorpseStep(modules.mobile(), modules.item(), infra.storage()))
+                .step(new MoveItemsToCorpseStep(modules.mobile(), modules.item(), modules.container(), infra.storage()))
                 .step(new UpdateMobileDeathStatusStep())
                 .step(new SpawnMobileMountStep(modules.npc(), templates.mountByItemName()))
                 .step(new GenerateDeathLootStep(modules.loot()))

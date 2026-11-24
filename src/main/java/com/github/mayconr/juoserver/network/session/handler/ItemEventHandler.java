@@ -174,6 +174,9 @@ public final class ItemEventHandler {
     }
 
     public void onItemUpdated(ItemUpdated event) {
+        if (event.excludedPlayer() != null && session.isPlayer(event.excludedPlayer())) {
+            return;
+        }
         final var item = event.item();
         if (event.previousLocation() != null && session.shouldReceiveUpdate(event.previousLocation())
                 && !session.shouldReceiveUpdate(item)) {

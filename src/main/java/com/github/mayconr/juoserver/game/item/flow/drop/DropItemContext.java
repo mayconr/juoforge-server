@@ -1,6 +1,7 @@
 package com.github.mayconr.juoserver.game.item.flow.drop;
 
 import com.github.mayconr.juoserver.game.item.hold.HeldItemRequest;
+import com.github.mayconr.juoserver.game.model.ItemLocation;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.UOItem;
@@ -23,6 +24,7 @@ public class DropItemContext extends AbstractSyncFlowContext<Void> implements He
     private TargetGround targetGround;
 
     private UOItem item;
+    private ItemLocation origin;
     private boolean outcomeNotified;
 
     private DropTarget target;

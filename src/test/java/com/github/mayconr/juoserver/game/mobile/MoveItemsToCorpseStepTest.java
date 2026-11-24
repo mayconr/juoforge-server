@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.WorldItem;
 import com.github.mayconr.juoserver.game.mobile.flow.death.DeathContext;
@@ -61,7 +62,9 @@ class MoveItemsToCorpseStepTest {
         var context = new DeathContext(victim, null, null);
         context.corpse(corpse);
 
-        var result = new MoveItemsToCorpseStep(mobiles, items, storage).execute(context);
+        var containers = mock(WorldContainer.class);
+
+        var result = new MoveItemsToCorpseStep(mobiles, items, containers, storage).execute(context);
 
         assertTrue(result.flowSucceeded());
         assertFalse(victim.isMounted());
@@ -74,5 +77,6 @@ class MoveItemsToCorpseStepTest {
         verify(corpse).recordEquippedItem(weapon);
         verify(corpse, never()).recordEquippedItem(mount);
         verify(corpse, never()).addItemToContainer(bank);
+        verifyNoInteractions(containers);
     }
 }

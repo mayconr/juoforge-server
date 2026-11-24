@@ -5,10 +5,7 @@ import com.github.mayconr.juoserver.game.model.LiftRejectReason;
 import com.github.mayconr.juoserver.infrastructure.flow.AbstractFlowStep;
 import com.github.mayconr.juoserver.infrastructure.flow.StepResult;
 
-/**
- * The item must be movable and lifted as a whole stack. Splitting a stack on lift is not supported yet, so
- * a request for part of a stack is refused instead of moving the whole stack.
- */
+/** Validates that the item can be lifted and that a stack request has a positive quantity. */
 public final class ValidateLiftableItemStep extends AbstractFlowStep<LiftItemContext> {
 
     public ValidateLiftableItemStep() {
@@ -21,15 +18,9 @@ public final class ValidateLiftableItemStep extends AbstractFlowStep<LiftItemCon
         if (!item.isMovable()) {
             return context.reject(LiftRejectReason.CANNOT_LIFT, "Item " + item.getSerialId() + " is not movable");
         }
-        int requested = context.getRequest().getAmount();
-        if (!isWholeStack(requested, item.getAmount())) {
-            return context.reject(LiftRejectReason.CANNOT_LIFT,
-                    "Lifting " + requested + " of " + item.getAmount() + " would split the stack");
+        if (item.getAmount() > 1 && context.getRequest().getAmount() == 0) {
+            return context.reject(LiftRejectReason.CANNOT_LIFT, "Stack lift requires a positive quantity");
         }
         return StepResult.success();
-    }
-
-    private static boolean isWholeStack(int requested, int available) {
-        return available <= 1 || requested >= available;
     }
 }

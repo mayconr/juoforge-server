@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile;
 
+import com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldContext;
 import com.github.mayconr.juoserver.game.model.ItemTarget;
 import com.github.mayconr.juoserver.game.model.ResistanceType;
 import com.github.mayconr.juoserver.game.GamePlaySettings;
@@ -227,7 +228,12 @@ public class MobileModuleImpl implements MobileModule {
 
     @Override
     public void recalculateGold(UOMobile mobile) {
-        var result = flows.execute(new com.github.mayconr.juoserver.game.mobile.flow.gold.RecalculateGoldContext(mobile));
+        recalculateGold(mobile, true);
+    }
+
+    @Override
+    public void recalculateGold(UOMobile mobile, boolean notifyClient) {
+        var result = flows.execute(new RecalculateGoldContext(mobile, balance -> mobile.setGold(balance), notifyClient));
         if (result.flowFailed()) {
             throw ModuleOperationException.fromFailure("recalculateGold", result, null);
         }

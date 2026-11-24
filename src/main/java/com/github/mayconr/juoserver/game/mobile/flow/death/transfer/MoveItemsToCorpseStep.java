@@ -1,5 +1,6 @@
 package com.github.mayconr.juoserver.game.mobile.flow.death.transfer;
 
+import com.github.mayconr.juoserver.game.container.WorldContainer;
 import com.github.mayconr.juoserver.game.item.ItemModule;
 import com.github.mayconr.juoserver.game.item.ItemPlacement;
 import com.github.mayconr.juoserver.game.item.WorldItem;
@@ -30,12 +31,15 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathContext> {
 
     private final MobileModule mobileModule;
     private final ItemModule itemModule;
+    private final WorldContainer containers;
     private final WorldStorage storage;
 
-    public MoveItemsToCorpseStep(MobileModule mobileModule, ItemModule itemModule, WorldStorage storage) {
+    public MoveItemsToCorpseStep(MobileModule mobileModule, ItemModule itemModule, WorldContainer containers,
+                                 WorldStorage storage) {
         super("move_item_corpse_step");
         this.mobileModule = mobileModule;
         this.itemModule = itemModule;
+        this.containers = containers;
         this.storage = storage;
     }
 
@@ -52,10 +56,8 @@ public class MoveItemsToCorpseStep extends AbstractFlowStep<DeathContext> {
                 .orElseThrow(() -> new IllegalStateException("Backpack not found: " + serial));
 
         // The player may die before ever opening the backpack: load its direct children first.
-        return StepResult.async(storage.items().loadContainerItems(backpack).thenApply(items -> {
-            backpack.addItemsToContainer(items);
-            return transfer(context, backpack);
-        }));
+        return StepResult.async(containers.loadContents(backpack)
+                .thenApply(items -> transfer(context, backpack)));
     }
 
     private StepResult transfer(DeathContext context, UOContainer backpack) {

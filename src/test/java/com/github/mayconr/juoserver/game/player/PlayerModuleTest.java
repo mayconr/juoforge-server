@@ -1,6 +1,8 @@
 package com.github.mayconr.juoserver.game.player;
 
 import com.github.mayconr.juoserver.game.model.UOPlayer;
+import com.github.mayconr.juoserver.game.mobile.MobileModule;
+import com.github.mayconr.juoserver.game.mobile.WorldMobile;
 import com.github.mayconr.juoserver.infrastructure.storage.WorldStorage;
 import com.github.mayconr.juoserver.game.ai.AIModule;
 import com.github.mayconr.juoserver.game.model.event.PlayerLoggedIn;
@@ -11,6 +13,7 @@ import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnContext;
 import com.github.mayconr.juoserver.game.player.flow.spawn.PlayerSpawnFlowDefinition;
 import com.github.mayconr.juoserver.game.world.context.*;
 import com.github.mayconr.juoserver.infrastructure.eventbus.DefaultEventBus;
+import com.github.mayconr.juoserver.infrastructure.eventbus.EventHandler;
 import com.github.mayconr.juoserver.infrastructure.region.*;
 import org.junit.jupiter.api.Test;
 
@@ -34,11 +37,12 @@ class PlayerModuleTest {
         var regions = new RegionSystemImpl(Map.of("city", city, "shop", shop));
         var regionModule = new RegionModuleImpl(regions);
         var ai = mock(AIModule.class);
+        var mobiles = mock(MobileModule.class);
         var registry = new DefaultFlowRegistry();
-        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, events, regionModule, ai, mock(com.github.mayconr.juoserver.game.mobile.WorldMobile.class)),
+        registry.register("regionTransition", RegionTransitionFlowDefinition.build(regions, events, regionModule, ai, mock(WorldMobile.class)),
                 RegionTransitionContext.class);
         registry.register("spawn", PlayerSpawnFlowDefinition.build(
-                FlowRegistryFactory.GameModules.builder().region(regionModule).ai(ai).build(),
+                FlowRegistryFactory.GameModules.builder().region(regionModule).ai(ai).mobile(mobiles).build(),
                 FlowRegistryFactory.GameInfra.builder().regionSystem(regions).eventBus(events).build()),
                 PlayerSpawnContext.class);
         module.initialize(new DefaultModuleContext(new DefaultFlowFacade(registry)));
@@ -46,7 +50,9 @@ class PlayerModuleTest {
         WorldPlayer players = module;
         var player = mock(UOPlayer.class);
         when(player.getSerialId()).thenReturn(42);
+        var loggedIn = mock(EventHandler.class);
         events.register(PlayerLoggedIn.class, event -> {
+            loggedIn.handle(event);
             assertEquals(List.of(player), module.getOnlinePlayers());
             assertEquals(Set.of(42), regionModule.getPlayerSerials(shop));
             assertEquals(Set.of(42), regionModule.getPlayerSerials(city));
@@ -55,6 +61,9 @@ class PlayerModuleTest {
 
         assertTrue(players.getOnlinePlayers().isEmpty());
         module.spawn(player);
+        var order = inOrder(mobiles, loggedIn);
+        order.verify(mobiles).recalculateGold(player, false);
+        order.verify(loggedIn).handle(new PlayerLoggedIn(player));
         verify(ai).activateRegion(city);
         var snapshot = players.getOnlinePlayers();
         assertEquals(List.of(player), snapshot);

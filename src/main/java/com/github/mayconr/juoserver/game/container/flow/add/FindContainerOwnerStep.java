@@ -17,7 +17,7 @@ public final class FindContainerOwnerStep extends AbstractFlowStep<AddContainerI
     @Override
     public StepResult execute(AddContainerItemContext context) {
         var owner = context.getContainer().getCurrentLocation() instanceof EquippedLocation location
-                ? storage.getMobile(location.ownerSerialId()).orElse(null) : null;
+                ? storage.mobiles().get(location.ownerSerialId()).orElse(null) : null;
         context.setMobile(owner);
         return StepResult.success();
     }

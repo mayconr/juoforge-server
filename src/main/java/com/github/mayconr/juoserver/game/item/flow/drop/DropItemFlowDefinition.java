@@ -15,6 +15,7 @@ import com.github.mayconr.juoserver.game.item.flow.drop.placement.StackItemStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.placement.TransformToOrphanStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.placement.RecordGroundDropStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.notification.AcceptDropStep;
+import com.github.mayconr.juoserver.game.item.flow.drop.notification.NotifyDropInventoryStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.notification.RejectDropHook;
 import com.github.mayconr.juoserver.game.item.flow.drop.validation.ValidateDropTargetStep;
 import com.github.mayconr.juoserver.game.item.flow.drop.validation.ValidateInteractionRangeStep;
@@ -45,6 +46,7 @@ public class DropItemFlowDefinition {
                 .appendGroup("ItemPlacementPhase", itemPlacementPhase(infra.storage(), infra.eventBus(),
                         modules.container(), modules.mobile()))
                 .step(new RecordGroundDropStep(modules.item()))
+                .step(new NotifyDropInventoryStep(infra.eventBus()))
                 .step(new AcceptDropStep(modules.item().heldItems(), infra.eventBus()), DropItemContext::isDroppedItem)
                 .hook(new FlowHook<>(
                         HookTarget.any(),

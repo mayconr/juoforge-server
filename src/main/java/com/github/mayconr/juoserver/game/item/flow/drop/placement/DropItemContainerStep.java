@@ -34,6 +34,7 @@ public class DropItemContainerStep extends AbstractFlowStep<DropItemContext> {
         final var item = context.getItem();
         final var location = context.getTargetContainer().location();
 
+        context.setOrigin(item.getCurrentLocation());
         ItemPlacement.prepareContainerMove(item, container, location, storage, mobiles,
                 () -> containers.addItem(container, item, false)).run();
 

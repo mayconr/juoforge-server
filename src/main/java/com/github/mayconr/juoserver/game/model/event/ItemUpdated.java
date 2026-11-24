@@ -4,8 +4,14 @@ import com.github.mayconr.juoserver.game.model.UOContainer;
 import com.github.mayconr.juoserver.game.model.Location;
 import com.github.mayconr.juoserver.infrastructure.eventbus.GameEvent;
 import com.github.mayconr.juoserver.game.model.UOItem;
+import com.github.mayconr.juoserver.game.model.UOPlayer;
 
-public record ItemUpdated(UOItem item, UOContainer container, Location previousLocation) implements GameEvent {
+public record ItemUpdated(UOItem item, UOContainer container, Location previousLocation, UOPlayer excludedPlayer)
+        implements GameEvent {
+    public ItemUpdated(UOItem item, UOContainer container, Location previousLocation) {
+        this(item, container, previousLocation, null);
+    }
+
     public ItemUpdated(UOItem item, UOContainer container) {
         this(item, container, null);
     }

@@ -23,6 +23,9 @@ public interface MobileModule extends WorldMobile, WorldModule {
     /** Refreshes the mobile's gold balance from its wallet and publishes the change. */
     void recalculateGold(UOMobile mobile);
 
+    /** Refreshes the balance and optionally sends the notification. */
+    void recalculateGold(UOMobile mobile, boolean notifyClient);
+
     /** Runs the equip flow and returns whether the item was equipped. */
     boolean equipItem(UOMobile mobile, UOItem item);
 

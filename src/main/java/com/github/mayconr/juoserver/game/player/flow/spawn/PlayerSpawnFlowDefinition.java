@@ -11,6 +11,7 @@ public final class PlayerSpawnFlowDefinition {
 
     public static Flow<PlayerSpawnContext> build(GameModules modules, GameInfra infra) {
         return FlowFactory.<PlayerSpawnContext>builder()
+                .step(new PrepareEntryGoldStep(modules.mobile()))
                 .step(new RegisterOnlinePlayerStep())
                 .step(new UpdateMobileRegionStep<>(modules.region()))
                 .step(new NotifyPlayerSpawnStep(infra.eventBus()))

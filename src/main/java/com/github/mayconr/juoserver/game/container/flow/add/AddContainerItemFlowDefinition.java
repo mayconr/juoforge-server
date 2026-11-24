@@ -15,6 +15,7 @@ public final class AddContainerItemFlowDefinition {
                 .step(new PlaceContainerItemStep(storage))
                 .step(new NotifyContainerItemStep(storage, events), AddContainerItemContext::isNotifyClient)
                 .step(new FindContainerOwnerStep(storage), AddContainerItemContext::isNotifyClient)
+                .step(new NotifyContainerInventoryStep(events))
                 .step(new NotifyMobileStatusStep<>(ui), AddContainerItemContext::isNotifyClient)
                 .build();
     }

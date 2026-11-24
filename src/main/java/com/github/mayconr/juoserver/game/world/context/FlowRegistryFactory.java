@@ -6,6 +6,8 @@ import com.github.mayconr.juoserver.game.container.flow.count.CountContainerItem
 import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsContext;
 import com.github.mayconr.juoserver.game.container.flow.weight.ContainerWeightContext;
 import com.github.mayconr.juoserver.game.container.flow.weight.ContainerWeightFlowDefinition;
+import com.github.mayconr.juoserver.game.container.flow.load.LoadContainerContentsContext;
+import com.github.mayconr.juoserver.game.container.flow.load.LoadContainerContentsFlowDefinition;
 import com.github.mayconr.juoserver.game.container.flow.query.GetContainerItemsFlowDefinition;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsContext;
 import com.github.mayconr.juoserver.game.skill.flow.update.UpdateSkillActionsFlowDefinition;
@@ -101,6 +103,8 @@ import com.github.mayconr.juoserver.game.item.flow.equip.EquipHeldItemContext;
 import com.github.mayconr.juoserver.game.item.flow.equip.EquipHeldItemFlowDefinition;
 import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
 import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemFlowDefinition;
+import com.github.mayconr.juoserver.game.item.flow.split.SplitHeldStackContext;
+import com.github.mayconr.juoserver.game.item.flow.split.SplitHeldStackFlowDefinition;
 import com.github.mayconr.juoserver.game.item.template.ItemTemplate;
 import com.github.mayconr.juoserver.game.messaging.MessageModule;
 import com.github.mayconr.juoserver.game.mobile.MobileModule;
@@ -287,6 +291,8 @@ public class FlowRegistryFactory {
                 CountContainerItemsFlowDefinition.build(infra.storage()), CountContainerItemsContext.class);
         registry.register(ContainerWeightFlowDefinition.class.getSimpleName(),
                 ContainerWeightFlowDefinition.build(infra.storage()), ContainerWeightContext.class);
+        registry.register(LoadContainerContentsFlowDefinition.class.getSimpleName(),
+                LoadContainerContentsFlowDefinition.build(infra.storage()), LoadContainerContentsContext.class);
         registry.register(MaterializeLootFlowDefinition.class.getSimpleName(),
                 MaterializeLootFlowDefinition.build(modules.item(), infra.dataMapper()), MaterializeLootContext.class);
         registry.register(GenerateLootFlowDefinition.class.getSimpleName(),
@@ -316,6 +322,8 @@ public class FlowRegistryFactory {
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemFlowDefinition.build(infra.storage(), infra.eventBus(), modules.ui()),
                 com.github.mayconr.juoserver.game.container.flow.add.AddContainerItemContext.class);
         registry.register(ItemCreationFlowDefinition.class.getSimpleName(), ItemCreationFlowDefinition.build(infra, templates, modules.container(), modules.mobile(), modules.item()), ItemCreationContext.class);
+        registry.register(SplitHeldStackFlowDefinition.class.getSimpleName(),
+                SplitHeldStackFlowDefinition.build(infra, modules.container()), SplitHeldStackContext.class);
         registry.register(LiftItemFlowDefinition.class.getSimpleName(),
                 LiftItemFlowDefinition.build(modules, infra), LiftItemContext.class);
         registry.register(DropItemFlowDefinition.class.getSimpleName(), DropItemFlowDefinition.build(modules, infra), DropItemContext.class);

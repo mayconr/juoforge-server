@@ -17,6 +17,7 @@ import com.github.mayconr.juoserver.game.item.flow.lift.LiftItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.equip.EquipItemContext;
 import com.github.mayconr.juoserver.game.mobile.flow.unequip.UnequipItemContext;
 import com.github.mayconr.juoserver.game.item.hold.HeldItems;
+import com.github.mayconr.juoserver.game.item.flow.split.SplitHeldStackContext;
 import com.github.mayconr.juoserver.game.GamePlaySettings.ItemDecay;
 import com.github.mayconr.juoserver.game.item.decay.ItemDecayClock;
 import com.github.mayconr.juoserver.game.item.decay.ItemDecayService;
@@ -247,7 +248,21 @@ public class ItemModuleImpl implements ItemModule {
 
     @Override
     public void liftItem(UOPlayer player, UnequipItem request) {
-        flows.execute(new LiftItemContext(player, request));
+        synchronized (heldItems) {
+            flows.execute(new LiftItemContext(player, request));
+        }
+    }
+
+    @Override
+    public StepResult splitHeldStack(UOPlayer player, UOItem item, int amount) {
+        synchronized (heldItems) {
+            if (heldItems.get(player).filter(held -> held.item() == item).isEmpty()) {
+                return StepResult.failure("STACK_NOT_HELD", "Player does not hold this stack");
+            }
+            synchronized (item) {
+                return flows.execute(new SplitHeldStackContext(player, item, amount, item::setAmount));
+            }
+        }
     }
 
     @Override
